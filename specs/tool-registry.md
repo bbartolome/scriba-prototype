@@ -402,7 +402,7 @@ Demo script (M2, under 5 minutes):
 - The canvas needs a small custom-node API, and derivation provides it: a new tool spec automatically gets a tool node, a form and a function schema, with no per-tool code.
 - The form renderer comes first on purpose. It is the riskiest part of "one document, three views", and the spike validates the hint vocabulary before the loader, lint and editor build on it.
 - **Cross-spec assumptions:**
-  - The enable overrides live in this module's `tools` section of `settings.yaml`. Platform owns the file envelope and its startup migration hook, and each module owns its own section, as set in the Platform spec.
+  - The enable overrides live in this module's `tools` section of `settings.yaml`. Platform owns the file envelope and its startup migration hook, and each module owns its own section, as set in Platform work unit `work/platform/PLT-07-settings-migration-hook.md`.
   - The entity picker uses the Project store's entity list (`{id, type, path, title?}`, filterable by `type`), and the Try panel uses its GET resolution endpoint.
   - `SCRIBA_PACKS_DIR` is in Platform's env names.
   - The output port is always `text` in v1.

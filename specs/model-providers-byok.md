@@ -278,7 +278,7 @@ Acceptance criteria:
 
 ## Further Notes
 
-- **`settings.yaml` file ownership**: this module owns its `providers` section (configs and app default) and that section's migration. Platform owns the file envelope and the startup migration hook, and every module registers its section the same way (Platform spec).
+- **`settings.yaml` file ownership**: this module owns its `providers` section (configs and app default) and that section's migration. Platform owns the file envelope and the startup migration hook, and every module registers its section the same way (Platform work unit `work/platform/PLT-07-settings-migration-hook.md`).
 - **Secrets file sharing**: this module creates and writes the secrets file (`/books/.scriba/secrets.yaml`) for provider keys. Setup & auth stores no secrets in it: the setup token has its own file under `/books/.scriba/`, and the Tailscale auth key stays in the installer's `.secret` outside the library. No other v1 module stores a secret. If a later module needs one, it reuses this module's secrets-file helper rather than adding a second file.
 - **Project override shape alignment**: the `project.yaml` override field is defined by the Project store spec. It must match `ModelChoice {providerId, model}`; a type-level test in this module's `phase:project-override` asserts the two stay compatible. Project store's slice should not import `/providers` (avoids a contract-phase cycle in wave 1).
 - **Client interface types**: chat messages and stream events are in-process types, not part of the HTTP contract slice. If a future need puts them on the wire (for example a "test prompt" in the UI), add them to `/providers` via expand–contract.
