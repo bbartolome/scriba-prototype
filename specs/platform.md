@@ -436,11 +436,14 @@ Acceptance criteria:
 - [ ] All the smoke checks listed under Implementation Decisions pass on both arches.
 - [ ] No step relies on a tag push triggering another workflow, and no PAT or App token is required.
 
-### `phase:examples-check`, M1, extended through M6 as the samples grow
+### `phase:examples-check`, M1 (first layer), completed at M2, extended through M6 as the samples grow
 
-Blocked by: `phase:test-harness`; the Project store's `phase:contract` (`project.yaml` and the entity front-matter base); the Graph runner's `phase:contract` (graph schema); the Tool registry's `phase:loader-validation` (recipe tool references, entity-type validators).
+Blocked by: `phase:test-harness`; the Project store's `phase:contract` (`project.yaml` and the entity front-matter base). The check is built in layers, each added as soon as its gate closes, so no layer waits on a later milestone:
+- **M1 layer:** `project.yaml` and entity front-matter base parsing, the excluded-folder check, `samples.yaml` entries matching sample folders, and the "unit tests don't read `examples/`" rule.
+- **Graph layer** (after the Graph runner's `phase:contract`): `graphs/` files parse with the graph schema, and story-node `path`s resolve.
+- **Pack layer** (after the Tool registry's `phase:loader-validation`, M2): recipe tool references and `params`, entity front matter against pack entity-type schemas, and `[@id]`/reference resolution. The phase closes when this layer lands.
 
-Scope: the `examples/` check wired into `lint`, the excluded-folder check, the reference-resolution check, and the rule that unit tests don't read `examples/`.
+Scope: the `examples/` check wired into `lint`, in the three layers above.
 
 Acceptance criteria:
 - [ ] Every `project.yaml` under `examples/` parses with the Project store schema. Every entity's front matter parses with the entity base, and every `graphs/` file parses with the Graph runner schema.

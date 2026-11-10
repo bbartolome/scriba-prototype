@@ -211,7 +211,7 @@ M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool regist
 ### `phase:file-tools-chat` (M1)
 **Gates:**
 - Model providers `phase:client` and Project store `phase:files` (implementation; M1 needs them running);
-- Setup & auth guard;
+- Setup & auth `phase:token-guard`;
 - Shell `phase:core` and `phase:shared-components` (tool-call card).
 
 **Scope:**

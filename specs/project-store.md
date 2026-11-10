@@ -258,6 +258,8 @@ Serial. Every phase is gated on Platform `phase:scaffold`.
 Milestones referenced here: M1 is the walking skeleton, M2 is the tool registry, M3 is review and grounding, M5 is compile and export, and M7 is remaining tools and polish.
 
 ### `phase:contract` (M1)
+Blocked by: Platform `phase:scaffold`.
+
 **Scope.** Publish `@bbartolome/scriba-contracts/project-store`. It holds Zod schemas and TS types, and nothing else:
 - the `project.yaml` schema, with the reserved `order` field;
 - the project summary/list and status enum, and the new/import/start-from-sample/activate requests;
@@ -280,6 +282,8 @@ Milestones referenced here: M1 is the walking skeleton, M2 is the tool registry,
 - [ ] Platform's sample CI check can import the `project.yaml` schema.
 
 ### `phase:files` (M1)
+Blocked by: `phase:contract`; Setup & auth `phase:token-guard` (before routes ship; the API work can start earlier); Frontend shell `phase:core` and `phase:shared-components` (Markdown preview) for the UI.
+
 **Scope.**
 - Library discovery and the project list, including statuses.
 - New, import and start from sample (`examples/` baked into the image), the one active project with switching and persistence, and the "project not active" check.
@@ -317,6 +321,8 @@ Milestones referenced here: M1 is the walking skeleton, M2 is the tool registry,
 6. In chat, type "summarize my outline" (Agent loop).
 
 ### `phase:search` (M2)
+Blocked by: `phase:files`.
+
 **Scope.**
 - The FTS5 index per project at `/books/.scriba/index/<project-id>.db` over `sources/` and `entities/`.
 - Paragraph passages and the manifest diff on activation and before queries.
@@ -334,6 +340,8 @@ Milestones referenced here: M1 is the walking skeleton, M2 is the tool registry,
 **M2 note.** This phase gives the M2 workhorse tools and the Agent loop a way to look things up. M2's "done when" (each workhorse produces a draft that cites its source files) is demoed by the Tool registry, Genre packs and the Agent loop. Entity resolution from `phase:files` and this search are what they cite.
 
 ### `phase:pending-review` (M3)
+Blocked by: `phase:search`; Frontend shell `phase:shared-components` (read-only diff) and `phase:editor` (merge view; the queue ships with the read-only diff if the merge view isn't ready, and adopts it when it lands).
+
 **Scope.**
 - Propose (full content with `origin`, optional caller-supplied base, `provenance` and `grounding`), allowed for non-active projects, and the same-origin fold.
 - The pending-change store in `<project>/.scriba/pending/`, the captured base (caller-supplied or captured), and per-path validator registration.
@@ -367,6 +375,8 @@ Milestones referenced here: M1 is the walking skeleton, M2 is the tool registry,
 5. Run the grounding check on the claims draft (Agent loop) and show the unsupported statistic.
 
 ### `phase:migrations` (M7, and required before any file kind ships `schemaVersion` 2)
+Blocked by: `phase:pending-review`.
+
 **Scope.**
 - The migration registry (per file kind and version) with registration for other modules.
 - Lazy, POST-only migration: `project.yaml` on activation, other kinds on first write.

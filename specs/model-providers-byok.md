@@ -170,7 +170,7 @@ Acceptance criteria:
 - [ ] The four presets and the defaults are exported constants.
 
 ### `phase:client` (M1: Ollama default works)
-Blocked by: `phase:contract`; Platform `phase:scaffold` (mock OpenAI server, API root); Setup & auth's guard for the HTTP API.
+Blocked by: `phase:contract`; Platform `phase:scaffold` (mock OpenAI server, API root); Setup & auth `phase:token-guard` (the guard for the HTTP API).
 Scope:
 - The `openai-compatible` client: streaming chat with tool calls, tool-call assembly, abort, coded errors, transport retries and timeout.
 - The registry in `settings.yaml`, the secrets file (0600 in 0700, atomic writes), first-start seeding of Ollama, migration hook registration.

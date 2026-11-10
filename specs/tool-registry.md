@@ -264,7 +264,7 @@ Acceptance criteria (spike: one workhorse tool rendered end to end):
 - [ ] A short spike note, written when the phase closes, records any hint the workhorse needed that the vocabulary lacks. Any vocabulary change is made through expand–contract before `phase:loader-validation`.
 
 ### phase:loader-validation (M2)
-Blocked by: `phase:form-renderer`; Setup & auth guard (implementation).
+Blocked by: `phase:form-renderer`; Setup & auth `phase:token-guard`.
 
 Scope:
 - Pack layout and the loader for built-ins plus the user pack, with copy-on-write precedence, the manifest re-scan, the `schemaVersion` refusal and migration hook, entity-type schema loading, and the invalid-copy fallback.

@@ -212,6 +212,8 @@ A CLI reset-token command is deferred.
 Milestones: M1 is the walking skeleton, M2 is the tool registry with the nonfiction workhorses, and M3 is pending changes, review and grounding.
 
 ### `phase:contract` (M1)
+Blocked by: Platform `phase:scaffold`.
+
 Scope:
 - Publish `@bbartolome/scriba-contracts/setup-auth` (Zod + TS, shapes and constants only):
   - setup status (per-step state, `complete`, compose-mismatch flag);
