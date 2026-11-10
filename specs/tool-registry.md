@@ -76,7 +76,7 @@ Authors get a Tools page. It lists every tool with a per-tool enable switch, and
 
 ## Implementation Decisions
 
-**Module shape.** The registry is one NestJS `@Module` in `apps/api` and one lazy `Routes` array in `apps/web`, as the repo, build, image and runtime topology decision sets. The API module exports two in-process services that the Agent loop and the Graph runner inject: the catalog (list, get, function schemas, port descriptors, validate) and the executor (render, call the tool). The web feature exports an Angular tool-form component, which renders as a full form or as a tool-node body, for the Graph runner's canvas to host. That component is an Angular API, not a contract.
+**Module shape.** The registry is one NestJS `@Module` in `apps/api` and one lazy `Routes` array in `apps/web`. Each module lives in `apps/api/src/modules/<module>/` and `apps/web/src/app/features/<module>/`, and features register additively: the API root imports the `@Module`, and the web route table lazy-loads the `Routes` array through one entry. The API module exports two in-process services that the Agent loop and the Graph runner inject: the catalog (list, get, function schemas, port descriptors, validate) and the executor (render, call the tool). The web feature exports an Angular tool-form component, which renders as a full form or as a tool-node body, for the Graph runner's canvas to host. That component is an Angular API, not a contract.
 
 **Pack layout and loading.**
 - Built-in packs are read-only in the image under `/opt/scriba/packs/{core,nonfiction,fiction}`, built from `packages/packs`. `core` holds propose-graph.
@@ -222,6 +222,8 @@ Controls:
 
 ## Phases
 
+Milestones referenced here: M2 is the tool-registry milestone: declarative tool specs, schema validation, and the four nonfiction workhorse tools (cold open, mystery question, myth-buster, numbers-to-people). M2 is done when each workhorse produces a draft that cites its source files.
+
 ### phase:contract (M2)
 Blocked by: Platform `phase:scaffold`; Project store `phase:contract` (entity reference, file reference); Platform's `/platform` slice (error base, SSE envelope).
 
@@ -252,7 +254,7 @@ Acceptance criteria (spike: one workhorse tool rendered end to end):
 - [ ] The entity picker offers only entities of the fixture's kind (e.g. `person`) and accepts a dropped entity chip.
 - [ ] Submitting sends the arguments to `validate`. Missing required fields and wrong enum values show the readable messages inline, and a valid submit shows the arguments with defaults applied.
 - [ ] The emitted function schema contains no key starting with `x-`, and it passes Ajv's draft-07 meta-schema.
-- [ ] A short spike note in the phase's closing work item records any hint the workhorse needed that the vocabulary lacks. Any vocabulary change is made through expand–contract before `phase:loader-validation`.
+- [ ] A short spike note, written when the phase closes, records any hint the workhorse needed that the vocabulary lacks. Any vocabulary change is made through expand–contract before `phase:loader-validation`.
 
 ### phase:loader-validation (M2)
 Blocked by: `phase:form-renderer`; Setup & auth guard (implementation).
@@ -293,7 +295,7 @@ Acceptance criteria:
 - [ ] `execute` against the mock OpenAI server returns `{output: {kind: 'draft', content}, sourcesUsed}`. `sourcesUsed` lists exactly the resolved entity references for the entity-typed inputs, de-duplicated, and leaves out the style profile.
 - [ ] Malformed arguments return `TOOL_ARGS_INVALID` with a message that names every bad field. A wrong-kind or unresolved entity returns its own readable error. None of these call the model.
 - [ ] A disabled tool returns `TOOL_DISABLED`. An aborted call stops the model request.
-- [ ] Brief M2 "done when", at the API level: each workhorse-shaped fixture tool produces a draft that cites its source files (through `sourcesUsed`).
+- [ ] M2 done-when, at the API level: At the API level, each workhorse-shaped fixture tool produces a draft that cites its source files (through `sourcesUsed`).
 
 ### phase:editor-ui (M2)
 Blocked by: `phase:executor`; Shell `phase:editor` and `phase:shared-components` (diff view); Project store file-API phase (implementation, for the Try panel).
@@ -311,7 +313,7 @@ Acceptance criteria:
 - [ ] Editing a field's `x-scriba-port` updates the node preview's ports live, and changing `x-scriba-entity-kinds` changes what the picker offers.
 - [ ] The Try panel runs a tool against the active project and shows the output and the sources used. No pending change is created.
 - [ ] On a phone-sized viewport, only the list and the toggles are reachable.
-- [ ] Brief M2 "done when": each of the four nonfiction workhorses (cold open, mystery question, myth-buster, numbers-to-people), once Genre packs ships them, produces a draft that cites its source files.
+- [ ] M2 done-when: Each of the four nonfiction workhorses (cold open, mystery question, myth-buster, numbers-to-people), once Genre packs ships them, produces a draft that cites its source files.
 
 Demo script (M2, under 5 minutes):
 1. Open the nonfiction sample project and go to Tools. Show core, nonfiction and user groups, and switch off `mystery_question`.
@@ -371,13 +373,13 @@ Demo script (M2, under 5 minutes):
 - **Contract seam:** the Zod tests for the slice. Every built-in pack file is linted in CI through the registry's pack-lint step.
 - **System seam:** the Platform-owned Playwright e2e needs no registry-specific step. The Agent loop extends it with a registry tool call at M2.
 - Unit tests keep their own fixtures, including the cold-open fixture, and never read `examples/` or the real packs.
-- Vitest everywhere, with NestJS via `unplugin-swc`. There is no prior art in the repo yet. The canvas spike's `e2e/spike.cjs` is reference only.
+- Vitest everywhere, with NestJS via `unplugin-swc`. There is no prior art in the repo yet.
 
 ## Out of Scope
 
 - Pack content: the workhorse and fiction prompts, descriptions and entity-type schemas belong to the Genre packs spec.
 - Per-project `tools/` folders (deferred).
-- A field DSL over tool specs, and Zod for tool inputs. **The brief's "Zod for tool inputs, converted to JSON Schema" is overridden by the tool specs decision:** JSON Schema is the source.
+- A field DSL over tool specs, and Zod for tool inputs. **Tool inputs are JSON Schema, with no Zod-to-JSON-Schema conversion:** the `inputs` JSON Schema is the source for every view, and the registry does not call `z.toJSONSchema()`.
 - Per-tool model choice (deferred).
 - Schema-validation retries. They live in the Agent loop.
 - Resolving entity IDs to file contents, recording citations, draft provenance, and turning output into pending changes. These belong to callers, the Agent loop and the Graph runner, with the Project store.
@@ -385,16 +387,16 @@ Demo script (M2, under 5 minutes):
 - Streaming tool output token by token. v1 tool calls are non-streaming.
 - Entity types in the user pack.
 - Nested-object inputs, `$ref` and combinators in tool inputs.
-- **Brief overrides:** React/React Flow custom nodes become an Angular form component hosted in an ngx-vflow node. Merge, Compare and Gate nodes, and entity nodes in recipes, are gone. A tool node is `{id, kind, position, tool?, params?}` with ports derived here. `DECISIONS.md` gives way to `docs/adr/`.
+- **Canvas and records:** the canvas is Angular-native, with no React Flow custom nodes or island. Each tool node is an Angular form component hosted in an ngx-vflow node. Recipe nodes are `input`, `tool` and `output` only, so recipes have no Merge, Compare, Gate or entity nodes. A tool node is `{id, kind, position, tool?, params?}` with ports derived here. Decisions are recorded as ADRs in `docs/adr/`, not in a single log file, `DECISIONS.md`.
 
 ## Further Notes
 
-- The brief's "small custom-node API" requirement is met by derivation: a new tool spec automatically gets a tool node, a form and a function schema, with no per-tool code.
+- The canvas needs a small custom-node API, and derivation provides it: a new tool spec automatically gets a tool node, a form and a function schema, with no per-tool code.
 - The form renderer comes first on purpose. It is the riskiest part of "one document, three views", and the spike validates the hint vocabulary before the loader, lint and editor build on it.
-- **Choices made in this spec that the reviewer should check across specs:**
+- **Cross-spec assumptions:**
   - The enable overrides live in this module's `tools` section of `settings.yaml`. Platform owns the file envelope and its startup migration hook, and each module owns its own section, as set in the Platform spec.
   - The entity picker assumes the Project store file API can list entities with their front-matter `type`. If that spec exposes only plain file listing, it should add an entity listing.
   - `SCRIBA_PACKS_DIR` must appear in Platform's env names.
   - The output port is always `text` in v1.
-- The execute endpoint exists so the Try panel and the HTTP test seam use the same path as the in-process callers. It writes no files, so it stays inside "writes from the agent or recipe runs always become pending changes".
+- The execute endpoint exists so the Try panel and the HTTP test seam use the same path as the in-process callers. It writes no files, so it stays inside the rule that writes from the agent or recipe runs always become pending changes.
 - Function names use lower snake case so that they are valid for every OpenAI-compatible endpoint, including Ollama and LM Studio.
