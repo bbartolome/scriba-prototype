@@ -219,7 +219,7 @@ Controls:
 - Route `/tools` (app-level, one entry in the Shell's route table, minimum device class `phone`; the detail view switches to list-only on the `phone` device class).
 - A list grouped by origin, with enable toggles.
 - On tablet and desktop, a detail view:
-  - a CodeMirror 6 YAML editor with lint diagnostics from save, plus a debounced lint while typing;
+  - a CodeMirror 6 YAML editor with lint diagnostics from save, plus a debounced lint while typing. This module builds it directly on CodeMirror 6 (`@codemirror/lang-yaml` plus the lint extension), because the Shell's editor wrapper is Markdown-only and saves through the Project store; tool specs save through this module's own API;
   - Customize, Revert to built-in, Compare with built-in (the Shell's diff view), New, Duplicate and Delete;
   - preview tabs for the form, node, function schema and rendered prompt;
   - a Try panel. It resolves the chosen entities through the Project store file API in the browser, calls execute, and shows the output and sources used. It never creates a pending change.
@@ -306,7 +306,7 @@ Acceptance criteria:
 - [ ] M2 done-when, at the API level: At the API level, each workhorse-shaped fixture tool produces a draft that cites its source files (through `sourcesUsed`).
 
 ### phase:editor-ui (M2)
-Blocked by: `phase:executor`; Shell `phase:editor` and `phase:shared-components` (diff view); Project store `phase:files` (implementation, for the Try panel).
+Blocked by: `phase:executor`; Shell `phase:shared-components` (read-only diff view, for Compare); Project store `phase:files` (implementation, for the Try panel).
 
 Scope:
 - The Tools page: the list with enable toggles, the phone view, and the YAML editor with lint on save plus a debounced live lint.
@@ -359,7 +359,7 @@ Demo script (M2, under 5 minutes):
 | Project store | file API: entity listing and reads for the picker and the Try panel; active project | `phase:files` (implementation), for the UI phases |
 | Model providers | `/providers` app default and per-project model choice; the provider client | `phase:contract`; `phase:client` (implementation) before `phase:executor` |
 | Frontend shell | API and SSE clients, route table, breakpoint gate, theming | `phase:core` |
-| Frontend shell | CodeMirror 6 editor, diff view | `phase:editor`, `phase:shared-components` |
+| Frontend shell | read-only diff view (Compare with built-in) | `phase:shared-components` |
 
 **Consumed by:**
 - **Genre packs:** tool-spec format, vocabulary, entity-type envelope, pack lint. Blocked by this `phase:contract`.

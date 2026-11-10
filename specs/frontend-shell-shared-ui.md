@@ -208,7 +208,7 @@ Demo script (Shell part, under 5 minutes):
 5. Stop the API and see the reconnecting indicator, then the "server unreachable" banner.
 6. Start the API again and watch it reconnect and fire a reconcile tick (visible in the debug log).
 
-### `phase:shared-components` — M1 (tool-call card, Markdown preview), M3 (read-only diff)
+### `phase:shared-components` — M1 (tool-call card, Markdown preview), M2 (read-only diff: the Tool registry's Compare needs it at M2, the Project store's review queue at M3)
 Blocked by `phase:core`.
 
 Scope:
@@ -282,7 +282,7 @@ Demo script (under 5 minutes):
 | Notices service | Setup & auth (compose-version mismatch), any feature | `phase:core` |
 | Fake API client + fake event source (test doubles) | every feature's route tests | `phase:core` |
 | Tool-call card | Agent loop chat (M1); optionally Graph runner node results | `phase:shared-components` |
-| Read-only diff view | Project store review queue (M3) | `phase:shared-components` |
+| Read-only diff view | Tool registry Compare (M2), Project store review queue (M3), Agent loop write previews (M3) | `phase:shared-components` |
 | Markdown preview | Compile & export manuscript/reading, Project store, Agent loop | `phase:shared-components` |
 | Markdown editor (lossless, saves through file API) | Project store drafts, Compile & export manuscript editing | `phase:editor` |
 | Editable merge view | Project store review queue | `phase:editor` |
