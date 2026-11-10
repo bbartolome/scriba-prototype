@@ -108,7 +108,7 @@ After any draft, the loop runs the **grounding check** as a built-in step. It ex
 
 ### Validation and retries
 - The Tool registry validates narrative tool arguments with Ajv. The loop validates built-in tools, and also catches arguments that aren't parseable JSON.
-- A validation failure goes back to the model as the tool result: one line per problem (`<argument path>: <what is wrong>`), followed by the expected arguments in brief. The card shows the same text and the attempt number.
+- A validation failure goes back to the model as the tool result: one line per problem (`<argument path>: <what is wrong>`), followed by a short summary of the expected arguments. The card shows the same text and the attempt number.
 - **Two retries.** The count is per tool per agent run, for consecutive invalid calls. On the third consecutive invalid call to the same tool, the loop answers "this tool is unavailable for the rest of this agent run" and drops it from the schemas for the remaining steps. A valid call resets the count. Unknown entity IDs and edit-text mismatches count as validation failures.
 - Retries count towards the step cap. The cap is the only hard limit.
 
@@ -189,6 +189,8 @@ After any draft, the loop runs the **grounding check** as a built-in step. It ex
 
 Serial. Each phase starts only after the previous one closes, plus the gates listed.
 
+M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool registry, M3 review and grounding, M4 canvas, M5 compile and export, M6 fiction pack, M7 remaining tools and polish.
+
 ### `phase:contract` (M1)
 **Gate:** Platform `phase:scaffold`.
 **Scope:**
@@ -224,7 +226,7 @@ Serial. Each phase starts only after the previous one closes, plus the gates lis
 - The "agent run" step of the Platform-owned Playwright e2e.
 
 **Acceptance:**
-- [ ] **Done when** the author types "summarize my outline" in the nonfiction sample and gets a correct answer with visible tool calls (brief, M1).
+- [ ] **Done when** the author types "summarize my outline" in the nonfiction sample and gets a correct answer with visible tool calls.
 - [ ] With the mock server set to loop, the agent run ends at step 12 with `step-cap-reached` and `run-ended: capped`.
 - [ ] Stop ends an agent run within one second of the POST, with `run-ended: stopped`.
 - [ ] A path outside the project is refused and the refusal shows as a card error.
@@ -255,7 +257,7 @@ Serial. Each phase starts only after the previous one closes, plus the gates lis
 - At this milestone, `draft` outputs are shown in the chat with their provenance. They become pending changes in the next phase.
 
 **Acceptance:**
-- [ ] **Done when** each of the four workhorses (cold open, mystery question, myth-buster, numbers-to-people), called by the agent from an intent, produces a draft that cites its source files (brief, M2).
+- [ ] **Done when** each of the four workhorses (cold open, mystery question, myth-buster, numbers-to-people), called by the agent from an intent, produces a draft that cites its source files.
 - [ ] A disabled tool is absent from the model request (asserted on the mock server's received request).
 - [ ] An unknown entity ID returns a readable error and counts as a retry.
 - [ ] Every draft's card and transcript entry carry provenance (entity IDs and tool run).
@@ -293,7 +295,7 @@ Serial. Each phase starts only after the previous one closes, plus the gates lis
 - The grounding-claims draft in the nonfiction sample, and its mock-openai script.
 
 **Acceptance:**
-- [ ] **Done when** an invented statistic in a draft is flagged as unsupported (brief, M3).
+- [ ] **Done when** an invented statistic in a draft is flagged as unsupported.
 - [ ] A check of the sample grounding-claims draft yields at least one claim of each verdict, and every supported or weak verdict cites a retrieved `sources/` passage.
 - [ ] A verdict citing a passage that was not retrieved is downgraded to `unsupported`.
 - [ ] The claims artefact matches the contract and carries the draft's content hash.
@@ -395,7 +397,7 @@ Serial. Each phase starts only after the previous one closes, plus the gates lis
   - the phone breakpoint shows one column with collapsed cards.
 - **Contract seam:** Zod schemas in the slice, with valid and invalid examples per event. CI validates `examples/` against contracts. The grounding-claims draft is plain Markdown and needs no schema, but its paths are part of the mock-script contract.
 - **System seam:** this module extends the Platform-owned Playwright e2e with the "agent run" step at M1 and, together with Project store, the "accept change" step at M3.
-- **Real models:** the brief's small-and-large model check is a manual eval script. It records which failure modes the retries handled. It is not part of CI.
+- **Real models:** a manual eval script runs the tool-calling loop against a small local model and a larger one. It records which failure modes the retries handled. It is not part of CI.
 - **Prior art:** none in the repo yet. Vitest throughout, with NestJS via `unplugin-swc`.
 
 ## Out of Scope
@@ -408,18 +410,18 @@ Serial. Each phase starts only after the previous one closes, plus the gates lis
 - Agent tools for reorder, snapshot create or restore, or settings changes.
 - Parallel tool calls, sub-agents, and more than one active agent run per project.
 - Grounding against web pages or entities. Only `sources/` is evidence.
-- **Overrides of the brief by the recorded design decisions:**
-  - Zod for tool inputs → JSON Schema with Ajv.
-  - React/Fastify → Angular and NestJS.
-  - The `structure/` folder → drafts and story nodes. "Summarize my outline" therefore reads the skeleton's `drafts/` and `project.yaml`.
-  - The canvas Gate node for grounding → no such node. Grounding is a built-in step of the loop.
-  - The SQLite run-log index → deferred.
-  - "Never write straight to `drafts/`" → widened to every agent write, in any folder. The author's own typing still saves directly.
+- **Settled choices that replace earlier plans:**
+  - Tool inputs use JSON Schema validated with Ajv, replacing an earlier Zod plan.
+  - The frontend is Angular and the backend is NestJS, replacing an earlier React and Fastify plan.
+  - Story structure is not kept in a `structure/` folder, replacing the earlier plan to keep the outline, chapters, scenes and plot beats there. Chapters and scenes are Markdown files in `drafts/` (one chapter file may hold several scenes). A beat is a story-graph node, label-only by default or pointing at a whole file in `drafts/`. Manuscript order comes from the `project.yaml` order field or the story graph's `order` edges.
+  - The canvas has no Gate node, replacing an earlier grounding gate node. Grounding is a built-in step of the loop.
+  - A run-log index is deferred, replacing an earlier plan for a SQLite run-log index. `logs/` is the source of truth.
+  - Agent writes go through pending changes in any folder, replacing an earlier rule that covered only `drafts/`. The author's own typing still saves directly.
 
 ## Further Notes
 
 - **Glossary.** The glossary's **Run** means one execution of a recipe. This spec therefore always says **agent run** for one pass of the loop, and never uses bare "run" for it. Consider adding "Agent run" to `GLOSSARY.md`, with "chat turn" and "session" listed under avoid.
-- **Phase ordering versus the suggested set.** M3 is split into `phase:pending-writes` and `phase:grounding`. Writes can't exist before the Project store's pending-changes phase (M3), and the M1 milestone list has Project store read/write only. So M1 ships only `list_files` and `read_file`, and M2 shows drafts in the chat until M3 routes them to pending changes.
+- **Phase ordering versus the milestones.** M3 is split into `phase:pending-writes` and `phase:grounding`. Writes can't exist before the Project store's pending-changes phase (M3), and at M1 the Project store has read and write only. So M1 ships only `list_files` and `read_file`, and M2 shows drafts in the chat until M3 routes them to pending changes.
 - **Compile tools are in v1 but land at M7**, after research. They need Compile & export's implementation (M5) and aren't part of any earlier milestone demo.
 - **Provenance location** is a deliberate choice: on the pending change and in the transcript, not in draft front matter. If the author later wants it in the file, an optional front-matter block can be added in an expand–contract change.
 - **The claims artefact lives in `logs/`** so that Compile & export's preflight can read it as a file, with no Agent loop dependency. The Compile & export spec should consume the grounding result shape from this slice.
