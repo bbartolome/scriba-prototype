@@ -133,7 +133,7 @@ Authors get a Tools page. It lists every tool with a per-tool enable switch, and
 - Bad arguments produce the `TOOL_ARGS_INVALID` error. It carries a model-readable `message` with a lead line naming the tool, then one line per issue naming the field, what was expected and what was received. Unknown fields are reported together with the list of allowed fields. It also carries a structured `issues` list `{path, message}` for forms.
 - The two retries live in the Agent loop. The registry never retries.
 - A successful validate returns the arguments with defaults applied, plus the entity IDs the caller must resolve. Each is tagged with its field and with whether it is a style field.
-- A `params` mode validates only the non-port fields, ignoring required ports. The Graph runner uses it on recipe load, and the samples CI check uses it for recipes' tool references.
+- A `params` mode validates only the non-port fields: port keys are removed from the input before validation (so a Graph runner tool node's pinned port values in `params` are neither rejected as unknown nor checked here; they are checked at run time in full mode), and required ports are ignored. The Graph runner uses it on recipe load, and the samples CI check uses it for recipes' tool references.
 
 **Entity-type schemas.** The loader also reads each pack's entity-type schemas (`entity-types/<kind>.yaml`) and validates them. The envelope is `{schemaVersion, kind, title, description, folder, fields}`:
 - `kind` is the front-matter `type` value (lower kebab-case, for example `style-profile`), and the file name must be `<kind>.yaml`;
@@ -169,7 +169,7 @@ Details:
 - A style field left empty is filled by the caller with the project's style-profile ref before resolving. The function schema describes this default.
 
 **Per-tool enable switch.**
-- The spec's `enabled` is the default. The author's override is stored in the Tool registry's `tools` section of `/books/.scriba/settings.yaml`, keyed by tool name. Platform owns the file envelope and the startup migration hook; this module registers its section and that section's migration steps.
+- The spec's `enabled` is the default. The author's override is stored in the Tool registry's `tools` section of `/books/.scriba/settings.yaml`, shaped `{schemaVersion: 1, enabled: {<toolName>: boolean}}` (only overridden tools appear). Platform owns the file envelope and the startup migration hook; this module registers its section and that section's migration steps.
 - Toggling never creates a copy-on-write fork.
 - Disabled tools are left out of function schemas, refused by the executor, still listed and editable, and still shown on the canvas, where the Graph runner reports the refusal for that tool node.
 

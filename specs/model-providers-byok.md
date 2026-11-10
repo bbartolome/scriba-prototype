@@ -140,7 +140,7 @@ A preset only pre-fills a new provider; after that it's an ordinary config.
 
 **HTTP API (under `/api/providers`, behind Setup & auth's guard).** GET/HEAD never mutate; commands are POSTs.
 - GET: list providers (configs without secrets, with `keySet` and the masked hint), presets, the app default, a provider's model list, and the effective model choice for a project.
-- POST: create provider (optionally from a preset), update provider, delete provider, set key (write-only), clear key, set app default, set project override, clear project override, connection test.
+- POST: create provider (optionally from a preset), update provider, delete provider, set key (write-only), clear key, set app default, set project override and clear project override (both act on the active project and fail with the Project store's "no active project" error when none is active), connection test.
 - Inputs validated with the contract's Zod schemas. Errors use Platform's base error shape.
 - No SSE events in v1. Run-time model errors reach the author through the Agent loop's and Graph runner's own events.
 

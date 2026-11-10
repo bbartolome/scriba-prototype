@@ -115,7 +115,7 @@ Every path that enters the module is checked through one function, used by every
 - Within one origin (the same `origin.kind` and `runId`, and for recipe runs the same `nodeId`), a later propose to the same target updates that origin's existing open pending change and keeps its original captured base. Different origins never merge.
 - **In-process-only helpers** on the provider (not HTTP):
   - `updateProjectYaml(projectId, patch)`: sets or removes top-level keys of `project.yaml` through the YAML document API, preserving comments, key order and every other key, and validating the result against the schema before an atomic write. Model providers uses it for `model`; Compile & export for `order` and `export`. It publishes `files-changed`.
-  - `appendLog(projectId, path, line)`: appends one line to a file under `logs/` (path safety applies, and the path must be inside `logs/`). Agent loop transcripts, claims artefacts (via `write` under `logs/`), Graph runner run logs and migration log lines use it. It publishes nothing.
+  - `appendLog(projectId, path, line)` (like `propose`, allowed for any `ok` project, so a run stopped by a switch can finish its log): appends one line to a file under `logs/` (path safety applies, and the path must be inside `logs/`). Agent loop transcripts, claims artefacts (via `write` under `logs/`), Graph runner run logs and migration log lines use it. It publishes nothing.
   - `stateDir(projectId, owner)`: returns the absolute path of `<project>/.scriba/<owner>/`, creating it if needed. `owner` is a module slug. Only that module reads or writes there with plain `fs`. Compile & export uses `.scriba/compile-export/` for exports.
   - `onProjectSwitched(handler)`: an in-process hook called synchronously before the `project-switched` event is published.
 - `project.yaml` writes through `write` are validated against the schema and preserve the author's comments and key order (edited as a YAML document, not re-serialised from an object).
@@ -211,7 +211,7 @@ Every path that enters the module is checked through one function, used by every
 - `settings.yaml` migrates eagerly at startup and belongs to its owner, not to this module.
 
 ### Samples (`examples/`)
-- The Project store owns `examples/`, the start-from-sample mechanism, and the **nonfiction skeleton**:
+- The Project store owns `examples/`, `examples/samples.yaml` (the sample index; Genre packs adds the fiction entry at M6), the start-from-sample mechanism, and the **nonfiction skeleton** in `examples/nonfiction/`:
   - `project.yaml` with `schemaVersion` 1, a title, `genrePack: nonfiction` and no `order`. Compile & export adds `order` at M5.
   - `sources/` with 3–5 short source documents. One of them is the author's outline notes, `sources/outline.md`, so that the M1 "summarize my outline" demo has an outline without a `structure/` folder.
   - `drafts/` with 2–3 draft files of a few hundred words each.

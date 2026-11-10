@@ -276,6 +276,7 @@ Tailscale's own variables (`TS_AUTHKEY` in `.secret`, `TS_HOSTNAME=scriba`, `TS_
   - Paths in scenarios that name files in the nonfiction sample are a contract with `examples/`: renaming a sample file updates the scenario in the same PR.
 - **Playwright harness.** It builds the web bundle, starts the API (serving that bundle on one origin, so no dev origins are needed) against a temp library, starts the mock server, then waits for `/healthz`. The harness does not configure a model provider: the "agent run" step does that through the Model providers API, pointing a provider at a mock scenario URL.
   - The single e2e test has five named steps: setup → project from sample → agent run → accept change → manuscript.
+  - A module whose phase "extends the e2e" adds its step in that phase if `phase:test-harness` has closed; otherwise it adds the step in the first PR after `phase:test-harness` closes. Either way the module's phase is not blocked on the harness.
   - In this spec only the harness, the boot and an app-loads check are live. The five steps are placeholders, and each owning module turns its step on at its milestone (Setup & auth, Project store, Agent loop, Project store review, Compile & export).
   - **Export stays out of the e2e.**
 - **Examples check.**
