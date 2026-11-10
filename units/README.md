@@ -66,7 +66,7 @@ Then `# <ID> — <short title>` and these sections, in this order, each only whe
 
 ## Phase gates
 
-A phase **closes when its gate unit is merged** (the gate is the phase's last unit and waits on the rest; Frontend shell's `phase:shared-components` and `phase:editor` have no gate unit and close when all their units are merged). By convention a producer's first phase is `phase:contract`, a single unit that publishes the module's slice of `@bbartolome/scriba-contracts` (Platform's is `phase:scaffold`; Frontend shell and Genre packs have none). Inside a phase, units wait only on what they use, so many start before the previous phase's gate closes; each module's **ordering note** lists the cases.
+A phase **closes when its gate unit is merged** (the gate is the phase's last unit and waits on the rest; Platform's `phase:examples-check` and Frontend shell's `phase:shared-components` and `phase:editor` have no gate unit and close when all their units are merged). By convention a producer's first phase is `phase:contract`, a single unit that publishes the module's slice of `@bbartolome/scriba-contracts` (Platform's is `phase:scaffold`; Frontend shell and Genre packs have none). Inside a phase, units wait only on what they use, so many start before the previous phase's gate closes; each module's **Ordering** section lists the cases.
 
 | Module | Phase | Milestone | Units | Gate | Notes |
 |---|---|---|---|---|---|
@@ -76,7 +76,7 @@ A phase **closes when its gate unit is merged** (the gate is the phase's last un
 | Platform | `phase:smoke` | M1 | PLT-16 | PLT-16 | Release track; ST-1 outcome may change compose |
 | Platform | `phase:installer` | M1 | PLT-17, PLT-18 | PLT-18 | Release track |
 | Platform | `phase:ci-publish` | M1 | PLT-19 | PLT-19 | Release track |
-| Platform | `phase:examples-check` | M1 → M2 (extended through M6) | PLT-20 … PLT-22 | PLT-22 | |
+| Platform | `phase:examples-check` | M1 → M2 (extended through M6) | PLT-20 … PLT-22 | all three | PLT-21 (graph layer) and PLT-22 (pack layer) run in parallel; the phase closes when both are merged |
 | Frontend shell | `phase:core` | M1 | SHL-01 … SHL-09 | SHL-09 | The gate every feature UI names |
 | Frontend shell | `phase:shared-components` | M1, M2 | SHL-10 … SHL-12 | all three | Card and preview may merge first and are usable at M1; read-only diff at M2. Consumers adopt each component as soon as its unit merges |
 | Frontend shell | `phase:editor` | M3 | SHL-13 … SHL-16 | all four | |

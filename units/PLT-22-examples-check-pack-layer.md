@@ -11,7 +11,7 @@ unblocks: ["Graph runner sample recipe (GRR-16)"]
 
 # PLT-22 — Examples check, pack layer
 
-Merging this **closes `phase:examples-check`** (later milestones keep extending sample content; the check must keep passing).
+Merging this and PLT-21 (in either order) **closes `phase:examples-check`** (later milestones keep extending sample content; the check must keep passing).
 
 ## Decisions
 - Uses the Tool registry's own loader and Ajv validation through the **pack-lint CLI's library entry point** — no reimplementation.
