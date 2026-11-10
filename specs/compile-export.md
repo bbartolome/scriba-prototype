@@ -4,7 +4,7 @@
 
 An author who has written a book's chapters and scenes as Markdown files in `drafts/` has no way yet to turn them into one manuscript. Nothing decides the order the files go in, which files count, or where front and back matter come from. Nothing tells the author, before they send a file to an editor, agent or self-publishing platform, that the manuscript still holds a `TK`, a claim the sources don't support, a scene node that points at a deleted file, a broken entity link or a phrase their style profile bans. They can't produce the formats publishing needs: a DOCX in standard manuscript layout for submission, an EPUB for self-publishing, a PDF to read or print, and plain Markdown. They have no one-click way to save the whole manuscript before a risky revision and roll back to it afterwards.
 
-The author's brief said the manuscript is "assembled from chapter files in outline order". The recorded design decisions replaced that. Order now comes from an order field in `project.yaml`, or from the story graph's `order` relations when a story graph exists, and the manuscript is every top-level file in `drafts/`. This spec turns those decisions into a module.
+Order comes from an order field in `project.yaml`, or from the story graph's `order` relations when a story graph exists, and the manuscript is every top-level file in `drafts/`. This replaces assembly from chapter files in outline order. This spec turns these rules into a module.
 
 ## Solution
 
@@ -112,7 +112,7 @@ Compile & export reads the story graph's `order` relations and nothing else. It 
 ### Manuscript membership
 
 - The manuscript is every **top-level regular file with a `.md` extension** in `drafts/`. Subfolders are skipped, which excludes `drafts/.versions/`. Hidden files are skipped as well.
-- The `.md`-only rule is a decision this spec makes. The decision "Manuscript assembly order without a story graph" says "every file". Non-Markdown files in `drafts/` (images, for example) are left out and can be referenced from Markdown instead.
+- The `.md`-only rule is a decision this spec makes. It narrows the rule that every top-level file in `drafts/` is in the manuscript. Non-Markdown files in `drafts/` (images, for example) are left out and can be referenced from Markdown instead.
 
 ### The `project.yaml` order field
 
@@ -124,7 +124,7 @@ Compile & export reads the story graph's `order` relations and nothing else. It 
 - **Every write materialises the whole effective order.** Any reorder or status change writes one entry for every current manuscript file, in effective order. A single new entry would otherwise jump ahead of the unnamed files that are appended alphabetically. Entries that point at missing files are dropped on write and reported by preflight before that.
 - Writes change only the `order` key (and the `export` key, from the export settings panel). They preserve the rest of `project.yaml`'s text, comments and key order.
 - **Optimistic concurrency.** The manuscript view model carries a `revision`, a hash of the current order field and the set of manuscript files. Reorder, status and settings requests carry the `revision` they were based on. A mismatch returns a conflict error and nothing is written. This covers edits made by hand on the host and edits from another device.
-- A renamed file loses its entry and its status: it reappears as a new, unplaced file. This is the same known cost as the rename rule in the decision "Current draft versus older versions in drafts/".
+- A renamed file loses its entry and its status: it reappears as a new, unplaced file. The same rename orphans the file's older versions in `drafts/.versions/`. Both are known costs (see Known cost under Further Notes).
 - Project store owns the `project.yaml` schema and reserves `order` (and `export settings`) from day one. This module defines what goes inside them (see Contracts).
 
 ### Effective order (assembly algorithm)
@@ -139,7 +139,7 @@ Apply these steps in this order:
    - **Cycle:** if the projected edges contain a cycle over distinct files, ignore the graph completely. The body is ordered by `project.yaml`, then alphabetically, and the manuscript view model carries a `graphCycle` warning that lists the files in the cycle.
 4. **Text order inside a file** is the order the author wrote. Compile treats a file as one unit and never parses scene boundaries.
 
-- Placing the graph-ordered files as a leading block is this spec's reading of the decision "Manuscript assembly order without a story graph" ("its `order` edges over files come first"). It is the simplest deterministic merge. A reviewer should confirm this reading.
+- Placing the graph-ordered files as a leading block is this spec's reading of the rule that, with a story graph, its `order` edges over files come first. It is the simplest deterministic merge. A reviewer should confirm this reading.
 - Taking the union of all story graphs is also decided here, because nothing limits a project to one story graph. A cycle across graphs triggers the same fallback.
 - Graph files are parsed with the Graph runner's schema. A graph file that fails validation is skipped, and the manuscript view model reports it as a warning.
 
@@ -232,7 +232,7 @@ Apply these steps in this order:
   3. **delete** top-level manuscript files that are absent from the snapshot (the pre-restore snapshot holds them);
   4. write the manifest's `order` into the `project.yaml` order field;
   5. publish `snapshot.restored` and `manuscript.updated`.
-- Restore is an author action and writes directly, not as pending changes (the same reasoning as editor saves, per the decision "Markdown editor for the shared Shell editor component").
+- Restore is an author action and writes directly, not as pending changes, the same as the author's own editor saves. Only agent-proposed changes go through the pending-changes queue.
   - Pending changes that target restored files keep their captured base, so the Project store's three-way check flags them as conflicts instead of overwriting the restored text.
   - Restore does not write per-draft versions. Versioning on pending-change apply is the Project store's job.
 - Deleting snapshots in the app is out of scope for v1. The author can delete the folder on the host.
@@ -250,14 +250,16 @@ Apply these steps in this order:
 
 ### Sample content
 
-- At M5 this module adds the `project.yaml` order field to the nonfiction sample. The order differs from alphabetical, so the demo proves that the order field drives compile, and the entries carry mixed statuses (for example `final`, `revised`, `draft`).
+- At the Compile and export milestone, this module adds the `project.yaml` order field to the nonfiction sample. The order differs from alphabetical, so the demo proves that the order field drives compile, and the entries carry mixed statuses (for example `final`, `revised`, `draft`).
 - It also adds export settings with an author name and a dedication. The bibliography is generated from the sample's Source entities.
-- The sample stays within the size of 2–3 draft files set by the decision "Contents of the nonfiction and fiction sample projects". The M5 "done when" criterion needs three chapters, so if the skeleton ships fewer than three draft files, this module adds the third. No front or back matter file is added.
+- The sample stays small, at 2–3 draft files of a few hundred words each. The milestone's "done when" criterion needs three chapters, so if the skeleton ships fewer than three draft files, this module adds the third. No front or back matter file is added.
 - The sample ships no `snapshots/`.
 
 ## Phases
 
-### `phase:contract` (M5; lands early in wave 2)
+Build waves: wave 0 is Platform; wave 1 is Frontend shell, Setup & auth, Model providers, Project store, Tool registry and Genre packs (nonfiction); wave 2 is Agent loop, Graph runner and Compile & export; wave 3 is the fiction pack and polish.
+
+### `phase:contract` (milestone: Compile and export; lands early in wave 2)
 
 Gated by: Platform `phase:scaffold`; Project store `phase:contract`; Graph runner `phase:contract`; Agent loop `phase:contract`.
 
@@ -280,7 +282,7 @@ Acceptance criteria:
 - [ ] Zod tests accept valid examples and reject: an unknown status or part, an order entry with a path outside `drafts/`, a reorder that isn't a list of paths, and an unknown export format.
 - [ ] The `project.yaml` schema accepts files with and without `order` and `export`. The current nonfiction sample still passes Platform's CI sample check.
 
-### `phase:assembly-preflight` (M5)
+### `phase:assembly-preflight` (milestone: Compile and export)
 
 Gated by: this module's `phase:contract`; Project store file-API phase (implementation); Setup & auth guard phase.
 
@@ -303,7 +305,7 @@ Acceptance criteria:
 - [ ] Preflight makes no outbound HTTP call (the test asserts that the mock OpenAI server received no request).
 - [ ] The nonfiction sample started from "start from sample" returns its authored, non-alphabetical order with its statuses.
 
-### `phase:export` (M5)
+### `phase:export` (milestone: Compile and export)
 
 Gated by: `phase:assembly-preflight`; Platform's image phase (Pandoc 3.13 and Typst in the image) and CI phase.
 
@@ -326,7 +328,7 @@ Acceptance criteria:
 - [ ] The image smoke step exports all four formats on amd64 and arm64.
 - [ ] The Typst spike ADR is merged and states the decision.
 
-### `phase:manuscript-snapshots` (M5; demos the milestone)
+### `phase:manuscript-snapshots` (milestone: Compile and export; milestone demo)
 
 Gated by: `phase:export`; Frontend shell `phase:core`.
 
@@ -340,7 +342,7 @@ Acceptance criteria:
 - [ ] Restore brings back the drafts, the order and the statuses, removes files created after the snapshot, and creates a `pre-restore` snapshot. `drafts/.versions/` is byte-identical before and after. A pending change against a restored file shows as a conflict.
 - [ ] UI tests (against a fake API and SSE client): a drag sends a reorder with the current `revision`; graph-ordered rows can't be dragged; a conflict response shows the reload prompt; `manuscript.updated` refetches; preflight errors open the confirm dialog before export; restore needs confirmation.
 - [ ] The e2e passes with the manuscript step.
-- [ ] **Done when** (brief, M5): a three-chapter sample exports and opens cleanly in Word and an EPUB reader.
+- [ ] **Done when:** a three-chapter sample exports and opens cleanly in Word and an EPUB reader.
 
 **Demo script (under 5 minutes):**
 1. Start a new project from the nonfiction sample and open **Manuscript**. Three chapters appear in the sample's `project.yaml` order (not alphabetical), with statuses and word counts.
@@ -379,7 +381,7 @@ Consumers: the Frontend shell route table (lazy route entry only); Platform (the
 | Project store | `/project-store`, `phase:contract` + file-API phase | The `project.yaml` schema (reserved `order` and export settings, style profile ref, genre pack, title); the file API (list, read, write); file reference; entity reference; entity front-matter base (`id`, `type`, `links`); path safety |
 | Graph runner | `/graph-runner`, `phase:contract` | Graph file schema (`view: 'story'`); story-node fields `kind`, `label`, optional `path`; edge `{id, from, to, relation?}`; the suggested relation `order` |
 | Agent loop | `/agent-loop`, `phase:contract` | Grounding result (claim → `supported \| weak \| unsupported` plus the cited passage); transcript entry format in `logs/`; draft provenance (entity IDs and the tool run) |
-| Genre packs | nonfiction pack content (M2) | The Source entity's `citation` (and URL) fields; the Style profile entity's banned-phrases field |
+| Genre packs | nonfiction pack content (Tool registry milestone, which ships the tool registry and the four nonfiction workhorse tools) | The Source entity's `citation` (and URL) fields; the Style profile entity's banned-phrases field |
 | Frontend shell | `phase:core` | API and SSE clients, theming, nav, breakpoint gate, route table |
 
 ## Testing Decisions
@@ -397,12 +399,12 @@ Consumers: the Frontend shell route table (lazy route entry only); Platform (the
 - **Contract seam.** Zod tests for every shape. Platform's CI check validates the nonfiction sample's `project.yaml` (with the order field and export settings) against the schema.
 - **System seam.** The single Playwright e2e is extended with the manuscript step (order and word count after an accepted change). Export stays out of the e2e.
 - **Image smoke.** An additive smoke step exports the nonfiction sample to all four formats inside the built image on both architectures.
-- **Manual.** The M5 "done when" criterion (Word plus an EPUB reader) and the Typst spike review are manual, recorded in the demo script and the ADR.
+- **Manual.** The "done when" criterion (a three-chapter sample opened in Word and an EPUB reader) and the Typst spike review are manual, recorded in the demo script and the ADR.
 - **Prior art.** None in the repo yet.
 
 ## Out of Scope
 
-- Reordering scenes inside a file, and per-scene breaks. A file is one unit in v1. This replaces the brief's "drag to reorder chapters and scenes" for scenes that share a file.
+- Reordering scenes inside a file, and per-scene breaks. A file is one unit in v1: drag-to-reorder moves whole files, and the text order the author wrote decides scenes within a file. This replaces drag-to-reorder of scenes that share a file.
 - Reading or restoring per-draft versions in `drafts/.versions/`, which is the Project store's job.
 - Running graphs of any kind, and writing to the story graph from the manuscript view.
 - Starting a grounding check from preflight. Preflight only reads results.
@@ -410,14 +412,14 @@ Consumers: the Frontend shell route table (lazy route entry only); Platform (the
 - A TeX Live PDF image (not in v1). The Typst spike may recommend it as follow-up work only.
 - Deleting or renaming snapshots in the app, and snapshot diffing.
 - Export in the Playwright e2e. EPUB validation with epubcheck (no Java in the image).
-- Publishing-platform uploads (brief).
+- Publishing-platform uploads.
 - Agent-initiated reorder. If the Agent loop ever exposes compile tools, any write to `project.yaml` must become a pending change.
-- **Overridden from the brief:** "assembled from chapter files in outline order" is replaced by the order rules of the decision "Manuscript assembly order without a story graph" over every top-level `drafts/` file. The `structure/` folder and its Chapter and Scene entities don't exist, so status lives on `project.yaml` order entries. Drag-to-reorder writes the `project.yaml` order field. React, Fastify and Zod-for-tool-inputs don't apply here.
+- **Replacements.** Assembly from chapter files in outline order is replaced by the order rules in Effective order, over every top-level `drafts/` file. There is no `structure/` folder and no Chapter or Scene entity type: a scene is a whole file in `drafts/` that a story node can point at, a chapter is a file in `drafts/`, and status lives on `project.yaml` order entries. Drag-to-reorder writes the `project.yaml` order field. The frontend is Angular with Angular Material and the backend is NestJS, replacing React and Fastify. Tool inputs are validated with JSON Schema through Ajv, replacing Zod for tool inputs.
 
 ## Further Notes
 
 - **Decisions this spec makes that the reviewer should confirm.**
-  - The graph-ordered files form a leading block ahead of the other body files (the reading of "come first" in the decision "Manuscript assembly order without a story graph").
+  - The graph-ordered files form a leading block ahead of the other body files (the reading of the rule that a graph's `order` edges over files come first).
   - All story graphs in `graphs/` are unioned.
   - Status and part live on order entries.
   - Every order write materialises the full order.
@@ -431,5 +433,5 @@ Consumers: the Frontend shell route table (lazy route entry only); Platform (the
   - *Agent loop:* the grounding result, or its transcript entry, must carry the checked file's project-relative path and a content hash. Without them, preflight can't attribute results to files or detect stale ones.
   - *Genre packs:* the field names for the Source entity's citation and URL, and for the Style profile's banned phrases, are consumed as stated in their entity-type schemas.
   - *Platform:* this module adds Pandoc and Typst to `ci.yml`, an export smoke step to the image smoke job, and a manuscript step to the e2e.
-- **Agent compile tools.** The brief lists assemble, check and export as agent tools. This spec exposes them only as HTTP endpoints. Whether the Agent loop wraps the read-only ones (manuscript, preflight) as tools is the Agent loop spec's decision.
-- **Known cost.** Renaming a draft file drops its order entry and status, the same as the rename cost in the decision "Current draft versus older versions in drafts/". A stable id could fix both later.
+- **Agent compile tools.** The planned agent tools are assemble, check and export. This spec exposes them only as HTTP endpoints. Whether the Agent loop wraps the read-only ones (manuscript, preflight) as tools is the Agent loop spec's decision.
+- **Known cost.** Renaming a draft file drops its order entry and status, and orphans its older versions in `drafts/.versions/`. A stable id could fix these later without breaking the versioning layout.
