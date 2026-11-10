@@ -103,7 +103,7 @@ A Model providers module that owns the whole "talk to a model" concern behind on
 - Defaults are contract constants: temperature 0.7, contextSize 64000 (matching the Ollama guidance), maxTokens 4096, timeout 120000 ms, retries 2. Implementation may tune the numbers in phase `contract`; they're constants, not decisions.
 
 **Registry and storage.**
-- Provider configs and the app default model choice live in a `providers` section of `settings.yaml` in `/books/.scriba/`. `settings.yaml` carries a `schemaVersion` and migrates eagerly at startup with a backup; this module registers its section's migration with that hook.
+- Provider configs and the app default model choice live in the `providers` section of `settings.yaml` in `/books/.scriba/`, shaped `{schemaVersion: 1, list: ProviderConfig[], appDefault: ModelChoice | null}`. `settings.yaml` carries a `schemaVersion` and migrates eagerly at startup with a backup; this module registers its section's migration with that hook.
 - **Keys live only in the secrets file** in `/books/.scriba/`: mode 0600 inside a 0700 directory. Writes are atomic (temp file, then rename, then mode check). On startup the module creates the directory and file with those modes if missing, and tightens and warns if they're looser. This is a floor against other OS users and casual reading, not strong crypto.
 - `settings.yaml` holds only `keyRef`. Deleting a provider deletes its secret entry.
 - **Write-only keys**: no API returns a key. Reads return `keySet: boolean` and a masked hint (the last four characters), computed from the secrets file at read time.
@@ -133,7 +133,7 @@ A preset only pre-fills a new provider; after that it's an ordinary config.
 
 **Model choice.**
 - `ModelChoice = {providerId, model}`. The app default is a `ModelChoice` in `settings.yaml`. An empty `model` means "the provider's own default model".
-- The **per-project override** is an optional field in `project.yaml` with the same shape. **The Project store spec owns the `project.yaml` schema**; this module reads the field and writes it through the Project store's file API when the author changes it (an author action, not an agent write, so not a pending change).
+- The **per-project override** is an optional field in `project.yaml` with the same shape. **The Project store spec owns the `project.yaml` schema**; this module reads the field through the Project store's file API and writes it with the Project store's in-process `updateProjectYaml` helper (comment-preserving, `model` key only) when the author changes it (an author action, not an agent write, so not a pending change).
 - **Resolution order**: project override → app default → provider's own `model` → first listed model (`auto`, above). An override pointing at a missing provider falls back to the app default and returns a warning.
 - Deleting the provider used by the app default is refused (409) until another default is chosen. Deleting a provider that project overrides use is allowed; those projects fall back with a warning.
 - **Per-tool model choice is deferred**. **The per-tool enable switch is the Tool registry's `enabled` field**, not this module's.
@@ -145,8 +145,8 @@ A preset only pre-fills a new provider; after that it's an ordinary config.
 - No SSE events in v1. Run-time model errors reach the author through the Agent loop's and Graph runner's own events.
 
 **BYOK settings UI.**
-- A lazy feature route (registered in the Shell's route table) for provider settings: the provider list, add from preset, edit form, model picker (dropdown from the model list, free-text fallback), key field (password input, write-only; "replace" and "remove"), connection test with staged result, the Ollama hints, and the app default selector.
-- A project model panel for the project override, shown in the project's settings area, with an "Use app default" option and the effective-model readout.
+- A lazy feature route at `/providers` (app-level, minimum device class `phone`, one entry in the Shell's route table) for provider settings: the provider list, add from preset, edit form, model picker (dropdown from the model list, free-text fallback), key field (password input, write-only; "replace" and "remove"), connection test with staged result, the Ollama hints, and the app default selector.
+- A **project model panel** for the override, shown as a "This project" section of the `/providers` page. It acts on the active project (read from the Project store's active-project endpoint; hidden when no project is active), with a "Use app default" option and the effective-model readout. There is no separate project-settings route.
 - The providers panel is exported as a standalone Angular component that Setup & auth's `/setup` providers step embeds.
 - Responsive: usable on phone for checking and switching the default; desktop-first otherwise.
 - Built with Angular Material and the Shell's API client.
@@ -211,7 +211,7 @@ Acceptance criteria:
 - [ ] The route is usable at phone width for switching the app default.
 
 ### `phase:project-override` (M2)
-Blocked by: `phase:settings-ui`; Project store `phase:contract` (the `project.yaml` model override field) and its file-API phase.
+Blocked by: `phase:settings-ui`; Project store `phase:contract` (the `project.yaml` model override field) and `phase:files` (file reads and `updateProjectYaml`).
 Scope:
 - Read the per-project override in resolution; set/clear it through the HTTP API, writing `project.yaml` via the Project store's file API.
 - The project model panel and the effective-model readout (source `project`, `app` or `auto`, with fallback warning).
@@ -237,14 +237,14 @@ Acceptance criteria:
 **Produces (in-process, not a contract slice):** the client interface (streaming chat with tool calls, collect helper, resolution) as an injectable NestJS provider, consumed by the Tool registry (tool execution) and the Agent loop (chat loop, grounding judge). Also the exported providers panel Angular component, consumed by Setup & auth's `/setup` providers step.
 
 **Consumes:**
-- Platform: `/platform` base error shape and error-code convention, app composition root, the mock OpenAI server, compose `extra_hosts` + ST-3 (`phase:scaffold` and its image/compose phase).
-- Setup & auth: `/setup-auth` guard for the HTTP API (its token + guard phase).
-- Project store: `/project-store` `project.yaml` schema (the model override field) and the file API for reading and writing it (`phase:contract`, then its file-API phase for `phase:project-override`).
+- Platform: `/platform` base error shape and error-code convention, app composition root, the mock OpenAI server, compose `extra_hosts` + ST-3 (`phase:scaffold` and `phase:image-compose`).
+- Setup & auth: `/setup-auth` guard for the HTTP API (`phase:token-guard`).
+- Project store: `/project-store` `project.yaml` schema (the model override field) and the file API for reading and writing it (`phase:contract`, then `phase:files` for `phase:project-override`).
 - Tool registry: `/tool-registry` model function-schema shape, passed through the client's `tools` input (`phase:contract`).
 - Frontend shell: API client, theming, route table entry (`phase:core`).
 
 **Consumers of this module:**
-- Agent loop: client interface + `/providers` effective-model response. Its M1 phase is blocked by this module's `phase:client` (implementation, not just contract).
+- Agent loop: client interface + `/providers` effective-model response. Its `phase:file-tools-chat` (M1) is blocked by this module's `phase:client` (implementation, not just contract).
 - Tool registry: client interface for tool execution.
 - Setup & auth: `/providers` slice + the providers panel for the `/setup` providers step (blocked by `phase:settings-ui`).
 - Graph runner: indirectly, through the Tool registry.
@@ -279,7 +279,7 @@ Acceptance criteria:
 ## Further Notes
 
 - **`settings.yaml` file ownership**: this module owns its `providers` section (configs and app default) and that section's migration. Platform owns the file envelope and the startup migration hook, and every module registers its section the same way (Platform spec).
-- **Secrets file sharing**: this module creates and writes the secrets file for provider keys. Setup & auth stores no secrets in it: the setup token has its own file under `/books/.scriba/`, and the Tailscale auth key stays in the installer's `.secret` outside the library. If a later module needs a secret, it reuses this module's secrets-file helper rather than adding a second file.
+- **Secrets file sharing**: this module creates and writes the secrets file (`/books/.scriba/secrets.yaml`) for provider keys. Setup & auth stores no secrets in it: the setup token has its own file under `/books/.scriba/`, and the Tailscale auth key stays in the installer's `.secret` outside the library. No other v1 module stores a secret. If a later module needs one, it reuses this module's secrets-file helper rather than adding a second file.
 - **Project override shape alignment**: the `project.yaml` override field is defined by the Project store spec. It must match `ModelChoice {providerId, model}`; a type-level test in this module's `phase:project-override` asserts the two stay compatible. Project store's slice should not import `/providers` (avoids a contract-phase cycle in wave 1).
 - **Client interface types**: chat messages and stream events are in-process types, not part of the HTTP contract slice. If a future need puts them on the wire (for example a "test prompt" in the UI), add them to `/providers` via expand–contract.
 - **`max_tokens`**: the client sends `max_tokens`, which Ollama, LM Studio and OpenRouter accept. Some newer OpenAI models want `max_completion_tokens` instead; if that bites, the fix is a per-provider flag (expand), not a new kind. Verify against the OpenAI API reference in `phase:client`.

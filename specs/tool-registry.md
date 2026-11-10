@@ -81,7 +81,7 @@ Authors get a Tools page. It lists every tool with a per-tool enable switch, and
 **Pack layout and loading.**
 - Built-in packs are read-only in the image under `/opt/scriba/packs/{core,nonfiction,fiction}`, built from `packages/packs`. `core` holds propose-graph.
 - Each pack folder holds `tools/` (one YAML file per tool) and `entity-types/` (one YAML file per entity-type schema).
-- The user pack is `/books/.scriba/packs/user/tools/`. In v1 the user pack holds tools only, not entity types.
+- The user pack is `/books/.scriba/packs/user/tools/`. In v1 the user pack holds tools only, not entity types. Tool YAML files are named `<name>.yaml`.
 - The packs root is configurable through a `SCRIBA_PACKS_DIR` env name, defaulting to `/opt/scriba/packs`. Platform registers the name, and tests point it at fixtures.
 - Built-in packs are loaded once at startup. The user pack is re-scanned whenever its `(path, mtime, size)` manifest changes, which is checked before each list, get or call. This mirrors the Project store's freshness rule, and no watcher is required.
 - Name resolution is user > built-in. Two built-in packs that define the same name are a load error, and CI's pack lint catches it.
@@ -135,7 +135,13 @@ Authors get a Tools page. It lists every tool with a per-tool enable switch, and
 - A successful validate returns the arguments with defaults applied, plus the entity IDs the caller must resolve. Each is tagged with its field and with whether it is a style field.
 - A `params` mode validates only the non-port fields, ignoring required ports. The Graph runner uses it on recipe load, and the samples CI check uses it for recipes' tool references.
 
-**Entity-type schemas.** The loader also reads each pack's entity-type schemas and validates them. The envelope is `schemaVersion`, `kind`, `description`, and `fields`, a JSON Schema subset over front matter. Lint uses them to check `x-scriba-entity-kinds`, and they are listed read-only. Their content belongs to the Genre packs spec.
+**Entity-type schemas.** The loader also reads each pack's entity-type schemas (`entity-types/<kind>.yaml`) and validates them. The envelope is `{schemaVersion, kind, title, description, folder, fields}`:
+- `kind` is the front-matter `type` value (lower kebab-case, for example `style-profile`), and the file name must be `<kind>.yaml`;
+- `folder` is `sources` or `entities`, the folder files of that kind live in;
+- `fields` is a JSON Schema (`type: object`) over the front-matter keys the type adds on top of the Project store's base `{id, type, links}`. It uses the same subset as tool inputs, **plus one extension**: an `array` whose `items` is an `object` with scalar (`string | integer | number | boolean`) properties, `required` and `additionalProperties: false` (one level only; for lists such as a character's relationships). Unknown front-matter keys are allowed (`additionalProperties` is treated as `true` for entity front matter).
+- Reference-valued fields carry `x-scriba-type: entity` and `x-scriba-entity-kinds`, the same hints as tool inputs (`x-scriba-port` and `x-scriba-control` are not allowed here).
+
+Lint uses them to check `x-scriba-entity-kinds`, the loader exposes an Ajv validator per kind (used by Platform's examples check), and they are listed read-only. Their content belongs to the Genre packs spec.
 
 **Template subset (pure, Handlebars-like).** The registry has its own small parser and renderer, not the Handlebars runtime. That keeps prototype access, partials and custom helpers out of reach, and it lets lint report exact line and column positions. Supported:
 - `{{field}}`, which inserts a scalar as plain text with no escaping, joins an array with ", ", and renders nothing when absent;
@@ -167,19 +173,19 @@ Details:
 - Toggling never creates a copy-on-write fork.
 - Disabled tools are left out of function schemas, refused by the executor, still listed and editable, and still shown on the canvas, where the Graph runner reports the refusal for that tool node.
 
-**Registry HTTP API** (all under `/api/tools`, behind the Setup & auth guard; GET never mutates):
-- `GET /api/tools`: tool summaries. Each has name, description, output kind, effective enabled state, origin (`core | nonfiction | fiction | user`), which built-in it overrides if any, validity, and lint counts. An optional genre-pack filter is available.
-- `GET /api/tools/:name`: the effective spec, its YAML source, origin, lint result and the three emitted views.
-- `GET /api/tools/:name/builtin`: the built-in original of a customised tool, used for compare and revert.
-- `GET /api/tools/functions`: the function schemas offered to the active project.
-- `GET /api/tools/entity-types`: the loaded entity-type schemas.
-- `POST /api/tools/lint`: lints submitted YAML and writes nothing.
-- `PUT /api/tools/:name`: lint, then write to the user pack. This is copy-on-write for built-ins. Lint errors return 422 with the lint result.
-- `DELETE /api/tools/:name`: removes a user copy (revert) or a user-only tool. A built-in without a user copy returns `TOOL_BUILTIN_READONLY`.
-- `PUT /api/tools/:name/enabled`: sets the override.
-- `POST /api/tools/:name/validate`: full or `params` mode.
-- `POST /api/tools/:name/render`: arguments plus resolved entities, returning the rendered prompt. No model call.
-- `POST /api/tools/:name/execute`: arguments plus resolved entities, returning `{output, sourcesUsed}`. It is a POST that writes no files. The Try panel and tests use it, and the in-process callers use the same service.
+**Registry HTTP API** (all under `/api/tool-registry`, behind the Setup & auth guard; GET never mutates; every command is a POST, per Platform's convention). Per-tool routes sit under `/tools/:name` so that no tool name can collide with a fixed route:
+- `GET /api/tool-registry/tools`: tool summaries. Each has name, description, output kind, effective enabled state, origin (`core | nonfiction | fiction | user`), which built-in it overrides if any, validity, and lint counts. An optional genre-pack filter is available.
+- `GET /api/tool-registry/tools/:name`: the effective spec, its YAML source, origin, lint result and the three emitted views.
+- `GET /api/tool-registry/tools/:name/builtin`: the built-in original of a customised tool, used for compare and revert.
+- `GET /api/tool-registry/functions`: the function schemas offered to the active project.
+- `GET /api/tool-registry/entity-types`: the loaded entity-type schemas.
+- `POST /api/tool-registry/lint`: lints submitted YAML and writes nothing.
+- `POST /api/tool-registry/tools/:name/save`: lint, then write to the user pack. This is copy-on-write for built-ins. Lint errors return 422 with `TOOL_SPEC_LINT_FAILED` and the lint result in `details`.
+- `POST /api/tool-registry/tools/:name/delete`: removes a user copy (revert) or a user-only tool. A built-in without a user copy returns `TOOL_BUILTIN_READONLY`.
+- `POST /api/tool-registry/tools/:name/enabled`: `{enabled}` sets the override.
+- `POST /api/tool-registry/tools/:name/validate`: full or `params` mode.
+- `POST /api/tool-registry/tools/:name/render`: arguments plus resolved entities, returning the rendered prompt. No model call.
+- `POST /api/tool-registry/tools/:name/execute`: arguments plus resolved entities, returning `{output, sourcesUsed}`. It writes no files. The Try panel and tests use it, and the in-process callers use the same service.
 
 **SSE.** The registry publishes one event member on the Platform envelope: `{module: 'tool-registry', type: 'catalog-changed', data: {names}}`. It fires after a save, delete, toggle or host-side user-pack change.
 
@@ -210,6 +216,7 @@ Controls:
 - Server-side `issues` show inline next to their fields.
 
 **Tools page (web).**
+- Route `/tools` (app-level, one entry in the Shell's route table, minimum device class `phone`; the detail view switches to list-only on the `phone` device class).
 - A list grouped by origin, with enable toggles.
 - On tablet and desktop, a detail view:
   - a CodeMirror 6 YAML editor with lint diagnostics from save, plus a debounced lint while typing;
@@ -218,7 +225,7 @@ Controls:
   - a Try panel. It resolves the chosen entities through the Project store file API in the browser, calls execute, and shows the output and sources used. It never creates a pending change.
 - On phone, the list and toggles only, behind the Shell's breakpoint gate.
 
-**CI.** The registry adds a pack-lint step to Platform's single CI job. It lints every built-in tool spec and entity-type schema, and fails on any error or on duplicate names.
+**CI.** The registry ships a **pack-lint CLI** (`npm run lint:packs`, part of `npm run lint`) with a library entry point. It loads a packs root exactly like the runtime loader, lints every tool spec and entity-type schema, and fails on any error or on duplicate names. Platform's examples check and Genre packs' content tests reuse the library entry point instead of re-implementing lint.
 
 ## Phases
 
@@ -240,11 +247,11 @@ Acceptance criteria:
 - [ ] Genre packs, Agent loop and Graph runner can reference every type their specs consume.
 
 ### phase:form-renderer (M2): spike
-Blocked by: `phase:contract`; Shell `phase:core`; Platform `phase:scaffold`.
+Blocked by: `phase:contract`; Shell `phase:core`; Platform `phase:scaffold`; Project store `phase:files` (entity list for the picker in the running app; component tests use the Shell's fake API).
 
 Scope:
 - Server-side emission of the form descriptor, port descriptor and function schema from one spec.
-- A fixture-backed `GET /api/tools/:name` serving a registry-owned cold-open fixture, a test fixture rather than the Genre packs content. The loader replaces it in the next phase.
+- A fixture-backed `GET /api/tool-registry/tools/:name` serving a registry-owned cold-open fixture, a test fixture rather than the Genre packs content. The loader replaces it in the next phase.
 - Ajv `validate` for the fixture.
 - The Angular form renderer in both layouts with every control type, the entity picker filtered by kind, the style picker and inline issues.
 - A dev preview route on the Tools page.
@@ -261,25 +268,26 @@ Blocked by: `phase:form-renderer`; Setup & auth guard (implementation).
 
 Scope:
 - Pack layout and the loader for built-ins plus the user pack, with copy-on-write precedence, the manifest re-scan, the `schemaVersion` refusal and migration hook, entity-type schema loading, and the invalid-copy fallback.
-- The full lint rule set.
+- The full lint rule set, the pack-lint CLI and its library entry point.
 - The list, get, builtin, functions, entity-types, lint, save, delete and enabled endpoints, and the `tools` section overrides in `settings.yaml`.
 - `params`-mode validate.
 - The `catalog-changed` event.
 - The exported catalog service.
-- The CI pack-lint step.
+- `npm run lint:packs` wired into `npm run lint`.
 
 Acceptance criteria:
-- [ ] With fixture packs, `GET /api/tools` lists core, genre and user tools. A user file with a built-in's name replaces it, and deleting that file restores the built-in.
-- [ ] `PUT` on a built-in writes `/books/.scriba/packs/user/tools/<name>.yaml` and never touches the packs root.
+- [ ] With fixture packs, `GET /api/tool-registry/tools` lists core, genre and user tools. A user file with a built-in's name replaces it, and deleting that file restores the built-in.
+- [ ] `save` on a built-in writes `/books/.scriba/packs/user/tools/<name>.yaml` and never touches the packs root.
 - [ ] Saving YAML with an unknown `x-scriba-*` key, a template variable that isn't an input, or an out-of-subset keyword returns 422 with line-numbered diagnostics, and writes no file.
 - [ ] A user file with a newer `schemaVersion` is listed as refused with `TOOL_SCHEMA_VERSION_UNSUPPORTED`, and the other tools still load.
 - [ ] A file added to the user pack on the host appears in the next list without a restart, and a `catalog-changed` event is emitted.
-- [ ] Disabling a tool removes it from `GET /api/tools/functions`, and the switch persists across an app restart and a built-in update.
+- [ ] Disabling a tool removes it from `GET /api/tool-registry/functions`, and the switch persists across an app restart and a built-in update.
 - [ ] `params`-mode validate passes a node whose only missing fields are ports.
-- [ ] The CI pack-lint step fails on a deliberately broken fixture pack.
+- [ ] `npm run lint:packs` fails on a deliberately broken fixture pack, and its library entry point returns the same diagnostics.
+- [ ] An entity-type schema with a one-level array-of-objects field loads, and one with a nested object field fails lint.
 
 ### phase:executor (M2)
-Blocked by: `phase:loader-validation`; Model providers client phase (implementation); Project store `phase:contract`.
+Blocked by: `phase:loader-validation`; Model providers `phase:client` (implementation); Project store `phase:contract`.
 
 Scope:
 - The template engine (`{{field}}`, `#each`, `#if/else`, `{{entity id}}`, comments).
@@ -298,7 +306,7 @@ Acceptance criteria:
 - [ ] M2 done-when, at the API level: At the API level, each workhorse-shaped fixture tool produces a draft that cites its source files (through `sourcesUsed`).
 
 ### phase:editor-ui (M2)
-Blocked by: `phase:executor`; Shell `phase:editor` and `phase:shared-components` (diff view); Project store file-API phase (implementation, for the Try panel).
+Blocked by: `phase:executor`; Shell `phase:editor` and `phase:shared-components` (diff view); Project store `phase:files` (implementation, for the Try panel).
 
 Scope:
 - The Tools page: the list with enable toggles, the phone view, and the YAML editor with lint on save plus a debounced live lint.
@@ -320,7 +328,7 @@ Demo script (M2, under 5 minutes):
 2. Open `cold_open`, a built-in, which is read-only. Click Customize, change the description and add a `tone` select. Save. Point out that the form preview, the node preview and the function schema all gained `tone`.
 3. Add a typo `{{momnet}}` to the prompt and save. The save is blocked, with the lint error on its line. Fix the typo and save.
 4. In Try, pick a person entity (the picker shows only people) and a moment, then run. Show the draft and its sources used.
-5. Optional, with the Agent loop's registry phase in: ask the agent "draft a cold open for chapter 1 from my notes on <person>". The tool card shows the same arguments, and `mystery_question` isn't offered.
+5. Optional, with the Agent loop's `phase:narrative-tools` in: ask the agent "draft a cold open for chapter 1 from my notes on <person>". The tool card shows the same arguments, and `mystery_question` isn't offered.
 6. Click Revert to built-in. The original description is back.
 
 ## Contracts
@@ -346,10 +354,10 @@ Demo script (M2, under 5 minutes):
 | From | What | Gate |
 |---|---|---|
 | Platform | `/platform` base error shape, SSE envelope, `SCRIBA_*` env names (adds `SCRIBA_PACKS_DIR`), CI job and mock OpenAI server (additive steps and fixtures) | `phase:scaffold` |
-| Setup & auth | the one API guard | guard implementation, before `phase:loader-validation` |
+| Setup & auth | the one API guard | `phase:token-guard`, before `phase:loader-validation` |
 | Project store | `/project-store` entity reference, file reference, entity front-matter base (`type`), `project.yaml` genre pack and style-profile ref | `phase:contract` |
-| Project store | file API: entity listing and reads for the picker and the Try panel; active project | file-API phase (implementation), for the UI phases |
-| Model providers | `/providers` app default and per-project model choice; the provider client | `phase:contract`; client phase (implementation) before `phase:executor` |
+| Project store | file API: entity listing and reads for the picker and the Try panel; active project | `phase:files` (implementation), for the UI phases |
+| Model providers | `/providers` app default and per-project model choice; the provider client | `phase:contract`; `phase:client` (implementation) before `phase:executor` |
 | Frontend shell | API and SSE clients, route table, breakpoint gate, theming | `phase:core` |
 | Frontend shell | CodeMirror 6 editor, diff view | `phase:editor`, `phase:shared-components` |
 
@@ -368,7 +376,7 @@ Demo script (M2, under 5 minutes):
   - validate messages, exact enough to check the model-readable text;
   - render output, which is how the template subset is tested, through the endpoint and not the parser;
   - execute results and errors, and that the mock server received no request when validation failed.
-- **Emission** is tested through `GET /api/tools/:name`. The function schema has no `x-` keys and passes the draft-07 meta-schema. The form and port descriptors match the fixture's declared fields and order.
+- **Emission** is tested through `GET /api/tool-registry/tools/:name`. The function schema has no `x-` keys and passes the draft-07 meta-schema. The form and port descriptors match the fixture's declared fields and order.
 - **UI seam:** the Tools route and the tool-form component are rendered with Angular's Vitest runner against a fake API/SSE client built from the contract types. Tests cover each control type, the kind-filtered picker, the node-body port rows, inline issues, lint diagnostics in the editor, Customize/Revert, and the phone gate.
 - **Contract seam:** the Zod tests for the slice. Every built-in pack file is linted in CI through the registry's pack-lint step.
 - **System seam:** the Platform-owned Playwright e2e needs no registry-specific step. The Agent loop extends it with a registry tool call at M2.
@@ -395,8 +403,8 @@ Demo script (M2, under 5 minutes):
 - The form renderer comes first on purpose. It is the riskiest part of "one document, three views", and the spike validates the hint vocabulary before the loader, lint and editor build on it.
 - **Cross-spec assumptions:**
   - The enable overrides live in this module's `tools` section of `settings.yaml`. Platform owns the file envelope and its startup migration hook, and each module owns its own section, as set in the Platform spec.
-  - The entity picker assumes the Project store file API can list entities with their front-matter `type`. If that spec exposes only plain file listing, it should add an entity listing.
-  - `SCRIBA_PACKS_DIR` must appear in Platform's env names.
+  - The entity picker uses the Project store's entity list (`{id, type, path, title?}`, filterable by `type`), and the Try panel uses its GET resolution endpoint.
+  - `SCRIBA_PACKS_DIR` is in Platform's env names.
   - The output port is always `text` in v1.
 - The execute endpoint exists so the Try panel and the HTTP test seam use the same path as the in-process callers. It writes no files, so it stays inside the rule that writes from the agent or recipe runs always become pending changes.
 - Function names use lower snake case so that they are valid for every OpenAI-compatible endpoint, including Ollama and LM Studio.

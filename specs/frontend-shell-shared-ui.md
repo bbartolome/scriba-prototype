@@ -81,17 +81,36 @@ The Shell publishes **no contract slice**: its shared pieces are Angular APIs, n
 - `ngx-markdown` is configured once at the root, with Angular sanitisation on and no raw-HTML pass-through.
 
 **Feature-registration pattern**
-- Each feature exports one standalone, lazy `Routes` array. The root route table holds **one entry per feature** whose `loadChildren` loads it. Adding a feature is an additive one-entry change to the table.
+- Each feature exports standalone, lazy `Routes` arrays. The root route table holds **one entry per top-level path a feature owns** whose `loadChildren` loads that feature's routes. Most features own one path; a few own two (see the route table below). The feature module adds its own entries in its own PR. Adding a feature is an additive change to the table.
 - Route `data` on that entry declares: a nav label, a Material icon, a nav order, a **minimum device class** (`phone | tablet | desktop`, default `tablet`), and the scope (app-level or project-scoped). The Shell builds the nav from these entries. It never imports feature code eagerly.
-- **Scopes.** App-level features (for example `/setup` from Setup & auth, provider settings) mount at the top level. Project-scoped features mount under a parent `projects/:projectId/` segment. The Shell exposes the **active project** as a signal read from that parameter. The project list itself is a Project store view.
-- The Shell core ships only a landing page (app version, health, and a link to the projects feature once that feature is registered) and a not-found page.
+- **Scopes.** App-level features (for example `/setup` from Setup & auth, provider settings) mount at the top level. Project-scoped features mount under the Shell-owned parent `projects/:projectId/` segment. The Shell exposes the **active project** as a signal read from that parameter. The project list itself is a Project store view at `/projects`.
+- **Route table** (paths are fixed here; each owner registers its own entry):
+
+| Path | Owner | Scope | Min. class | Nav |
+|---|---|---|---|---|
+| `/setup` | Setup & auth | app | phone | no |
+| `/settings` | Setup & auth | app | phone | yes |
+| `/providers` | Model providers | app | phone | yes |
+| `/tools` | Tool registry | app | phone | yes |
+| `/projects` | Project store (picker) | app | phone | yes |
+| `/projects/:projectId/chat` | Agent loop | project | phone | yes |
+| `/projects/:projectId/review` (`?run=<runId>`) | Project store | project | phone | yes |
+| `/projects/:projectId/files` (`?path=<path>`) | Project store | project | phone | yes |
+| `/projects/:projectId/graphs` | Graph runner (graph list, latest run status) | project | phone | yes |
+| `/projects/:projectId/graphs/:graphId` | Graph runner (canvas; a child route of the same entry) | project | tablet (child-level gate) | no |
+| `/projects/:projectId/manuscript` | Compile & export | project | phone | yes |
+
+  Pages that offer a richer layout on larger screens (files editing, the Tools editor) declare `phone` so the phone gets their read-only view, and switch layout on the device-class signal. The canvas has nothing to offer a phone, so its child route is gated to `tablet` with the Shell's exported `deviceClassGuard('tablet')` (`canMatch`), which shows the same "needs a larger screen" page.
+- **Landing (`/`).** The Shell's landing route reads Setup & auth's setup status (`GET` route constant from `/setup-auth`). If setup isn't `complete`, it navigates to `/setup`. Otherwise it reads the Project store's active project and navigates to `/projects/<active>/chat`, or to `/projects` when none is active. It also shows the app version and health while loading.
+- **Project-route reconciliation.** The server's active project (Project store) is the source of truth. A `canActivate` guard on `projects/:projectId` compares the URL's id with the server's active project. If they match, navigation proceeds. If not, the guard shows a "Switch to <title>?" page with **Switch** (POSTs the Project store's activate request, then proceeds) and **Go to the active project** (navigates to the same child path under the active id). On a `project-store/project-switched` SSE event, every tab on a project-scoped route navigates to the same child path under the new id.
+- The Shell core ships the landing page, the switch page and a not-found page.
 
 **Typed API client**
 - One root service over Angular's HTTP client. It is same-origin, sends credentials (the loopback cookie, or the tailnet's Serve identity is implicit), and adds no auth headers.
 - Callers pass the Zod schema for the response from their own contract slice. The client parses the response and fails loudly on a mismatch. The Shell imports no feature slice for this.
 - Non-2xx responses are parsed with the Platform base error shape into one typed error (HTTP status, error code, message). The error-code convention is Platform's.
-- A `401` from any call routes the app to `/setup`, a fixed in-app path registered by Setup & auth. The Shell imports nothing from the `/setup-auth` slice.
-- Reads use GET and commands use POST. The client offers no "GET with side effects" helper.
+- A `401` from any call routes the app to `/setup`, a fixed in-app path registered by Setup & auth. Apart from the landing redirect (setup status route and schema), the Shell imports nothing from the `/setup-auth` slice.
+- Reads use GET and commands use POST, matching Platform's method convention. The client offers no "GET with side effects" helper and no other verbs.
 
 **SSE client**
 - One native `EventSource` per tab on the Platform's events route (a Platform constant), opened once at app start. It relies on the cookie or Serve identity.
@@ -109,7 +128,7 @@ The Shell publishes **no contract slice**: its shared pieces are Angular APIs, n
 - The device class comes from the CDK's `Handset`, `Tablet` and `Web` query sets, which account for orientation. A phone in landscape stays `phone`. A 12.9-inch iPad in portrait counts as `desktop`. The class is a root signal.
 - The gate is a `canMatch` guard on each feature entry plus nav filtering. A view whose minimum class is above the current device is hidden from the nav. Opening it directly shows a "needs a larger screen" page with a link back.
 - The gate is checked **at navigation**. A view that is already open is not torn down when the class drops on resize or rotation. Instead a dismissible notice appears, which protects unsaved editor text.
-- Default mapping: chat, the review queue, reading and light edits are `phone`. The canvas and long-form editing are `tablet`. Each feature declares its own class.
+- Default mapping: chat, the review queue, reading and light edits are `phone`. The canvas is `tablet`. Long-form editing is a layout switch inside `phone`-class pages (read-only preview on phones, editor on tablet and desktop). Each feature declares its own class, and a feature may gate a child route with the exported `deviceClassGuard(minClass)`.
 
 **Shared components** (Angular APIs, not contracts)
 - **Tool-call card.** A presentational component on a Shell-local view model: tool name, arguments (JSON shown as a key/value tree), status (`pending | running | done | error`), output (Markdown or JSON), error text, sources used (project-relative paths) and a collapsed flag. Cards start collapsed on phones. The Agent loop maps its stream events onto this model, so the Shell does not depend on the `/agent-loop` slice. The Graph runner may reuse the card for inline node results.
@@ -121,7 +140,7 @@ The Shell publishes **no contract slice**: its shared pieces are Angular APIs, n
   - A thin standalone wrapper around a CodeMirror 6 view with Markdown language support. Inputs: a project file reference, a read-only flag and the save mode. Outputs: the dirty state, the save state (`saved | saving | unsaved | failed | conflict`) and errors.
   - **Lossless by construction.** The text the author didn't touch goes back exactly as loaded. The wrapper detects the file's line separator and sets CodeMirror's line-separator facet to it, so CRLF and mixed endings survive. It never trims, reformats or adds or removes the trailing newline. A BOM, if the file API returns one, is kept. The front matter is plain text in the editor.
   - **Saving.** The author's own typing is written **straight through the Project store file API**, not through the pending-changes queue. Saves happen after a debounce (about 1.5 s idle), on explicit save (a button plus Cmd/Ctrl-S), on blur and before route leave. One save is in flight at a time, and later edits coalesce.
-  - **Conflicts.** The save sends the file API's precondition (whatever base or version marker the Project store write request defines). If the file changed on disk, the editor shows a conflict state and never overwrites silently.
+  - **Conflicts.** The save sends the Project store write request's `baseHash` (the `hash` from the last read or successful save). A write-conflict error shows the conflict state and never overwrites silently. After a successful save the editor keeps the returned hash as the next base.
   - **Unsaved changes.** A `canDeactivate` guard and a `beforeunload` prompt warn about unsaved text.
   - **Layout.** A split view (source plus `ngx-markdown` preview) is the default on tablet and desktop. Phones get an edit/preview toggle for light edits.
   - **Touch.** Tablet touch, the on-screen keyboard and a hardware keyboard all work. No feature depends on a hardware-only shortcut.
@@ -152,13 +171,15 @@ Milestones referenced here: M1 is the walking skeleton, M3 is review and groundi
 ### `phase:core` — M1
 The gate that every feature UI phase names. The Shell has **no `phase:contract`** because it publishes no slice.
 
+Blocked by: Platform `phase:scaffold`; Setup & auth `phase:contract` and Project store `phase:contract` (route constants and schemas only, for the landing redirect and project-route reconciliation; both are small and land early in wave 1).
+
 Scope:
 - the web composition root, the root route table, and the feature-registration pattern with its route `data`;
 - the landing and not-found pages;
 - the dev proxy for `/api`, `/healthz` and the events route;
 - the typed API client (Zod response parsing, base error shape, 401 → `/setup`);
 - the SSE client (one `EventSource`, envelope demultiplexing, connection-state signal, reconnect, reconcile tick);
-- the active-project signal;
+- the active-project signal, the landing redirect, and project-route reconciliation (guard, switch page, `project-switched` navigation);
 - Material theming (light, dark, override), nav (bottom/rail/side) and the breakpoint gate (device-class signal, `canMatch`, the "larger screen" page);
 - the notices service and the "server unreachable" banner;
 - test doubles: the fake API client and the fake event source, typed from the contract package.
@@ -171,6 +192,8 @@ Acceptance criteria:
 - [ ] The API client returns parsed data for a valid response, a typed error (status, code, message) for a Platform error body, and a failure for a schema mismatch. A `401` navigates to `/setup`.
 - [ ] Envelope events for module A reach only A's subscribers. Unknown modules and types are ignored without error.
 - [ ] Simulated drop then re-open, `visibilitychange` to visible, `online` and `pageshow` each emit one reconcile tick. A `CLOSED` stream is recreated with backoff.
+- [ ] With a fake API: an incomplete setup status sends `/` to `/setup`; a complete one with an active project sends it to `/projects/<id>/chat`, and with none to `/projects`.
+- [ ] Opening `/projects/b/chat` while `a` is active shows the switch page. Switch POSTs the activate request and proceeds. A fake `project-switched` event moves an open `/projects/a/review` tab to `/projects/b/review`.
 - [ ] Light and dark themes follow the OS setting. The override persists across reloads on the same device.
 - [ ] A feature route test using the fake API client and fake event source runs under Vitest, and serves as the template for feature modules.
 - [ ] The Platform Playwright e2e still passes: its first step loads the Shell.
@@ -269,9 +292,10 @@ Demo script (under 5 minutes):
 | Slice | Producer | What | Gate |
 |---|---|---|---|
 | `/platform` | Platform | SSE envelope `{module, type, data}`, events route constant, base error shape + error-code convention, `/healthz` response, app version info | Platform `phase:scaffold` (publishes `/platform`) |
-| `/project-store` | Project store | project-relative path + file reference type, file-API read/write requests including the write precondition/conflict result | Project store `phase:contract` (blocks `phase:editor` only) |
+| `/setup-auth` | Setup & auth | setup status shape and route constant (landing redirect) | Setup & auth `phase:contract` (blocks `phase:core`) |
+| `/project-store` | Project store | active-project response, activate request, `project-switched` event (blocks `phase:core`); project-relative path + file reference type, file-API read/write requests including `baseHash` and the write-conflict error code (blocks `phase:editor`) | Project store `phase:contract` |
 
-The Shell does not consume `/agent-loop`, `/graph-runner`, `/setup-auth` or `/compile-export`. The tool-call card and diff view take Shell-local inputs, so the Agent loop, Graph runner and Compile & export slices never block the Shell. The `/setup` route is a fixed in-app path registered by Setup & auth, and the Shell does not import it.
+The Shell does not consume `/agent-loop`, `/graph-runner` or `/compile-export`. The tool-call card and diff view take Shell-local inputs, so the Agent loop, Graph runner and Compile & export slices never block the Shell. The `/setup` route is a fixed in-app path registered by Setup & auth, and the Shell does not import it.
 
 ## Testing Decisions
 
@@ -310,8 +334,8 @@ The Shell does not consume `/agent-loop`, `/graph-runner`, `/setup-auth` or `/co
 ## Further Notes
 
 - **Milestone scope.** The M7 "done when" above is the Shell's criterion. The remix comparison view (M7) belongs to whichever module ships Remix (a Genre packs tool that rewrites a passage in another shape for side-by-side comparison). It can reuse the diff view's side-by-side layout, and extending the diff view to more than two variants would be an additive Shell change requested by that module.
-- **Merge-view edits and the Project store.** The editable merge view emits edited text. Whether accepting an edited pending change is an accept carrying new content, or an accept followed by a direct file-API write, is the Project store's decision. Its contract should state it, and the Shell supports either.
-- **Editor conflicts depend on the file-API write precondition.** The Project store spec should give writes an optional base (mtime/size or content hash) and a distinct conflict error code, so the editor can show `conflict` instead of overwriting edits made in another editor (files are re-read on demand, and the author edits on the host too).
-- **Dev proxy vs Origin/Host checks.** Setup & auth enforces Origin and Host checks. In dev, the browser's origin is the Angular dev server. Setup & auth's dev-mode allowlist must accept it, or the proxy must present a matching Host. Coordinate when both `phase:core` and Setup & auth's guard phase land.
+- **Merge-view edits and the Project store.** The editable merge view emits edited text. The Project store's accept request carries it as optional `content` (decided in the Project store spec).
+- **Editor conflicts.** The Project store write request takes an optional `baseHash` and returns a distinct write-conflict error code, which the editor maps to `conflict`.
+- **Dev proxy vs Origin/Host checks.** The dev proxy forwards `Host` and `Origin` unchanged (no `changeOrigin`). `npm run dev` sets `SCRIBA_DEV_ORIGINS=http://localhost:4200` so Setup & auth's guard accepts the dev server's Host and Origin, and `SCRIBA_SETUP_URL_BASE` to the same origin so the cookie is set where the browser uses it.
 - **iOS Safari** drops `EventSource` connections when backgrounded. The reconcile tick on `visibilitychange` and `pageshow` is what keeps the phone and iPad correct. Event replay (`Last-Event-ID`) is not relied on, and Platform may add it later without Shell changes.
 - **Breakpoints** follow the CDK's `Handset`/`Tablet`/`Web` sets as decided above. The canvas library's touch checks were synthesised in headless Chromium and did not cover real tablets or Safari. The editor's tablet touch check passed on a test page. If testing on real devices shows a misclassification, adjust the mapping in the Shell. Features declare only a class, never pixel widths.

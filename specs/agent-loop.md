@@ -83,18 +83,18 @@ After any draft, the loop runs the **grounding check** as a built-in step. It ex
 ## Implementation Decisions
 
 ### Shape of the module
-- One NestJS `@Module` in `apps/api` and one lazy Angular `Routes` array in `apps/web`, both owned by this module. The API uses Setup & auth's guard on every route. GET never changes state.
+- One NestJS `@Module` in `apps/api` and one lazy Angular `Routes` array in `apps/web`, both owned by this module. API routes live under `/api/agent-loop/…`; the chat UI is the project-scoped route `/projects/:projectId/chat` (minimum class `phone`). The API uses Setup & auth's guard on every route. GET never changes state.
 - The loop depends on the Model providers client interface, the Project store file, search and pending-change API, the Tool registry list/get/execute API, and later the Compile & export API. It **never calls the Graph runner and is never called by it**.
 
 ### The loop
 - **Start.** `POST` start-agent-run with `{intent, conversationId?}` returns `{runId, conversationId}` straight away. Everything else arrives over SSE. The agent run is bound to the project that was active when it started.
 - **One active agent run per project.** A second start returns the error code `AGENT_RUN_ACTIVE`. An agent run and a recipe run may run at the same time; they don't know about each other.
-- **Messages sent each step:** a fixed system prompt (role, confinement, "writes become pending changes", "cite sources"), the project summary from the Project store's project-summary contract, the conversation so far, and the tool schemas for the families that are currently on.
+- **Messages sent each step:** a fixed system prompt (role, confinement, "writes become pending changes", "cite sources with `[@id]`"), the project summary, the conversation so far, and the tool schemas for the families that are currently on. The **project summary** is built by this module at run start from the Project store: the project's title and genre pack (project list) and, for each top-level folder, its file count (file list). It is plain text in the system message, not a contract shape.
 - **Model.** The Model providers client resolves the per-project override or the app default. Transport retries live in that client. The loop adds none.
 - **Step.** One model call is one step. If the reply contains tool calls, the loop runs them in the order given, one at a time, appends each result and takes another step. A reply with text and no tool calls ends the agent run with reason `completed`.
 - **Step cap.** Default 12, an app setting. Reaching it emits `step-cap-reached` and ends the agent run with reason `capped`. "Continue" starts a new agent run in the same conversation with a fresh cap.
 - **Stop.** `POST` stop-agent-run aborts the in-flight model call and any tool still running, then ends the agent run with reason `stopped`. Stopping twice is a no-op.
-- **Project switch.** Switching the active project stops the old project's agent run with reason `project-switched`.
+- **Project switch.** The module registers with the Project store's in-process `onProjectSwitched` hook. A switch stops the old project's agent run with reason `project-switched`. Its pending changes are still created, in the project the run was bound to (the Project store allows propose into a non-active project).
 - **Errors.** No provider configured → `AGENT_NO_PROVIDER` before the agent run starts. A provider failure after the client's retries ends the agent run with reason `error` and a readable message. Error codes follow Platform's convention.
 - **Conversation history.** A conversation is the sequence of agent runs sharing a `conversationId`. It is rebuilt from the transcripts in `logs/`, so any device can continue it. When the history exceeds the provider's `contextSize`, the oldest tool results are shortened first, then the oldest turns are dropped. The current intent and the system prompt are always kept.
 
@@ -121,14 +121,14 @@ After any draft, the loop runs the **grounding check** as a built-in step. It ex
 - `write_file` and `edit_file` never write to disk. Each agent run keeps a **run overlay**: the proposed content per path. Later `read_file` calls in the same agent run see the overlay, so the model sees its own edits.
 - The **captured base** for a path is the on-disk content the first time the agent run reads or writes that path.
 - `edit_file` takes exact old text and new text. The old text must occur exactly once in the overlay or on-disk content, otherwise the model gets a readable error.
-- **When the agent run ends**, for any reason including stop, cap and error, the loop creates one pending change per touched path through the Project store, with the captured base, the diff, origin agent run and provenance. Then it emits `run-ended` with the pending change IDs. The Project store's three-way check handles host edits made in the meantime.
+- **When the agent run ends**, for any reason including stop, cap, error and project switch, the loop calls the Project store's in-process `propose` once per touched path, with the overlay content, the captured base, origin `{kind:'agent-run', runId, toolCallId?}` (the tool call that last wrote the path), the draft provenance in `provenance`, and, for paths in `drafts/`, the grounding summary in `grounding`. The Project store computes the diff. Then the loop emits `run-ended` with the pending change IDs. The Project store's three-way check handles host edits made in the meantime.
 - **A narrative tool's output kind sets its routing** (output enum `draft | entity | claims | graph | check`):
-  - `draft` → the overlay at the path the model gave in an optional `target` argument (the loop adds it to the function schema of tools whose output writes a file), or else a new file in `drafts/` named after the tool and time. A grounding check follows (see below).
-  - `entity` → the overlay in `entities/`, same `target` rule.
+  - `draft` → the overlay at the path the model gave in an optional `target` argument (the loop adds it to the function schema of tools whose output writes a file; it must sit in the kind's folder), or else a new file `drafts/<tool-name>-<yyyymmdd-hhmm>.md` (UTC; `-2`, `-3`, … on collision). A grounding check follows (see below).
+  - `entity` → the overlay in `entities/`, same `target` rule (default `entities/<tool-name>-<yyyymmdd-hhmm>.md`).
   - `graph` → validated against the Graph runner's graph file schema. If valid, the overlay in `graphs/`, which becomes a pending change aimed at `graphs/`. If invalid, a validation error to the model, with the same retries.
   - `claims` → a claims artefact (same shape as a grounding result), shown as a card.
   - `check` → shown as a card only, with no file.
-- `logs/` is the one place the loop writes directly: transcripts and claims artefacts are the app's own records, not book content.
+- `logs/` is the one place the loop writes directly, through the Project store's in-process helpers (`appendLog` for transcript lines, `write` for claims artefacts): transcripts and claims artefacts are the app's own records, not book content.
 
 ### Grounding check
 - **When it runs.** As a built-in step after any draft: every `draft` tool output, and every path in `drafts/` that the run overlay touched. It runs before the pending changes are created when the agent run ends. It also runs on demand: through `check_grounding(path)` for the model, and a "Check grounding" action in the UI that starts an agent run whose only step is the check. Grounding model calls don't count towards the step cap, but stop cancels them.
@@ -136,15 +136,15 @@ After any draft, the loop runs the **grounding check** as a built-in step. It ex
   1. **Extract:** one model call with a fixed prompt returns the draft's factual claims as JSON, each with its text and character span. The loop validates it, with the same two retries.
   2. **Retrieve:** for each claim, the Project store search returns the top passages, filtered to `sources/`.
   3. **Judge:** one model call per batch of claims judges each claim `supported | weak | unsupported` against its passages. Supported and weak verdicts must cite one of the retrieved passages `{path, offset, snippet}`. A verdict that cites a passage outside the retrieved set is downgraded to `unsupported`. A claim with no retrieved passages is `unsupported` without asking the model.
-- **Result** (contract shape): `{target path, content hash, checkedAt, runId, claims: [{text, span, verdict, passage?, reason}]}`.
-- **Delivery:** a `grounding-result` SSE event, a section in the transcript, and the **claims artefact**: the latest result per draft, kept in `logs/` at a predictable per-draft location (overwritten by each check). The content hash lets readers such as Compile & export's unsupported-claims preflight tell whether a result is stale, without calling the Agent loop.
-- A draft's pending change carries its grounding summary (counts per verdict), so the review queue can show it.
+- **Result** (contract shape): `{schemaVersion: 1, targetPath, contentHash, checkedAt, runId, claims: [{text, span: {start, end}, verdict, passage?: {path, offset, snippet}, reason}]}`. `contentHash` uses the Project store's `sha256:<hex>` format over the checked text (the overlay content for a draft the run proposed, otherwise the file on disk).
+- **Delivery:** a `grounding-result` SSE event, a section in the transcript, and the **claims artefact**: the latest result per draft, written as JSON to `logs/grounding/<targetPath>.json` (for example `logs/grounding/drafts/ch01.md.json`) and overwritten by each check. The path rule is a contract constant. The content hash lets readers such as Compile & export's unsupported-claims preflight tell whether a result is stale, without calling the Agent loop.
+- A draft's pending change carries its grounding summary (`{supported, weak, unsupported, checkedAt}`) in the Project store's `grounding` field, so the review queue can show it.
 - Fetched web pages and entities are **not** evidence. Only `sources/` grounds a claim.
 
 ### Research tools (off by default)
 - The `agent.research.enabled` setting defaults to false. When it is false, the research tools are not in the tool list, so the model never sees them.
-- `web_search(query)` calls a configured search endpoint. The default is a SearXNG-compatible JSON URL with no key. A keyed search API can be added; its key is write-only and stored with the Model providers secrets. The phase's first work item confirms the backend.
-- `fetch_page(url)` allows only http(s). It refuses loopback, link-local, private ranges, the tailnet CGNAT range, `host.docker.internal`, and any name that resolves to them, checked after every redirect. It caps size and time, and returns readable text. Fetched text is marked untrusted data in the tool result.
+- `web_search(query)` calls a configured **SearXNG-compatible JSON endpoint** (`GET <endpoint>?q=<query>&format=json`, reading `results[].{title, url, content}`), with no key. The setting `agent.research.searchEndpoint` has no default: `web_search` is offered only when research is on **and** an endpoint is set. Keyed search APIs are out of scope for v1.
+- `fetch_page(url)` is offered whenever research is on. It allows only http(s). It refuses loopback, link-local, private ranges, the tailnet CGNAT range, `host.docker.internal`, and any name that resolves to them, checked after every redirect. It caps size and time, and returns readable text. Fetched text is marked untrusted data in the tool result.
 - To keep fetched material, the agent writes it into `sources/` with `write_file`, which becomes a pending change. Only then can it ground a claim.
 
 ### Compile tools (M7, in v1)
@@ -167,19 +167,19 @@ After any draft, the loop runs the **grounding check** as a built-in step. It ex
 - **Conversation history** (GET, from the transcripts) gives the chat panel past turns on any device.
 
 ### Transcripts
-- One JSON Lines file per agent run in `logs/`, named with a timestamp and the run ID. Each line is a transcript entry (contract shape): `{schemaVersion, at, runId, conversationId, seq, kind, data}`. Its `kind` is one of `intent`, `step`, `assistant-text`, `tool-call`, `tool-result`, `tool-error`, `grounding`, `pending-change`, `run-end`.
+- One JSON Lines file per agent run at `logs/agent-runs/<yyyymmddThhmmssZ>-<runId>.jsonl` (UTC start time). Each line is a transcript entry (contract shape): `{schemaVersion, at, runId, conversationId, seq, kind, data}`. Its `kind` is one of `intent`, `step`, `assistant-text`, `tool-call`, `tool-result`, `tool-error`, `grounding`, `pending-change`, `run-end`.
 - Paths are project-relative. Keys and auth headers are never written. Very long tool results are truncated, with a marker and the original length.
 - `logs/` stays the source of truth. A run-log index is deferred. The samples ship without `logs/`.
 
 ### Settings
-- The agent settings are the step cap (default 12), research on/off (default off) and the search endpoint. They live in the app's `settings.yaml` under an `agent` key and are edited from a settings sheet in the chat panel. Per-tool enable switches belong to the Tool registry.
+- The agent settings are the step cap (default 12), research on/off (default off) and the search endpoint (default unset). They live in the `agent` section of `settings.yaml`, shaped `{schemaVersion: 1, stepCap, research: {enabled, searchEndpoint?}}`, registered with Platform's startup hook, and are edited from a settings sheet in the chat panel (GET and POST under `/api/agent-loop/settings`). Per-tool enable switches belong to the Tool registry.
 
 ### UI: chat panel
 - A lazy route with the conversation list, the message stream, the intent box, the stop button and the step counter. On desktop it can also dock beside the editor, if the Shell's layout offers a slot.
 - **Tool-call cards** use the Shell's shared tool-call card. This module supplies the per-family bodies: arguments, result, error with the attempt number, sources-used links, and a write preview through the Shell's shared diff view.
 - **Grounding badges:** a summary chip per draft, which expands to a per-claim list. Each claim shows the verdict as text plus an icon plus a colour, the claim text, and the cited passage with a link to open the source file.
 - **Phone** (Shell breakpoint gate): one column, cards collapsed to a single line by default, a stop button and intent box that stay reachable with the keyboard open, and tap targets of at least 44 px. Reconnect runs on `visibilitychange` and when the EventSource reopens.
-- At `run-ended`, a link takes the author to the review queue (Project store) filtered to that agent run's pending changes.
+- At `run-ended`, a link takes the author to the review queue (Project store) filtered to that agent run's pending changes: `/projects/:projectId/review?run=<runId>`.
 
 ### Sample content
 - At M3 this module adds the **grounding-claims draft** to the nonfiction sample. It is a short draft in `drafts/` whose claims the sample's `sources/` support, weakly support and don't support. At least one claim is an invented statistic that appears in no source. One grounding check shows all three verdicts.
@@ -192,12 +192,12 @@ Serial. Each phase starts only after the previous one closes, plus the gates lis
 M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool registry, M3 review and grounding, M4 canvas, M5 compile and export, M6 fiction pack, M7 remaining tools and polish.
 
 ### `phase:contract` (M1)
-**Gate:** Platform `phase:scaffold`.
+**Gate:** Platform `phase:scaffold`; Project store `phase:contract` (file and entity reference types, passage shape, hash format).
 **Scope:**
 - Publish `@bbartolome/scriba-contracts/agent-loop`:
   - the start-agent-run request and response, and the stop request;
   - the agent stream event members (as listed above) under the Platform envelope, and the current-run-state shape;
-  - the grounding result and claims artefact shape;
+  - the grounding result and claims artefact shape, and the claims-artefact path rule (`logs/grounding/<targetPath>.json`);
   - the transcript entry format;
   - draft provenance;
   - the agent settings shape;
@@ -210,7 +210,7 @@ M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool regist
 
 ### `phase:file-tools-chat` (M1)
 **Gates:**
-- Model providers client phase and Project store file-API phase (implementation; M1 needs them running);
+- Model providers `phase:client` and Project store `phase:files` (implementation; M1 needs them running);
 - Setup & auth guard;
 - Shell `phase:core` and `phase:shared-components` (tool-call card).
 
@@ -243,9 +243,9 @@ M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool regist
 
 ### `phase:narrative-tools` (M2)
 **Gates:**
-- Tool registry contract, plus its registry API and execution phase;
+- Tool registry `phase:contract` and `phase:executor` (which includes the loader and catalog);
 - Genre packs nonfiction workhorses and nonfiction `entities/` (for the demo);
-- Project store search phase (for `search_notes`).
+- Project store `phase:search` (for `search_notes`).
 
 **Scope:**
 - Load the enabled registry tools as functions, and handle reserved-name clashes.
@@ -266,7 +266,7 @@ M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool regist
 
 ### `phase:pending-writes` (M3)
 **Gates:**
-- Project store pending-changes phase;
+- Project store `phase:pending-review`;
 - Graph runner `phase:contract` (graph file schema);
 - Shell diff view (`phase:shared-components`).
 
@@ -286,7 +286,7 @@ M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool regist
 - [ ] The e2e accepts an agent-made change and sees it in the draft.
 
 ### `phase:grounding` (M3)
-**Gates:** Project store search phase; `phase:pending-writes`.
+**Gates:** Project store `phase:search`; `phase:pending-writes`.
 
 **Scope:**
 - Extract → retrieve → judge, built in after any draft and on demand (`check_grounding` and the UI action).
@@ -318,7 +318,7 @@ M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool regist
 - [ ] Fetched text never appears as grounding evidence until it is accepted into `sources/`.
 
 ### `phase:compile-tools` (M7)
-**Gate:** Compile & export preflight and export phases (implementation).
+**Gate:** Compile & export `phase:assembly-preflight` and `phase:export` (implementation).
 
 **Scope:** `assemble_manuscript`, `run_preflight` and `export_manuscript` through the Compile & export API, with result cards.
 
@@ -353,14 +353,15 @@ M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool regist
 
 **Consumes:**
 - Platform `/platform` (`phase:scaffold`): the SSE envelope, error shape and convention, `SCRIBA_*` names, and the API composition root, Playwright harness and mock OpenAI server, which this module extends.
-- Setup & auth `/setup-auth` (contract, plus the guard implementation): the guard on every route.
-- Model providers `/providers` (contract, plus the client phase for M1): the client interface, the resolved per-project or default model, `contextSize`, and the write-only key request for a keyed search API.
+- Setup & auth `/setup-auth` (`phase:contract`, plus `phase:token-guard`): the guard on every route.
+- Model providers `/providers` (`phase:contract`, plus `phase:client` for M1): the client interface, the resolved per-project or default model, and `contextSize`.
 - Project store `/project-store` (contract; file API at M1, search at M2, pending changes at M3):
-  - the project summary and active project;
+  - the project list (title, genre pack) and active project, and the in-process `onProjectSwitched` hook;
   - the file API (list, read);
   - project-relative path, file reference and entity reference types;
   - the search contract;
-  - the pending change (target path, diff, captured base, origin agent run, status) and its create request;
+  - the pending change (target path, diff, captured base, origin agent run, `provenance`, `grounding`, status) and the in-process `propose` operation;
+  - the in-process `appendLog` and `write` for `logs/`;
   - queue-update events, to refresh the review link.
 - Tool registry `/tool-registry` (contract; execution at M2): tool list/get (enabled only), the model function schema, the `x-scriba-*` vocabulary (to find entity and style references), the output enum, tool execution `{output, sourcesUsed}` and its Ajv error details.
 - Graph runner `/graph-runner` (contract only, M3): the graph file schema, to validate `graph` outputs. There is no runtime call.
@@ -420,10 +421,10 @@ M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool regist
 
 ## Further Notes
 
-- **Glossary.** The glossary's **Run** means one execution of a recipe. This spec therefore always says **agent run** for one pass of the loop, and never uses bare "run" for it. Consider adding "Agent run" to `GLOSSARY.md`, with "chat turn" and "session" listed under avoid.
-- **Phase ordering versus the milestones.** M3 is split into `phase:pending-writes` and `phase:grounding`. Writes can't exist before the Project store's pending-changes phase (M3), and at M1 the Project store has read and write only. So M1 ships only `list_files` and `read_file`, and M2 shows drafts in the chat until M3 routes them to pending changes.
+- **Glossary.** **Run** (recipe run) means one execution of a recipe. This spec therefore always says **agent run** for one pass of the loop, and never uses bare "run" for it. In code, the module's identifiers may use `run` (for example `runId`) because they are already scoped to the `agent-loop` module.
+- **Phase ordering versus the milestones.** M3 is split into `phase:pending-writes` and `phase:grounding`. Writes can't exist before the Project store's `phase:pending-review` (M3), and at M1 the Project store has read and write only. So M1 ships only `list_files` and `read_file`, and M2 shows drafts in the chat until M3 routes them to pending changes.
 - **Compile tools are in v1 but land at M7**, after research. They need Compile & export's implementation (M5) and aren't part of any earlier milestone demo.
 - **Provenance location** is a deliberate choice: on the pending change and in the transcript, not in draft front matter. If the author later wants it in the file, an optional front-matter block can be added in an expand–contract change.
 - **The claims artefact lives in `logs/`** so that Compile & export's preflight can read it as a file, with no Agent loop dependency. The Compile & export spec should consume the grounding result shape from this slice.
-- **Search backend for research** (SearXNG-compatible by default) is the one open choice. It is settled in the first work item of `phase:research`.
+- **Search backend for research** is settled: a SearXNG-compatible JSON endpoint the author configures. No endpoint ships by default.
 - **Fetched pages and prompt injection.** Fetched pages are untrusted. Even if one steers the model, every resulting write still needs the author's acceptance, and grounding never trusts them.

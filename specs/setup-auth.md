@@ -67,7 +67,7 @@ Setup & auth gives Scriba one way in and one guard.
 25. As an author, I want `/setup` to walk me through token, Tailscale, model providers, preferences and first project in order, so that I finish setup in one sitting.
 26. As an author, I want to skip any step except the token and come back later, so that a missing API key doesn't block me from looking around.
 27. As an author, I want the providers step to be the same screen I'll later use in settings, with Ollama already filled in, so that I learn one UI and can usually just pick a model.
-28. As an author, I want to set a few preferences (my author name, the theme, the default genre pack for new projects), so that new projects and the UI start the way I like.
+28. As an author, I want to set a few preferences (my author name, the default genre pack for new projects) and this device's theme, so that new projects and the UI start the way I like.
 29. As an author, I want the first-project step to offer "new", "import an existing folder" and "start from a sample", so that I can begin from scratch, from my own files or from a working example.
 30. As an author, I want the first-project step to show the projects I already have when I re-run setup, so that I'm never asked to create one I already have.
 31. As an author, I want re-running `/setup` to show every previous answer as the default, so that I can change one thing without retyping the rest.
@@ -103,9 +103,10 @@ Setup & auth gives Scriba one way in and one guard.
 ## Implementation Decisions
 
 ### Module shape
-- One vertical module, laid out in the repo as one folder under `apps/api/src/modules/` (a NestJS `@Module`) and one under `apps/web/src/app/features/` (a lazy `Routes` array) with two routes, `/setup` and the settings page (route path to be confirmed with the Frontend shell spec; `/settings` is proposed). Platform imports the module into the API composition root. The Shell adds the route-table entries and a settings nav item.
+- One vertical module, laid out in the repo as one folder under `apps/api/src/modules/setup-auth/` (a NestJS `@Module`) and one under `apps/web/src/app/features/setup-auth/` (a lazy `Routes` array) with two app-level routes, `/setup` and `/settings` (both minimum device class `phone`; `/settings` has a nav entry, `/setup` doesn't). This module adds its own `@Module` import to the API composition root and its own two entries to the Shell's route table. API routes live under `/api/setup-auth/…`.
 - The module provides the app's **single global guard**, registered as the default for every route. It also provides a request-identity accessor that other modules use. Both are NestJS APIs, not contract-slice members.
-- **Default-deny.** A route skips the credential check only if it carries an explicit public marker. The fixed public set is `/healthz`, the token-handshake endpoint, the identity endpoint (it answers 401 when there's no credential), and the static Angular bundle. The static bundle still goes through the Host check. A test pins the public set.
+- **Default-deny.** A route skips the credential check only if it carries an explicit public marker. The fixed public set is `/healthz`, the token-handshake endpoint (`GET /api/setup-auth/handshake?token=…`), the identity endpoint (`GET /api/setup-auth/identity`; it answers 401 when there's no credential), and the static Angular bundle (every non-`/api`, non-`/events` path). The static bundle still goes through the Host check. A test pins the public set.
+- **In-process exports** for other API modules (NestJS providers, not contract members): the global guard with its public marker, the request-identity accessor, and a read-only preferences reader (`authorName`, `defaultGenrePack`) that Compile & export uses as the fallback author name.
 
 ### Setup token
 - Generated on first start, only when no token exists: at least 256 bits from a CSPRNG, base64url. Persisted in its own 0600 file inside `/books/.scriba/` (directory 0700). That is the same floor as the app's secrets file: it guards against other OS users and casual reading, not strong encryption.
@@ -141,9 +142,9 @@ The guard handles each request in this order:
    - A session cookie on a tailnet Host is not a credential.
 3. **Origin check on mutations** (every method other than GET, HEAD and OPTIONS). `Origin` must be present and must equal the full origin expected for the request's Host: `http://127.0.0.1:<port>` or `http://localhost:<port>` on loopback, `https://<tailnet name>` on the tailnet (the scheme is compared too; Tride's guard assumed `http://` only). A missing or `null` Origin is rejected.
 4. **No CORS.** No response ever carries `Access-Control-*` headers. OPTIONS gets no CORS headers, so cross-origin preflights fail.
-- **Proposed addition (beyond the settled design; for the author's review):** `Content-Security-Policy: frame-ancestors 'none'` on all responses. On the tailnet path the network identity authenticates even a framed page, so clickjacking would otherwise work there.
+- **Anti-framing.** Every response carries `Content-Security-Policy: frame-ancestors 'none'`. On the tailnet path the network identity authenticates even a framed page, so clickjacking would otherwise work there.
 - **Errors** use Platform's base error shape and code convention. The codes are auth required (401), Host rejected (403), Origin rejected (403) and tailnet identity not allowed (403). The Shell's API client sends 401s to the sign-in notice on `/setup`.
-- **Dev mode.** The Angular dev server's origin differs from the API's. Platform's env list therefore gains one dev-only setting that adds extra loopback origins, and the setup-URL base can be overridden there too. Neither is ever set in the image. The proxy owned by the Shell must forward `Host` and `Origin` unchanged (cross-spec check).
+- **Dev mode.** The Angular dev server's origin (`http://localhost:4200`) differs from the API's. `npm run dev` sets `SCRIBA_DEV_ORIGINS=http://localhost:4200`, which adds that origin to the Origin allowlist and `localhost:4200` to the loopback Host allowlist, and sets `SCRIBA_SETUP_URL_BASE=http://localhost:4200` so the handshake (proxied as part of `/api`) sets the cookie on the dev-server origin. Neither is ever set in the image. The Shell's proxy forwards `Host` and `Origin` unchanged (no `changeOrigin`).
 - **Serve preserves Host.** The guard assumes Serve forwards the original Host (the tailnet name) to `127.0.0.1:8080`, and that it injects `Tailscale-User-Login` only for proxies to localhost. Both are verified in `phase:tailnet` against a real tailnet.
 - **Peer-address check on the identity header.** Serve proxies from `127.0.0.1` inside the shared network namespace, while the host's loopback publish arrives from the Docker gateway address (Platform spec), and Platform drops direct connections from Tailscale ranges. So the guard trusts `Tailscale-User-Login` only when Host is the tailnet name **and** the socket's peer address is loopback (`127.0.0.1` or `::1`). This stops a non-browser process on the Mac from forging the header through the published port. A test confirms it, and smoke test ST-1 (late login with HTTPS Serve) checks the real peer addresses. If ST-1 shows that published-port traffic can arrive from loopback on some Docker setup, the fallback is a second, unpublished listener for Serve, with the header trusted only there.
 
@@ -177,15 +178,15 @@ The guard handles each request in this order:
   4. Preferences.
   5. First project.
 
-  Every step except Access can be skipped. Setup status records each step as `pending`, `done` or `skipped`, plus an overall `complete` flag that is set when the author finishes or explicitly skips the remaining steps.
+  Every step except Access can be skipped. Setup status records each step as `pending`, `done` or `skipped`, plus an overall `complete` flag that is set when the author finishes or explicitly skips the remaining steps. Status lives in the `setupAuth` section of `settings.yaml`: `{schemaVersion: 1, steps: {access, tailscale, providers, preferences, firstProject}, complete, preferences: {authorName?, defaultGenrePack?}, allowlist: {enabled, logins[]}}`. Status is served by `GET /api/setup-auth/status`, which also carries the compose-version status.
 - **Model providers step.** It embeds the Model providers module's settings component (an Angular API, as with Shell components), or links to it if that component hasn't landed yet. It never reimplements provider forms, model listing or the connection test. Ollama is seeded by Model providers.
-- **Preferences step.** A minimal set: author display name (a default for new projects), theme (system/light/dark, applied through the Shell's theming), and default genre pack for new projects. Stored in Setup & auth's `preferences` section of `settings.yaml`. The section is versioned through the startup migration hook, and the hook's owner is confirmed in the Platform spec.
+- **Preferences step.** A minimal set stored server-side: author display name (the fallback author for Compile & export's title page) and default genre pack for new projects (passed to the Project store's New request). The step also shows the Shell's theme toggle, which is **device-local** (the Shell stores it in local storage; nothing about theme is stored server-side). Stored in `setupAuth.preferences`, versioned with the `setupAuth` section through Platform's startup migration hook.
 - **First-project step.** It calls the Project store API to list projects, create a new one, import an existing folder or start from a sample. The samples come from Project store's baked-in templates. If projects already exist, it lists them and offers to open one or create another. It never re-creates anything.
 - **Idempotent re-runs.** Every step loads current values as defaults. A step writes only the fields the author changed, through the owning module's API. Setup & auth's own writes are field-level merges into its `settings.yaml` sections. Re-running never deletes, resets or re-seeds anything.
 - **Routing.** The SPA sends an authenticated author to `/setup` until `complete` is set. An unauthenticated visitor on loopback sees a sign-in notice with the command that prints the setup URL, `cat ~/Books/.scriba/setup-url`. On the tailnet the notice explains identity and allowlist failures.
 
 ### Owner allowlist
-- Off by default. The settings shape is `{enabled, logins[]}` in Setup & auth's `settings.yaml` section.
+- Off by default. The settings shape is `{enabled, logins[]}` at `setupAuth.allowlist` in `settings.yaml`.
 - Turning it on when the list is empty seeds it with the tailnet owner's login from Tailscale status.
 - A change made over the tailnet is refused if it would exclude the login making it.
 - Loopback cookie access ignores the allowlist, so the Mac plus the setup URL is always the way back in.
@@ -229,7 +230,7 @@ Acceptance criteria:
 - [ ] No runtime code beyond schemas and constants.
 
 ### `phase:token-guard` (M1 — "Setup & auth minimal token")
-Blocked by: Platform `phase:scaffold`; Platform's compose/env phase for `SCRIBA_PORT` in the app environment.
+Blocked by: Platform `phase:scaffold` (`SCRIBA_PORT` and the dev env names are in its env table); this module's `phase:contract`; Frontend shell `phase:core` (for the minimal `/setup` page only; the API work can start before it).
 
 Scope:
 - Token generation and persistence, `setup-url` rewrite (0600) and stdout print.
@@ -237,7 +238,9 @@ Scope:
 - Global default-deny guard covering the loopback cookie path only, the loopback Host allowlist and the dev-origin setting.
 - Full-origin mutation check and no CORS.
 - Request-identity accessor for other modules.
-- A minimal `/setup` page: identity plus "you're in", and the sign-in notice for 401s.
+- The `setupAuth` settings section (registered with Platform's hook) and `GET /api/setup-auth/status`. In this phase only the Access step exists: status shows `access: done` and the other steps `pending`.
+- A minimal `/setup` page: identity plus "you're in", the sign-in notice for 401s, and a **Continue** button (a POST) that marks the remaining steps `skipped` and sets `complete`, so the Shell's landing redirect lets the author into the app at M1.
+- `Content-Security-Policy: frame-ancestors 'none'` on every response.
 - The `Secure`-flag browser check.
 - **The cross-module invariant tests:** GET/HEAD-never-mutate, and mutating-route guard coverage (see Testing Decisions).
 - Extend Platform's Playwright e2e: its setup step reads `setup-url` from the temp library and opens it.
@@ -247,18 +250,19 @@ Acceptance criteria:
 - [ ] Opening the setup URL sets an HttpOnly, SameSite=Strict, host-only cookie and redirects to `/setup` with no token in the URL. A wrong token gets the explanatory page and no cookie.
 - [ ] Without the cookie, every non-public API route returns 401 in Platform's error shape.
 - [ ] A request with any Host outside the allowlist gets 403, except `/healthz`. A mutation with a missing, `null` or foreign Origin, or with the wrong scheme, gets 403.
-- [ ] No response carries `Access-Control-*` headers.
+- [ ] No response carries `Access-Control-*` headers, and every response carries `frame-ancestors 'none'`.
+- [ ] A fresh library's status is incomplete; after Continue it is `complete`, and `settings.yaml` holds only the `setupAuth` change.
 - [ ] The `Secure` behaviour in Safari, Chrome and Firefox on `http://127.0.0.1` is recorded in the module docs, and the chosen cookie attributes match it.
 - [ ] Both invariant tests run in CI against the composed app and pass.
 - [ ] **Walking skeleton, done when:** the author types "summarize my outline" and gets a correct answer with visible tool calls. This phase's share: the author reaches the chat only through the setup URL.
-- [ ] **Demo (under 5 min, this module's share of the walking skeleton):** run the installer one-liner and copy the printed URL. Open `http://127.0.0.1:8080/api/…` directly and see a 401. Open the setup URL and land on `/setup` with a clean address bar. Reload and stay signed in. Run `curl -X POST` with a foreign Origin and see a 403. Sign out and see the notice.
+- [ ] **Demo (under 5 min, this module's share of the walking skeleton):** run `npm run dev` (or the installer one-liner once Platform's release track has landed) and copy the printed URL. Open `http://127.0.0.1:8080/api/…` directly and see a 401. Open the setup URL and land on `/setup` with a clean address bar. Reload and stay signed in. Run `curl -X POST` with a foreign Origin and see a 403. Sign out and see the notice.
 
-### `phase:setup-flow` (M2; provisional assignment)
-Blocked by: Frontend shell `phase:core`. Model providers `phase:contract` (and its settings-UI phase to embed, or link until it lands). Project store `phase:contract` (the project list/create/import/start-from-sample requests).
+### `phase:setup-flow` (M2)
+Blocked by: Frontend shell `phase:core`. Model providers `phase:contract` (and its `phase:settings-ui` to embed the panel; until that lands, the step links to `/providers`). Project store `phase:contract` (the project list/create/import/start-from-sample requests).
 
 Scope:
 - The `/setup` wizard: Access, Tailscale placeholder (shows "unavailable" until `phase:tailnet`), Model providers, Preferences, First project, with skip and the `complete` flag.
-- Setup-status endpoint, preferences endpoints and the `settings.yaml` section with its migration hook registration.
+- All five steps in the status, the preferences endpoints, and the remaining `setupAuth` fields (a section migration from the token-guard shape if the shape changed).
 - Idempotent re-runs with previous answers as defaults.
 - Settings page: identity, preferences, providers section, versions, the compose-mismatch warning, recovery instructions, re-run setup and sign out.
 - The SPA routes to `/setup` until setup is complete.
@@ -272,10 +276,10 @@ Acceptance criteria:
 - [ ] The providers step renders the Model providers component and doesn't duplicate its forms.
 - [ ] With `SCRIBA_COMPOSE_VERSION` unset or older than expected, `/setup` and the settings page show the warning with the update one-liner. With a matching value, no warning.
 - [ ] The e2e setup leg passes in CI.
-- [ ] **Demo (under 5 min):** open the setup URL, pick an Ollama model in the embedded providers step, set the author name, start from the nonfiction sample and land in the project. Re-open `/setup` and see every answer prefilled. Change the theme only and confirm nothing else changed. Edit `.env` to an old compose version, restart and see the warning.
+- [ ] **Demo (under 5 min):** open the setup URL, pick an Ollama model in the embedded providers step, set the author name, start from the nonfiction sample and land in the project. Re-open `/setup` and see every answer prefilled. Change the default genre pack only and confirm nothing else changed in `settings.yaml`. Edit `.env` to an old compose version, restart and see the warning.
 
-### `phase:tailnet` (M3: phone review over the tailnet; provisional assignment)
-Blocked by: Platform's compose phase (shared LocalAPI socket volume, `TS_SOCKET`) and Platform's ST-1 outcome (whether Serve is configured by a shipped config file or by a CLI loop).
+### `phase:tailnet` (M3: phone review over the tailnet)
+Blocked by: Platform's `phase:image-compose` (shared LocalAPI socket volume, `TS_SOCKET`) and `phase:smoke` (the ST-1 outcome (whether Serve is configured by a shipped config file or by a CLI loop)).
 
 Scope:
 - LocalAPI client and normalised status endpoint, with caching and the rate-limited refresh on an unknown Host.
@@ -304,10 +308,11 @@ Acceptance criteria:
 - **Identity:** `{via: 'loopback'} | {via: 'tailnet', login}`.
 - **Tailscale status:** `available`, `backendState` (`BackendState` enum), `authURL`, `dnsName` (tailnet name, trailing dot removed), `tailnetURL`, `magicDNSEnabled`, `httpsCertsEnabled`, `ownerLogin`.
 - **Allowlist settings:** `{enabled, logins[]}`.
-- **Preferences:** author display name, theme, default genre pack.
+- **Preferences:** `{authorName?, defaultGenrePack?}`.
+- **`setupAuth` settings section** shape (step status, `complete`, preferences, allowlist).
 - **Compose-version status:** `{state: 'ok' | 'mismatch' | 'unknown', expected, actual}`.
-- **Route constants** for setup status, handshake, identity, sign-out, Tailscale status, allowlist and preferences.
-- **Non-contract APIs** provided to every module: the global guard (public marker) and the request-identity accessor (NestJS), plus the `/setup` and settings lazy routes (Angular).
+- **Route constants** for setup status, setup continue/step updates, handshake, identity, sign-out, Tailscale status, allowlist and preferences, all under `/api/setup-auth/`.
+- **Non-contract APIs** provided to every module: the global guard (public marker), the request-identity accessor and the preferences reader (NestJS), plus the `/setup` and `/settings` lazy routes (Angular).
 
 ### Consumes
 - **Platform** (`/platform`, `phase:scaffold` and later):
@@ -317,8 +322,8 @@ Acceptance criteria:
   - `/healthz`;
   - the API composition root;
   - compose (shared `/var/run/tailscale` volume, `TS_SOCKET`, app `user:`, `SCRIBA_PORT` passed into the app), the installer reading `setup-url`, the Playwright harness and the pre-release checklist.
-- **Frontend shell** (`phase:core`): API client (401 handling sends the author to the sign-in notice), route table, nav, theming (for the theme preference), and the dev proxy forwarding Host and Origin.
-- **Model providers** (`/providers`, `phase:contract`; settings UI phase for embedding): provider config and presets, for display only. The embeddable settings component is an Angular API.
+- **Frontend shell** (`phase:core`): API client (401 handling sends the author to the sign-in notice), route table, nav, the device-local theme toggle (embedded in the preferences step), the notices service (compose banner), and the dev proxy forwarding Host and Origin. The Shell's landing route reads this module's setup status to decide whether to send the author to `/setup`.
+- **Model providers** (`/providers`, `phase:contract`; `phase:settings-ui` for embedding): provider config and presets, for display only. The embeddable settings component is an Angular API.
 - **Project store** (`/project-store`, `phase:contract`): project summary/list and the new/import/start-from-sample requests. Cross-spec check: these requests must be in the Project store slice.
 
 ## Testing Decisions
@@ -356,16 +361,11 @@ Acceptance criteria:
 
 ## Further Notes
 
-- **Settled choices:** the token is reusable, loopback requires a cookie, and the tailnet is trusted. Do not reopen them during implementation.
-- **Points to check against sibling specs:**
-  - Platform: env entries `SCRIBA_DEV_ORIGINS`, `SCRIBA_SETUP_URL_BASE` and `SCRIBA_TS_SOCKET` (listed in the Platform spec); the expected compose-version constant in version info; Platform owns the `settings.yaml` envelope and migration hook; the socket-permission smoke test and the ST-1 peer-address check go on the checklist.
-  - Frontend shell: the settings route path; 401 handling; the proxy preserving Host and Origin; an optional global compose banner.
-  - Model providers: the embeddable settings component.
-  - Project store: the new/import/start-from-sample requests in its slice.
-- **Proposed beyond the settled design, for the author's review:** `frame-ancestors 'none'`; port-suffixed cookie names; the stateless cookie keyed from the token (so replacing the token revokes all cookies); and the peer-address check on the identity header, with a dedicated Serve listener as the fallback if ST-1 disproves it.
-- **Milestones:** `phase:setup-flow` (M2) and `phase:tailnet` (M3) are provisional assignments. M1 includes only this module's minimal token work. Until `phase:setup-flow` lands, the e2e's project-from-sample step uses the Project store's own UI.
+- **Settled choices:** the token is reusable, loopback requires a cookie, and the tailnet is trusted. `frame-ancestors 'none'`, port-suffixed cookie names, the stateless cookie keyed from the token (so replacing the token revokes all cookies), and the peer-address check on the identity header (with a dedicated Serve listener as the fallback if ST-1 disproves it) are also adopted. Do not reopen them during implementation.
+- **Cross-spec alignment (done):** Platform lists `SCRIBA_DEV_ORIGINS`, `SCRIBA_SETUP_URL_BASE` and `SCRIBA_TS_SOCKET`, passes `SCRIBA_PORT` into the app, owns the `settings.yaml` envelope (this module's section key is `setupAuth`), and carries the expected compose version in version info. The Shell fixes the routes `/setup` and `/settings`, sends 401s to `/setup`, forwards Host and Origin, and offers a notices banner for the compose warning. Model providers exports the embeddable providers panel. The Project store slice has the new/import/start-from-sample requests and a sample list.
+- **Milestones:** `phase:token-guard` is M1, `phase:setup-flow` M2 and `phase:tailnet` M3. Until `phase:setup-flow` lands, the e2e's project-from-sample step uses the Project store's own picker.
 - **Phase sizing for the work breakdown:**
   - `phase:token-guard`: token store + `setup-url`; handshake + cookie; guard + Host/Origin/CORS; the two invariant tests; e2e hook.
   - `phase:setup-flow`: setup status + wizard shell; providers embed; preferences; first project; settings page + compose warning + docs.
   - `phase:tailnet`: LocalAPI client + status UI; tailnet guard path + Host allowlist; owner allowlist; smoke test + Serve verification.
-- **Open items:** anything settled in this spec is fixed and is not reopened. For any decision it leaves open, including items marked proposed, provisional or to be confirmed, ask the author before deciding.
+- **Open items:** none. Where a manual check (the `Secure` flag matrix, the socket-permission smoke test, Serve Host preservation) could disprove an assumption, the spec names the fallback to apply; apply it and record the result instead of stopping.

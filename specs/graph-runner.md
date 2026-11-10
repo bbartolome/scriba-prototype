@@ -112,17 +112,17 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
   - An output node has one input port with the fixed key `in`.
   - A tool node's input port keys are the tool-spec input property names that the Tool registry's port derivation marks as ports (`x-scriba-port` / `x-scriba-type`).
 - **Relation vocabulary.** The suggested relations are `order` (from precedes to), `causality` (from causes to) and `containment` (from contains to, for example a scene containing a beat). They are published as constants with these one-line meanings. Any other non-empty string is allowed. Compile & export reads only edges whose relation is exactly `order`.
-- **Migrations.** Graph files migrate lazily on open, with a backup and a `logs/` entry, never as pending changes. A file with a newer `schemaVersion` is refused with a readable error. v1 ships the hook with no migrations.
+- **Migrations.** This module checks `schemaVersion` itself before Zod parsing: a file with a newer version is refused with `GRAPH_SCHEMA_VERSION_UNSUPPORTED`. v1 ships no migrators. When a v2 is needed, the migrators register with the Project store's migration registry (its `phase:migrations`), which migrates lazily on POSTs with a backup and a `logs/migrations.log` entry, never as pending changes.
 
 ### Graph CRUD
-- All routes act on the active project. Reads and writes go through the Project store file API, so path safety applies.
+- All routes act on the active project. Reads and writes go through the Project store's in-process file API (`read`, `list`, `write`, `delete`, `move`), so path safety applies.
 - Operations:
   - list graphs (id, name, view, node count, modified time, schema validity);
   - get a graph, returned with its validation issues;
   - create (name, view);
   - save (whole-file replace);
-  - rename (change `name`, or the file id);
-  - delete.
+  - rename (change `name` with a save, or change the file id with the Project store's `move`; the new id must be a free slug);
+  - delete (the Project store's `delete`).
 - **Author saves are direct writes**. A save is refused only when the file fails the Zod schema. A schema-valid recipe with semantic problems is saved, and the response includes its validation issues.
 - **Agent-proposed graphs** are pending changes aimed at `graphs/`, created by the Agent loop and reviewed in the Project store. The graph list may badge an id that has a pending change, using the Project store's queue listing. The Graph runner itself never creates graph pending changes from the agent's side.
 - An author save that lands while a pending change targets the same graph file is handled by the Project store's three-way check when that change is accepted.
@@ -191,10 +191,11 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
   - If the target path equals a text input's file reference, the base is the run-start content.
   - Otherwise, if the target file exists, its content is read when the pending change is created and used as the base.
   - Otherwise the pending change creates a new file.
-- **Creating the pending change:** the runner calls the Project store with the target path, the proposed content, the captured base and origin `{recipe run}`. The origin carries the run id, graph id, output node id, and the sources used along the chain into that output (the union of `sourcesUsed` upstream). That gives each draft the entity IDs and tool run behind it, so the author can trace any sentence back to its inputs. The output node's result is `{pendingChangeId, path}`.
+- **Creating the pending change:** the runner calls the Project store's in-process `propose` with the target path, the proposed content, the captured base, origin `{kind: 'recipe-run', runId, graphId, nodeId}` (the output node) and `provenance: {graphId, nodeId, entityIds, sourcesUsed}`, where `entityIds` and `sourcesUsed` are the unions over every tool node upstream of that output. That gives each draft the entity IDs and tool run behind it, so the author can trace any sentence back to its inputs. The output node's result is `{pendingChangeId, path}`.
 - **Errors:** when a node fails, it becomes `error` with a readable message, every node still `queued` becomes `stopped`, and the run ends as `error`. Pending changes already created stay in the queue, because they are reviewable on their own.
-- **Stop** (POST): aborts the model call in progress. The running node and every queued node become `stopped`, and the run ends `stopped`. No pending change is created after the stop is received.
-- **Run state**: `{runId, graphId, target?, status: 'running' | 'done' | 'error' | 'stopped', startedAt, endedAt?, inputs, targets, nodes: {[nodeId]: {status, result?, error?}}, pendingChangeIds}`.
+- **Stop** (POST): aborts the model call in progress. The running node and every queued node become `stopped`, and the run ends `stopped` with reason `author`. No pending change is created after the stop is received.
+- **Project switch.** The module registers with the Project store's in-process `onProjectSwitched` hook. A switch stops the old project's active run exactly like Stop, with reason `project-switched`.
+- **Run state**: `{runId, graphId, target?, status: 'running' | 'done' | 'error' | 'stopped', reason?, startedAt, endedAt?, inputs, targets, nodes: {[nodeId]: {status, result?, error?}}, pendingChangeIds}`.
   - It reports the input values; file contents are not included.
   - The **current-run-state** endpoint (GET) returns the active run for the project, or the most recent finished one, so a device that slept can reconcile on wake.
   - Run state is held in memory. On API restart, the most recent run is rebuilt from its log, and a run with no end entry is reported as `stopped` with reason `interrupted`.
@@ -205,9 +206,9 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
 - **SSE** (Platform envelope `{module: 'graph-runner', type, data}`):
   - `run-started` with the run state;
   - `node-status`, sent on every change, with `{runId, nodeId, status, result?, error?}`;
-  - `run-ended` with `{runId, status, reason?}`.
+  - `run-ended` with `{runId, status, reason?}`, where `reason` is `author | project-switched | interrupted` for `stopped` runs and absent otherwise.
   - `result` is the tool node's `{output, sourcesUsed}`, or the output node's `{pendingChangeId, path}`.
-- **Run logs** in `logs/recipe-runs/<runId>.jsonl` (`logs/` is the source of truth, and the run-log index is deferred). Entries are appended one JSON line at a time:
+- **Run logs** in `logs/recipe-runs/<runId>.jsonl` (`logs/` is the source of truth, and the run-log index is deferred), written through the Project store's in-process `appendLog`. File hashes use the Project store's `sha256:<hex>` format. Entries are appended one JSON line at a time:
   - run start (graph id, scope, input values with file path + hash);
   - each node status change;
   - each tool call's validated arguments, its output and `sourcesUsed`;
@@ -226,11 +227,11 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
 - **Tool nodes are generated** from the registry: one row per derived port, plus the Tool registry's form renderer for the non-port settings, bound to `params`. Ports show their type by colour and icon, and a list port shows its pinned chips.
 - **Wire rejection:** the connection validator refuses mismatched types, a second wire into an input, and a wire into a pinned port, so no wire is ever emitted for those.
 - **Entity side list:** the project's entities (through the Project store file API), searchable and grouped by type, as draggable chips. Dropping a chip onto an entity or style port pins it in `params`, after checking the port type, the port's entity-kind filter, and that the port has no wire (these checks are app logic, because the canvas library only renders the graph JSON). It works with mouse and touch.
-- **Inline status and results:** a status badge per node, driven by signals from the SSE stream and reconciled from current-run-state on load and on wake. Results show as an expandable preview with cited files. Output nodes link to their pending change in the review queue.
+- **Inline status and results:** a status badge per node, driven by signals from the SSE stream and reconciled from current-run-state on load and on wake. Results show as an expandable preview with cited files. Output nodes link to their pending change in the review queue (`/projects/:projectId/review?run=<runId>`).
 - **Run controls:** Run, Run to here (on a node), and Stop. Run opens the **input-values dialog**, which lists the input nodes and output nodes in scope (text or file picker, entity picker, style picker with the project default, output target path). The canvas is read-only while a run is active.
-- **Story view extras:** a file picker for `path`, a missing-file warning badge, and "Open file", which navigates to the app's file view that hosts the Shell editor.
+- **Story view extras:** a file picker for `path`, a missing-file warning badge, and "Open file", which navigates to the Project store's files route, `/projects/:projectId/files?path=<path>`.
 - **Arrange:** a simple layered layout (recipes by topological depth, story graphs by `order` edges and then insertion order) that rewrites `position`. The author saves the result like any other edit.
-- **Breakpoints:** canvas editing on desktop and tablet only. On a phone, the Shell breakpoint gate shows the graph list and current-run-state read-only.
+- **Routes and breakpoints:** one Shell route-table entry at `/projects/:projectId/graphs` (minimum class `phone`) shows the graph list with each recipe's latest run status read-only. Its child route `:graphId` hosts the canvas and is gated to `tablet` with the Shell's `deviceClassGuard('tablet')`, so a phone gets the Shell's "needs a larger screen" page there.
 - **Material styling** of nodes, chips, dialogs and badges uses the Shell's theme tokens, in light and dark.
 
 ### Sample content
@@ -245,7 +246,8 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
 - The recipe must pass Platform's CI check against the graph schema and the registry's tool references. Its path is a contract with `e2e/fixtures/mock-openai/`: renaming it updates the mock script in the same PR.
 
 ### Routes and error codes
-- REST under `/api/graphs` (list, get, create, save, rename, delete, validate) and `/api/graph-runs` (start, stop, current run state). GET and HEAD never mutate.
+- REST under `/api/graph-runner/graphs` (list, get, create, save, rename, delete, validate) and `/api/graph-runner/runs` (start, stop, current run state). Reads are GETs and never mutate; every command (including save, rename and delete) is a POST.
+- **Validator registration.** In `phase:engine` the module registers the graph schema as the Project store's per-path validator for `graphs/*.json`, so a proposed graph that fails the schema is refused at propose time.
 - Route constants and error codes are published. Error codes are prefixed `GRAPH_`, following Platform's error-code convention:
   - `GRAPH_NOT_FOUND`
   - `GRAPH_SCHEMA_INVALID`
@@ -265,11 +267,13 @@ Milestones referenced in this spec, in build order: M1 walking skeleton (project
 Build waves: wave 0 is Platform; wave 1 is Frontend shell, Setup & auth, Model providers, Project store, Tool registry and Genre packs (nonfiction); wave 2 is Agent loop, Graph runner and Compile & export; wave 3 is the fiction pack and polish.
 
 ### `phase:contract` (M4; lands early, in wave 1, because Genre packs' propose-graph is blocked on it)
+Blocked by: Platform `phase:scaffold`; Tool registry `phase:contract` (port types, output key); Project store `phase:contract` (file and entity references).
+
 Scope:
 - Publish `@bbartolome/scriba-contracts/graph-runner` (Zod + TS, shapes and constants only):
   - the graph file union, story and recipe node schemas, edge schema, node-id and port-id patterns, fixed port keys (`out` on input nodes, `in` on output nodes; tool nodes take the Tool registry's `output`), legal kinds per view, and relation constants with their meanings;
   - input value types and the run start/stop request and response;
-  - run state, run status and node-run-status enums, the SSE event members, and the run-log entry;
+  - run state, run status, the stopped-reason enum (`author | project-switched | interrupted`) and node-run-status enums, the SSE event members, and the run-log entry;
   - validation issue shape and codes, the graph list/summary, routes and error codes.
 - Write example graph files (one story graph and one recipe) used as contract test fixtures.
 
@@ -281,11 +285,14 @@ Acceptance criteria:
 - [ ] Contract tests pass in CI.
 
 ### `phase:engine` (M4)
+Blocked by: `phase:contract`; Project store `phase:files` (file API, `delete`, `move`, `appendLog`, switch hook) and `phase:pending-review` (propose with a supplied base, validator registration); Tool registry `phase:executor`; Setup & auth `phase:token-guard`.
+
 Scope:
 - the NestJS module, graph CRUD through the Project store file API, lazy-migration hook and newer-version refusal;
 - recipe validation using registry port derivation, and the validate endpoint;
 - the run engine (scope, input values and run-start reads, sequential topological run, Tool registry executor calls with entity resolution, output nodes → pending changes with captured base and origin), stop, one active run per project;
-- run state with the current-run-state endpoint, SSE events, run logs, and restart recovery from logs.
+- run state with the current-run-state endpoint, SSE events, run logs, and restart recovery from logs;
+- the project-switch stop and the `graphs/` validator registration.
 
 Acceptance criteria:
 - [ ] Creating, saving, renaming, listing and deleting graphs over HTTP changes files in `graphs/` as expected. A schema-invalid save returns `GRAPH_SCHEMA_INVALID` and leaves the file unchanged.
@@ -298,8 +305,12 @@ Acceptance criteria:
 - [ ] Stop during a slow mock call ends the run `stopped` within 2 seconds, and no pending change is created afterwards.
 - [ ] `logs/recipe-runs/<runId>.jsonl` holds start, per-node, tool-call, pending-change and end entries that parse against the contract.
 - [ ] After an API restart mid-run, current-run-state reports that run as `stopped`, with reason `interrupted`.
+- [ ] Switching the active project mid-run ends the run `stopped` with reason `project-switched`.
+- [ ] A propose of an invalid graph file to `graphs/` through the Project store is refused by the registered validator.
 
 ### `phase:canvas` (M4, milestone demo)
+Blocked by: `phase:engine`; Frontend shell `phase:core`; Tool registry `phase:form-renderer` (the tool-form component); Project store `phase:pending-review` (review route for links); Genre packs `phase:nonfiction-workhorses` (tools used by the sample recipe).
+
 Scope:
 - the lazy route, the graph list, and the `ngx-vflow` adapter with the four workarounds;
 - both views, tool nodes generated from the registry (hosting its form renderer), typed-port wire rejection, input and output nodes;
@@ -356,16 +367,16 @@ Consumers:
 
 ### Consumes
 - **Platform** (`phase:scaffold`, `/platform`): the SSE envelope and stream endpoint, the base error shape and error-code convention, the API composition root, the Playwright harness, the mock OpenAI server, the CI sample check.
-- **Setup & auth** (contract + guard phase): the single guard on every route.
+- **Setup & auth** (`phase:contract` + `phase:token-guard`): the single guard on every route.
 - **Tool registry**:
   - (`phase:contract`, `/tool-registry`): the tool-spec shape, the port-type enum `text | entity | style`, the `x-scriba-port` / `x-scriba-type` vocabulary, the port derivation rule, the output enum `draft | entity | claims | graph | check`, and the tool-execution result `{output, sourcesUsed}`;
-  - (registry API / loader phase, for `phase:engine`): the list/get API exposing derived ports, and the in-process executor;
+  - (`phase:loader-validation` and `phase:executor`, for `phase:engine`): the list/get API exposing derived ports, and the in-process executor;
   - (form-renderer phase, for `phase:canvas`): the Angular form renderer and the entity picker hosted inside tool nodes.
 - **Project store**:
   - (`phase:contract`, `/project-store`): project-relative path and file reference, entity reference, the pending-change type (target path, diff, captured base, origin `recipe run`), the `project.yaml` style profile ref, and queue-update events;
-  - (file-API phase, M1, for `phase:engine`): the file API with path safety;
-  - (pending-changes phase, M3, for `phase:engine` output nodes): creating pending changes with a supplied captured base;
-  - (review UI, for `phase:canvas` links): the review queue route.
+  - (`phase:files`, M1, for `phase:engine`): the file API with path safety;
+  - (`phase:pending-review`, M3, for `phase:engine` output nodes): creating pending changes with a supplied captured base;
+  - (`phase:pending-review`'s review route, for `phase:canvas` links): the review queue route.
 - **Model providers**: indirectly, through the Tool registry executor. No direct dependency.
 - **Frontend shell** (`phase:core`): API and SSE clients, theming, breakpoint gate, lazy route table, nav.
 - **Genre packs** (the nonfiction workhorse tools, M2): the tools used in the sample recipe.
@@ -434,6 +445,6 @@ Consumers:
   - graph id = file stem.
 
   Each one is the simplest option that can be widened later through expand–contract.
-- **Provenance:** every draft records the entity IDs and tool run behind it, so the author can trace any sentence back to its inputs. For recipe runs, this is carried on the pending change's `recipe run` origin and in the run log. If the Project store's origin type lacks a field the runner needs (run id, graph id, output node id, sources used), the runner asks for it through expand–contract on `/project-store`. It does not invent a parallel record.
+- **Provenance:** every draft records the entity IDs and tool run behind it, so the author can trace any sentence back to its inputs. For recipe runs, this is carried on the pending change's `recipe-run` origin (`runId`, `graphId`, `nodeId`), its `provenance` field (`entityIds`, `sourcesUsed`), and the run log.
 - **The canvas spike branch** (`spike/canvas-library-8`, `prototypes/canvas-spike/`) is throwaway. Its identical story and recipe fixtures were filler, not semantics.
 - **Scheduling:** the contract phase should land during wave 1, because Genre packs' propose-graph is blocked on it. The engine and canvas phases are wave 2 and demo M4.

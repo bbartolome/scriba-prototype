@@ -105,8 +105,8 @@ Compile & export reads the story graph's `order` relations and nothing else. It 
 
 ### Module shape
 
-- One NestJS `@Module` imported into Platform's API composition root, and one lazy `Routes` array registered in the Shell's route table. All endpoints sit behind Setup & auth's guard. GET and HEAD never mutate: reorder, status, preflight, export, snapshot create and restore are POSTs. Preflight is a POST because it is a command, even though it writes nothing.
-- All project file access goes through the Project store's file API and its path-safety invariant. The one exception is snapshot copy and restore, which use a Project store bulk primitive if one exists. Otherwise they copy file by file through the file API (see Further Notes).
+- One NestJS `@Module` imported into Platform's API composition root, and one lazy `Routes` array registered in the Shell's route table at `/projects/:projectId/manuscript` (minimum class `phone`). API routes live under `/api/compile-export/…`. All endpoints sit behind Setup & auth's guard. GET and HEAD never mutate: reorder, status, preflight, export, snapshot create and restore are POSTs. Preflight is a POST because it is a command, even though it writes nothing.
+- All project file access goes through the Project store's in-process file API and its path-safety invariant: `list`, `read`, `write` and `delete` for drafts and snapshots (snapshot copy and restore go file by file), and `updateProjectYaml` for the `order` and `export` keys. The one exception is export output, which this module writes with plain `fs` under the folder the Project store's `stateDir(projectId, 'compile-export')` returns.
 - Compile & export never reads `drafts/.versions/` and never writes there. It never runs a graph. It never calls a model.
 
 ### Manuscript membership
@@ -122,7 +122,7 @@ Compile & export reads the story graph's `order` relations and nothing else. It 
   - `part` is one of `front | body | back`. When absent, it is `body`.
 - **Status lives on the order entry** (decided here), not in front matter. Scene files need no front matter, and `project.yaml` is author-inspectable and under git.
 - **Every write materialises the whole effective order.** Any reorder or status change writes one entry for every current manuscript file, in effective order. A single new entry would otherwise jump ahead of the unnamed files that are appended alphabetically. Entries that point at missing files are dropped on write and reported by preflight before that.
-- Writes change only the `order` key (and the `export` key, from the export settings panel). They preserve the rest of `project.yaml`'s text, comments and key order.
+- Writes change only the `order` key (and the `export` key, from the export settings panel), through the Project store's `updateProjectYaml`. They preserve the rest of `project.yaml`'s text, comments and key order.
 - **Optimistic concurrency.** The manuscript view model carries a `revision`, a hash of the current order field and the set of manuscript files. Reorder, status and settings requests carry the `revision` they were based on. A mismatch returns a conflict error and nothing is written. This covers edits made by hand on the host and edits from another device.
 - A renamed file loses its entry and its status: it reappears as a new, unplaced file. The same rename orphans the file's older versions in `drafts/.versions/`. Both are known costs (see Known cost under Further Notes).
 - Project store owns the `project.yaml` schema and reserves `order` (and `export settings`) from day one. This module defines what goes inside them (see Contracts).
@@ -139,7 +139,7 @@ Apply these steps in this order:
    - **Cycle:** if the projected edges contain a cycle over distinct files, ignore the graph completely. The body is ordered by `project.yaml`, then alphabetically, and the manuscript view model carries a `graphCycle` warning that lists the files in the cycle.
 4. **Text order inside a file** is the order the author wrote. Compile treats a file as one unit and never parses scene boundaries.
 
-- Placing the graph-ordered files as a leading block is this spec's reading of the rule that, with a story graph, its `order` edges over files come first. It is the simplest deterministic merge. A reviewer should confirm this reading.
+- Placing the graph-ordered files as a leading block is this spec's reading of the rule that, with a story graph, its `order` edges over files come first. It is the simplest deterministic merge, and it is settled.
 - Taking the union of all story graphs is also decided here, because nothing limits a project to one story graph. A cycle across graphs triggers the same fallback.
 - Graph files are parsed with the Graph runner's schema. A graph file that fails validation is skipped, and the manuscript view model reports it as a warning.
 
@@ -178,7 +178,7 @@ Apply these steps in this order:
   - the `revision`.
 - `POST` reorder sends `{revision, front: path[], body: path[], back: path[]}`. The server rejects a body order that moves graph-ordered files relative to one another (the graph-ordered block is fixed), and any list that isn't a permutation of the current files.
 - `POST` status sends `{revision, path, status}`. `POST` part sends `{revision, path, part}`.
-- After every successful write, the module publishes `manuscript.updated` on the SSE stream (Platform envelope, `module: 'compile-export'`).
+- After every successful write, the module publishes `manuscript-updated` on the SSE stream (Platform envelope, `module: 'compile-export'`).
 
 ### Preflight
 
@@ -186,23 +186,23 @@ Apply these steps in this order:
 - All five checks are deterministic and make no model calls.
 - **Unresolved placeholders (error).** Matches come from a contract constant: whole-word `TK`, `TKTK`, `TODO`, `FIXME` and `XXX` (case-sensitive), plus unrendered `{{…}}`. Fenced and inline code are skipped. A per-project list is out of scope for v1.
 - **Unsupported claims.**
-  - Preflight consumes the Agent loop's **grounding result** type (claim → `supported | weak | unsupported` plus the cited passage). It reads the latest grounding result recorded for each manuscript file from `logs/`, through the Agent loop's transcript entry format.
+  - Preflight consumes the Agent loop's **grounding result** type (claim → `supported | weak | unsupported` plus the cited passage). For each manuscript file it reads the claims artefact at `logs/grounding/<path>.json` (the Agent loop's path rule, for example `logs/grounding/drafts/ch01.md.json`) and parses it with the Agent loop's schema. A missing or unparseable artefact counts as "not grounding-checked".
   - `unsupported` claims are errors and `weak` claims are warnings.
-  - A file with no grounding result is reported as `info`, "not grounding-checked". So is a file whose content hash differs from the one in its latest grounding result ("changed since grounding check").
+  - A file with no grounding result is reported as `info`, "not grounding-checked". So is a file whose current `sha256:<hex>` content hash differs from the artefact's `contentHash` ("changed since grounding check").
   - Preflight never starts a grounding check. The finding tells the author to run one from the Agent loop.
 - **Orphan scenes (warning)**, defined here:
   - (a) a story node of kind `scene` or `beat` whose `path` is set but does not resolve to an existing top-level manuscript file (missing, in a subfolder such as `.versions/`, or outside `drafts/`);
   - (b) an order entry in `project.yaml` whose `path` is not a current manuscript file (stale entry);
   - (c) `info` only, and only when at least one story graph exists: a body manuscript file that no story node points at ("not on the story graph").
   - Label-only story nodes are never orphans.
-- **Broken entity links (error).** Every entity reference in a manuscript file's body (using the Project store's entity reference syntax) and every entity ID in its front matter `links` or draft provenance must resolve to an entity in the project. Project-relative Markdown links and image paths must resolve to existing files inside the project. Paths outside the project are errors.
+- **Broken entity links (error).** Every entity reference in a manuscript file's body (the Project store's in-body citation syntax `[@id]`, including multi-citations `[@a; @b]`; code is skipped) and every entity ID in its front matter `links` must resolve to an entity in the project, through the Project store's resolution. Project-relative Markdown links and image paths must resolve to existing files inside the project. Paths outside the project are errors.
 - **Banned phrases (warning).** Preflight reads the style profile that `project.yaml` references and that profile's banned-phrases field (a Genre packs entity-type field). Matching is case-insensitive and whole-phrase, with whitespace normalised, and code is skipped. Every occurrence is reported. If no style profile is set, the check passes with an `info` note.
 - **Preflight never blocks.** The export API always runs preflight first and attaches the summary to the export result. The UI shows a confirm dialog ("N errors. Export anyway?") when there are errors.
 
 ### Export
 
-- `POST` export sends `{format: 'md'|'docx'|'epub'|'pdf'}` and returns `{format, fileName, bytes, downloadUrl, preflight: summary, warnings: string[]}`. A `GET` download streams the file and has no side effects.
-- Output is written under the project's app-state folder (`<project>/.scriba/exports/`) and the module keeps only the latest file per format. Exports are not part of the author's project content. No `exports/` folder is added to the layout.
+- `POST` export sends `{format: 'md'|'docx'|'epub'|'pdf'}` and returns `{format, fileName, bytes, downloadUrl, preflight: summary, warnings: string[]}`. A `GET` download (`downloadUrl`, with `Content-Disposition: attachment; filename=<fileName>`) streams the file and has no side effects.
+- Output is written under the project's app-state folder (`<project>/.scriba/compile-export/exports/`, from the Project store's `stateDir`) and the module keeps only the latest file per format. `fileName` is `<title-slug>-<yyyymmdd-hhmm>.<ext>` (UTC). Exports are not part of the author's project content. No `exports/` folder is added to the layout.
 - **Pandoc invocation.**
   - Pandoc 3.13 runs as a child process with an argument array and no shell, in a temp working directory.
   - `--resource-path` is the project root. A wall-clock timeout applies (default 120 s), with an output size cap.
@@ -217,7 +217,7 @@ Apply these steps in this order:
 - **Templates in project settings.** The `project.yaml` export settings may set one override per format: `docxReferenceDoc`, `epubCss`, `typstTemplate`. Each is a project-relative file reference, checked by path safety and required to exist. Built-in defaults ship in the image with the module.
   - "Copy default into project" writes the built-in file to a path the author picks. The suggested default is the project root (for example `reference.docx`), so no folder is added.
   - An invalid or missing template returns a template error before Pandoc runs.
-- **Export settings** (inside `project.yaml`, content defined here): author name, optional pen name, contact block, subtitle, language, rights line, dedication text, bibliography mode (`off | all | cited`), and the per-format template overrides above.
+- **Export settings** (inside `project.yaml`, content defined here; every field is optional): `author` (falls back to Setup & auth's `authorName` preference, then to nothing), `penName`, `contact` (multi-line string), `subtitle`, `lang` (default `en`), `rights`, `dedication`, `bibliography` (`off | all | cited`; default `all` when the genre pack is `nonfiction`, else `off`), and the per-format template overrides above. Defaults are applied at read time and never written back.
 
 ### Snapshots
 
@@ -231,7 +231,7 @@ Apply these steps in this order:
   2. write every snapshot file back to `drafts/`;
   3. **delete** top-level manuscript files that are absent from the snapshot (the pre-restore snapshot holds them);
   4. write the manifest's `order` into the `project.yaml` order field;
-  5. publish `snapshot.restored` and `manuscript.updated`.
+  5. publish `snapshot-restored` and `manuscript-updated`.
 - Restore is an author action and writes directly, not as pending changes, the same as the author's own editor saves. Only agent-proposed changes go through the pending-changes queue.
   - Pending changes that target restored files keep their captured base, so the Project store's three-way check flags them as conflicts instead of overwriting the restored text.
   - Restore does not write per-draft versions. Versioning on pending-change apply is the Project store's job.
@@ -246,7 +246,7 @@ Apply these steps in this order:
   - export buttons for the four formats, with a confirm dialog when preflight has errors, and an export settings panel (metadata, dedication, bibliography mode, templates with "copy default");
   - a snapshots panel (create with a label, list, and restore behind a confirm dialog that names the pre-restore snapshot).
 - Drag and drop uses Angular CDK on tablet and desktop. The phone breakpoint shows the outline, counts and statuses read-only, and allows download.
-- The route subscribes to `compile-export` SSE events and refetches the view model on `manuscript.updated`. It also refetches on Project store file events that touch `drafts/` or `project.yaml`, when that slice publishes them.
+- The route subscribes to `compile-export` SSE events and refetches the view model on `manuscript-updated`. It also refetches on the Project store's `files-changed` events whose paths touch `drafts/` or `project.yaml`.
 
 ### Sample content
 
@@ -272,7 +272,7 @@ Scope:
   - the preflight request and result, the check-id enum, severities and the placeholder pattern constants;
   - the export request and result, and the format enum `md | docx | epub | pdf`;
   - the snapshot summary, the create, list and restore requests, and the `snapshot.yaml` manifest schema;
-  - the SSE event members (`manuscript.updated`, `export.finished`, `snapshot.created`, `snapshot.restored`);
+  - the SSE event members (`manuscript-updated`, `export-finished`, `snapshot-created`, `snapshot-restored`);
   - route constants;
   - error codes that follow Platform's convention: order conflict, invalid reorder, graph-ordered move, export busy, Pandoc failed, Pandoc timeout, template invalid, empty manuscript, snapshot not found, snapshot unreadable.
 - Land, as an expand-only change coordinated with the Project store, the narrowing of the reserved `order` and `export` settings fields in the `project.yaml` schema to `OrderEntry[]` and `ExportSettings`.
@@ -284,13 +284,13 @@ Acceptance criteria:
 
 ### `phase:assembly-preflight` (milestone: Compile and export)
 
-Gated by: this module's `phase:contract`; Project store file-API phase (implementation); Setup & auth guard phase.
+Gated by: this module's `phase:contract`; Project store `phase:files` (implementation); Setup & auth `phase:token-guard`.
 
 Scope:
 - The NestJS module, registered in the API root.
 - Manuscript membership, the effective-order algorithm (alphabetical, `project.yaml`, graph topological sort with alphabetical tie-break, same-file edge drop, cycle fallback, unplaced files appended), and the part partition.
 - Word counts.
-- The `GET` manuscript endpoint; the reorder, status and part writes with `revision` conflicts and full materialisation; the `manuscript.updated` SSE event.
+- The `GET` manuscript endpoint; the reorder, status and part writes with `revision` conflicts and full materialisation; the `manuscript-updated` SSE event.
 - The five preflight checks and the `POST` preflight endpoint.
 - The assembled-Markdown builder: metadata block, matter placement, front matter stripping and bibliography. It is exposed through `md` export in the next phase, and tested here through preflight and the view model.
 - The nonfiction sample's `project.yaml` order field, statuses and export settings.
@@ -301,17 +301,17 @@ Acceptance criteria:
 - [ ] With a story graph, the `order` relations put files in topological order with alphabetical ties. An edge between two scene nodes in one file is ignored. Files outside the graph follow in `project.yaml` order. A cycle falls back to `project.yaml` order and sets `graphCycle`.
 - [ ] Reordering with a stale `revision` returns a conflict and leaves `project.yaml` byte-identical. A valid reorder writes every file's entry and keeps the comments and other keys in `project.yaml`.
 - [ ] Each of the five checks has a fixture project that triggers it, and every finding has the right check id, severity, path and line. A clean fixture passes all five.
-- [ ] Unsupported claims reads a grounding result fixture in the Agent loop's transcript format, and reports `unsupported` as an error, `weak` as a warning and a changed file as `info`.
+- [ ] Unsupported claims reads a claims-artefact fixture at `logs/grounding/<path>.json` in the Agent loop's format, and reports `unsupported` as an error, `weak` as a warning and a changed file as `info`.
 - [ ] Preflight makes no outbound HTTP call (the test asserts that the mock OpenAI server received no request).
 - [ ] The nonfiction sample started from "start from sample" returns its authored, non-alphabetical order with its statuses.
 
 ### `phase:export` (milestone: Compile and export)
 
-Gated by: `phase:assembly-preflight`; Platform's image phase (Pandoc 3.13 and Typst in the image) and CI phase.
+Gated by: `phase:assembly-preflight`; Platform's `phase:image-compose` (Pandoc 3.13 and Typst in the image) and `phase:ci-publish` (the image smoke job this phase extends).
 
 Scope:
 - Pandoc invocation (argument array, temp dir, timeout, size cap, single export per project, error mapping).
-- `md`, `docx`, `epub` and `pdf` export, with the download endpoint and the `export.finished` event.
+- `md`, `docx`, `epub` and `pdf` export, with the download endpoint and the `export-finished` event.
 - Built-in templates: a standard manuscript reference DOCX, an EPUB stylesheet and a Typst template.
 - Per-project template overrides and "copy default into project". The export settings read and write endpoints, with `revision`.
 - Additive Platform steps: install Pandoc 3.13 and Typst in `ci.yml` so that export tests run in CI, and an image smoke step that exports the nonfiction sample to all four formats inside the built image.
@@ -340,7 +340,7 @@ Scope:
 Acceptance criteria:
 - [ ] A created snapshot folder matches `snapshots/<label>-<ts>/` and holds the top-level drafts and a valid manifest. The list returns it newest first.
 - [ ] Restore brings back the drafts, the order and the statuses, removes files created after the snapshot, and creates a `pre-restore` snapshot. `drafts/.versions/` is byte-identical before and after. A pending change against a restored file shows as a conflict.
-- [ ] UI tests (against a fake API and SSE client): a drag sends a reorder with the current `revision`; graph-ordered rows can't be dragged; a conflict response shows the reload prompt; `manuscript.updated` refetches; preflight errors open the confirm dialog before export; restore needs confirmation.
+- [ ] UI tests (against a fake API and SSE client): a drag sends a reorder with the current `revision`; graph-ordered rows can't be dragged; a conflict response shows the reload prompt; `manuscript-updated` refetches; preflight errors open the confirm dialog before export; restore needs confirmation.
 - [ ] The e2e passes with the manuscript step.
 - [ ] **Done when:** a three-chapter sample exports and opens cleanly in Word and an EPUB reader.
 
@@ -360,13 +360,13 @@ Acceptance criteria:
 
 - `ManuscriptStatus` = `outline | draft | revised | final`, and `ManuscriptPart` = `front | body | back`.
 - `OrderEntry` `{ path: FileReference; status?: ManuscriptStatus; part?: ManuscriptPart }`, the content of the `project.yaml` `order` field.
-- `ExportSettings`: author, penName?, contact?, subtitle?, lang, rights?, dedication?, bibliography `off | all | cited`, docxReferenceDoc?, epubCss?, typstTemplate?. This is the content of the `project.yaml` export settings.
+- `ExportSettings`: all optional — author?, penName?, contact?, subtitle?, lang? (default `en`), rights?, dedication?, bibliography? `off | all | cited`, docxReferenceDoc?, epubCss?, typstTemplate?. This is the content of the `project.yaml` export settings.
 - Manuscript view model: entries `{path, part, status, words, graphOrdered, inOrderField}`, totals `{body, manuscript}`, `orderSource`, warnings, `revision`.
 - The reorder, status and part requests, each with a `revision`.
 - The preflight request and result, `PreflightCheckId`, findings, and the placeholder pattern constants.
 - `ExportFormat` = `md | docx | epub | pdf`, the export request and the export result.
 - The snapshot summary, the create, list and restore requests, and the `snapshot.yaml` manifest schema (`schemaVersion`).
-- SSE members under `module: 'compile-export'`: `manuscript.updated`, `export.finished`, `snapshot.created` and `snapshot.restored`.
+- SSE members under `module: 'compile-export'`: `manuscript-updated`, `export-finished`, `snapshot-created` and `snapshot-restored`.
 - Route constants and error codes.
 
 Consumers: the Frontend shell route table (lazy route entry only); Platform (the e2e step and the CI and image smoke steps that this module adds); possibly the Agent loop, if it later exposes compile tools.
@@ -376,11 +376,12 @@ Consumers: the Frontend shell route table (lazy route entry only); Platform (the
 | Producer | Slice / phase | What |
 |---|---|---|
 | Platform | `/platform`, `phase:scaffold` | SSE envelope, error-code convention, API composition root, contracts package |
-| Platform | image + CI phases | Pandoc 3.13 and Typst in the image; `ci.yml` and the smoke job (this module adds steps); the Playwright harness |
-| Setup & auth | `/setup-auth` guard phase | The single guard on every endpoint; the GET-never-mutates invariant |
-| Project store | `/project-store`, `phase:contract` + file-API phase | The `project.yaml` schema (reserved `order` and export settings, style profile ref, genre pack, title); the file API (list, read, write); file reference; entity reference; entity front-matter base (`id`, `type`, `links`); path safety |
+| Platform | `phase:image-compose` + `phase:ci-publish` | Pandoc 3.13 and Typst in the image; `ci.yml` and the smoke job (this module adds steps); the Playwright harness |
+| Setup & auth | `phase:token-guard` | The single guard on every endpoint; the GET-never-mutates invariant |
+| Project store | `/project-store`, `phase:contract` + `phase:files` | The `project.yaml` schema (reserved `order` and export settings, style profile ref, genre pack, title); the in-process file API (list, read, write, delete), `updateProjectYaml`, `stateDir`, entity resolution; file reference; entity reference and `[@id]` citation pattern; entity front-matter base (`id`, `type`, `links`); `sha256:<hex>` hash format; `files-changed` events; path safety |
+| Setup & auth | in-process preferences reader | `authorName` fallback for the title page |
 | Graph runner | `/graph-runner`, `phase:contract` | Graph file schema (`view: 'story'`); story-node fields `kind`, `label`, optional `path`; edge `{id, from, to, relation?}`; the suggested relation `order` |
-| Agent loop | `/agent-loop`, `phase:contract` | Grounding result (claim → `supported \| weak \| unsupported` plus the cited passage); transcript entry format in `logs/`; draft provenance (entity IDs and the tool run) |
+| Agent loop | `/agent-loop`, `phase:contract` | Grounding result / claims artefact schema (claim → `supported \| weak \| unsupported` plus the cited passage, `targetPath`, `contentHash`) and the claims-artefact path rule `logs/grounding/<path>.json` |
 | Genre packs | nonfiction pack content (Tool registry milestone, which ships the tool registry and the four nonfiction workhorse tools) | The Source entity's `citation` (and URL) fields; the Style profile entity's banned-phrases field |
 | Frontend shell | `phase:core` | API and SSE clients, theming, nav, breakpoint gate, route table |
 
@@ -418,20 +419,20 @@ Consumers: the Frontend shell route table (lazy route entry only); Platform (the
 
 ## Further Notes
 
-- **Decisions this spec makes that the reviewer should confirm.**
+- **Decisions this spec makes** (settled; do not reopen during implementation):
   - The graph-ordered files form a leading block ahead of the other body files (the reading of the rule that a graph's `order` edges over files come first).
   - All story graphs in `graphs/` are unioned.
   - Status and part live on order entries.
   - Every order write materialises the full order.
   - Front and back matter are marked with `part` on order entries, the dedication and title page come from export settings, and the bibliography is generated, so no new folder is needed.
   - Manuscript membership is limited to `.md` files.
-  - Exports are kept under `<project>/.scriba/exports/`.
+  - Exports are kept under `<project>/.scriba/compile-export/exports/`.
   - Restore deletes newer files, with a pre-restore snapshot as the safety net.
   - Preflight is model-free and reads recorded grounding results.
-- **Cross-spec coordination.**
-  - *Project store:* the reserved `order` and export settings fields must be loose enough at its contract phase for this module to narrow them later, as an expand-only change. Its FTS index should exclude `snapshots/` so that snapshot copies don't duplicate search hits. It should expose a comment-preserving YAML key update, or let this module write `project.yaml` through the file API with a full-text write.
-  - *Agent loop:* the grounding result, or its transcript entry, must carry the checked file's project-relative path and a content hash. Without them, preflight can't attribute results to files or detect stale ones.
-  - *Genre packs:* the field names for the Source entity's citation and URL, and for the Style profile's banned phrases, are consumed as stated in their entity-type schemas.
+- **Cross-spec coordination (aligned).**
+  - *Project store:* `order` and `export` are passthrough until this module's contract phase narrows them. Its FTS index covers only `sources/` and `entities/`, so snapshots never duplicate hits. It exposes `updateProjectYaml` (comment-preserving key update), single-file `delete`, and `stateDir`.
+  - *Agent loop:* the claims artefact carries `targetPath` and `contentHash` and lives at `logs/grounding/<path>.json`.
+  - *Genre packs:* the Source entity's `citation` and `url`, and the Style profile's `bannedPhrases`, are consumed as named in their entity-type schemas.
   - *Platform:* this module adds Pandoc and Typst to `ci.yml`, an export smoke step to the image smoke job, and a manuscript step to the e2e.
-- **Agent compile tools.** The planned agent tools are assemble, check and export. This spec exposes them only as HTTP endpoints. Whether the Agent loop wraps the read-only ones (manuscript, preflight) as tools is the Agent loop spec's decision.
+- **Agent compile tools.** The Agent loop wraps the manuscript view model, preflight and export as its `assemble_manuscript`, `run_preflight` and `export_manuscript` tools (its `phase:compile-tools`, M7), calling this module's in-process service, which this module exports from its NestJS module.
 - **Known cost.** Renaming a draft file drops its order entry and status, and orphans its older versions in `drafts/.versions/`. A stable id could fix these later without breaking the versioning layout.

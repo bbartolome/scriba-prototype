@@ -90,6 +90,7 @@ Platform is wave 0. It lands first and owns everything shared:
   - `e2e`: Playwright against the dev server with the mock OpenAI server.
   - `mock:openai`: starts the mock server on its own for manual demos.
 - **Pins.** Node (`.nvmrc` and `engines`, newest LTS, the same major as the image), npm (`packageManager`), and exactly one TypeScript version hoisted at the root. Angular, NestJS and Zod majors are pinned at scaffold time.
+- **Samples layout.** `examples/samples.yaml` lists the samples as `{id, title, description}` (the "start from sample" cards). Each sample is a project folder `examples/<id>/` (`examples/nonfiction/` at M1, `examples/fiction/` at M6). The index file sits outside every sample folder, so it is never copied into a project.
 - **Dev library.** In dev, `SCRIBA_BOOKS_DIR` defaults to a git-ignored repo-local folder, and `SCRIBA_PACKS_DIR` / `SCRIBA_EXAMPLES_DIR` point at `packages/packs` and `examples/`. Dev and image therefore run the same code paths.
 - **Module boundaries lint.** A module may import another module only through the NestJS `@Module` it exports (DI) and through `@bbartolome/scriba-contracts`, never through internal files. The `agent-loop` and `graph-runner` modules may not import each other at all. Feature folders in `apps/web` follow the same rule.
 
@@ -103,15 +104,19 @@ Platform is wave 0. It lands first and owns everything shared:
 ### API composition root
 
 - **One NestJS app, one port.** The app listens on 8080 on all interfaces inside the shared network namespace, which Docker's loopback publish needs. It serves the built Angular bundle with `@nestjs/serve-static`, with SPA fallback to `index.html` for non-API paths. Static files, `/api`, `/healthz` and the events route all share one origin. No CORS headers.
-- **Feature registration.** Each module adds one `@Module` import to the root module. Module controllers mount under `/api/<module>/…`. Each module's route constants live in its own contract slice.
+- **Feature registration.** Each module adds its own one-line `@Module` import to the root module, in its own PR. Module controllers mount under `/api/<module-slug>/…`, where `<module-slug>` is the module's slug from the table below (for example `/api/project-store/…`, `/api/tool-registry/…`, `/api/graph-runner/…`). No module mounts routes outside its prefix, except Platform's own `/healthz` and `/events`. Each module's route constants live in its own contract slice.
+- **HTTP methods.** Reads are `GET` and never mutate. Every command is a `POST`. No module uses `PUT`, `PATCH` or `DELETE`, so the Shell's API client and Setup & auth's guard tests deal with exactly two methods (plus `HEAD`/`OPTIONS` handled by the framework).
+- **Module slugs.** `platform`, `setup-auth`, `providers`, `project-store`, `tool-registry`, `agent-loop`, `graph-runner`, `compile-export`, `shell`, `genre-packs`. The same slug names the contracts subpath, the API route prefix and the SSE envelope's `module`. `shell` and `genre-packs` have no API routes and publish no events.
+- **Test-app helper.** `phase:scaffold` ships `apps/api/test/create-test-app.ts`: it boots the composed NestJS app (or a given subset of modules plus Platform's root providers) against a caller-supplied temp library folder and env overrides (`SCRIBA_BOOKS_DIR`, `SCRIBA_PACKS_DIR`, …), listening on an ephemeral port, and returns the base URL, an SSE helper and a close function. Every module's API tests use it, so no module writes its own bootstrap.
 - **No direct tailnet connections.** The HTTP server drops connections whose peer address is in Tailscale's ranges (`100.64.0.0/10`, `fd7a:115c:a1e0::/48`). Without this filter, a tailnet peer could open `http://<100.x>:8080` and bypass Serve. That would defeat the HTTPS-only rule and Serve's identity-header stripping. Serve proxies from `127.0.0.1`, and the loopback publish arrives from the Docker gateway, so both pass. Setup & auth relies on the same distinction: it trusts the tailnet identity header only from a loopback peer. ST-1 records the peer addresses actually seen on both paths.
 - **Env and config.** `SCRIBA_*` variables are parsed with Zod at boot, and a bad value stops boot with a readable message. Their names are constants in `/platform`.
 - **App-state folder check.** At boot, the app makes sure `/books/.scriba/` exists and is writable by its UID. If it isn't, the app exits non-zero with a message naming the UID/GID and the host path. The folder's contents belong to other modules: settings and sections, the secrets file (Model providers), the token and `setup-url` (Setup & auth), index files (Project store).
 - **`settings.yaml` startup migration hook.** Platform owns the file envelope and the hook. Modules own their sections.
-  - The file has a top-level `schemaVersion` plus one top-level section per module, for example `providers` (Model providers) and the allowlist settings (Setup & auth).
-  - Modules register `{fromVersion → step}` migrations for their section through the platform module.
-  - At boot, before the server listens, the hook reads the file and, if it's behind, writes a timestamped backup next to it and applies the steps in order. It then writes the result atomically.
-  - A file with a **newer** `schemaVersion` is refused: the app logs which version it found and how to roll back, then exits non-zero.
+  - The file is `/books/.scriba/settings.yaml`. It has a top-level `schemaVersion` (the envelope's version, `1` in v1) plus one top-level section per module. **Each section carries its own `schemaVersion`** as its first key, so modules version their sections independently.
+  - The fixed section keys are: `projects` (Project store: the active project id), `providers` (Model providers: provider configs and the app default), `tools` (Tool registry: per-tool enable overrides), `agent` (Agent loop: step cap, research settings), and `setupAuth` (Setup & auth: setup step status, preferences, owner allowlist). A new section needs a new key here.
+  - Modules register their section with a current version, a default value (used when the section is absent; `null` means "leave absent") and `{fromVersion → step}` migrations, through the platform module.
+  - At boot, before the server listens, the hook reads the file (a missing file is treated as `{schemaVersion: 1}`). If any section is behind, it writes a timestamped backup next to the file (`settings.yaml.bak-<UTC timestamp>`) and applies that section's steps in order. It then writes the result atomically (temp file, then rename). An unknown top-level key is kept as is.
+  - A file whose envelope `schemaVersion`, or any registered section's `schemaVersion`, is **newer** than the app supports is refused: the app logs the section and version it found and how to roll back, then exits non-zero.
   - The hook also exposes atomic read/write of a section to its owning module.
   - **Not here:** per-project files (`project.yaml`, entity and graph files) migrate lazily on open, with a backup and a `logs/` entry. That belongs to the Project store spec. Platform owns the eager app-state hook because it runs in the composition root's boot sequence; lazy per-project migration is Project store's.
 - **Errors.** A global exception filter maps every error to the base error shape:
@@ -146,6 +151,7 @@ Platform is wave 0. It lands first and owns everything shared:
   - The server sends `retry: 3000` on connect, and a comment heartbeat every 15 s to keep proxies and Serve from idling the connection.
   - Responses send `Cache-Control: no-cache, no-transform` and are never compressed.
 - **No replay.** The stream sends no `id:` lines and has no `Last-Event-ID` buffer. A tab that reconnects (for example, a device waking from sleep) reconciles through module state endpoints, such as the "current run state" endpoint.
+- **Naming.** Every `type` is kebab-case with no dots (for example `pending-created`, `node-status`). Dotted names are not used anywhere.
 - **Fan-out.** The publisher broadcasts every envelope to every open stream. With one author on several devices, every tab sees every event. Data that's scoped to a project carries its project id so clients can filter.
 - **Backpressure.** If a client's write buffer passes a limit, the server closes that stream. The client reconnects and reconciles.
 - **Platform's own members:**
@@ -173,7 +179,7 @@ Platform is wave 0. It lands first and owns everything shared:
 
 | Name | Where | Default | Meaning |
 |---|---|---|---|
-| `SCRIBA_PORT` | compose / `.env` | `8080` | Host loopback publish port |
+| `SCRIBA_PORT` | compose / `.env` → app | `8080` | Host loopback publish port. Compose also passes it into the app, which uses it for the Host allowlist and the setup URL. The app itself always listens on 8080 inside the container. |
 | `SCRIBA_UID`, `SCRIBA_GID` | compose / `.env` | `1000` | Host UID/GID for `user:` |
 | `SCRIBA_LIBRARY` | compose / `.env` | `~/Books` (absolute) | Host library path, bind-mounted to `/books` |
 | `SCRIBA_IMAGE_TAG` | compose / `.env` | `latest` | Image tag. Pinning means setting a semver here. |
@@ -183,8 +189,8 @@ Platform is wave 0. It lands first and owns everything shared:
 | `SCRIBA_EXAMPLES_DIR` | app | `/opt/scriba/examples` | Baked "start from sample" templates |
 | `SCRIBA_TS_SOCKET` | app | `/var/run/tailscale/tailscaled.sock` | LocalAPI socket path |
 | `SCRIBA_WATCHER` | app | `true` | Project store's optional file watcher, which only refreshes the UI |
-| `SCRIBA_DEV_ORIGINS` | app (dev only) | empty | Extra allowed origins for the dev proxy (Setup & auth's Origin/Host checks) |
-| `SCRIBA_SETUP_URL_BASE` | app | `http://127.0.0.1:${SCRIBA_PORT}` | Base URL written into `setup-url` (Setup & auth) |
+| `SCRIBA_DEV_ORIGINS` | app (dev only) | empty | Comma-separated extra full origins (for example `http://localhost:4200`). Each one is added to Setup & auth's Origin allowlist, and its `host:port` to the loopback Host allowlist. `npm run dev` sets it to the Angular dev server's origin. Never set in the image. |
+| `SCRIBA_SETUP_URL_BASE` | app | `http://127.0.0.1:${SCRIBA_PORT}` | Base URL written into `setup-url` (Setup & auth). `npm run dev` sets it to the Angular dev server's origin so the cookie lands on the origin the browser uses. |
 | `SCRIBA_LOG_LEVEL` | app | `info` | stdout log level |
 
 Tailscale's own variables (`TS_AUTHKEY` in `.secret`, `TS_HOSTNAME=scriba`, `TS_STATE_DIR`, `TS_USERSPACE=false`, `TS_SOCKET`, and `TS_SERVE_CONFIG` if ST-1 picks it) are set in compose. They aren't `SCRIBA_*` contract constants.
@@ -223,7 +229,7 @@ Tailscale's own variables (`TS_AUTHKEY` in `.secret`, `TS_HOSTNAME=scriba`, `TS_
   - `image: bbartolome/scriba:${SCRIBA_IMAGE_TAG:-latest}`.
   - `user: "${SCRIBA_UID:-1000}:${SCRIBA_GID:-1000}"`.
   - The bind mount `${SCRIBA_LIBRARY}:/books`.
-  - `SCRIBA_COMPOSE_VERSION` passed through as an env var.
+  - `SCRIBA_COMPOSE_VERSION` and `SCRIBA_PORT` passed through as env vars.
   - `init: true` and `restart: unless-stopped` (both services).
   - A healthcheck that runs a Node one-liner fetching `http://127.0.0.1:8080/healthz`.
 - **`compose.override.yaml`.** The author's own changes go here. The installer never writes it.
@@ -266,15 +272,16 @@ Tailscale's own variables (`TS_AUTHKEY` in `.secret`, `TS_HOSTNAME=scriba`, `TS_
   - **The scenario is selected by base-URL path prefix** (`…/scenario/<name>/v1`), so parallel tests never share state.
   - A scenario is a data file: an ordered list of steps that match on the request (turn index, last message role/content, tool result present) and reply with streamed content deltas, streamed tool calls (with arguments split across chunks), an HTTP status with headers, a delay, or a dropped connection.
   - Every scenario records the requests it received, and a test reads them back through a mock-only endpoint. There's also a per-scenario reset.
-  - Platform ships two scenarios: a normal tool-call turn and a malformed tool-call turn. Modules add scenarios additively.
+  - Platform ships two scenarios: `tool-call` (a normal tool-call turn) and `malformed-tool-call`. Modules add scenarios additively, one data file per scenario under `e2e/fixtures/mock-openai/scenarios/<name>.json`.
   - Paths in scenarios that name files in the nonfiction sample are a contract with `examples/`: renaming a sample file updates the scenario in the same PR.
-- **Playwright harness.** It starts the dev build of the API (serving the web bundle), a temp library and the mock server, then waits for `/healthz`.
+- **Playwright harness.** It builds the web bundle, starts the API (serving that bundle on one origin, so no dev origins are needed) against a temp library, starts the mock server, then waits for `/healthz`. The harness does not configure a model provider: the "agent run" step does that through the Model providers API, pointing a provider at a mock scenario URL.
   - The single e2e test has five named steps: setup → project from sample → agent run → accept change → manuscript.
   - In this spec only the harness, the boot and an app-loads check are live. The five steps are placeholders, and each owning module turns its step on at its milestone (Setup & auth, Project store, Agent loop, Project store review, Compile & export).
   - **Export stays out of the e2e.**
 - **Examples check.**
   - It validates every sample under `examples/` against the current contracts: `project.yaml` with the Project store's Zod schema, entity front matter with the generic entity front-matter base, and `graphs/` files with the Graph runner's graph schema.
-  - It also checks that every recipe tool node names a tool that exists in the built-in packs, with params that validate under that tool's JSON Schema, using the Tool registry's own loader and Ajv validation.
+  - It also checks that every recipe tool node names a tool that exists in the built-in packs, with params that validate under that tool's JSON Schema (`params` mode), and that every entity file's front matter validates against its pack entity-type schema, using the Tool registry's own loader and Ajv validation (the pack-lint CLI's library entry point).
+  - It also checks that every entity reference in a sample (front-matter reference fields, story-node `path`s, `[@id]` citations in drafts) resolves to an existing file or entity in the same sample.
   - It checks that no sample ships `.scriba/`, `logs/`, `snapshots/` or `drafts/.versions/`.
   - Unit tests never read `examples/`.
 - **`publish.yml`** follows Tride's structure, extended:
@@ -328,7 +335,8 @@ Scope:
 - `@bbartolome/scriba-contracts` with all ten subpaths, nine of them empty. The `/platform` slice: SSE envelope base and Platform members, `SCRIBA_*` env names, base error shape and code convention, `/healthz` response, app version info.
 - The API composition root: serve-static with SPA fallback, env parsing, app-state folder check, the tailnet-address connection filter, the global error filter, the Zod validation pipe, `/healthz`, version info.
 - `GET /events` with the publisher, hello, heartbeat and the `POST /api/platform/echo` diagnostic.
-- The `settings.yaml` startup migration hook and section registration.
+- The `settings.yaml` startup migration hook and section registration (per-section `schemaVersion`).
+- The `create-test-app` helper for API tests.
 - The module-boundaries lint rule.
 - `ci.yml`: one job, npm ci → lint → test → build, plus the PR-title check.
 
@@ -339,7 +347,8 @@ Acceptance criteria:
 - [ ] `GET /healthz` returns `{status:'ok', version}` with 200. `GET /api/platform/version` returns the version info shape.
 - [ ] A client on `/events` gets `platform/hello` first. `POST /api/platform/echo` delivers `count` `platform/echo` envelopes in order to every open stream. A heartbeat comment arrives at least every 15 s.
 - [ ] An invalid request body to a test controller using the pipe returns `PLATFORM_VALIDATION_FAILED` in the base error shape. An unknown `/api` route returns `PLATFORM_NOT_FOUND`. A non-API path returns `index.html`.
-- [ ] A `settings.yaml` that's behind gets backed up and migrated by registered section steps before `/healthz` answers. A newer `schemaVersion` makes the app exit non-zero with a clear message.
+- [ ] A `settings.yaml` with a test section that's behind gets backed up and migrated by that section's registered steps before `/healthz` answers. A newer envelope or section `schemaVersion` makes the app exit non-zero with a clear message naming the section.
+- [ ] A test using `create-test-app` boots the app against a temp library on an ephemeral port and reads `/healthz` and `/events`.
 - [ ] An unwritable `/books/.scriba/` makes the app exit non-zero with a message naming the UID/GID.
 - [ ] A connection from a Tailscale-range peer address is refused. A loopback one isn't. (The address check is tested directly; ST-1 confirms it for real.)
 - [ ] A test import from `modules/graph-runner` into `modules/agent-loop` (and the reverse) fails lint.
@@ -428,9 +437,9 @@ Acceptance criteria:
 
 ### `phase:examples-check`, M1, extended through M6 as the samples grow
 
-Blocked by: `phase:test-harness`; the Project store's `phase:contract` (`project.yaml` and the entity front-matter base); the Graph runner's `phase:contract` (graph schema); the Tool registry phase that ships its loader and Ajv validation (recipe tool references).
+Blocked by: `phase:test-harness`; the Project store's `phase:contract` (`project.yaml` and the entity front-matter base); the Graph runner's `phase:contract` (graph schema); the Tool registry's `phase:loader-validation` (recipe tool references, entity-type validators).
 
-Scope: the `examples/` check wired into `lint`, the excluded-folder check, and the rule that unit tests don't read `examples/`.
+Scope: the `examples/` check wired into `lint`, the excluded-folder check, the reference-resolution check, and the rule that unit tests don't read `examples/`.
 
 Acceptance criteria:
 - [ ] Every `project.yaml` under `examples/` parses with the Project store schema. Every entity's front matter parses with the entity base, and every `graphs/` file parses with the Graph runner schema.
@@ -449,7 +458,8 @@ Acceptance criteria:
 - **Base error shape:** `{error: {code, message, details?}}`, the code convention (SCREAMING_SNAKE with a module prefix), and Platform's codes `PLATFORM_VALIDATION_FAILED`, `PLATFORM_NOT_FOUND`, `PLATFORM_PAYLOAD_TOO_LARGE`, `PLATFORM_INTERNAL`.
 - **`/healthz` response:** `{status: 'ok', version}`.
 - **App version info:** `{version, revision, builtAt, composeVersion}`.
-- **Module slugs** (shared by subpaths, API route prefixes and the envelope's `module`).
+- **Module slugs** (shared by subpaths, API route prefixes and the envelope's `module`): `platform`, `setup-auth`, `providers`, `project-store`, `tool-registry`, `agent-loop`, `graph-runner`, `compile-export`, `shell`, `genre-packs`.
+- **`settings.yaml` envelope:** the top-level `schemaVersion` and the fixed section keys (`projects`, `providers`, `tools`, `agent`, `setupAuth`).
 
 Also produced but not contracts: nine empty subpaths ready for their owners; the composition root's registration point; the injectable stream publisher; the Zod validation pipe; the `settings.yaml` section and migration registration; the mock OpenAI server and its scenario format; the Playwright harness and e2e test; `ci.yml` / `publish.yml`; compose; the installer.
 
@@ -457,8 +467,8 @@ Also produced but not contracts: nine empty subpaths ready for their owners; the
 
 - **Project store** (`phase:contract`): the `project.yaml` schema and the generic entity front-matter base, for the examples check.
 - **Graph runner** (`phase:contract`): the graph file schema, for the examples check.
-- **Tool registry** (loader / Ajv validation phase): recipe tool-reference validation, for the examples check.
-- **Setup & auth** (its guard phase): Platform's guarded routes (`/events`, version info, echo) adopt its global guard. `/healthz` stays exempt.
+- **Tool registry** (`phase:loader-validation`): the pack-lint library entry point (recipe tool-reference `params` validation and entity-type validators), for the examples check.
+- **Setup & auth** (`phase:token-guard`): Platform's guarded routes (`/events`, version info, echo) adopt its global guard. `/healthz` stays exempt.
 
 ### Who builds on Platform
 
@@ -496,7 +506,7 @@ Also produced but not contracts: nine empty subpaths ready for their owners; the
   - Lazy per-project file migrations. Project store owns `examples/`, the "start from sample" mechanism and the nonfiction skeleton (M1). Each other sample addition belongs to the module whose milestone demos it: Genre packs for the nonfiction entities (M2) and the whole fiction sample (M6), Agent loop for the grounding-claims draft (M3), Graph runner for the nonfiction recipe (M4), and Compile & export for the `project.yaml` order field (M5).
   - App-level export (Compile & export).
   - The Typst quality spike and any TeX Live derived image (Compile & export).
-- The manual real-model eval script (small and larger local model). It concerns the tool-calling loop and belongs with the Agent loop.
+- The manual real-model eval script (small and larger local model). It concerns the tool-calling loop and belongs with the Agent loop (Genre packs adds per-tool cases to it).
 - ST-4, userspace networking mode (deferred).
 - LAN mode and host `0.0.0.0` publishing, a second no-sidecar compose topology, a separate installer UI container, auto-update or Watchtower, an "update available" notice, a CLI reset-token, and per-user image layers.
 - pnpm, Yarn, Nx, Turborepo, nginx, Caddy, WebSockets and OpenAPI code generation.
@@ -510,8 +520,8 @@ Also produced but not contracts: nine empty subpaths ready for their owners; the
 ## Further Notes
 
 - **Phase naming deviation.** By convention, a producer's first phase is `phase:contract`. Platform's first phase is `phase:scaffold`, because it creates the package every slice lives in. `phase:scaffold` publishes `/platform` and is the gate every module names. The work breakdown should treat `phase:scaffold` as Platform's contract phase.
-- **Decisions this spec makes** (reviewer, please confirm):
-  - **The tailnet-address filter.** Listening on all interfaces is required for Docker's loopback publish, but it also exposes plain HTTP on `tailscale0`. Setup & auth should additionally trust `Tailscale-User-Login` only from a `127.0.0.1` peer. That note is for the Setup & auth spec.
+- **Decisions this spec makes** (settled; do not reopen during implementation):
+  - **The tailnet-address filter.** Listening on all interfaces is required for Docker's loopback publish, but it also exposes plain HTTP on `tailscale0`. Setup & auth additionally trusts `Tailscale-User-Login` only from a loopback peer (its spec implements this).
   - **The events route is `/events`.** The dev proxy covers `/api`, `/healthz` and the events route. The path is a constant, so it's cheap to move.
   - **Error codes use SCREAMING_SNAKE with a module prefix.** This matches the `PROVIDER_*` prefix that Model providers uses.
   - **The install folder is the current directory, kept outside the library,** so the app can't read `.secret`.
