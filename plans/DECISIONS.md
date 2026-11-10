@@ -112,3 +112,15 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Conflict rule (Angular and TypeScript):** not triggered. The newest Angular build tooling admits the 6.0.x line, so implementation continues.
 - **Implementation-time decision (note 4 of the approval entry):** `@eslint/js` and `eslint` are both on major 10, so the install and the ESLint config resolve.
 - **Install:** `npm install` at the root succeeded on Node 26.13.0 without `--legacy-peer-deps`, adding 132 packages and writing the single root `package-lock.json`. npm reported 10 moderate vulnerabilities. No criterion covers audit results, so they are not addressed in PLT-01.
+
+## 2026-11-10 — PLT-01 — Opus implementation review of the merge commit cf7a8bb: APPROVED (recorded after the merge)
+
+- **Result (Opus subagent, implementation review of commit cf7a8bb against plan revision 5 and the unit's acceptance criteria):** APPROVED. No blocking problem. All five acceptance criteria are met by the code and the saved evidence. The 28 tracked files outside the document folders are exactly the files named in plan section 2. Nothing contradicts a downstream unit.
+- **Process gap (driver):** Driver rule 7 requires the Opus implementation review before the merge commit (step 8). The driver merged `unit/PLT-01` into main as cf7a8bb before running this review, because the Navigator's step list (s1 to s8) did not include it. The review ran on the merged commit, and its approval is recorded here. The merge was local only and was not pushed. A challenge record in the session describes the gap.
+- **Non-blocking notes (recorded; the Navigator decides any change):**
+  1. The `node -v` and `npm -v` output is not saved next to each result in the evidence files. It was printed in the terminal for each run. Node v26.13.0 and npm 11.20.0 are recorded in this file and in the merge commit message.
+  2. The fresh-clone run executed AC 2 to AC 5 and printed the results. The files in `/tmp/plt01-ac2/` were later overwritten by the merged-tree run, so the fresh-clone fan-out output is kept in the session transcript only.
+  3. The Prettier `--file-info` probe, the two `find` counts, and the exit status of `npm ci` have no saved output. Their results were printed in the terminal.
+  4. `tseslint.config()` is marked `@deprecated` in typescript-eslint 8.72.2 (`node_modules/typescript-eslint/dist/config-helper.js`, around line 24), in favour of ESLint's `defineConfig()`. It still works. PLT-09 may switch when it edits `eslint.config.mjs`.
+  5. `plans/PLT-01.md` line 8 still says "This iteration writes the plan only ... no criterion is marked passed here." That is out of date now that the status is `done`. It describes iteration 1.
+  6. The ESLint config covers only `**/*.ts`, so the root `.mjs` files (`eslint.config.mjs`, `scripts/pins.test.mjs`) are not linted. This matches the plan.
