@@ -14,7 +14,7 @@ Genre packs is a content module. It ships three built-in packs of tool specs and
 - **`nonfiction`**: Person, Claim and Concept entity types; the four M2 workhorses (Cold open, Mystery question, Myth-buster, Numbers-to-people); and the tier 2–3 shapes that ship disabled.
 - **`fiction`**: Character, Place and World rule entity types, and the five M6 tools (Character builder, Scene builder, Dialogue, Plot manager, World-builder).
 
-Every tool has a plain one-line description, written for the model that chooses tools from it. It also has a first-draft prompt template that keeps the model grounded: use only the supplied material, cite it by ID, and leave a placeholder instead of inventing a fact. Every draft-producing tool takes the same common inputs: core idea, entity IDs, style profile, length and an optional tone. Every tool's output is one of the agreed kinds, `draft | entity | claims | graph | check`.
+Every tool has a plain one-line description, written for the model that chooses tools from it. It also has a first-draft prompt template that keeps the model grounded: use only the supplied material, cite it by ID, and leave a placeholder instead of inventing a fact. Every draft-producing tool takes the same common inputs: core idea, entity IDs, style profile, length and an optional tone. Every tool's output is one of the output kinds `draft | entity | claims | graph | check`.
 
 The packs ship read-only in the image. CI validates them against the Tool registry contract, and each tool has a golden test through the mock OpenAI server. Genre packs also adds the nonfiction sample's `entities/` (M2) and authors the whole fiction sample (M6).
 
@@ -80,7 +80,7 @@ The packs ship read-only in the image. CI validates them against the Tool regist
   2. the material, each entity rendered with its ID;
   3. the shape's steps (for Cold open: the moment, the person, the pull-back, the idea);
   4. constraints: use only the material; cite each factual sentence with its entity or source ID in Pandoc citation form (`[@id]`); where a needed fact is missing, leave a placeholder in Compile & export's preflight placeholder syntax rather than invent one; respect the style profile's tone, banned phrases and the requested length.
-- **`enabled`** is `true` for propose-graph, the four workhorses, the five fiction tools, Throughline check and Remix. It is `false` for the twelve tier 2–3 nonfiction shapes, which the author turns on later (brief).
+- **`enabled`** is `true` for propose-graph, the four workhorses, the five fiction tools, Throughline check and Remix. It is `false` for the twelve tier 2–3 nonfiction shapes, which the author turns on later.
 - **Sources used** are computed by the Tool registry from the entity-ID inputs. Prompts never ask the model to list its own sources.
 
 ### Common inputs
@@ -110,9 +110,9 @@ Each entity-type schema is a JSON Schema document in the same conservative subse
 | Place (`place`) | fiction | `entities/` | `name`, `rules` (world-rule references) | description |
 | World rule (`world-rule`) | fiction | `entities/` | `statement`, `appliesTo` (place references) | consequences and exceptions |
 
-- Source and Style profile are in `core` because the brief marks them "both".
-- **Overrides of the brief's data model:** Scene and Plot beat are story nodes, not entity types. Their fields become tool inputs (Scene builder) or graph content (beats). The brief's "linked scenes" fields on Place and Plot beat are dropped, because links to scenes are relations on the story graph. Chapter is not an entity type in v1: a chapter is a draft file in `drafts/`, its order lives in `project.yaml` or the story graph's `order` relations, and its status lives in Compile & export's manuscript view. A chapter's throughline is passed as `coreIdea`.
-- Claim status uses `unsupported`, not the brief's `unsourced`, to match the Agent loop's grounding verdicts.
+- Source and Style profile are in `core` because both books use them.
+- **Replaced entity types:** Scene and Plot beat are story nodes, not entity types. A scene's goal, conflict, outcome and point of view become Scene builder inputs (`goal`, `conflict`, `outcome`, `pov`), and its characters and place come in through `entityIds`. A beat is a story node whose label holds its short text, or which points at a whole file in `drafts/`. Neither Place nor a beat has a "linked scenes" field: links to scenes are relations on the story graph. Chapter is not an entity type in v1: a chapter is a draft file in `drafts/`, its order lives in `project.yaml` or the story graph's `order` relations, and its status lives in Compile & export's manuscript view. A chapter's throughline is passed as `coreIdea`.
+- Claim status uses `unsupported` (replacing `unsourced`) to match the Agent loop's grounding verdicts.
 - Whether front matter is required on files in `sources/` is the Project store's call. The samples always carry it, so the bibliography works.
 
 ### Tool catalogue
@@ -148,7 +148,7 @@ Descriptions below are the shipped one-liners (first drafts). "Extra inputs" are
 - Every `output` value is in the enum `draft | entity | claims | graph | check`. No built-in tool produces `claims`: claim extraction is the Agent loop's grounding step.
 - **Scene and beat are not entity references**. Scene builder, Dialogue, Plot manager and Throughline check take scene and chapter content on `text` ports. In a recipe, a text Input node holds a file reference read at run start. In chat, the agent reads the file first.
 - **World-builder** returns the expanded place or rule as an `entity` output. Its prompt puts any contradictions under a fixed "Contradictions" heading in the body, where the author sees them in review.
-- **Remix** produces a draft of the same passage in the target shape. Its prompt carries one line per shape, and a CI check asserts that its `targetShape` enum matches the enabled-or-shippable draft tools in the packs. The side-by-side comparison is the Project store's review diff of the resulting pending change. The brief's Compare node is overridden.
+- **Remix** produces a draft of the same passage in the target shape. Its prompt carries one line per shape, and a CI check asserts that its `targetShape` enum matches the enabled-or-shippable draft tools in the packs. The side-by-side comparison is the Project store's review diff of the resulting pending change. There is no Compare node: recipe nodes are input, tool and output only (replacing the Merge, Compare and Gate node types).
 - **Dialogue's "done when"** relies on the prompt rendering each character's full entity (`voice` and `relationships` included) through `{{#each}}` and `{{entity id}}`, and telling the model to give each speaker distinct diction and to keep to the relationship notes.
 
 ### Propose-graph (core)
@@ -158,11 +158,11 @@ Descriptions below are the shipped one-liners (first drafts). "Extra inputs" are
 - The Agent loop writes the result as a pending change aimed at `graphs/`, validated against the Graph runner's schema. If validation fails, the agent gets the error back and can retry.
 
 ### Samples
-- **Sourcing (left to this spec by the sample-contents decision).** All sample prose and entity text is original writing made for Scriba and released under the repo's licence. Nonfiction sources follow the Project store's skeleton, which may use public-domain excerpts. Nonfiction entities only summarise and cite those sources, and never add facts the sources lack. The fiction sample is wholly original. No copyrighted excerpts and no invented quotes from real living people.
+- **Sourcing.** All sample prose and entity text is original writing made for Scriba and released under the repo's licence. Nonfiction sources follow the Project store's skeleton, which may use public-domain excerpts. Nonfiction entities only summarise and cite those sources, and never add facts the sources lack. The fiction sample is wholly original. No copyrighted excerpts and no invented quotes from real living people.
 - **Excluded from both samples:** `.scriba/`, `logs/`, `snapshots/` and `drafts/.versions/`.
 - **Nonfiction `entities/` (M2).** Five entities on the skeleton's topic: one `person`, two `claim`s, one `concept` and one `style-profile`. Every reference resolves to a source in the skeleton's `sources/`. The claims' statuses must not contradict the Agent loop's grounding-claims draft (M3). If skeleton sources lack Source front matter, this phase adds the missing fields in the same PR. File paths already used by the mock OpenAI script stay unchanged.
-- **Fiction sample (M6), whole project.** An original short piece about two lighthouse keepers. It is sized to the slice that the sample-contents decision sets: 3–6 entities and 2–3 drafts of a few hundred words.
-  - `project.yaml`: genre pack `fiction`, style profile reference, **no** order field, so the graph branch of the manuscript assembly order decision is what's demoed.
+- **Fiction sample (M6), whole project.** An original short piece about two lighthouse keepers. It is kept to a small slice: 3–6 entities and 2–3 draft files of a few hundred words each.
+  - `project.yaml`: genre pack `fiction`, style profile reference, **no** order field, so the sample's compile order comes only from the story graph's `order` edges (the nonfiction sample demos the `project.yaml` order field).
   - `entities/`: two characters with clearly distinct voices and relationship notes (a terse veteran keeper and a talkative relief keeper), one `place` (the lighthouse island), one `world-rule` (for example, "the supply boat comes only on a spring tide"), and one `style-profile`. That makes five entities.
   - `drafts/`: three files whose alphabetical order differs from story order: `arrival.md` (two scenes), `the-storm.md` (one scene) and `ledger.md` (a short file-backed beat).
   - `graphs/` story graph:
@@ -178,6 +178,8 @@ Descriptions below are the shipped one-liners (first drafts). "Extra inputs" are
 ## Phases
 
 Serial. Genre packs publishes no contract slice (`/genre-packs` is empty), so there is no `phase:contract`.
+
+Milestones referenced here: M1 is the walking skeleton, M2 is the tool registry, M3 is review and grounding, M4 is canvas, M5 is compile and export, M6 is the fiction pack, and M7 is remaining tools and polish.
 
 ### `phase:core-propose-graph` (M2; propose-graph first demoed at M4 and in M7's polish)
 Blocked by: Platform `phase:scaffold`; Tool registry `phase:contract`; Graph runner `phase:contract`; Project store `phase:contract` (entity front-matter base, entity reference). Golden tests also need the Tool registry's loader-and-execution phase.
@@ -209,7 +211,7 @@ Acceptance criteria:
 - [ ] All four tools pass the validation suite, and their common inputs are identical.
 - [ ] Each tool's golden test: the rendered prompt contains every input entity with its ID plus the citation and placeholder instructions; the result's `sourcesUsed` equals the sources derived from the input entity IDs.
 - [ ] Sample entities validate against their types, and every entity reference resolves to an existing file in the sample.
-- [ ] **Done when (brief M2):** each of the four workhorses produces a draft that cites its source files. In CI this is checked through `sourcesUsed` and draft provenance. With a real model it is checked by the manual eval: the draft contains `[@id]` citations, and those IDs are among the input entities and sources.
+- [ ] **Done when:** each of the four workhorses produces a draft that cites its source files. In CI this is checked through `sourcesUsed` and draft provenance. With a real model it is checked by the manual eval: the draft contains `[@id]` citations, and those IDs are among the input entities and sources.
 - [ ] Demo script (under 5 minutes, needs Agent loop's M2 phase):
   1. Start from the nonfiction sample.
   2. In chat, ask "draft a cold open for chapter 1 about <person> using my notes".
@@ -231,7 +233,7 @@ Acceptance criteria:
 - [ ] Dialogue's golden test: the rendered prompt contains both characters' `voice` and `relationships`, plus the distinct-voice instruction. Calling it with one character fails Ajv.
 - [ ] The fiction sample validates (graph schema, `project.yaml`, entity types and recipe tool references). Every story-node `path` exists, and two scene nodes share `drafts/arrival.md`. There is one label-only beat and one file-backed beat.
 - [ ] Started through "start from sample", the fiction project's manuscript order (Compile & export API) is `arrival.md`, `the-storm.md`, `ledger.md`.
-- [ ] **Done when (brief M6):** a dialogue scene between two characters keeps each voice distinct and respects their relationship notes. This is checked by the manual eval with a small and a larger local model, and by the author in the demo.
+- [ ] **Done when:** a dialogue scene between two characters keeps each voice distinct and respects their relationship notes. This is checked by the manual eval with a small and a larger local model, and by the author in the demo.
 - [ ] Demo script (under 5 minutes):
   1. Start from the fiction sample.
   2. Open the story graph and point out the shared chapter file, both beats and the `order` edges.
@@ -294,10 +296,10 @@ Acceptance criteria:
   - the returned `{output, sourcesUsed}` matches the expected output kind and source IDs;
   - invalid arguments return Ajv's readable error.
 
-  Golden files change only on purpose, in the same PR as the prompt edit. Fixtures are the tests' own (per the sample-contents decision, unit tests never read `examples/`).
+  Golden files change only on purpose, in the same PR as the prompt edit. Fixtures are the tests' own; unit tests never read `examples/`.
 - **Sample checks.**
   - Platform's CI sample check validates sample files against the contracts and these entity-type schemas.
-  - A fiction-order check creates a project through the real "start from sample" HTTP flow and asserts the manuscript order from Compile & export's API. That is the same route the sample-contents decision allows the e2e to use.
+  - A fiction-order check creates a project through the real "start from sample" HTTP flow and asserts the manuscript order from Compile & export's API. That is the same real "start from sample" flow that the e2e run uses for the nonfiction sample.
 - **System seam.** The single Playwright e2e is unchanged. This module adds no e2e step, because the nonfiction file paths the mock script uses stay stable.
 - **Real models.** Manual eval cases per tool go into Platform's manual eval script, covering a small and a larger local model: citation presence for the workhorses and voice separation for Dialogue.
 - **Tooling.** Vitest. There is no prior art in the repo yet.
@@ -306,17 +308,17 @@ Acceptance criteria:
 
 - Loading, copy-on-write editing, lint-on-save, the tool-spec UI, and form/node/function-schema emission (Tool registry).
 - Running tools, recording citations and provenance, and the grounding check (Agent loop); running recipes (Graph runner).
-- Per-project `tools/`, a field DSL for tool specs, and per-tool model choice (deferred by the tool-specs decision and the recorded design decisions).
-- New output kinds; screenplay or memoir packs; tier-4 tools (the brief's M7 names them but defines none).
+- Per-project `tools/`, a field DSL for tool specs, and per-tool model choice (all deferred to later versions).
+- New output kinds; screenplay or memoir packs; tier-4 tools (none is defined yet).
 - A dedicated Remix comparison view. Comparison uses the review diff.
 - A nonfiction story graph.
-- **Design decisions that override the brief:**
+- **Replaced design choices** (earlier option → chosen option):
   - Zod for tool inputs → JSON Schema.
   - Scene and Plot beat entity types → story nodes.
   - The `structure/` folder → `drafts/`.
   - Merge, Compare and Gate nodes and entity nodes in recipes → input/tool/output only.
   - React or React Flow node components → the Tool registry's derived nodes on ngx-vflow.
-  - The brief's Chapter entity is dropped (see Implementation Decisions).
+  - Chapter entity type → dropped (see Implementation Decisions).
 
 ## Further Notes
 
@@ -327,5 +329,5 @@ Acceptance criteria:
   4. Compile & export owns the placeholder syntax the prompts emit, and it reads `source` and `style-profile.bannedPhrases`.
   5. The Tool registry and Agent loop filter tools by `project.yaml`'s genre pack.
 - `[@id]` is Pandoc citation syntax, so Compile & export can later render citations with citeproc, and the broken-entity-link preflight can check them. This spec does not require either.
-- The brief's instruction to "write a first-draft prompt template and a plain one-line description for each tool" is met by the catalogue's descriptions and the shared prompt skeleton. The templates are first drafts that the author is expected to tune through copy-on-write.
-- Propose-graph is in the first phase even though the brief lists it under M7. The phase also lays the pack foundation that M2 depends on. If the Graph runner's contract phase lags, that phase is the critical path for M2.
+- Each tool's plain one-line description and first-draft prompt template come from the catalogue's descriptions and the shared prompt skeleton. The templates are first drafts that the author is expected to tune through copy-on-write.
+- Propose-graph is in the first phase, although the polish milestone (M7) also demos it. The phase also lays the pack foundation that M2 depends on. If the Graph runner's contract phase lags, that phase is the critical path for M2.
