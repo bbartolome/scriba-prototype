@@ -136,3 +136,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   - Note 5 (stale line 8 in `plans/PLT-01.md`): fixed by the documentation-only commit. No criterion changes, so no new Opus review.
   - Note 6 (the root `.mjs` files are not linted): known. This matches the plan.
 - **Reason (Navigator):** PLT-01 is closed: merged as cf7a8bb, `status: done`, and approved by the Opus implementation review. The six notes are non-blocking. A documentation-only fix needs no new review.
+
+## 2026-11-10 — PLT-10 — mismatch 1: the green-on-PR criterion (Navigator decision)
+
+- **Decision (Navigator):** Keep PLT-10 criterion 4 ("`ci.yml` is green on the scaffold PR (verified at PLT-11)") unchanged in `units/PLT-10-ci-workflow.md`. In PLT-10's plan, criteria 1 to 3 map to real local tests. Criterion 4 is recorded as "deferred to PLT-11, not testable here (no remote or runner)", with a local structural proxy: the workflow parses as YAML, it is a single job, and its steps run in the order npm ci → lint → test → build. The proxy is labelled a proxy, not the green-on-PR check. The green-on-PR checkbox stays unmarked.
+- **Reason (Navigator):** The criterion already defers to PLT-11, and PLT-11 criterion 5 (`units/PLT-11-scaffold-gate.md` line 32) is the only owner of the green-on-PR check. Editing PLT-10 would be an unrequired one-way change. No earlier record of this mismatch exists in this file.
+- **Driver note:** This entry is recorded now, not at step s3, because driver rule 5 requires each decision to be recorded and committed at once.
