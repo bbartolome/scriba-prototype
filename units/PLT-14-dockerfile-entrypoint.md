@@ -6,7 +6,7 @@ phase: phase:image-compose
 milestone: M1 (release track)
 blocked_by: [PLT-11]
 parallel_with: [PLT-12, PLT-13, "wave-1 modules"]
-unblocks: [PLT-15]
+unblocks: [PLT-15, "Genre packs core gate (GNP-05)"]
 ---
 
 # PLT-14 — Image

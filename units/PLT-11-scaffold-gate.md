@@ -6,7 +6,7 @@ phase: phase:scaffold
 milestone: M1
 blocked_by: [PLT-02, PLT-03, PLT-04, PLT-05, PLT-06, PLT-07, PLT-08, PLT-09, PLT-10]
 parallel_with: [PLT-12]
-unblocks: [PLT-13, PLT-14, "every wave-1 module's first phase"]
+unblocks: [PLT-13, PLT-14, "Agent loop contract slice (AGL-01)", "Agent loop settings (AGL-06)", "Compile & export contract slice (CEX-01)", "Genre packs packs scaffold and content checks (GNP-01)", "Graph runner contract slice (GRR-01)", "Model providers contract slice (MPR-01)", "Model providers registry and seeding (MPR-02)", "Model providers secrets file (MPR-03)", "Project store contract slice (PST-01)", "Setup & auth contract slice (SAU-01)", "Frontend shell composition root (SHL-01)", "Tool registry contract slice (TRG-01)", "Tool registry emission and validation (TRG-02)"]
 ---
 
 # PLT-11 — Scaffold gate

@@ -5,7 +5,7 @@ module: tool-registry
 phase: phase:loader-validation
 milestone: M2
 blocked_by: [TRG-06]
-parallel_with: [TRG-07]
+parallel_with: [TRG-07, TRG-10]
 unblocks: [TRG-11]
 ---
 

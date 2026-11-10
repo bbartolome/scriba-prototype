@@ -5,8 +5,8 @@ module: graph-runner
 phase: phase:canvas
 milestone: M4
 blocked_by: [GRR-03, GRR-10, "Tool registry phase:form-renderer (TRG-05; tool-form component)"]
-parallel_with: [GRR-04, GRR-09, GRR-14]
-unblocks: [GRR-12, GRR-13, GRR-15]
+parallel_with: [GRR-04, GRR-08, GRR-09, GRR-14, GRR-16]
+unblocks: [GRR-12, GRR-13, GRR-15, GRR-17]
 ---
 
 # GRR-11 — Tool nodes and wires

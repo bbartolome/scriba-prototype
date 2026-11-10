@@ -6,7 +6,7 @@ phase: phase:nonfiction-workhorses
 milestone: M2
 blocked_by: [GNP-05, GNP-06, GNP-07, GNP-08, GNP-09, GNP-10, GNP-11]
 parallel_with: [GNP-13, GNP-14, GNP-15, GNP-16, GNP-17]
-unblocks: [GNP-20, GNP-21, GNP-22, "Tool registry editor-ui gate (TRG-17)", "Graph runner sample recipe (GRR-16)", "Graph runner phase:canvas (GRR-17)"]
+unblocks: [GNP-20, GNP-21, GNP-22, "Tool registry editor-ui gate (TRG-17)", "Agent loop narrative gate (AGL-11)"]
 ---
 
 # GNP-12 — Workhorses gate

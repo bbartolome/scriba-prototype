@@ -6,7 +6,7 @@ phase: phase:assembly-preflight
 milestone: M5
 blocked_by: [CEX-02]
 parallel_with: [CEX-03, CEX-04]
-unblocks: [CEX-06, CEX-07, CEX-09, CEX-10]
+unblocks: [CEX-06, CEX-07, CEX-09, CEX-10, CEX-18]
 ---
 
 # CEX-05 — Preflight framework and placeholders

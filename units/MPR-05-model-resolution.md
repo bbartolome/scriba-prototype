@@ -6,7 +6,7 @@ phase: phase:client
 milestone: M1
 blocked_by: [MPR-02, MPR-03, MPR-04]
 parallel_with: []
-unblocks: [MPR-06, MPR-12]
+unblocks: [MPR-06, MPR-08, MPR-12]
 ---
 
 # MPR-05 — Resolution and model list

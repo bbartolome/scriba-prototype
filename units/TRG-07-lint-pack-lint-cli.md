@@ -6,7 +6,7 @@ phase: phase:loader-validation
 milestone: M2
 blocked_by: [TRG-05, TRG-06, TRG-08]
 parallel_with: [TRG-09]
-unblocks: [TRG-10, "Platform examples check pack layer (PLT-22)", "Genre packs content tests"]
+unblocks: [TRG-10, TRG-11, "Genre packs packs scaffold and content checks (GNP-01)"]
 ---
 
 # TRG-07 — Lint and pack-lint

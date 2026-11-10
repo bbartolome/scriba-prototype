@@ -6,7 +6,7 @@ phase: phase:image-compose
 milestone: M1 (release track)
 blocked_by: [PLT-14]
 parallel_with: [PLT-13, "wave-1 modules"]
-unblocks: [PLT-16, "Setup & auth phase that consumes the LocalAPI socket"]
+unblocks: [PLT-16, "Compile & export export gate (CEX-15)", "Setup & auth tailnet gate (SAU-21)"]
 ---
 
 # PLT-15 — Compose

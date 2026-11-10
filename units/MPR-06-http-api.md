@@ -6,7 +6,7 @@ phase: phase:client
 milestone: M1
 blocked_by: [MPR-02, MPR-03, MPR-05]
 parallel_with: []
-unblocks: [MPR-07, MPR-09]
+unblocks: [MPR-07, MPR-08, MPR-09]
 ---
 
 # MPR-06 — HTTP API

@@ -6,7 +6,7 @@ phase: phase:core
 milestone: M1
 blocked_by: [SHL-01]
 parallel_with: [SHL-02, SHL-03]
-unblocks: [SHL-05, SHL-06, "Setup & auth preferences step (SAU-13) and settings banner"]
+unblocks: [SHL-05, SHL-06, SHL-09]
 ---
 
 # SHL-04 — Theming and notices

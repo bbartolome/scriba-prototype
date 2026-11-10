@@ -6,7 +6,7 @@ phase: phase:canvas
 milestone: M4
 blocked_by: [GRR-08, GRR-09, GRR-10, GRR-11, GRR-12, GRR-13, GRR-14, GRR-15, GRR-16]
 parallel_with: []
-unblocks: []
+unblocks: ["Genre packs fiction gate (GNP-19)"]
 ---
 
 # GRR-17 — Canvas gate

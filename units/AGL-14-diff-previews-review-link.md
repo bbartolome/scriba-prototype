@@ -5,7 +5,7 @@ module: agent-loop
 phase: phase:pending-writes
 milestone: M3
 blocked_by: [AGL-07, AGL-12, "Frontend shell read-only diff (SHL-12)"]
-parallel_with: [AGL-13, AGL-16]
+parallel_with: [AGL-11, AGL-13, AGL-16]
 unblocks: [AGL-15]
 ---
 

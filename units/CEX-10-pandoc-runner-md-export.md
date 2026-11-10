@@ -6,7 +6,7 @@ phase: phase:export
 milestone: M5
 blocked_by: [CEX-04, CEX-05, CEX-09, "Platform ci.yml (PLT-10)"]
 parallel_with: [CEX-16, CEX-17]
-unblocks: [CEX-11, CEX-12, CEX-13, CEX-14]
+unblocks: [CEX-11, CEX-12, CEX-13, CEX-14, CEX-15, CEX-18]
 ---
 
 # CEX-10 — Export runner and Markdown

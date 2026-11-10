@@ -5,7 +5,7 @@ module: agent-loop
 phase: phase:narrative-tools
 milestone: M2
 blocked_by: [AGL-02, "Project store phase:search (PST-13)"]
-parallel_with: [AGL-09, AGL-12]
+parallel_with: [AGL-09, AGL-12, AGL-25]
 unblocks: [AGL-11, AGL-16]
 ---
 

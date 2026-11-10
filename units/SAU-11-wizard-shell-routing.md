@@ -6,7 +6,7 @@ phase: phase:setup-flow
 milestone: M2
 blocked_by: [SAU-06, SAU-09, "Frontend shell phase:core (SHL-09)"]
 parallel_with: [SAU-10, SAU-15]
-unblocks: [SAU-12, SAU-13, SAU-14, SAU-20]
+unblocks: [SAU-12, SAU-13, SAU-14, SAU-16, SAU-20]
 ---
 
 # SAU-11 — Wizard shell

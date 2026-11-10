@@ -5,7 +5,7 @@ module: shell
 phase: phase:core
 milestone: M1
 blocked_by: [SHL-03, SHL-04]
-parallel_with: [SHL-05, SHL-07]
+parallel_with: [SHL-05, SHL-07, SHL-08]
 unblocks: [SHL-09]
 ---
 

@@ -6,7 +6,7 @@ phase: phase:shared-components
 milestone: M2
 blocked_by: [SHL-09]
 parallel_with: [SHL-10, SHL-11, SHL-13, SHL-17, SHL-18]
-unblocks: [SHL-16, "Tool registry Compare (M2)", "Project store review queue (PST-20, M3)", "Agent loop write previews (M3)"]
+unblocks: [SHL-16, SHL-19, "Project store review queue (PST-20, M3)", "Agent loop diff previews (AGL-14)", "Project store version history UI (PST-21)", "Tool registry YAML editor and actions (TRG-14)"]
 ---
 
 # SHL-12 — Read-only diff view

@@ -6,7 +6,7 @@ phase: phase:file-tools-chat
 milestone: M1
 blocked_by: [AGL-01, "Project store phase:files (PST-12)"]
 parallel_with: [AGL-06, AGL-07]
-unblocks: [AGL-03, AGL-10, AGL-12, AGL-22]
+unblocks: [AGL-03, AGL-08, AGL-10, AGL-12, AGL-22]
 ---
 
 # AGL-02 — Tool framework and file reads

@@ -6,7 +6,7 @@ phase: phase:settings-ui
 milestone: M2
 blocked_by: [MPR-06, "Frontend shell phase:core (SHL-09)"]
 parallel_with: [MPR-12]
-unblocks: [MPR-10, MPR-11, "Setup & auth providers step (SAU-12)"]
+unblocks: [MPR-10, MPR-11]
 ---
 
 # MPR-09 — Providers panel

@@ -6,7 +6,7 @@ phase: phase:engine
 milestone: M4
 blocked_by: [GRR-01, "Project store phase:files (PST-12)", "Setup & auth phase:token-guard (SAU-08)"]
 parallel_with: [GRR-03, GRR-10]
-unblocks: [GRR-04, GRR-09]
+unblocks: [GRR-04, GRR-08, GRR-09]
 ---
 
 # GRR-02 — Graph CRUD

@@ -6,7 +6,7 @@ phase: phase:search
 milestone: M2
 blocked_by: [PST-10, PST-13]
 parallel_with: [PST-15, PST-16, PST-17]
-unblocks: [PST-22]
+unblocks: [PST-22, "Agent loop narrative gate (AGL-11)", "Agent loop grounding gate (AGL-20)"]
 ---
 
 # PST-14 — Search box UI

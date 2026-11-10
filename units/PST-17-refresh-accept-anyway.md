@@ -5,7 +5,7 @@ module: project-store
 phase: phase:pending-review
 milestone: M3
 blocked_by: [PST-16]
-parallel_with: [PST-18, PST-19, PST-23]
+parallel_with: [PST-14, PST-18, PST-19, PST-23]
 unblocks: [PST-20, PST-22]
 ---
 

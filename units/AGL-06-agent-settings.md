@@ -6,7 +6,7 @@ phase: phase:file-tools-chat
 milestone: M1
 blocked_by: [AGL-01, "Platform phase:scaffold (PLT-11; settings hook PLT-07)"]
 parallel_with: [AGL-02, AGL-07]
-unblocks: [AGL-03, AGL-21]
+unblocks: [AGL-03, AGL-08, AGL-21]
 ---
 
 # AGL-06 — Settings

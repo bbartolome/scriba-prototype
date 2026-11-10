@@ -6,7 +6,7 @@ phase: phase:pending-review
 milestone: M3
 blocked_by: [PST-12]
 parallel_with: [PST-13, PST-14]
-unblocks: [PST-16]
+unblocks: [PST-16, "Agent loop write overlay (AGL-12)", "Graph runner output nodes (GRR-06)"]
 ---
 
 # PST-15 — Propose and the pending store

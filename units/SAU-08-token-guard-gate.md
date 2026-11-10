@@ -6,7 +6,7 @@ phase: phase:token-guard
 milestone: M1
 blocked_by: [SAU-03, SAU-04, SAU-05, SAU-06, SAU-07]
 parallel_with: []
-unblocks: [SAU-09, SAU-10, SAU-17, PST-12, "every module phase that names Setup & auth phase:token-guard (Model providers phase:client, Tool registry, Graph runner phase:engine, ...)"]
+unblocks: [SAU-09, SAU-10, SAU-17, "Agent loop loop core (AGL-03)", "Compile & export effective order and the view model (CEX-02)", "Graph runner graph CRUD (GRR-02)", "Graph runner engine gate (GRR-08)", "Model providers client gate (MPR-08)", "Project store files gate (PST-12)", "Tool registry loader gate (TRG-11)"]
 ---
 
 # SAU-08 — Token-guard gate

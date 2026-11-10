@@ -6,7 +6,7 @@ phase: phase:scaffold
 milestone: M1
 blocked_by: [PLT-01]
 parallel_with: [PLT-02, PLT-03, PLT-04, PLT-09, PLT-12]
-unblocks: [PLT-11, PLT-13]
+unblocks: [PLT-11, "Compile & export export runner and Markdown (CEX-10)"]
 ---
 
 # PLT-10 — `ci.yml`

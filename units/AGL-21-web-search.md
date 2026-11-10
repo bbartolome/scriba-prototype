@@ -5,7 +5,7 @@ module: agent-loop
 phase: phase:research
 milestone: M7
 blocked_by: [AGL-06, AGL-08]
-parallel_with: [AGL-22]
+parallel_with: [AGL-20, AGL-22, AGL-24]
 unblocks: [AGL-23]
 ---
 

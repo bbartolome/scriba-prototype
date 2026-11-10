@@ -6,7 +6,7 @@ phase: phase:engine
 milestone: M4
 blocked_by: [GRR-01, "Tool registry phase:loader-validation (TRG-11; catalog with derived ports and params-mode validate)"]
 parallel_with: [GRR-02, GRR-10]
-unblocks: [GRR-04, GRR-11]
+unblocks: [GRR-04, GRR-08, GRR-11]
 ---
 
 # GRR-03 — Validation

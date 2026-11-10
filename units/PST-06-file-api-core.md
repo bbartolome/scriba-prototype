@@ -5,8 +5,8 @@ module: project-store
 phase: phase:files
 milestone: M1
 blocked_by: [PST-02, PST-04]
-parallel_with: [PST-05, PST-08, PST-11]
-unblocks: [PST-07, PST-10, PST-12, "Agent loop phase:file-tools-chat (with PST-12)"]
+parallel_with: [PST-05, PST-08, PST-09, PST-11]
+unblocks: [PST-07, PST-10, PST-12]
 ---
 
 # PST-06 — File API core

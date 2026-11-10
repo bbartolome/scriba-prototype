@@ -6,7 +6,7 @@ phase: phase:ci-publish
 milestone: M1 (release track)
 blocked_by: [PLT-18]
 parallel_with: ["wave-1 modules"]
-unblocks: ["Compile & export image smoke step (additive)"]
+unblocks: ["Compile & export export gate (CEX-15)"]
 ---
 
 # PLT-19 — Publishing

@@ -5,7 +5,7 @@ module: agent-loop
 phase: phase:narrative-tools
 milestone: M2
 blocked_by: [AGL-08, "Tool registry phase:executor (TRG-12; catalog TRG-11)"]
-parallel_with: [AGL-10, AGL-12]
+parallel_with: [AGL-10, AGL-12, AGL-25]
 unblocks: [AGL-11, AGL-13]
 ---
 

@@ -6,7 +6,7 @@ phase: phase:contract
 milestone: M5 (lands early in wave 2)
 blocked_by: ["Platform phase:scaffold (PLT-11)", "Project store phase:contract (PST-01)", "Graph runner phase:contract (GRR-01)", "Agent loop phase:contract (AGL-01)"]
 parallel_with: ["wave-2 work"]
-unblocks: [CEX-02, CEX-08, CEX-17, "Agent loop compile tools (AGL-24)"]
+unblocks: [CEX-02, CEX-08, CEX-17]
 ---
 
 # CEX-01 — Contract slice

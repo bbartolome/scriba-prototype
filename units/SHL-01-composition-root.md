@@ -6,7 +6,7 @@ phase: phase:core
 milestone: M1
 blocked_by: ["Platform phase:scaffold (PLT-11; web root handed over from PLT-03)"]
 parallel_with: []
-unblocks: [SHL-02, SHL-03, SHL-04]
+unblocks: [SHL-02, SHL-03, SHL-04, SHL-09]
 ---
 
 # SHL-01 — Composition root

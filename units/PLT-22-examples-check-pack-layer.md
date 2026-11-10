@@ -6,7 +6,7 @@ phase: phase:examples-check
 milestone: M2
 blocked_by: [PLT-20, "Tool registry phase:loader-validation (TRG-11)"]
 parallel_with: [PLT-21]
-unblocks: []
+unblocks: ["Graph runner sample recipe (GRR-16)"]
 ---
 
 # PLT-22 — Examples check, pack layer

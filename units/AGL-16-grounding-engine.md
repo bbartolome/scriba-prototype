@@ -5,7 +5,7 @@ module: agent-loop
 phase: phase:grounding
 milestone: M3
 blocked_by: [AGL-10, AGL-12]
-parallel_with: [AGL-13, AGL-14, AGL-18, AGL-19]
+parallel_with: [AGL-13, AGL-14, AGL-15, AGL-18, AGL-19]
 unblocks: [AGL-17, AGL-20]
 ---
 

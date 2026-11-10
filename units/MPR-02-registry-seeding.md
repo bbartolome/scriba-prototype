@@ -6,7 +6,7 @@ phase: phase:client
 milestone: M1
 blocked_by: [MPR-01, "Platform phase:scaffold (PLT-11)"]
 parallel_with: [MPR-03, MPR-04]
-unblocks: [MPR-05, MPR-06]
+unblocks: [MPR-05, MPR-06, MPR-08]
 ---
 
 # MPR-02 — Registry and seeding

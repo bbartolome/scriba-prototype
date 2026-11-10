@@ -5,8 +5,8 @@ module: platform
 phase: phase:test-harness
 milestone: M1
 blocked_by: [PLT-01]
-parallel_with: [PLT-02, PLT-03, PLT-04, PLT-05, PLT-06, PLT-07, PLT-08, PLT-09, PLT-10, PLT-11]
-unblocks: [PLT-13]
+parallel_with: [PLT-02, PLT-03, PLT-04, PLT-05, PLT-06, PLT-07, PLT-08, PLT-09, PLT-10, PLT-11, PLT-14]
+unblocks: [PLT-13, "Genre packs golden harness (GNP-02)", "Graph runner run engine core (GRR-04)", "Model providers openai-compatible client (MPR-04)", "Tool registry executor (TRG-12)"]
 ---
 
 # PLT-12 — Mock OpenAI server

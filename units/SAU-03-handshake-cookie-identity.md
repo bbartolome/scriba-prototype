@@ -5,7 +5,7 @@ module: setup-auth
 phase: phase:token-guard
 milestone: M1
 blocked_by: [SAU-02]
-parallel_with: [SAU-04, SAU-05]
+parallel_with: [SAU-04, SAU-05, SAU-07]
 unblocks: [SAU-08]
 ---
 

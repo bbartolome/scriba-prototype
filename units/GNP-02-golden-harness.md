@@ -6,7 +6,7 @@ phase: phase:core-propose-graph
 milestone: M2
 blocked_by: ["Platform create-test-app (PLT-04) and mock OpenAI server (PLT-12)", "Tool registry phase:executor (TRG-12; execute endpoint)"]
 parallel_with: [GNP-01]
-unblocks: [GNP-04, GNP-07, GNP-08, GNP-09, GNP-10, GNP-14, GNP-15, GNP-16, GNP-17, GNP-20, GNP-21, GNP-22, GNP-23]
+unblocks: [GNP-04, GNP-05, GNP-07, GNP-08, GNP-09, GNP-10, GNP-14, GNP-15, GNP-16, GNP-17, GNP-20, GNP-21, GNP-22, GNP-23]
 ---
 
 # GNP-02 — Golden harness

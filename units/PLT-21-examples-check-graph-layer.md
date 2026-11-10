@@ -6,7 +6,7 @@ phase: phase:examples-check
 milestone: M2–M4 (lands when its gate closes)
 blocked_by: [PLT-20, "Graph runner phase:contract (GRR-01)"]
 parallel_with: [PLT-22]
-unblocks: []
+unblocks: ["Graph runner sample recipe (GRR-16)"]
 ---
 
 # PLT-21 — Examples check, graph layer

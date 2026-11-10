@@ -5,7 +5,7 @@ module: compile-export
 phase: phase:manuscript-snapshots
 milestone: M5
 blocked_by: [CEX-16, CEX-17]
-parallel_with: [CEX-18]
+parallel_with: [CEX-15, CEX-18]
 unblocks: [CEX-20]
 ---
 

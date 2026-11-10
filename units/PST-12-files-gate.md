@@ -6,7 +6,7 @@ phase: phase:files
 milestone: M1
 blocked_by: [PST-03, PST-04, PST-05, PST-06, PST-07, PST-08, PST-09, PST-10, PST-11, "Setup & auth phase:token-guard (SAU-08)"]
 parallel_with: []
-unblocks: [PST-13, PST-15, "Agent loop phase:file-tools-chat (AGL-08)", "Graph runner phase:engine (with PST-22)", "Tool registry phase:form-renderer / Try panel", "Model providers project-override phase", "Compile & export phases needing phase:files"]
+unblocks: [PST-13, PST-15, "Agent loop tool framework and file reads (AGL-02)", "Compile & export effective order and the view model (CEX-02)", "Graph runner graph CRUD (GRR-02)", "Model providers project override API (MPR-12)", "Setup & auth first-project step (SAU-14)", "Tool registry spike gate (TRG-05)", "Tool registry try panel (TRG-16)"]
 ---
 
 # PST-12 — Files gate

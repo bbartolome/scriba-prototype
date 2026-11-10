@@ -6,7 +6,7 @@ phase: phase:search
 milestone: M2
 blocked_by: [PST-08, PST-12]
 parallel_with: [PST-15, PST-16]
-unblocks: [PST-14, "Agent loop search_notes and grounding (phase:search consumers)"]
+unblocks: [PST-14, "Agent loop `search_notes` (AGL-10)"]
 ---
 
 # PST-13 — Search

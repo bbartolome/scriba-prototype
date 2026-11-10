@@ -6,7 +6,7 @@ phase: phase:core-propose-graph
 milestone: M2
 blocked_by: ["Platform phase:scaffold (PLT-11)", "Tool registry pack-lint library (TRG-07)"]
 parallel_with: [GNP-02]
-unblocks: [GNP-03, GNP-04, GNP-06, GNP-13, "every content unit"]
+unblocks: [GNP-03, GNP-04, GNP-05, GNP-06, GNP-13, "every content unit"]
 ---
 
 # GNP-01 — Packs scaffold and content checks

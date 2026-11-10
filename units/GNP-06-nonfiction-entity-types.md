@@ -5,8 +5,8 @@ module: genre-packs
 phase: phase:nonfiction-workhorses
 milestone: M2
 blocked_by: [GNP-01]
-parallel_with: [GNP-03, GNP-04, GNP-13]
-unblocks: [GNP-07, GNP-08, GNP-09, GNP-10, GNP-11]
+parallel_with: [GNP-03, GNP-04, GNP-05, GNP-13]
+unblocks: [GNP-07, GNP-08, GNP-09, GNP-10, GNP-11, GNP-12, GNP-21, GNP-22]
 ---
 
 # GNP-06 — Nonfiction entity types

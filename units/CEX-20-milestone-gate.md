@@ -6,7 +6,7 @@ phase: phase:manuscript-snapshots
 milestone: M5
 blocked_by: [CEX-08, CEX-15, CEX-16, CEX-17, CEX-18, CEX-19, "Project store phase:pending-review (PST-22; e2e accept-change step)"]
 parallel_with: []
-unblocks: ["Genre packs fiction gate (GNP-19)"]
+unblocks: []
 ---
 
 # CEX-20 — Milestone gate

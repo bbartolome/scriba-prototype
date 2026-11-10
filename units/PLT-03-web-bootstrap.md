@@ -5,8 +5,8 @@ module: platform
 phase: phase:scaffold
 milestone: M1
 blocked_by: [PLT-01]
-parallel_with: [PLT-02, PLT-09, PLT-10, PLT-12]
-unblocks: [PLT-11]
+parallel_with: [PLT-02, PLT-04, PLT-09, PLT-10, PLT-12]
+unblocks: [PLT-11, "Frontend shell composition root (SHL-01)"]
 ---
 
 # PLT-03 — `apps/web` bootstrap

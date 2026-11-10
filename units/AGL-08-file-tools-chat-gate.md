@@ -6,7 +6,7 @@ phase: phase:file-tools-chat
 milestone: M1
 blocked_by: [AGL-02, AGL-03, AGL-04, AGL-05, AGL-06, AGL-07, "Platform phase:test-harness (PLT-13)", "Project store nonfiction skeleton (PST-11)", "Frontend shell tool-call card (SHL-10)"]
 parallel_with: []
-unblocks: [AGL-09, AGL-10, AGL-12, AGL-21, AGL-22, AGL-24, AGL-25]
+unblocks: [AGL-09, AGL-12, AGL-21, AGL-22, AGL-24, AGL-25]
 ---
 
 # AGL-08 — File-tools-chat gate

@@ -5,7 +5,7 @@ module: setup-auth
 phase: phase:setup-flow
 milestone: M2
 blocked_by: [SAU-08]
-parallel_with: [SAU-09, SAU-17]
+parallel_with: [SAU-09, SAU-11, SAU-17]
 unblocks: [SAU-15]
 ---
 

@@ -6,7 +6,7 @@ phase: phase:form-renderer
 milestone: M2
 blocked_by: [TRG-02, TRG-03, TRG-04, "Project store phase:files (PST-12) for the running-app picker"]
 parallel_with: [TRG-06, TRG-08]
-unblocks: [TRG-07]
+unblocks: [TRG-07, TRG-13, "Graph runner tool nodes and wires (GRR-11)"]
 ---
 
 # TRG-05 — Spike gate

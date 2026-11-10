@@ -5,7 +5,7 @@ module: graph-runner
 phase: phase:canvas
 milestone: M4
 blocked_by: [GRR-04, GRR-05, GRR-06, GRR-11, "Project store review route (PST-20)"]
-parallel_with: [GRR-12, GRR-14]
+parallel_with: [GRR-12, GRR-14, GRR-16]
 unblocks: [GRR-15, GRR-17]
 ---
 

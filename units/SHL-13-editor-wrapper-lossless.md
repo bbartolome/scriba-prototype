@@ -6,7 +6,7 @@ phase: phase:editor
 milestone: M3
 blocked_by: [SHL-09, "Project store phase:contract (PST-01; file reference, read/write requests, baseHash, write-conflict code)"]
 parallel_with: [SHL-10, SHL-11, SHL-12, SHL-16, SHL-17, SHL-18]
-unblocks: [SHL-14, SHL-15]
+unblocks: [SHL-14, SHL-15, SHL-19]
 ---
 
 # SHL-13 — Editor wrapper (lossless)

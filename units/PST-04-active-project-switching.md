@@ -6,7 +6,7 @@ phase: phase:files
 milestone: M1
 blocked_by: [PST-03]
 parallel_with: [PST-05, PST-11]
-unblocks: [PST-06, PST-08, PST-09]
+unblocks: [PST-06, PST-08, PST-09, PST-12]
 ---
 
 # PST-04 — Active project

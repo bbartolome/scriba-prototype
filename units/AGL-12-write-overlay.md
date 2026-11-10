@@ -5,8 +5,8 @@ module: agent-loop
 phase: phase:pending-writes
 milestone: M3
 blocked_by: [AGL-02, AGL-08, "Project store propose (PST-15)"]
-parallel_with: [AGL-09, AGL-10]
-unblocks: [AGL-13, AGL-14, AGL-15, AGL-16]
+parallel_with: [AGL-09, AGL-10, AGL-11, AGL-25]
+unblocks: [AGL-13, AGL-14, AGL-15, AGL-16, "Project store review gate (PST-22)"]
 ---
 
 # AGL-12 — Write overlay

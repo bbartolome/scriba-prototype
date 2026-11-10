@@ -6,7 +6,7 @@ phase: phase:scaffold
 milestone: M1
 blocked_by: [PLT-01, PLT-02]
 parallel_with: [PLT-03, PLT-09, PLT-10, PLT-12]
-unblocks: [PLT-05, PLT-06, PLT-07, PLT-08, PLT-11]
+unblocks: [PLT-05, PLT-06, PLT-07, PLT-08, PLT-11, "Genre packs golden harness (GNP-02)"]
 ---
 
 # PLT-04 — API composition root

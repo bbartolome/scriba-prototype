@@ -6,7 +6,7 @@ phase: phase:contract
 milestone: M1
 blocked_by: ["Platform phase:scaffold (PLT-11)", "Project store phase:contract (PST-01)"]
 parallel_with: ["wave-1 contract phases"]
-unblocks: [AGL-02, AGL-06, AGL-07, "Compile & export unsupported-claims preflight", "Project store provenance display"]
+unblocks: [AGL-02, AGL-06, AGL-07, "Project store provenance display", "Compile & export contract slice (CEX-01)", "Compile & export unsupported claims and orphan scenes (CEX-06)"]
 ---
 
 # AGL-01 — Contract slice

@@ -5,8 +5,8 @@ module: graph-runner
 phase: phase:canvas
 milestone: M4
 blocked_by: [GRR-10]
-parallel_with: [GRR-11, GRR-12, GRR-13]
-unblocks: [GRR-15]
+parallel_with: [GRR-08, GRR-09, GRR-11, GRR-12, GRR-13, GRR-16]
+unblocks: [GRR-15, GRR-17]
 ---
 
 # GRR-14 — Story view and Arrange

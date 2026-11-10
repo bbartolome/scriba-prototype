@@ -5,8 +5,8 @@ module: project-store
 phase: phase:files
 milestone: M1
 blocked_by: [PST-02, PST-04]
-parallel_with: [PST-05, PST-06, PST-07, PST-11]
-unblocks: [PST-12, PST-13]
+parallel_with: [PST-05, PST-06, PST-07, PST-09, PST-10, PST-11]
+unblocks: [PST-12, PST-13, "Graph runner entity chips (GRR-12)", "Tool registry pickers (TRG-04)"]
 ---
 
 # PST-08 — Entity resolution and entity list

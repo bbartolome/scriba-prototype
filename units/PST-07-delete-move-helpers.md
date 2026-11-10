@@ -5,8 +5,8 @@ module: project-store
 phase: phase:files
 milestone: M1
 blocked_by: [PST-06]
-parallel_with: [PST-08, PST-09, PST-10]
-unblocks: [PST-12]
+parallel_with: [PST-08, PST-09, PST-10, PST-11]
+unblocks: [PST-12, "Model providers project override API (MPR-12)"]
 ---
 
 # PST-07 — delete, move and in-process helpers

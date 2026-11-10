@@ -6,7 +6,7 @@ phase: phase:assembly-preflight
 milestone: M5
 blocked_by: [CEX-01, "Project store phase:files (PST-12)", "Setup & auth phase:token-guard (SAU-08)"]
 parallel_with: [CEX-08, CEX-17]
-unblocks: [CEX-03, CEX-04, CEX-05]
+unblocks: [CEX-03, CEX-04, CEX-05, CEX-09]
 ---
 
 # CEX-02 — Effective order and the view model

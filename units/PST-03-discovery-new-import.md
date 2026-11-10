@@ -6,7 +6,7 @@ phase: phase:files
 milestone: M1
 blocked_by: [PST-02]
 parallel_with: [PST-11]
-unblocks: [PST-04, PST-05, PST-09]
+unblocks: [PST-04, PST-05, PST-09, PST-12]
 ---
 
 # PST-03 — Discovery, list, New, Import

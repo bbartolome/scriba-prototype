@@ -5,8 +5,8 @@ module: genre-packs
 phase: phase:nonfiction-workhorses
 milestone: M2
 blocked_by: [GNP-03, GNP-06, "Project store nonfiction skeleton (PST-11)"]
-parallel_with: [GNP-07, GNP-08, GNP-09, GNP-10]
-unblocks: [GNP-12, "Agent loop grounding-claims draft (M3)"]
+parallel_with: [GNP-05, GNP-07, GNP-08, GNP-09, GNP-10]
+unblocks: [GNP-12, "Agent loop grounding-claims sample (AGL-19)"]
 ---
 
 # GNP-11 — Nonfiction sample entities

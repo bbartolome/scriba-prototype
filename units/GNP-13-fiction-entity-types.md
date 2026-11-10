@@ -5,8 +5,8 @@ module: genre-packs
 phase: phase:fiction
 milestone: M6
 blocked_by: [GNP-01]
-parallel_with: [GNP-03, GNP-04, GNP-06, GNP-07, GNP-08, GNP-09, GNP-10]
-unblocks: [GNP-14, GNP-15, GNP-16, GNP-17, GNP-18]
+parallel_with: [GNP-03, GNP-04, GNP-05, GNP-06, GNP-07, GNP-08, GNP-09, GNP-10, GNP-12]
+unblocks: [GNP-14, GNP-15, GNP-16, GNP-17, GNP-18, GNP-19]
 ---
 
 # GNP-13 — Fiction entity types

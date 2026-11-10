@@ -5,7 +5,7 @@ module: genre-packs
 phase: phase:remaining-shapes
 milestone: M7
 blocked_by: [GNP-02, GNP-06, GNP-12]
-parallel_with: [GNP-20, GNP-21]
+parallel_with: [GNP-19, GNP-20, GNP-21]
 unblocks: [GNP-23, GNP-24]
 ---
 

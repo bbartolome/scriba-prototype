@@ -5,8 +5,8 @@ module: graph-runner
 phase: phase:canvas
 milestone: M4
 blocked_by: [GRR-11, "Project store entity list (PST-08, via phase:files)"]
-parallel_with: [GRR-13, GRR-14]
-unblocks: [GRR-15]
+parallel_with: [GRR-08, GRR-13, GRR-14, GRR-16]
+unblocks: [GRR-15, GRR-17]
 ---
 
 # GRR-12 — Entity chips

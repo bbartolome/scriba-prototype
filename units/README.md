@@ -61,7 +61,8 @@ Then `# <ID> — <short title>` and these sections, in this order, each only whe
 - A bare id (`PST-06`) is a unit; it must be merged.
 - An external dependency is a quoted string `"<Module> phase:<name> (<gate unit>[; note])"`, e.g. `"Project store phase:files (PST-12)"`. The phase is closed when its gate unit is merged.
 - When only part of a phase is needed, name the unit instead: `"Frontend shell read-only diff (SHL-12)"`, `"Project store propose (PST-15)"`.
-- `parallel_with` and `unblocks` may also name things that aren't units (`"wave-1 modules"`, `"Agent loop M1 demo"`); they are informative only.
+- `blocked_by` is the source of truth. `unblocks` is its exact inverse: every unit whose `blocked_by` names this unit (bare id in the same module, `"<Module> <title> (<ID>)"` across modules). `parallel_with` is symmetric and never pairs a unit with one it depends on, directly or transitively.
+- Quoted entries without a unit id (`"wave-1 modules"`, `"Agent loop M1 demo"`) are informative only.
 
 ## Phase gates
 
@@ -440,7 +441,7 @@ The Project store owns the author's books on disk: the library at `/books`, disc
 
 Every unit is gated on Platform `phase:scaffold` (PLT-11) through PST-01.
 
-The original spec made phases strictly serial. Phase *gates* are unchanged, but units only wait on what they actually use: the pending-changes units (PST-15+) need the file API, not search, so they may start once `phase:files` closes, in parallel with `phase:search`. `phase:pending-review` still closes only after PST-22, and PST-22 requires `phase:search` closed (the M3 demo uses search-backed grounding). The migrations unit needs apply (PST-16), not the whole review phase.
+The original spec made phases strictly serial. Phase *gates* are unchanged, but units only wait on what they actually use: the pending-changes units (PST-15+) need the file API, not search, so they may start once `phase:files` closes, in parallel with `phase:search`. `phase:pending-review` still closes only after PST-22, and PST-22 requires `phase:search` closed (search over `sources/` is the Project store's part of the M3 "done when") and the Agent loop's write overlay (AGL-12), whose pending change the e2e "accept change" step accepts. The grounding half of the M3 demo is AGL-20's, which closes after this gate. The migrations unit needs apply (PST-16), not the whole review phase.
 
 ### Dependency graph
 
@@ -465,7 +466,7 @@ PST-01 contract slice  ══> phase:contract
       ├─ PST-20 review queue UI (needs 17 + Shell shared-components; merge view at Shell editor)
       ├─ PST-21 version history UI (needs 18, 10)
       └─ PST-23 migrations  ══> phase:migrations
- PST-22 review gate (e2e "accept change", demo; needs 17–21, phase:search)  ══> phase:pending-review
+ PST-22 review gate (e2e "accept change", demo; needs 17–21, phase:search, AGL-12)  ══> phase:pending-review
 ```
 
 ### Parallelism
@@ -738,7 +739,7 @@ AGL-01 contract slice  ══> phase:contract
 
 ### Parallelism
 - After AGL-01: AGL-02, AGL-06, AGL-07 in parallel; after AGL-03: AGL-04, AGL-05 in parallel.
-- After AGL-08: AGL-09, AGL-10, AGL-12, AGL-25 in parallel; AGL-19 any time after its content gates.
+- After AGL-02: AGL-10 once Project store search lands. After AGL-08: AGL-09, AGL-12, AGL-25 in parallel; AGL-19 any time after its content gates.
 - After AGL-12: AGL-13, AGL-14, AGL-16 in parallel; AGL-18 against fakes any time after AGL-07.
 - AGL-21 and AGL-22 in parallel after AGL-08.
 

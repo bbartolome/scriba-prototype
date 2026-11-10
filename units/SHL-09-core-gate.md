@@ -6,7 +6,7 @@ phase: phase:core
 milestone: M1
 blocked_by: [SHL-01, SHL-02, SHL-03, SHL-04, SHL-05, SHL-06, SHL-07, SHL-08]
 parallel_with: []
-unblocks: [SHL-10, SHL-11, SHL-12, SHL-13, SHL-17, SHL-18, "every feature UI phase naming Frontend shell phase:core"]
+unblocks: [SHL-10, SHL-11, SHL-12, SHL-13, SHL-17, SHL-18, "Agent loop chat panel (AGL-07)", "Compile & export manuscript outline UI (CEX-17)", "Graph runner graphs list (GRR-09)", "Graph runner adapter layer (GRR-10)", "Model providers providers panel (MPR-09)", "Project store project picker UI (PST-09)", "Project store files UI (PST-10)", "Setup & auth minimal `/setup` (SAU-06)", "Setup & auth wizard shell (SAU-11)", "Setup & auth settings page (SAU-15)", "Tool registry tool-form renderer (TRG-03)", "Tool registry tools list (TRG-13)"]
 ---
 
 # SHL-09 — Core gate

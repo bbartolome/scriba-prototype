@@ -6,7 +6,7 @@ phase: phase:core
 milestone: M1
 blocked_by: [SHL-01]
 parallel_with: [SHL-03, SHL-04]
-unblocks: [SHL-07, SHL-08]
+unblocks: [SHL-07, SHL-08, SHL-09]
 ---
 
 # SHL-02 — Typed API client

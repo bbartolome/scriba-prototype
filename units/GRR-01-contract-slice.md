@@ -6,7 +6,7 @@ phase: phase:contract
 milestone: M4 (lands in wave 1)
 blocked_by: ["Platform phase:scaffold (PLT-11)", "Tool registry phase:contract (TRG-01)", "Project store phase:contract (PST-01)"]
 parallel_with: ["wave-1 work"]
-unblocks: [GRR-02, GRR-03, GRR-10, "Genre packs phase:core-propose-graph (GNP-05)", "Compile & export story-graph order reading", "Agent loop graph proposal validation", "Platform examples check graph layer (PLT-21)"]
+unblocks: [GRR-02, GRR-03, GRR-10, GRR-16, "Platform examples check graph layer (PLT-21)", "Agent loop output routing (AGL-13)", "Compile & export contract slice (CEX-01)", "Compile & export unsupported claims and orphan scenes (CEX-06)", "Genre packs `propose_graph` (GNP-04)", "Genre packs fiction sample (GNP-18)"]
 ---
 
 # GRR-01 — Contract slice

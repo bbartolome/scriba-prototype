@@ -5,8 +5,8 @@ module: genre-packs
 phase: phase:nonfiction-workhorses
 milestone: M2
 blocked_by: [GNP-02, GNP-03, GNP-06]
-parallel_with: [GNP-07, GNP-08, GNP-09, GNP-11]
-unblocks: [GNP-12, GRR-16]
+parallel_with: [GNP-05, GNP-07, GNP-08, GNP-09, GNP-11, GNP-13]
+unblocks: [GNP-12, GNP-23]
 ---
 
 # GNP-10 — numbers_to_people tool

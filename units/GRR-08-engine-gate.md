@@ -6,7 +6,7 @@ phase: phase:engine
 milestone: M4
 blocked_by: [GRR-02, GRR-03, GRR-04, GRR-05, GRR-06, GRR-07, "Project store phase:pending-review (PST-22)", "Setup & auth phase:token-guard (SAU-08)"]
 parallel_with: [GRR-10, GRR-11, GRR-12, GRR-14]
-unblocks: [GRR-13, GRR-17]
+unblocks: [GRR-17]
 ---
 
 # GRR-08 — Engine gate

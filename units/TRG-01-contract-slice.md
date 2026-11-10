@@ -6,7 +6,7 @@ phase: phase:contract
 milestone: M2
 blocked_by: ["Platform phase:scaffold (PLT-11; strictly PLT-02)", "Project store phase:contract (PST-01)"]
 parallel_with: ["other contract phases"]
-unblocks: [TRG-02, TRG-03, TRG-08, "Genre packs content authoring", "Graph runner phase:contract (GRR-01)", "Agent loop phase:contract (AGL-01)", "Model providers client tools input"]
+unblocks: [TRG-02, TRG-03, TRG-08, "Genre packs content authoring", "Graph runner phase:contract (GRR-01)", "Model providers client tools input"]
 ---
 
 # TRG-01 — Contract slice

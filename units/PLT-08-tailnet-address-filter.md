@@ -5,7 +5,7 @@ module: platform
 phase: phase:scaffold
 milestone: M1
 blocked_by: [PLT-04]
-parallel_with: [PLT-05, PLT-06, PLT-07]
+parallel_with: [PLT-05, PLT-06, PLT-07, PLT-12]
 unblocks: [PLT-11]
 ---
 

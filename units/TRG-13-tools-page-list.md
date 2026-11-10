@@ -6,7 +6,7 @@ phase: phase:editor-ui
 milestone: M2
 blocked_by: [TRG-05, TRG-11, "Frontend shell phase:core (SHL-09)"]
 parallel_with: [TRG-12]
-unblocks: [TRG-14, TRG-16]
+unblocks: [TRG-14, TRG-16, TRG-17]
 ---
 
 # TRG-13 — Tools list

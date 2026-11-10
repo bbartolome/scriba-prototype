@@ -5,7 +5,7 @@ module: graph-runner
 phase: phase:canvas
 milestone: M4
 blocked_by: [GRR-02, "Frontend shell phase:core (SHL-09)"]
-parallel_with: [GRR-10, GRR-11, GRR-14]
+parallel_with: [GRR-10, GRR-11, GRR-14, GRR-16]
 unblocks: [GRR-17]
 ---
 

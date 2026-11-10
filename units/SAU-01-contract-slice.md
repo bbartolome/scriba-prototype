@@ -6,7 +6,7 @@ phase: phase:contract
 milestone: M1
 blocked_by: ["Platform phase:scaffold (PLT-11; strictly PLT-02)"]
 parallel_with: ["other wave-1 contract phases"]
-unblocks: [SAU-02, "Frontend shell phase:core (landing redirect reads setup status)"]
+unblocks: [SAU-02, "Frontend shell landing and project routes (SHL-08)"]
 ---
 
 # SAU-01 — Contract slice

@@ -5,7 +5,7 @@ module: agent-loop
 phase: phase:grounding
 milestone: M3
 blocked_by: ["Project store nonfiction skeleton (PST-11)", "Genre packs nonfiction sample entities (GNP-11)"]
-parallel_with: [AGL-16, AGL-17, AGL-18]
+parallel_with: [AGL-15, AGL-16, AGL-17, AGL-18]
 unblocks: [AGL-20]
 ---
 

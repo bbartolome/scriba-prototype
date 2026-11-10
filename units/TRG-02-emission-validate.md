@@ -5,7 +5,7 @@ module: tool-registry
 phase: phase:form-renderer
 milestone: M2
 blocked_by: [TRG-01, "Platform phase:scaffold (PLT-11)"]
-parallel_with: [TRG-03, TRG-08]
+parallel_with: [TRG-03, TRG-04, TRG-08]
 unblocks: [TRG-05, TRG-06]
 ---
 

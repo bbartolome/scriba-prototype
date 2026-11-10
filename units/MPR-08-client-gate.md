@@ -6,7 +6,7 @@ phase: phase:client
 milestone: M1
 blocked_by: [MPR-02, MPR-03, MPR-04, MPR-05, MPR-06, MPR-07, "Setup & auth phase:token-guard (SAU-08)", "Platform phase:test-harness (PLT-13)"]
 parallel_with: []
-unblocks: [MPR-12, "Agent loop phase:file-tools-chat (AGL-08)", "Tool registry phase:executor (TRG-12)"]
+unblocks: [MPR-12, "Tool registry phase:executor (TRG-12)", "Agent loop loop core (AGL-03)"]
 ---
 
 # MPR-08 — Client gate

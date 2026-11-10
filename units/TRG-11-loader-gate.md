@@ -6,7 +6,7 @@ phase: phase:loader-validation
 milestone: M2
 blocked_by: [TRG-06, TRG-07, TRG-09, TRG-10, "Setup & auth phase:token-guard (SAU-08)"]
 parallel_with: []
-unblocks: [TRG-12, TRG-13, "Platform examples check pack layer (PLT-22)", "Graph runner params validation on load"]
+unblocks: [TRG-12, TRG-13, "Platform examples check pack layer (PLT-22)", "Agent loop narrative tools (AGL-09)", "Graph runner validation (GRR-03)"]
 ---
 
 # TRG-11 — Loader gate

@@ -6,7 +6,7 @@ phase: phase:smoke
 milestone: M1 (release track)
 blocked_by: [PLT-15]
 parallel_with: [PLT-13, "wave-1 modules"]
-unblocks: [PLT-17, "Setup & auth Tailscale phase (needs the ST-1 outcome)"]
+unblocks: [PLT-17, "Setup & auth tailnet gate (SAU-21)"]
 ---
 
 # PLT-16 — Smoke tests ST-1 to ST-3

@@ -6,7 +6,7 @@ phase: phase:client
 milestone: M1
 blocked_by: [MPR-01, "Platform phase:test-harness (PLT-12 mock OpenAI server)"]
 parallel_with: [MPR-02, MPR-03]
-unblocks: [MPR-05, MPR-07]
+unblocks: [MPR-05, MPR-07, MPR-08]
 ---
 
 # MPR-04 — The client

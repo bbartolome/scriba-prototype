@@ -5,7 +5,7 @@ module: setup-auth
 phase: phase:tailnet
 milestone: M3
 blocked_by: [SAU-04, SAU-17]
-parallel_with: [SAU-20]
+parallel_with: [SAU-16, SAU-20]
 unblocks: [SAU-19, SAU-21]
 ---
 

@@ -6,7 +6,7 @@ phase: phase:loader-validation
 milestone: M2
 blocked_by: [TRG-02]
 parallel_with: [TRG-03, TRG-04, TRG-05, TRG-08]
-unblocks: [TRG-07, TRG-09, TRG-10]
+unblocks: [TRG-07, TRG-09, TRG-10, TRG-11]
 ---
 
 # TRG-06 — Loader and catalog

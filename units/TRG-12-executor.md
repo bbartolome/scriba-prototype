@@ -6,7 +6,7 @@ phase: phase:executor
 milestone: M2
 blocked_by: [TRG-08, TRG-11, "Model providers phase:client (MPR-08)", "Platform phase:test-harness (PLT-12)"]
 parallel_with: [TRG-13]
-unblocks: [TRG-15, TRG-16, "Genre packs phase:core-propose-graph (GNP-05)", "Agent loop narrative tools", "Graph runner phase:engine (GRR-08)"]
+unblocks: [TRG-15, TRG-16, "Agent loop narrative tools (AGL-09)", "Genre packs golden harness (GNP-02)", "Graph runner run engine core (GRR-04)"]
 ---
 
 # TRG-12 — Executor

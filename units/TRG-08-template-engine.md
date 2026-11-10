@@ -5,7 +5,7 @@ module: tool-registry
 phase: phase:executor
 milestone: M2
 blocked_by: [TRG-01]
-parallel_with: [TRG-02, TRG-03, TRG-06]
+parallel_with: [TRG-02, TRG-03, TRG-05, TRG-06]
 unblocks: [TRG-07, TRG-12]
 ---
 

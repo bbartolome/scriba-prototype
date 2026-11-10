@@ -5,8 +5,8 @@ module: platform
 phase: phase:test-harness
 milestone: M1
 blocked_by: [PLT-11, PLT-12]
-parallel_with: [PLT-14, PLT-15]
-unblocks: [PLT-20, "phase:test-harness gate for other modules"]
+parallel_with: [PLT-14, PLT-15, PLT-16]
+unblocks: [PLT-20, "phase:test-harness gate for other modules", "Agent loop file-tools-chat gate (AGL-08)", "Model providers client gate (MPR-08)"]
 ---
 
 # PLT-13 — Playwright harness and e2e

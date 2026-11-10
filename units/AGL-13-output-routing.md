@@ -5,7 +5,7 @@ module: agent-loop
 phase: phase:pending-writes
 milestone: M3
 blocked_by: [AGL-09, AGL-12, "Graph runner phase:contract (GRR-01)"]
-parallel_with: [AGL-14, AGL-16]
+parallel_with: [AGL-11, AGL-14, AGL-16]
 unblocks: [AGL-15, AGL-17]
 ---
 

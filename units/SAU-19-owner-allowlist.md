@@ -5,8 +5,8 @@ module: setup-auth
 phase: phase:tailnet
 milestone: M3
 blocked_by: [SAU-18]
-parallel_with: [SAU-20]
-unblocks: [SAU-20, SAU-21]
+parallel_with: [SAU-16, SAU-20]
+unblocks: [SAU-21]
 ---
 
 # SAU-19 — Owner allowlist

@@ -6,7 +6,7 @@ phase: phase:grounding
 milestone: M3
 blocked_by: [AGL-15, AGL-16, AGL-17, AGL-18, AGL-19, "Project store phase:search (PST-14)"]
 parallel_with: [AGL-21, AGL-22]
-unblocks: [AGL-23, "Project store review gate demo (PST-22)", "Compile & export unsupported-claims preflight"]
+unblocks: [AGL-23, "Compile & export unsupported-claims preflight"]
 ---
 
 # AGL-20 — Grounding gate

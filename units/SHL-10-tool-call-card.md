@@ -6,7 +6,7 @@ phase: phase:shared-components
 milestone: M1
 blocked_by: [SHL-09]
 parallel_with: [SHL-11, SHL-12, SHL-13, SHL-17, SHL-18]
-unblocks: ["Agent loop chat route (M1)", "Graph runner inline node results (optional)"]
+unblocks: [SHL-19, "Graph runner inline node results (optional)", "Agent loop chat panel (AGL-07)", "Agent loop file-tools-chat gate (AGL-08)"]
 ---
 
 # SHL-10 — Tool-call card

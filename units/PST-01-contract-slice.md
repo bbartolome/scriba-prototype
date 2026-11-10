@@ -6,7 +6,7 @@ phase: phase:contract
 milestone: M1
 blocked_by: ["Platform phase:scaffold (PLT-11; strictly PLT-02)"]
 parallel_with: ["other wave-1 contract phases"]
-unblocks: [PST-02, "Frontend shell phase:core (SHL-09)", "Setup & auth first-project step", "Tool registry phase:contract (TRG-01)", "Graph runner phase:contract (GRR-01)", "Genre packs", "Model providers settings", "Agent loop phase:contract (AGL-01)", "Compile & export phase:contract (CEX-01)", PLT-20]
+unblocks: [PST-02, PST-11, "Tool registry phase:contract (TRG-01)", "Graph runner phase:contract (GRR-01)", "Genre packs", "Agent loop phase:contract (AGL-01)", "Compile & export phase:contract (CEX-01)", "Model providers project override API (MPR-12)", "Platform examples check, M1 layer (PLT-20)", "Setup & auth first-project step (SAU-14)", "Frontend shell landing and project routes (SHL-08)", "Frontend shell editor wrapper (lossless) (SHL-13)", "Tool registry pickers (TRG-04)"]
 ---
 
 # PST-01 — Contract slice

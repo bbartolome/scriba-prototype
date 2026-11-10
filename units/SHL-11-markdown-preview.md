@@ -6,7 +6,7 @@ phase: phase:shared-components
 milestone: M1
 blocked_by: [SHL-09]
 parallel_with: [SHL-10, SHL-12, SHL-13, SHL-17, SHL-18]
-unblocks: [SHL-15, "Project store files preview (PST-10)", "Compile & export reading", "Agent loop"]
+unblocks: [SHL-15, SHL-19, "Project store files preview (PST-10)", "Compile & export reading", "Agent loop"]
 ---
 
 # SHL-11 — Markdown preview

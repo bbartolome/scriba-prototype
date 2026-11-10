@@ -6,7 +6,7 @@ phase: phase:scaffold
 milestone: M1
 blocked_by: [PLT-01]
 parallel_with: [PLT-03, PLT-09, PLT-10, PLT-12]
-unblocks: [PLT-04, PLT-11]
+unblocks: [PLT-04, PLT-11, "Model providers contract slice (MPR-01)", "Project store contract slice (PST-01)", "Setup & auth contract slice (SAU-01)", "Tool registry contract slice (TRG-01)"]
 ---
 
 # PLT-02 — `@bbartolome/scriba-contracts` with ten subpaths and the `/platform` slice

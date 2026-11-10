@@ -6,7 +6,7 @@ phase: phase:editor-ui
 milestone: M2
 blocked_by: [TRG-13, "Frontend shell read-only diff (SHL-12)"]
 parallel_with: [TRG-16]
-unblocks: [TRG-15]
+unblocks: [TRG-15, TRG-17]
 ---
 
 # TRG-14 — YAML editor and actions

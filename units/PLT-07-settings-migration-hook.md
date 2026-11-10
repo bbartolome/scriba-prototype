@@ -5,8 +5,8 @@ module: platform
 phase: phase:scaffold
 milestone: M1
 blocked_by: [PLT-04]
-parallel_with: [PLT-05, PLT-06, PLT-08]
-unblocks: [PLT-11]
+parallel_with: [PLT-05, PLT-06, PLT-08, PLT-12]
+unblocks: [PLT-11, "Agent loop settings (AGL-06)"]
 ---
 
 # PLT-07 — `settings.yaml` startup migration hook

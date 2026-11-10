@@ -6,7 +6,7 @@ phase: phase:engine
 milestone: M4
 blocked_by: [GRR-02, GRR-03, "Tool registry phase:executor (TRG-12)", "Platform phase:test-harness (PLT-12)"]
 parallel_with: [GRR-10, GRR-11]
-unblocks: [GRR-05, GRR-06, GRR-07, GRR-13]
+unblocks: [GRR-05, GRR-06, GRR-07, GRR-08, GRR-13]
 ---
 
 # GRR-04 — Run engine core

@@ -5,8 +5,8 @@ module: graph-runner
 phase: phase:canvas
 milestone: M4
 blocked_by: [GRR-01, "Frontend shell phase:core (SHL-09)"]
-parallel_with: [GRR-02, GRR-03, GRR-04, GRR-09]
-unblocks: [GRR-11, GRR-14]
+parallel_with: [GRR-02, GRR-03, GRR-04, GRR-08, GRR-09, GRR-16]
+unblocks: [GRR-11, GRR-14, GRR-17]
 ---
 
 # GRR-10 — Adapter layer

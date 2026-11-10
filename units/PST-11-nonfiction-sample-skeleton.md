@@ -6,7 +6,7 @@ phase: phase:files
 milestone: M1
 blocked_by: [PST-01]
 parallel_with: [PST-02, PST-03, PST-04, PST-05, PST-06, PST-07, PST-08]
-unblocks: [PST-09, PST-12, "Genre packs nonfiction sample entities (GNP-11)", "Agent loop M1 demo"]
+unblocks: [PST-09, PST-12, "Genre packs nonfiction sample entities (GNP-11)", "Agent loop file-tools-chat gate (AGL-08)", "Agent loop grounding-claims sample (AGL-19)", "Compile & export sample order and export settings (CEX-08)"]
 ---
 
 # PST-11 — Nonfiction sample skeleton

@@ -5,7 +5,7 @@ module: tool-registry
 phase: phase:form-renderer
 milestone: M2
 blocked_by: [TRG-01, "Frontend shell phase:core (SHL-09)"]
-parallel_with: [TRG-02, TRG-08]
+parallel_with: [TRG-02, TRG-06, TRG-08]
 unblocks: [TRG-04, TRG-05, TRG-15, "Graph runner tool node (phase:canvas)"]
 ---
 

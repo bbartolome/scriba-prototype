@@ -5,8 +5,8 @@ module: project-store
 phase: phase:pending-review
 milestone: M3
 blocked_by: [PST-16]
-parallel_with: [PST-17, PST-19, PST-23]
-unblocks: [PST-21]
+parallel_with: [PST-17, PST-19, PST-20, PST-23]
+unblocks: [PST-21, PST-22]
 ---
 
 # PST-18 — Draft versions API

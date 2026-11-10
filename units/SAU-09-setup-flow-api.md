@@ -6,7 +6,7 @@ phase: phase:setup-flow
 milestone: M2
 blocked_by: [SAU-08]
 parallel_with: [SAU-10, SAU-17]
-unblocks: [SAU-11, SAU-13, SAU-15]
+unblocks: [SAU-11, SAU-13, SAU-15, "Compile & export assembled Markdown (CEX-04)"]
 ---
 
 # SAU-09 — Setup-flow API

@@ -5,7 +5,7 @@ module: compile-export
 phase: phase:assembly-preflight
 milestone: M5
 blocked_by: [CEX-02]
-parallel_with: [CEX-04, CEX-05]
+parallel_with: [CEX-04, CEX-05, CEX-17]
 unblocks: [CEX-09, CEX-14, CEX-16]
 ---
 

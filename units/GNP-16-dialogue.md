@@ -5,7 +5,7 @@ module: genre-packs
 phase: phase:fiction
 milestone: M6
 blocked_by: [GNP-02, GNP-13]
-parallel_with: [GNP-14, GNP-15, GNP-17, GNP-18]
+parallel_with: [GNP-12, GNP-14, GNP-15, GNP-17]
 unblocks: [GNP-18, GNP-19, GNP-23]
 ---
 

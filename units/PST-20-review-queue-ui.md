@@ -6,7 +6,7 @@ phase: phase:pending-review
 milestone: M3
 blocked_by: [PST-16, PST-17, "Frontend shell read-only diff (SHL-12)"]
 parallel_with: [PST-18, PST-19, PST-21, PST-23]
-unblocks: [PST-22]
+unblocks: [PST-22, "Graph runner run UI (GRR-13)"]
 ---
 
 # PST-20 — Review queue UI
