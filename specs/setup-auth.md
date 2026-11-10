@@ -103,15 +103,15 @@ Setup & auth gives Scriba one way in and one guard.
 ## Implementation Decisions
 
 ### Module shape
-- One vertical module, as the repo, build, image and runtime topology decision lays it out: a NestJS `@Module` in `apps/api` and a lazy `Routes` array in `apps/web` with two routes, `/setup` and the settings page (route path to be confirmed with the Frontend shell spec; `/settings` is proposed). Platform imports the module into the API composition root. The Shell adds the route-table entries and a settings nav item.
+- One vertical module, laid out in the repo as one folder under `apps/api/src/modules/` (a NestJS `@Module`) and one under `apps/web/src/app/features/` (a lazy `Routes` array) with two routes, `/setup` and the settings page (route path to be confirmed with the Frontend shell spec; `/settings` is proposed). Platform imports the module into the API composition root. The Shell adds the route-table entries and a settings nav item.
 - The module provides the app's **single global guard**, registered as the default for every route. It also provides a request-identity accessor that other modules use. Both are NestJS APIs, not contract-slice members.
 - **Default-deny.** A route skips the credential check only if it carries an explicit public marker. The fixed public set is `/healthz`, the token-handshake endpoint, the identity endpoint (it answers 401 when there's no credential), and the static Angular bundle. The static bundle still goes through the Host check. A test pins the public set.
 
 ### Setup token
-- Generated on first start, only when no token exists: at least 256 bits from a CSPRNG, base64url. Persisted in its own 0600 file inside `/books/.scriba/` (directory 0700, matching the secrets floor in the project storage, app state and search decision).
+- Generated on first start, only when no token exists: at least 256 bits from a CSPRNG, base64url. Persisted in its own 0600 file inside `/books/.scriba/` (directory 0700). That is the same floor as the app's secrets file: it guards against other OS users and casual reading, not strong encryption.
 - **`setup-url`** (0600) is rewritten on every start from the persisted token and the current loopback base URL, `http://127.0.0.1:<SCRIBA_PORT>`. The port can change between starts, so the file is never trusted as the source of the token.
-- The setup URL is printed to stdout on every start (the installer, auth and model providers decision requires first start; printing every start makes the logs a recovery path too). Anyone with Docker access can read the logs, but Docker access already means control of the host.
-- The installer reads `setup-url` after the healthcheck passes (per the installer, auth and model providers decision; owned by Platform). The file's location and its single-line format are the interface. The setup URL points at the handshake endpoint with the token as a query parameter. A fragment can't be used, because the server has to see the token to set the cookie.
+- The setup URL is printed to stdout on first start, and again on every later start, which makes the logs a recovery path as well. Anyone with Docker access can read the logs, but Docker access already means control of the host.
+- The installer reads `setup-url` after the healthcheck passes and prints the URL (owned by Platform). The file's location and its single-line format are the interface. The setup URL points at the handshake endpoint with the token as a query parameter. A fragment can't be used, because the server has to see the token to set the cookie.
 - Tokens are compared in constant time. Failed attempts are logged without the token value.
 
 ### Token handshake
@@ -124,7 +124,7 @@ Setup & auth gives Scriba one way in and one guard.
   - A long `Max-Age`, up to the browser maximum of about 400 days.
   - The name includes the port, because cookies are not isolated by port and other local apps on `127.0.0.1` would otherwise collide with it.
   - The `__Host-` prefix can't be used, because it requires `Secure`.
-- **`Secure` flag (per the installer, auth and model providers decision: verify first).** Chrome and Firefox accept `Secure` cookies on `http://127.0.0.1` and `http://localhost`. Safari's behaviour must be checked. The `phase:token-guard` acceptance criteria include a recorded check in Safari, Chrome and Firefox on macOS. The expected outcome, and the fallback the installer, auth and model providers decision names, is to set `Secure` only on HTTPS responses. Because the cookie is issued only on loopback, in practice that means no `Secure` flag.
+- **`Secure` flag (verify first).** Chrome and Firefox accept `Secure` cookies on `http://127.0.0.1` and `http://localhost`. Safari's behaviour must be checked. The `phase:token-guard` acceptance criteria include a recorded check in Safari, Chrome and Firefox on macOS. The expected outcome, and the fallback if the check requires one, is to set `Secure` only on HTTPS responses. Because the cookie is issued only on loopback, in practice that means no `Secure` flag.
 - **SameSite=Strict and the first redirect.** Navigating from a terminal link is cross-site, so the redirected request after the handshake may not carry the new cookie. That's fine, because the static bundle needs no credential. The SPA then calls the API with same-origin `fetch` and `EventSource`, which do send the cookie. Guarded resources are therefore only ever fetched by the SPA, never as top-level navigations.
 - "Sign out this browser" is a POST that expires the cookie.
 
@@ -139,13 +139,13 @@ The guard handles each request in this order:
    - Loopback Host: a valid session cookie is required. A `Tailscale-User-Login` header on a loopback Host is ignored.
    - Tailnet Host: the `Tailscale-User-Login` header is the credential. Serve strips any copy the client sends and injects its own. If the owner allowlist is on, the login must be in it. A tailnet request without the header gets a specific error explaining that the device must be signed in to Tailscale as a user. Tagged devices get no user identity from Serve.
    - A session cookie on a tailnet Host is not a credential.
-3. **Origin check on mutations** (every method other than GET, HEAD and OPTIONS). `Origin` must be present and must equal the full origin expected for the request's Host: `http://127.0.0.1:<port>` or `http://localhost:<port>` on loopback, `https://<tailnet name>` on the tailnet (per the installer, auth and model providers decision; Tride's guard assumed `http://`). A missing or `null` Origin is rejected.
+3. **Origin check on mutations** (every method other than GET, HEAD and OPTIONS). `Origin` must be present and must equal the full origin expected for the request's Host: `http://127.0.0.1:<port>` or `http://localhost:<port>` on loopback, `https://<tailnet name>` on the tailnet (the scheme is compared too; Tride's guard assumed `http://` only). A missing or `null` Origin is rejected.
 4. **No CORS.** No response ever carries `Access-Control-*` headers. OPTIONS gets no CORS headers, so cross-origin preflights fail.
-- **Proposed addition (not in the installer, auth and model providers decision; flag for review):** `Content-Security-Policy: frame-ancestors 'none'` on all responses. On the tailnet path the network identity authenticates even a framed page, so clickjacking would otherwise work there.
+- **Proposed addition (beyond the settled design; for the author's review):** `Content-Security-Policy: frame-ancestors 'none'` on all responses. On the tailnet path the network identity authenticates even a framed page, so clickjacking would otherwise work there.
 - **Errors** use Platform's base error shape and code convention. The codes are auth required (401), Host rejected (403), Origin rejected (403) and tailnet identity not allowed (403). The Shell's API client sends 401s to the sign-in notice on `/setup`.
 - **Dev mode.** The Angular dev server's origin differs from the API's. Platform's env list therefore gains one dev-only setting that adds extra loopback origins, and the setup-URL base can be overridden there too. Neither is ever set in the image. The proxy owned by the Shell must forward `Host` and `Origin` unchanged (cross-spec check).
 - **Serve preserves Host.** The guard assumes Serve forwards the original Host (the tailnet name) to `127.0.0.1:8080`, and that it injects `Tailscale-User-Login` only for proxies to localhost. Both are verified in `phase:tailnet` against a real tailnet.
-- **Peer-address check on the identity header.** Serve proxies from `127.0.0.1` inside the shared network namespace, while the host's loopback publish arrives from the Docker gateway address (Platform spec), and Platform drops direct connections from Tailscale ranges. So the guard trusts `Tailscale-User-Login` only when Host is the tailnet name **and** the socket's peer address is loopback (`127.0.0.1` or `::1`). This stops a non-browser process on the Mac from forging the header through the published port. A test confirms it, and ST-1 checks the real peer addresses. If ST-1 shows that published-port traffic can arrive from loopback on some Docker setup, the fallback is a second, unpublished listener for Serve, with the header trusted only there.
+- **Peer-address check on the identity header.** Serve proxies from `127.0.0.1` inside the shared network namespace, while the host's loopback publish arrives from the Docker gateway address (Platform spec), and Platform drops direct connections from Tailscale ranges. So the guard trusts `Tailscale-User-Login` only when Host is the tailnet name **and** the socket's peer address is loopback (`127.0.0.1` or `::1`). This stops a non-browser process on the Mac from forging the header through the published port. A test confirms it, and smoke test ST-1 (late login with HTTPS Serve) checks the real peer addresses. If ST-1 shows that published-port traffic can arrive from loopback on some Docker setup, the fallback is a second, unpublished listener for Serve, with the header trusted only there.
 
 ### Request identity (contract shape)
 - The identity endpoint returns one of two variants:
@@ -165,8 +165,8 @@ The guard handles each request in this order:
   The hostname is never hard-coded to `scriba`, because Tailscale may assign `scriba-1`.
 - **Normalised status.** The contract carries an availability flag (unavailable when the socket is missing or the call is refused, as in plain `npm run dev`), the backend state, the auth URL, the tailnet name, the tailnet URL and the prerequisites flags. Status is cached briefly server-side.
 - **The UI polls.** The `/setup` Tailscale step and the settings page poll the status endpoint every few seconds while visible. This module publishes no SSE events in v1, which keeps its slice small.
-- **The app controls tailscaled (caveat from the installer, auth and model providers decision).** Any process that can write to the socket can drive tailscaled: log it out, change prefs, edit the Serve config. The app only ever reads status. This is accepted for a single owner and stated in the docs. A compromised app process could therefore disconnect or re-point the node.
-- **Socket-permission smoke test.** Run as the app's non-root UID (`user:` from `.env`, per the repo, build, image and runtime topology decision). It checks that the socket is reachable and that `status` succeeds, on macOS (Docker Desktop) and on Linux. It also records whether write endpoints are allowed, for information. It joins Platform's manual pre-release checklist next to ST-1 to ST-3. If it fails, the fallback is a sidecar entrypoint step that relaxes socket permissions; the last resort is a `/setup` hint to run `docker compose logs tailscale`.
+- **The app controls tailscaled.** Any process that can write to the socket can drive tailscaled: log it out, change prefs, edit the Serve config. The app only ever reads status. This is accepted for a single owner and stated in the docs. A compromised app process could therefore disconnect or re-point the node.
+- **Socket-permission smoke test.** Run as the app's non-root UID (compose `user:` is `${SCRIBA_UID:-1000}:${SCRIBA_GID:-1000}`, set by the installer to the host UID and GID). It checks that the socket is reachable and that `status` succeeds, on macOS (Docker Desktop) and on Linux. It also records whether write endpoints are allowed, for information. It joins Platform's manual pre-release checklist next to smoke tests ST-1 to ST-3 (late login, SSE unbuffered through Serve, and host Ollama on macOS and Linux). If it fails, the fallback is a sidecar entrypoint step that relaxes socket permissions; the last resort is a `/setup` hint to run `docker compose logs tailscale`.
 - With an auth key in `.secret`, the state reaches `Running` without interaction, and the step shows as done.
 
 ### `/setup` flow
@@ -179,7 +179,7 @@ The guard handles each request in this order:
 
   Every step except Access can be skipped. Setup status records each step as `pending`, `done` or `skipped`, plus an overall `complete` flag that is set when the author finishes or explicitly skips the remaining steps.
 - **Model providers step.** It embeds the Model providers module's settings component (an Angular API, as with Shell components), or links to it if that component hasn't landed yet. It never reimplements provider forms, model listing or the connection test. Ollama is seeded by Model providers.
-- **Preferences step.** A minimal set, chosen here because the recorded design decisions are silent on preferences: author display name (a default for new projects), theme (system/light/dark, applied through the Shell's theming), and default genre pack for new projects. Stored in Setup & auth's `preferences` section of `settings.yaml`. The section is versioned through the startup migration hook, and the hook's owner is confirmed in the Platform spec.
+- **Preferences step.** A minimal set: author display name (a default for new projects), theme (system/light/dark, applied through the Shell's theming), and default genre pack for new projects. Stored in Setup & auth's `preferences` section of `settings.yaml`. The section is versioned through the startup migration hook, and the hook's owner is confirmed in the Platform spec.
 - **First-project step.** It calls the Project store API to list projects, create a new one, import an existing folder or start from a sample. The samples come from Project store's baked-in templates. If projects already exist, it lists them and offers to open one or create another. It never re-creates anything.
 - **Idempotent re-runs.** Every step loads current values as defaults. A step writes only the fields the author changed, through the owning module's API. Setup & auth's own writes are field-level merges into its `settings.yaml` sections. Re-running never deletes, resets or re-seeds anything.
 - **Routing.** The SPA sends an authenticated author to `/setup` until `complete` is set. An unauthenticated visitor on loopback sees a sign-in notice with the command that prints the setup URL, `cat ~/Books/.scriba/setup-url`. On the tailnet the notice explains identity and allowlist failures.
@@ -204,9 +204,11 @@ The guard handles each request in this order:
 3. Last resort: wipe `~/Books/.scriba/`. This also removes settings, secrets and search indexes, but projects stay untouched.
 4. If the allowlist locks out a tailnet device, use the Mac and the setup URL.
 
-A CLI reset-token is a later work item.
+A CLI reset-token command is deferred.
 
 ## Phases
+
+Milestones: M1 is the walking skeleton, M2 is the tool registry with the nonfiction workhorses, and M3 is pending changes, review and grounding.
 
 ### `phase:contract` (M1)
 Scope:
@@ -248,10 +250,10 @@ Acceptance criteria:
 - [ ] No response carries `Access-Control-*` headers.
 - [ ] The `Secure` behaviour in Safari, Chrome and Firefox on `http://127.0.0.1` is recorded in the module docs, and the chosen cookie attributes match it.
 - [ ] Both invariant tests run in CI against the composed app and pass.
-- [ ] **M1 "done when" (brief):** the author types "summarize my outline" and gets a correct answer with visible tool calls. This phase's share: the author reaches the chat only through the setup URL.
-- [ ] **Demo (under 5 min, this module's share of M1):** run the installer one-liner and copy the printed URL. Open `http://127.0.0.1:8080/api/…` directly and see a 401. Open the setup URL and land on `/setup` with a clean address bar. Reload and stay signed in. Run `curl -X POST` with a foreign Origin and see a 403. Sign out and see the notice.
+- [ ] **Walking skeleton, done when:** the author types "summarize my outline" and gets a correct answer with visible tool calls. This phase's share: the author reaches the chat only through the setup URL.
+- [ ] **Demo (under 5 min, this module's share of the walking skeleton):** run the installer one-liner and copy the printed URL. Open `http://127.0.0.1:8080/api/…` directly and see a 401. Open the setup URL and land on `/setup` with a clean address bar. Reload and stay signed in. Run `curl -X POST` with a foreign Origin and see a 403. Sign out and see the notice.
 
-### `phase:setup-flow` (M2; milestone assignment is a drafting choice, review it)
+### `phase:setup-flow` (M2; provisional assignment)
 Blocked by: Frontend shell `phase:core`. Model providers `phase:contract` (and its settings-UI phase to embed, or link until it lands). Project store `phase:contract` (the project list/create/import/start-from-sample requests).
 
 Scope:
@@ -272,8 +274,8 @@ Acceptance criteria:
 - [ ] The e2e setup leg passes in CI.
 - [ ] **Demo (under 5 min):** open the setup URL, pick an Ollama model in the embedded providers step, set the author name, start from the nonfiction sample and land in the project. Re-open `/setup` and see every answer prefilled. Change the theme only and confirm nothing else changed. Edit `.env` to an old compose version, restart and see the warning.
 
-### `phase:tailnet` (M3: phone review over the tailnet; review the assignment)
-Blocked by: Platform's compose phase (shared LocalAPI socket volume, `TS_SOCKET`) and Platform's ST-1 outcome (how Serve ships).
+### `phase:tailnet` (M3: phone review over the tailnet; provisional assignment)
+Blocked by: Platform's compose phase (shared LocalAPI socket volume, `TS_SOCKET`) and Platform's ST-1 outcome (whether Serve is configured by a shipped config file or by a CLI loop).
 
 Scope:
 - LocalAPI client and normalised status endpoint, with caching and the rate-limited refresh on an unknown Host.
@@ -331,7 +333,7 @@ Acceptance criteria:
   - `settings.yaml` merge behaviour on re-runs.
 - **LocalAPI seam.** A small fake Unix-socket server in the test serves recorded `status` payloads for logged-out, `NeedsLogin` with `AuthURL`, `Running` with certs, and `Running` without certs. This fake is the only test double for tailscaled. The tailnet path is tested by sending the Serve-injected header with the tailnet Host. The real Serve behaviour (Host preserved, client headers stripped) is checked manually in `phase:tailnet` and recorded.
 - **Cross-module invariant tests (owned here, run in CI against the composed app, so they cover every module's routes automatically):**
-  1. **GET/HEAD never mutate.** Enumerate every registered route. Authenticate. Fill path parameters from a seeded sample project. Snapshot the library tree (paths, sizes, mtimes, hashes) and `settings.yaml`. Issue GET and HEAD to every route. Assert the snapshot is unchanged and no mutation-type SSE event was emitted. The only exemptions are disposable derived caches (the FTS index under `/books/.scriba/index/`, per the project storage, app state and search decision), listed explicitly in the test.
+  1. **GET/HEAD never mutate.** Enumerate every registered route. Authenticate. Fill path parameters from a seeded sample project. Snapshot the library tree (paths, sizes, mtimes, hashes) and `settings.yaml`. Issue GET and HEAD to every route. Assert the snapshot is unchanged and no mutation-type SSE event was emitted. The only exemptions are disposable derived caches (the per-project FTS index under `/books/.scriba/index/`, a disposable database), listed explicitly in the test.
   2. **Mutations are guarded.** Every non-GET/HEAD/OPTIONS route rejects a request with no credential (401), a foreign or missing Origin (403), and an unlisted Host (403). The set of public routes equals the fixed list.
 - **UI seam:** the `/setup` and settings lazy routes, rendered with Angular's Vitest runner against a fake API client built from the `/setup-auth` contract types. Tests: step order, skip, defaults prefilled on re-run, the Tailscale states (link, URL, hints), the allowlist toggle and lockout message, the compose warning, and the sign-in notice on 401.
 - **Contract seam:** Zod schemas with valid and invalid examples.
@@ -341,28 +343,29 @@ Acceptance criteria:
 
 ## Out of Scope
 
-- A CLI reset-token command and in-app token rotation (later work item; see the installer, auth and model providers decision).
-- Accounts, a user table, per-user data and read-only reviewer access (see the scope, identity and reachability decision; reviewers are a later add).
+- A CLI reset-token command and in-app token rotation (deferred).
+- Accounts, a user table, per-user data and read-only reviewer access (reviewers can be added later, as long as no per-user identity is built in).
 - LAN mode, `0.0.0.0` publishing and a plain `http://scriba` short name.
 - A separate installer UI container. The host bootstrap, `.env`/compose writing and the update one-liner belong to Platform. This module only reads `setup-url` (writing it) and `SCRIBA_COMPOSE_VERSION`.
 - Provider forms, key storage, model listing and the connection test: Model providers.
 - Project creation, import and sample templates: Project store. This module only calls them.
 - An "update available" notice and auto-update. Only the compose-version mismatch is warned about.
-- Tailscale userspace mode (ST-4, deferred, per the repo, build, image and runtime topology decision) and auth-key management beyond what the installer writes.
+- Tailscale userspace mode (smoke test ST-4, deferred) and auth-key management beyond what the installer writes.
 - SSE events from this module (v1 polls).
-- **Brief overrides:** the brief assumed a backend "running on localhost" with no authentication, installer or remote access. The recorded design decisions replace that with the Docker install, the setup token, the cookie and tailnet-identity guard, and Tailscale HTTPS access. The brief's React/Fastify stack is replaced by Angular and NestJS. The brief's "ask before making a decision" does not apply to anything the installer, auth and model providers decision settled.
+- **Replaced earlier designs:** the Docker install, the setup token, the cookie and tailnet-identity guard, and Tailscale HTTPS access replace an unauthenticated design that ran only on localhost, with no installer or remote access. Angular and NestJS replace the React and Fastify stack.
 
 ## Further Notes
 
-- **Owner's calls in the installer, auth and model providers decision:** the token is reusable, loopback requires a cookie, and the tailnet is trusted. Don't reopen them in work items.
+- **Settled choices:** the token is reusable, loopback requires a cookie, and the tailnet is trusted. Do not reopen them during implementation.
 - **Points to check against sibling specs:**
   - Platform: env entries `SCRIBA_DEV_ORIGINS`, `SCRIBA_SETUP_URL_BASE` and `SCRIBA_TS_SOCKET` (listed in the Platform spec); the expected compose-version constant in version info; Platform owns the `settings.yaml` envelope and migration hook; the socket-permission smoke test and the ST-1 peer-address check go on the checklist.
   - Frontend shell: the settings route path; 401 handling; the proxy preserving Host and Origin; an optional global compose banner.
   - Model providers: the embeddable settings component.
   - Project store: the new/import/start-from-sample requests in its slice.
-- **Proposed beyond the installer, auth and model providers decision, for review:** `frame-ancestors 'none'`; port-suffixed cookie names; the stateless cookie keyed from the token (so replacing the token revokes all cookies); and the peer-address check on the identity header, with a dedicated Serve listener as the fallback if ST-1 disproves it.
-- **Milestones:** `phase:setup-flow` (M2) and `phase:tailnet` (M3) are drafting choices. The spec shape, modules and contracts decision places only the "minimal token" in M1. Until `phase:setup-flow` lands, the e2e's project-from-sample step uses the Project store's own UI.
+- **Proposed beyond the settled design, for the author's review:** `frame-ancestors 'none'`; port-suffixed cookie names; the stateless cookie keyed from the token (so replacing the token revokes all cookies); and the peer-address check on the identity header, with a dedicated Serve listener as the fallback if ST-1 disproves it.
+- **Milestones:** `phase:setup-flow` (M2) and `phase:tailnet` (M3) are provisional assignments. M1 includes only this module's minimal token work. Until `phase:setup-flow` lands, the e2e's project-from-sample step uses the Project store's own UI.
 - **Phase sizing for the work breakdown:**
   - `phase:token-guard`: token store + `setup-url`; handshake + cookie; guard + Host/Origin/CORS; the two invariant tests; e2e hook.
   - `phase:setup-flow`: setup status + wizard shell; providers embed; preferences; first project; settings page + compose warning + docs.
   - `phase:tailnet`: LocalAPI client + status UI; tailnet guard path + Host allowlist; owner allowlist; smoke test + Serve verification.
+- **Open items:** anything settled in this spec is fixed and is not reopened. For any decision it leaves open, including items marked proposed, provisional or to be confirmed, ask the author before deciding.
