@@ -52,7 +52,7 @@ The Project store is the module that owns the author's books on disk. It provide
 29. As an author on my phone, I want the review queue to work at phone width, with large accept and reject buttons and a readable diff, so that I can review the agent's work away from my desk.
 30. As an author, I want the review queue to update live when new changes arrive, are resolved, or become conflicted, so that every open tab and device shows the same queue.
 31. As an author, I want pending changes to live inside the project folder, so that they travel with the book when I move or copy it.
-32. As an author, I want the previous text of a draft to be saved automatically when I accept a change to it, so that every draft is versioned as the brief promises.
+32. As an author, I want the previous text of a draft to be saved automatically when I accept a change to it, so that every draft is versioned.
 33. As an author, I want to list the versions of a draft, view one, and diff it against the current draft, so that I can see how a chapter evolved.
 34. As an author, I want to restore an older version of a draft, with the current text saved as a version first, so that rolling back is itself reversible.
 35. As an author, I want draft versions to be kept in `drafts/.versions/`, separate from my current drafts, so that the manuscript only ever contains current drafts.
@@ -85,7 +85,7 @@ The Project store is the module that owns the author's books on disk. It provide
 - The project list reports, for each folder: id, title, genre pack, whether it is active, and a status: `ok`, `invalid` (with the schema error), `too-new` (a newer `schemaVersion`), or `importable` (no `project.yaml`).
 
 ### Creating projects
-- **New** takes a folder name and a title. The folder name is limited to a slug of lowercase letters, digits and hyphens, derived from the title by default. New fails with a "project exists" error if the folder already exists. It scaffolds the brief's layout **minus `structure/`**: `project.yaml`, `sources/`, `entities/`, `drafts/`, `graphs/`, `logs/`, plus a `.gitignore` that contains `.scriba/`. New does not create `snapshots/`, which Compile & export creates on first use, and it adds no scene or beat folders.
+- **New** takes a folder name and a title. The folder name is limited to a slug of lowercase letters, digits and hyphens, derived from the title by default. New fails with a "project exists" error if the folder already exists. It scaffolds the layout **without a `structure/` folder**: `project.yaml`, `sources/`, `entities/`, `drafts/`, `graphs/`, `logs/`, plus a `.gitignore` that contains `.scriba/`. New does not create `snapshots/`, which Compile & export creates on first use, and it adds no scene or beat folders.
 - **Import** applies to an `importable` or `invalid` folder. Import validates `project.yaml`, or creates a minimal one (title from the folder name, `schemaVersion` 1). It appends `.scriba/` to the `.gitignore` if that line is missing. It never moves, renames or rewrites any other file, and it never creates the layout folders. Missing folders are created lazily on the first write.
 - **Start from sample** copies a sample that is baked into the image (read-only, beside the built-in packs under `/opt/scriba/`) into a new library folder whose name and title the author chooses. Samples are **never auto-copied**. The copy excludes `.scriba/`, `logs/`, `snapshots/` and `drafts/.versions/`, although the samples ship none of these anyway.
 - All three operations are POSTs behind Setup & auth's guard. Setup & auth's `/setup` flow calls the same endpoints to create the first project.
@@ -119,7 +119,7 @@ Every path that enters the module is checked through one function, used by every
 - `genrePack` is a pack name (`nonfiction`, `fiction` or a user pack).
 - `styleProfile` is an optional entity reference.
 - `export` holds export settings. Its inner keys (Pandoc template path and the like) are owned by Compile & export and are kept as a passthrough object until that module's contract phase narrows it.
-- `model` is the per-project model override. Its shape is the per-project model choice type from Model providers' `/providers` slice.
+- `model` is the per-project model override, `{providerId, model}`. The shape is defined in this slice, not imported from `/providers`. Model providers asserts that it is compatible with its `ModelChoice`.
 - `order` is **reserved from day one** as an optional list whose entries are kept as a passthrough until Compile & export's contract phase narrows them (Compile & export's `OrderEntry` is `{path, status?, part?}`). Compile & export owns its meaning, its writes (the reorder request) and the sample's order content. The Project store owns only the field in the schema.
 - Unknown keys are preserved on round trip, so newer optional fields survive an older app.
 
@@ -175,7 +175,7 @@ Every path that enters the module is checked through one function, used by every
 
 ### Draft versions
 - Versions are written **only when a pending change is applied** to a **top-level file in `drafts/`** that already exists. The content being replaced is saved as the new version. Creating a new draft writes no version. The author's direct saves write no version, but their result is captured by the next apply.
-- **Sub-path shape (decided here):** `drafts/.versions/<draft file name>/<UTC timestamp>.<ext>`. The folder is the draft's full file name, extension included. The timestamp is compact ISO-8601 basic format with milliseconds, with a numeric suffix on collision. Example: `drafts/.versions/ch03.md/20261104T231500123Z.md`. Versions belong to their draft by file name, so renaming a draft orphans its versions. This is the known cost recorded in the decision on current draft versus older versions, and a stable ID can be added later.
+- **Sub-path shape:** `drafts/.versions/<draft file name>/<UTC timestamp>.<ext>`. The folder is the draft's full file name, extension included. The timestamp is compact ISO-8601 basic format with milliseconds, with a numeric suffix on collision. Example: `drafts/.versions/ch03.md/20261104T231500123Z.md`. Versions belong to their draft by file name, so renaming a draft orphans its versions. This is a known cost. A stable ID can be added later without breaking this model.
 - The **draft-version listing** returns `{draftPath, versions: [{id, createdAt, size}]}`. Reading a version returns its content. **Restore** is an author action (POST): it saves the current content as a version, then writes the restored text directly.
 - Only the Project store reads `drafts/.versions/`. Compile & export assembles top-level `drafts/` files only and never reads versions. `drafts/.versions/` is **not** git-ignored, so the history travels with the book.
 
@@ -197,7 +197,7 @@ Every path that enters the module is checked through one function, used by every
   - `sources/` with 3–5 short source documents. One of them is the author's outline notes, `sources/outline.md`, so that the M1 "summarize my outline" demo has an outline without a `structure/` folder.
   - `drafts/` with 2–3 draft files of a few hundred words each.
 - Other modules add their pieces at their milestones: nonfiction `entities/` (Genre packs), the grounding-claims draft (Agent loop), the recipe (Graph runner), the order field (Compile & export), and the whole fiction sample (Genre packs).
-- Source texts are public domain or written for the sample. The topic fits the brief's running example (practice and expertise), so intents like "draft the cold open for chapter 3 from my notes on the 10,000 hour idea" make sense.
+- Source texts are public domain or written for the sample. The sample topic is practice and expertise, so intents like "draft the cold open for chapter 3 from my notes on the 10,000 hour idea" make sense.
 - The nonfiction sample is the e2e fixture. Its file paths are a contract with `e2e/fixtures/mock-openai/`, so renaming a sample file updates the mock script in the same PR.
 
 ### UI (lazy route + NestJS module)
@@ -235,6 +235,8 @@ Typed error codes following Platform's convention, prefixed for this module and 
 
 Serial. Every phase is gated on Platform `phase:scaffold`.
 
+Milestones referenced here: M1 is the walking skeleton, M2 is the tool registry, M3 is review and grounding, M5 is compile and export, and M7 is remaining tools and polish.
+
 ### `phase:contract` (M1)
 **Scope.** Publish `@bbartolome/scriba-contracts/project-store`. It holds Zod schemas and TS types, and nothing else:
 - the `project.yaml` schema, with the reserved `order` field;
@@ -248,7 +250,7 @@ Serial. Every phase is gated on Platform `phase:scaffold`.
 - the SSE event members (`pending.created|updated|resolved`, `files.changed`, `project.switched`);
 - route constants and error codes.
 
-**Consumes.** Platform's `/platform` (envelope, error base) and Model providers' `/providers` per-project model choice (its `phase:contract`).
+**Consumes.** Platform's `/platform` (envelope, error base). Nothing is imported from `/providers`.
 
 **Acceptance criteria.**
 - [ ] The slice builds and is importable from both `apps/api` and `apps/web`, with no runtime dependencies beyond Zod.
@@ -396,30 +398,30 @@ The Agent loop's M1 depends on `phase:files` running, and its grounding check de
 - **Contract seam:** Zod schema tests in the contracts package. The Project store's `project.yaml` schema is what Platform's CI check validates `examples/` against.
 - **System seam:** the single Playwright e2e owned by Platform. The Project store adds the "project from sample" step at M1 and the "accept change → draft written + version created" assertion at M3. The nonfiction sample's paths are kept in step with `e2e/fixtures/mock-openai/`.
 - **Fixtures:** unit and integration tests build their own temp projects and never read `examples/`.
-- **Tooling:** Vitest everywhere (NestJS via `unplugin-swc`). There is no prior art in the repo yet. Tride's tests and the canvas spike's e2e are reference only.
+- **Tooling:** Vitest everywhere (NestJS via `unplugin-swc`). There is no prior art in the repo yet. Tride's tests are reference only.
 
 ## Out of Scope
 
-- **A `structure/` folder** (brief data model). Overridden by the decision on scene and beat files in the project layout: scenes and beats are files in `drafts/` or label-only story nodes, and Scene and Plot beat are story nodes, not entity types.
-- **"Never write straight to `drafts/`" for the author.** Overridden by the decision on the Markdown editor component: only agent and recipe writes go through pending changes, and the author's typing saves directly.
-- **The brief's stack** (React, Fastify, a SQLite run-log index). Overridden by the recorded design decisions: Angular, NestJS, and `logs/` as the source of truth, with the run-log index deferred.
+- **A `structure/` folder** (outline, chapters, scenes and plot beats). Replaced as follows: chapters and scenes are whole Markdown files at the top level of `drafts/`, and several scene nodes may share one chapter file. A beat is a label-only story node by default, or may point at a whole file in `drafts/`. The outline is an ordinary source file (`sources/outline.md` in the sample). Scenes and beats are story-node kinds, not entity types, and no scene or beat folder is created.
+- **Routing the author's own writes to `drafts/` through the pending-changes queue.** Replaced by direct saves: the author's typing writes straight to the file, debounced or on an explicit save. Only agent-proposed and recipe changes go through pending changes, with the three-way check.
+- **React, Fastify and a SQLite run-log index.** Replaced by Angular with Angular Material for the frontend, NestJS for the backend, and `logs/` as the source of truth. The run-log index is deferred.
 - Vector or semantic search (the search contract allows it later), and git integration (the image ships no git).
 - More than one active project at a time, multi-user editing, and cloud sync.
 - Delete, rename and move through the file API, and binary files. The author does these in their own editor in v1.
-- Stable draft IDs, which would let versions survive a rename (deferred by the decision on current draft versus older versions).
+- Stable draft IDs, which would let versions survive a rename. Deferred.
 - Per-project `tools/`, the `snapshots/` mechanism (Compile & export), the meaning and writes of the `order` field (Compile & export), and `logs/` transcript format (Agent loop).
 - The sample content owned by other modules: entities, the grounding-claims draft, the recipe, the order field, and the fiction sample.
 - `settings.yaml` and its startup migration.
 
 ## Further Notes
 
-- **Design decisions that override the brief for this module:** no `structure/`; author typing writes directly; pending changes live inside each project at `<project>/.scriba/pending/`; app state and the FTS index live in the library at `/books/.scriba/`; draft versions live in `drafts/.versions/`; there is no `DECISIONS.md` (decisions live in `docs/adr/` and the recorded design decisions).
-- **Decided here, on the questions left to the specs by the decision on current draft versus older versions and the decision on sample project contents:**
+- **Storage and layout choices for this module:** no `structure/` folder (scenes are whole files in `drafts/`, and beats are label-only by default); the author's typing writes straight to the file; pending changes live inside each project at `<project>/.scriba/pending/`; app state and the FTS index live in the library at `/books/.scriba/`; draft versions live in `drafts/.versions/`; decisions are recorded as ADRs in `docs/adr/`, in place of a `DECISIONS.md` log.
+- **Details settled in this module:**
   - The version sub-path is `drafts/.versions/<draft file name>/<UTC timestamp>.<ext>`, and it stores the replaced content.
   - The samples ship no `.scriba/`, `logs/`, `snapshots/` or `.versions/`.
   - Sample source text is public domain or written for the sample.
   - The outline lives in `sources/outline.md`.
-- **Coordination points for review:**
+- **Cross-module details:**
   - The active-project key lives in this module's `projects` section of `settings.yaml`. Platform owns the file envelope and the startup migration hook, and each module owns its section.
   - The env names are Platform's `SCRIBA_BOOKS_DIR` (library path) and `SCRIBA_WATCHER` (watcher toggle).
   - Search, activation and rebuild are POSTs so that the GET-never-mutates invariant holds even though they refresh a cache or migrate files.
