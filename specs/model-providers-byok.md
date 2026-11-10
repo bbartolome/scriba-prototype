@@ -90,7 +90,7 @@ A Model providers module that owns the whole "talk to a model" concern behind on
 - **Transport retries in the client**: connection errors, timeouts before the first byte, 408, 409, 429 and 5xx, up to the provider's `retries` setting with exponential backoff, honouring `Retry-After`. This maps onto the SDK's own retry option where it matches; the client owns the policy either way.
 - A retry happens only **before the first streamed chunk**. Once tokens have reached the caller, a failure ends the stream with a coded error, because replaying would duplicate output.
 - 4xx errors other than 408/409/429 (bad key, unknown model, bad request) are never retried.
-- **Schema retries (the brief's "retry twice") are not here**; they live in the Agent loop.
+- **Schema retries are not here.** When tool-call arguments fail schema validation, the Agent loop returns a readable error to the model and lets it retry twice; those retries live in the Agent loop.
 - **Timeout**: the provider's `timeout` bounds the wait for the first byte and every idle gap between chunks, so a slow but progressing local model isn't cut off. Phase `client` verifies the SDK's own timeout semantics for streams against this rule and enforces it in the client if the SDK differs.
 - Abort cancels the HTTP request immediately and is never retried.
 
@@ -155,6 +155,8 @@ A preset only pre-fills a new provider; after that it's an ordinary config.
 
 Serial. Each phase is sized to split into one-context-window tracer-bullet work items.
 
+Milestones referenced here: M2 is the tool registry.
+
 ### `phase:contract` (M1)
 Blocked by: Platform `phase:scaffold`.
 Scope:
@@ -184,7 +186,7 @@ Acceptance criteria:
 - [ ] A stalled mock response fails with `PROVIDER_TIMEOUT` after `timeout`; an abort mid-stream ends with `PROVIDER_ABORTED` and the mock sees the connection close.
 - [ ] A key set through the API is in the secrets file (mode 0600, directory 0700), `settings.yaml` holds only its `keyRef`, and no GET response, stdout line or error message contains the key.
 - [ ] With an empty model, resolution picks the first listed model as `auto` without writing to disk.
-- [ ] **Milestone part (M1)**: with the real compose stack and Ollama running on the host, the Agent loop's M1 run reaches the model through the seeded provider without any provider configuration. The brief's M1 *done when*: "the author types 'summarize my outline' and gets a correct answer with visible tool calls" (owned by the Agent loop; this phase supplies the model path).
+- [ ] **Milestone part (M1)**: with the real compose stack and Ollama running on the host, the Agent loop's M1 run reaches the model through the seeded provider without any provider configuration. M1 (walking skeleton) *done when*: "the author types 'summarize my outline' and gets a correct answer with visible tool calls" (owned by the Agent loop; this phase supplies the model path).
 
 Demo script (under 5 minutes):
 1. On the host: `OLLAMA_CONTEXT_LENGTH=64000 OLLAMA_HOST=0.0.0.0 ollama serve` and `ollama pull <model>`.
@@ -272,7 +274,7 @@ Acceptance criteria:
 - **Embeddings / vector search** providers (later, without breaking the search contract).
 - **Strong encryption of keys**: the secrets file is a permissions floor, not a vault.
 - **Running Ollama inside the compose stack**: Ollama stays on the host.
-- **Design decisions that override the brief**: the brief's settings page (endpoint URL, model name, temperature, context size, per-tool enable switch) becomes a provider registry with presets and write-only keys, plus an app default and a per-project override; the per-tool switch moves to the Tool registry. The brief's "defaults point at Ollama on port 11434 and LM Studio on port 1234" becomes one seeded Ollama provider at `host.docker.internal` plus an LM Studio preset, because the app runs in a container. The brief's "retry twice" stays in the Agent loop.
+- **Replaced earlier designs**: a settings page with an endpoint URL, model name, temperature, context size and a per-tool enable switch is replaced by a provider registry with presets and write-only keys, plus an app default and a per-project override; the per-tool switch is the Tool registry's `enabled` field. Default endpoints for Ollama on port 11434 and LM Studio on port 1234 are replaced by one seeded Ollama provider at `host.docker.internal` plus an LM Studio preset, because the app runs in a container. Two schema-validation retries stay in the Agent loop, not in this module.
 
 ## Further Notes
 
