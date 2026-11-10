@@ -5,7 +5,7 @@ status: done
 
 # PLT-01 plan — root npm workspace, pins and scripts skeleton
 
-Batch: `[PLT-01]` (Platform, `phase:scaffold`, M1). This iteration writes the plan only. The plan is implemented in a later iteration, so no criterion is marked passed here.
+Batch: `[PLT-01]` (Platform, `phase:scaffold`, M1). Iteration 1 wrote this plan. A later iteration implemented it, and all five acceptance criteria passed (see `plans/DECISIONS.md`).
 
 Revision 5. Revision 4 was approved by Opus on 2026-11-10 (`plans/DECISIONS.md`). Revision 5 is documentation-only: it corrects the dev folder wording in section 2, the `/tmp/plt01-ac2/` procedure in AC 2, and the PLT-13 line citation in section 5. No criterion changed, so the approval carries over. Opus rejections 1, 2 and 3, and the Navigator's response to rejection 3 (keep the unit whole and fix it in place), are recorded in `plans/DECISIONS.md`.
 

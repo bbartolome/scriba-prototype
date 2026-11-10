@@ -124,3 +124,15 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   4. `tseslint.config()` is marked `@deprecated` in typescript-eslint 8.72.2 (`node_modules/typescript-eslint/dist/config-helper.js`, around line 24), in favour of ESLint's `defineConfig()`. It still works. PLT-09 may switch when it edits `eslint.config.mjs`.
   5. `plans/PLT-01.md` line 8 still says "This iteration writes the plan only ... no criterion is marked passed here." That is out of date now that the status is `done`. It describes iteration 1.
   6. The ESLint config covers only `**/*.ts`, so the root `.mjs` files (`eslint.config.mjs`, `scripts/pins.test.mjs`) are not linted. This matches the plan.
+
+## 2026-11-10 — PLT-01 — disposition of the implementation review notes (Navigator decision, Option B)
+
+- **Decision (Navigator):** Option B. A documentation-only commit on main corrects the out-of-date sentence at `plans/PLT-01.md` line 8 (note 5). It now says that iteration 1 wrote the plan and a later iteration implemented it, and that all five acceptance criteria passed. No change is made to `eslint.config.mjs`.
+- **Disposition of the six notes:**
+  - Note 1 (no saved `node -v` and `npm -v` next to each result): known. The versions are recorded in this file and in the merge commit message.
+  - Note 2 (fresh-clone fan-out output overwritten): known. The fresh-clone results are in the session transcript only.
+  - Note 3 (Prettier probe, `find` counts and `npm ci` exit status not saved): known.
+  - Note 4 (`tseslint.config()` is deprecated in typescript-eslint 8.72.2): deferred to PLT-09, which owns `eslint.config.mjs`. The code works and AC 2 lint passes. Changing it now would reopen a closed, approved unit and need a new Opus implementation review.
+  - Note 5 (stale line 8 in `plans/PLT-01.md`): fixed by the documentation-only commit. No criterion changes, so no new Opus review.
+  - Note 6 (the root `.mjs` files are not linted): known. This matches the plan.
+- **Reason (Navigator):** PLT-01 is closed: merged as cf7a8bb, `status: done`, and approved by the Opus implementation review. The six notes are non-blocking. A documentation-only fix needs no new review.
