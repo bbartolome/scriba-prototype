@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-The author uses Scriba on a Mac, an iPad and a phone, as one responsive web app with no accounts and no separate mobile app. Nine other modules each ship their own UI slice, and each slice needs the same things: a way to reach the API, live server events, a theme, navigation, a decision about which device may open which view, and a few heavy shared widgets (a tool-call card, a diff view and a Markdown editor). If each module builds these alone, the app looks different from page to page and opens a separate event stream per page. It also handles a sleeping iPad in five different ways, risks rewriting the author's Markdown files, and makes every wave-2 feature wait on a UI bottleneck at the end.
+The author uses Scriba on a Mac, an iPad and a phone, as one responsive web app with no accounts and no separate mobile app. Nine other modules each ship their own UI slice, and each slice needs the same things: a way to reach the API, live server events, a theme, navigation, a decision about which device may open which view, and a few heavy shared widgets (a tool-call card, a diff view and a Markdown editor). If each module builds these alone, the app looks different from page to page and opens a separate event stream per page. It also handles a sleeping iPad in five different ways, risks rewriting the author's Markdown files, and makes the Agent loop, Graph runner and Compile & export features wait on a UI bottleneck at the end.
 
 From the author's side, the problems are:
 - The app must feel like one product on every device. Phones get chat, the review queue, reading and light edits. Tablets add the canvas and long-form editing. The desktop gets everything.
@@ -39,7 +39,7 @@ The Shell publishes **no contract slice**: its shared pieces are Angular APIs, n
 12. As an author, I want a plain message when the server can't be reached, rather than a blank page, so that I know to check the app is running.
 13. As an author whose session cookie is missing or expired, I want to be sent to `/setup` to re-open my setup URL, so that I can get back in without guessing.
 14. As an author, I want error messages from the server shown in plain language, with the error code available, so that I can understand and report problems.
-15. As an author, I want each tool call in chat shown as a card with the tool's name, its inputs, its live status and its output or error, so that I can see what the agent did (brief: "show each tool call as a card").
+15. As an author, I want each tool call in chat shown as a card with the tool's name, its inputs, its live status and its output or error, so that I can see what the agent did.
 16. As an author on a phone, I want tool-call cards collapsed to a one-line summary that I can expand, so that the chat stays readable.
 17. As an author, I want a tool-call card to list the source files the tool used, as project-relative paths, so that I can check where a draft came from.
 18. As an author reviewing a pending change, I want a clear diff of the current text against the proposed text, so that I can decide whether to accept it.
@@ -90,7 +90,7 @@ The Shell publishes **no contract slice**: its shared pieces are Angular APIs, n
 - One root service over Angular's HTTP client. It is same-origin, sends credentials (the loopback cookie, or the tailnet's Serve identity is implicit), and adds no auth headers.
 - Callers pass the Zod schema for the response from their own contract slice. The client parses the response and fails loudly on a mismatch. The Shell imports no feature slice for this.
 - Non-2xx responses are parsed with the Platform base error shape into one typed error (HTTP status, error code, message). The error-code convention is Platform's.
-- A `401` from any call routes the app to `/setup`, a path fixed by the installer, auth and model providers decision and registered by Setup & auth. The Shell imports nothing from the `/setup-auth` slice.
+- A `401` from any call routes the app to `/setup`, a fixed in-app path registered by Setup & auth. The Shell imports nothing from the `/setup-auth` slice.
 - Reads use GET and commands use POST. The client offers no "GET with side effects" helper.
 
 **SSE client**
@@ -105,7 +105,7 @@ The Shell publishes **no contract slice**: its shared pieces are Angular APIs, n
 - **Nav.** Phone: a bottom nav bar. Tablet: a compact side rail. Desktop: an expanded side nav. Both nav forms come from the same route `data`.
 - **Notices.** A root notices service with an app-wide banner area and snackbars. Features post notices to it (for example Setup & auth's compose-version mismatch warning). The connection indicator and the "server unreachable" banner use the same service.
 
-**Breakpoint gate** (exact breakpoints are left to the UI specs, and this spec fixes them)
+**Breakpoint gate** (this spec fixes the exact breakpoints)
 - The device class comes from the CDK's `Handset`, `Tablet` and `Web` query sets, which account for orientation. A phone in landscape stays `phone`. A 12.9-inch iPad in portrait counts as `desktop`. The class is a root signal.
 - The gate is a `canMatch` guard on each feature entry plus nav filtering. A view whose minimum class is above the current device is hidden from the nav. Opening it directly shows a "needs a larger screen" page with a link back.
 - The gate is checked **at navigation**. A view that is already open is not torn down when the class drops on resize or rotation. Instead a dismissible notice appears, which protects unsaved editor text.
@@ -147,6 +147,8 @@ The Shell publishes **no contract slice**: its shared pieces are Angular APIs, n
 
 Phases are serial. Every phase is blocked by Platform `phase:scaffold`.
 
+Milestones referenced here: M1 is the walking skeleton, M3 is review and grounding, and M7 is remaining tools and polish.
+
 ### `phase:core` — M1
 The gate that every feature UI phase names. The Shell has **no `phase:contract`** because it publishes no slice.
 
@@ -173,7 +175,7 @@ Acceptance criteria:
 - [ ] A feature route test using the fake API client and fake event source runs under Vitest, and serves as the template for feature modules.
 - [ ] The Platform Playwright e2e still passes: its first step loads the Shell.
 
-M1 "done when" (brief): *the author types "summarize my outline" and gets a correct answer with visible tool calls.* The Shell is the substrate. The Agent loop's chat route and the tool-call card (next phase) complete it.
+M1 "done when": *the author types "summarize my outline" and gets a correct answer with visible tool calls.* The Shell is the substrate. The Agent loop's chat route and the tool-call card (next phase) complete it.
 
 Demo script (Shell part, under 5 minutes):
 1. Run `npm run dev` and open the app.
@@ -234,7 +236,7 @@ Acceptance criteria:
 - [ ] An automated accessibility check of the Shell (nav, landing, notices, editor, diff, card) reports no serious violations in either theme.
 - [ ] The Platform e2e gains a phone-viewport check that the bottom nav is shown and the review step works there.
 
-M7 "done when": the brief's M7 ("Remaining tools and polish") gives no criterion for the Shell. This spec's is: *the author installs Scriba on an iPad over the tailnet, drafts and saves a scene, and the file is byte-identical on disk to what was typed; a phone reviews and accepts a pending change from the installed app.*
+M7 "done when" for the Shell: *the author installs Scriba on an iPad over the tailnet, drafts and saves a scene, and the file is byte-identical on disk to what was typed; a phone reviews and accepts a pending change from the installed app.*
 
 Demo script (under 5 minutes):
 1. On the iPad, open `https://scriba.<tailnet>.ts.net` and Add to Home Screen. Launch it.
@@ -269,22 +271,22 @@ Demo script (under 5 minutes):
 | `/platform` | Platform | SSE envelope `{module, type, data}`, events route constant, base error shape + error-code convention, `/healthz` response, app version info | Platform `phase:scaffold` (publishes `/platform`) |
 | `/project-store` | Project store | project-relative path + file reference type, file-API read/write requests including the write precondition/conflict result | Project store `phase:contract` (blocks `phase:editor` only) |
 
-The Shell does not consume `/agent-loop`, `/graph-runner`, `/setup-auth` or `/compile-export`. The tool-call card and diff view take Shell-local inputs, so wave-2 slices never block the Shell. The `/setup` path is set by the installer, auth and model providers decision and is not imported.
+The Shell does not consume `/agent-loop`, `/graph-runner`, `/setup-auth` or `/compile-export`. The tool-call card and diff view take Shell-local inputs, so the Agent loop, Graph runner and Compile & export slices never block the Shell. The `/setup` route is a fixed in-app path registered by Setup & auth, and the Shell does not import it.
 
 ## Testing Decisions
 
 - **What makes a good test.** It exercises external behaviour only: what the author sees and does in a rendered route, and what goes over the wire (HTTP requests and `EventSource` messages). It never asserts on private services, signals' internal wiring or component internals.
-- **Seam: rendered routes with Angular's Vitest runner**.
+- **Seam: rendered routes with Angular's Vitest runner**
   - Shell tests render the composed Shell (root routes plus a dummy feature registered through the real pattern) against the **fake API client and fake event source** built from contract types.
   - These doubles are shipped by `phase:core` so every feature module uses the same seam.
 - **SSE client.** Tested through a stubbed global `EventSource` (the browser boundary): envelope demultiplexing, unknown-member tolerance, `CLOSED` recreate with backoff, and reconcile ticks on re-open, `visibilitychange`, `online` and `pageshow`.
 - **Breakpoint gate and nav.** Tested by driving `matchMedia` / `BreakpointObserver` per device class. The tests assert nav contents, `canMatch` outcomes and the "keep the open view" rule on resize.
-- **Editor round trip.** A byte-level fixture suite (front matter, both emphasis styles, CRLF, mixed endings, BOM, no trailing newline, trailing whitespace). The test loads through the fake file API, saves with no edits, and asserts the captured write payload equals the input byte for byte. It also asserts a targeted edit changes only that range. This is the deciding test from the Markdown editor decision, kept as a regression test.
+- **Editor round trip.** A byte-level fixture suite (front matter, both emphasis styles, CRLF, mixed endings, BOM, no trailing newline, trailing whitespace). The test loads through the fake file API, saves with no edits, and asserts the captured write payload equals the input byte for byte. It also asserts a targeted edit changes only that range. This byte-diff round trip is kept as a regression test.
 - **Diff view.** Fixture pairs assert rendered change markers (including whitespace and line-ending-only changes) and the unified/side-by-side switch by device class.
 - **Security.** Markdown preview fixtures with `<script>`, `onerror` and `javascript:` links assert nothing executes or renders as active HTML.
 - **System.** The single Platform-owned Playwright e2e runs against the dev server, so it exercises the Shell's proxy, SSE through the proxy, and nav on every run. `phase:polish` adds the phone-viewport review check.
 - **Contracts.** None of the Shell's own (no slice). The Shell's use of `/platform` schemas is covered by the envelope and error tests above.
-- **Prior art.** None in the repo yet. The canvas spike's headless-Chromium touch synthesis is reference only for the tablet touch checks. The round-trip probe from the Markdown editor decision (outside the repo) is the model for the fixture suite.
+- **Prior art.** None in the repo yet. The canvas library evaluation's headless-Chromium touch synthesis is reference only for the tablet touch checks. The Markdown round-trip probe is the model for the fixture suite: it loaded a real file with YAML front matter, saved it with no edits and byte-diffed the result.
 
 ## Out of Scope
 
@@ -299,17 +301,17 @@ The Shell does not consume `/agent-loop`, `/graph-runner`, `/setup-auth` or `/co
 - **An "update available" notice** against published images (not in v1).
 - **Read-only reviewer access** (later).
 - **Internationalisation.**
-- **Brief overrides** (the decisions win):
-  - The brief's React + Vite frontend becomes Angular 22 + Material.
-  - Its "CodeMirror or TipTap" choice is now CodeMirror 6 only.
-  - Its React Flow canvas is now `ngx-vflow`, in the Graph runner.
-  - "Never write straight to `drafts/`" applies only to agent and recipe writes. The author's editor saves directly.
+- **Superseded proposals, with their replacements:**
+  - The frontend is Angular 22 + Angular Material, replacing React with Vite.
+  - The Markdown editor is CodeMirror 6 only, replacing the choice between CodeMirror and TipTap.
+  - The canvas is `ngx-vflow`, in the Graph runner, replacing React Flow.
+  - Agent and recipe writes to `drafts/` still go through the pending-changes queue, so no tool writes straight to `drafts/`. The author's own typing in the editor saves straight to the file. This replaces the rule that nothing touches `drafts/` until the author has reviewed a diff.
 
 ## Further Notes
 
-- **Brief vs decisions.** The brief's frontend stack row is superseded by later decisions. The brief has no Shell-specific milestone criterion, so the M7 "done when" above is defined by this spec. The brief's M7 "remix comparison view" belongs to whichever module ships Remix. It can reuse the diff view's side-by-side layout, and extending the diff view to more than two variants would be an additive Shell change requested by that module.
+- **Milestone scope.** The M7 "done when" above is the Shell's criterion. The remix comparison view (M7) belongs to whichever module ships Remix (a Genre packs tool that rewrites a passage in another shape for side-by-side comparison). It can reuse the diff view's side-by-side layout, and extending the diff view to more than two variants would be an additive Shell change requested by that module.
 - **Merge-view edits and the Project store.** The editable merge view emits edited text. Whether accepting an edited pending change is an accept carrying new content, or an accept followed by a direct file-API write, is the Project store's decision. Its contract should state it, and the Shell supports either.
 - **Editor conflicts depend on the file-API write precondition.** The Project store spec should give writes an optional base (mtime/size or content hash) and a distinct conflict error code, so the editor can show `conflict` instead of overwriting edits made in another editor (files are re-read on demand, and the author edits on the host too).
 - **Dev proxy vs Origin/Host checks.** Setup & auth enforces Origin and Host checks. In dev, the browser's origin is the Angular dev server. Setup & auth's dev-mode allowlist must accept it, or the proxy must present a matching Host. Coordinate when both `phase:core` and Setup & auth's guard phase land.
 - **iOS Safari** drops `EventSource` connections when backgrounded. The reconcile tick on `visibilitychange` and `pageshow` is what keeps the phone and iPad correct. Event replay (`Last-Event-ID`) is not relied on, and Platform may add it later without Shell changes.
-- **Breakpoints** follow the CDK's `Handset`/`Tablet`/`Web` sets as decided above. If real-device testing (not done in the canvas library or Markdown editor spikes beyond synthesised touch) shows a misclassification, adjust the mapping in the Shell. Features declare only a class, never pixel widths.
+- **Breakpoints** follow the CDK's `Handset`/`Tablet`/`Web` sets as decided above. The canvas library's touch checks were synthesised in headless Chromium and did not cover real tablets or Safari. The editor's tablet touch check passed on a test page. If testing on real devices shows a misclassification, adjust the mapping in the Shell. Features declare only a class, never pixel widths.
