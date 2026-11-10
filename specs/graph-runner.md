@@ -112,7 +112,7 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
   - An output node has one input port with the fixed key `in`.
   - A tool node's input port keys are the tool-spec input property names that the Tool registry's port derivation marks as ports (`x-scriba-port` / `x-scriba-type`).
 - **Relation vocabulary.** The suggested relations are `order` (from precedes to), `causality` (from causes to) and `containment` (from contains to, for example a scene containing a beat). They are published as constants with these one-line meanings. Any other non-empty string is allowed. Compile & export reads only edges whose relation is exactly `order`.
-- **Migrations** follow the decision on tool specs, CI/publishing and updates. Graph files migrate lazily on open, with a backup and a `logs/` entry, never as pending changes. A file with a newer `schemaVersion` is refused with a readable error. v1 ships the hook with no migrations.
+- **Migrations.** Graph files migrate lazily on open, with a backup and a `logs/` entry, never as pending changes. A file with a newer `schemaVersion` is refused with a readable error. v1 ships the hook with no migrations.
 
 ### Graph CRUD
 - All routes act on the active project. Reads and writes go through the Project store file API, so path safety applies.
@@ -191,7 +191,7 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
   - If the target path equals a text input's file reference, the base is the run-start content.
   - Otherwise, if the target file exists, its content is read when the pending change is created and used as the base.
   - Otherwise the pending change creates a new file.
-- **Creating the pending change:** the runner calls the Project store with the target path, the proposed content, the captured base and origin `{recipe run}`. The origin carries the run id, graph id, output node id, and the sources used along the chain into that output (the union of `sourcesUsed` upstream). That gives each draft the entity IDs and tool run behind it, as the brief requires. The output node's result is `{pendingChangeId, path}`.
+- **Creating the pending change:** the runner calls the Project store with the target path, the proposed content, the captured base and origin `{recipe run}`. The origin carries the run id, graph id, output node id, and the sources used along the chain into that output (the union of `sourcesUsed` upstream). That gives each draft the entity IDs and tool run behind it, so the author can trace any sentence back to its inputs. The output node's result is `{pendingChangeId, path}`.
 - **Errors:** when a node fails, it becomes `error` with a readable message, every node still `queued` becomes `stopped`, and the run ends as `error`. Pending changes already created stay in the queue, because they are reviewable on their own.
 - **Stop** (POST): aborts the model call in progress. The running node and every queued node become `stopped`, and the run ends `stopped`. No pending change is created after the stop is received.
 - **Run state**: `{runId, graphId, target?, status: 'running' | 'done' | 'error' | 'stopped', startedAt, endedAt?, inputs, targets, nodes: {[nodeId]: {status, result?, error?}}, pendingChangeIds}`.
@@ -217,7 +217,7 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
   - The entry shape is published. The Agent loop's transcripts are a separate format in `logs/`.
 
 ### Canvas UI (ngx-vflow)
-- **One adapter layer** maps graph JSON to `ngx-vflow` nodes and edges and back. The graph JSON stays the contract, and library ids never leak into files. The four accepted workarounds from the spike live in that layer:
+- **One adapter layer** maps graph JSON to `ngx-vflow` nodes and edges and back. The graph JSON stays the contract, and library ids never leak into files. The four adapter workarounds that `ngx-vflow` needs live in that layer:
   1. a custom SVG handle template that carries the port id, positioned from the handle's `point` context;
   2. each handle placed inside its own row;
   3. the connection directive imported through the `Vflow` tuple;
@@ -225,7 +225,7 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
 - **Both views** render from the same file format. The story view shows story nodes and labelled relation edges, with relation suggestions in a picker that also accepts free text. The recipe view shows input, tool and output nodes with typed handles.
 - **Tool nodes are generated** from the registry: one row per derived port, plus the Tool registry's form renderer for the non-port settings, bound to `params`. Ports show their type by colour and icon, and a list port shows its pinned chips.
 - **Wire rejection:** the connection validator refuses mismatched types, a second wire into an input, and a wire into a pinned port, so no wire is ever emitted for those.
-- **Entity side list:** the project's entities (through the Project store file API), searchable and grouped by type, as draggable chips. Dropping a chip onto an entity or style port pins it in `params`, after checking the port type, the port's entity-kind filter, and that the port has no wire (the decision on the canvas library for Angular notes this is app logic). It works with mouse and touch.
+- **Entity side list:** the project's entities (through the Project store file API), searchable and grouped by type, as draggable chips. Dropping a chip onto an entity or style port pins it in `params`, after checking the port type, the port's entity-kind filter, and that the port has no wire (these checks are app logic, because the canvas library only renders the graph JSON). It works with mouse and touch.
 - **Inline status and results:** a status badge per node, driven by signals from the SSE stream and reconciled from current-run-state on load and on wake. Results show as an expandable preview with cited files. Output nodes link to their pending change in the review queue.
 - **Run controls:** Run, Run to here (on a node), and Stop. Run opens the **input-values dialog**, which lists the input nodes and output nodes in scope (text or file picker, entity picker, style picker with the project default, output target path). The canvas is read-only while a run is active.
 - **Story view extras:** a file picker for `path`, a missing-file warning badge, and "Open file", which navigates to the app's file view that hosts the Shell editor.
@@ -238,10 +238,10 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
   - a text input node "Chapter notes" (meant to be fed a `drafts/` file);
   - an entity input node "Key people and claims";
   - a style input node;
-  - the nonfiction workhorses chained (for example, mystery question into cold open) on their text ports;
+  - the nonfiction workhorse tools (cold open, mystery question, myth-buster and numbers-to-people) chained (for example, mystery question into cold open) on their text ports;
   - one output node writing a draft.
   - Its exact ports follow the Genre packs workhorse specs.
-- The sample ships **no story graph**, so the `project.yaml` order branch stays demoable. It ships no `logs/`, `.scriba/`, `snapshots/` or `.versions/`.
+- The sample ships **no story graph**, so draft order is set by the `project.yaml` order field and that path stays demonstrable. It ships no `logs/`, `.scriba/`, `snapshots/` or `.versions/`.
 - The recipe must pass Platform's CI check against the graph schema and the registry's tool references. Its path is a contract with `e2e/fixtures/mock-openai/`: renaming it updates the mock script in the same PR.
 
 ### Routes and error codes
@@ -259,6 +259,10 @@ The canvas works on desktop and tablet, including touch. On a phone, the Shell's
   - `GRAPH_TARGET_INVALID`
 
 ## Phases
+
+Milestones referenced in this spec, in build order: M1 walking skeleton (project folder, file tools, chat panel and agent loop); M2 tool registry (declarative tool specs, schema validation and the four nonfiction workhorse tools); M3 review and grounding (pending-changes queue, versioned drafts and the grounding check); M4 Graph runner and canvas.
+
+Build waves: wave 0 is Platform; wave 1 is Frontend shell, Setup & auth, Model providers, Project store, Tool registry and Genre packs (nonfiction); wave 2 is Agent loop, Graph runner and Compile & export; wave 3 is the fiction pack and polish.
 
 ### `phase:contract` (M4; lands early, in wave 1, because Genre packs' propose-graph is blocked on it)
 Scope:
@@ -304,7 +308,7 @@ Scope:
 - the nonfiction sample recipe;
 - the M4 extension to Platform's Playwright e2e.
 
-Brief "done when": *the author builds a chapter recipe visually and runs it end to end.* In glossary terms: the author builds a recipe that produces a chapter's draft on the canvas, runs it, and gets a pending change.
+Done when: *the author builds a chapter recipe visually and runs it end to end.* That means the author builds a recipe that produces a chapter's draft on the canvas, runs it, and gets a pending change.
 
 Acceptance criteria:
 - [ ] On desktop, the author builds a recipe from an empty canvas with input, tool and output nodes, using only mouse gestures, form fields and the input-values dialog, then runs it end to end and sees a pending change in the review queue.
@@ -364,7 +368,7 @@ Consumers:
   - (review UI, for `phase:canvas` links): the review queue route.
 - **Model providers**: indirectly, through the Tool registry executor. No direct dependency.
 - **Frontend shell** (`phase:core`): API and SSE clients, theming, breakpoint gate, lazy route table, nav.
-- **Genre packs** (nonfiction workhorses, M2): the tools used in the sample recipe.
+- **Genre packs** (the nonfiction workhorse tools, M2): the tools used in the sample recipe.
 
 ## Testing Decisions
 
@@ -390,36 +394,35 @@ Consumers:
   - validation issue display and the disabled Run button;
   - chip-drop refusal rules, as the drop handler's observable outcome on the saved graph;
   - the phone gate.
-- **Gesture checks:** the DOM test environment has no layout, so real gestures (drawing wires, dropping on a port, touch) are checked by this module's step in the Platform Playwright e2e and a canvas-gesture Playwright spec, desktop and touch-emulated. This mirrors how the spike was verified.
+- **Gesture checks:** the DOM test environment has no layout, so real gestures (drawing wires, dropping on a port, touch) are checked by this module's step in the Platform Playwright e2e and a canvas-gesture Playwright spec, desktop and touch-emulated.
 - **System seam:** the M4 extension of the single Playwright e2e (open sample recipe → run → pending change in the review queue), using Platform's harness and mock OpenAI.
-- **Manual:** a real-iPad Safari check, plus one recorded large-graph measurement in `phase:canvas`. Neither was covered by the spike.
-- **Prior art:** none in the repo. The canvas spike's `e2e/spike.cjs` is reference only. Vitest everywhere, with NestJS via `unplugin-swc`. Unit tests keep their own fixtures and never read `examples/`.
+- **Manual:** a real-iPad Safari check, plus one recorded large-graph measurement in `phase:canvas`. Neither was tested in the canvas library evaluation.
+- **Prior art:** none in the repo. The canvas spike's `prototypes/canvas-spike/e2e/spike.cjs` (on the throwaway `spike/canvas-library-8` branch) is reference only. Vitest everywhere, with NestJS via `unplugin-swc`. Unit tests keep their own fixtures and never read `examples/`.
 
 ## Out of Scope
 
 - **Running story graphs**, and running a scene through an attached recipe. Either can be added later without breaking anything.
 - **Saved links between the views**: no story node inside a recipe, and no recipe node inside a story graph. The only bridge is choosing a file as an input value.
-- **Merge, Compare and Gate nodes, entity nodes in recipes, note nodes, and branch or loop nodes.** The brief's "Visual composer" node list is overridden by the decision on graph semantics for the story and recipe views: recipes have input, tool and output nodes only, and entity values arrive as input values or pinned chips. Remix comparison and gating steps, if they come back, return as tools or later node kinds through expand–contract.
+- **Merge, Compare and Gate nodes, entity nodes in recipes, note nodes, and branch or loop nodes.** Recipes have input, tool and output nodes only, replacing the earlier six-kind list (entity, tool, merge, compare, gate and output), and entity values arrive as input values or pinned chips. Remix comparison and gating steps, if they come back, return as tools or later node kinds through expand–contract.
 - **Reusing results from earlier runs**, and running independent branches in parallel. Both can be added later.
 - **Output nodes for `claims` and `check` outputs** (see Further Notes).
 - **Generating graphs from a typed intent.** That is propose-graph (Genre packs, core pack) called by the Agent loop. The runner only receives the accepted file.
 - **Sections or heading anchors inside a scene file**, and a `scenes/`, `beats/` or `structure/` folder.
 - **A SQLite run-log index** (deferred; `logs/` is the source of truth).
 - **Smart auto-layout** beyond the simple layered Arrange; collaborative or multi-user editing; canvas editing on phones.
-- **Brief items overridden by the recorded design decisions:**
-  - React and React Flow are replaced by Angular and `ngx-vflow`.
-  - Zod for tool inputs is replaced by JSON Schema from the Tool registry.
-  - `DECISIONS.md` is replaced by `docs/adr/` and the recorded design decisions.
-  - The brief's M4 node list (entity, tool, merge, compare, output) is replaced by input, tool and output.
-  - The brief's "Output (writes a chapter or scene draft)" is replaced by output nodes that create pending changes, never direct writes.
+- **Current choices that replace earlier proposals** (each bullet says what it replaces):
+  - The canvas is built with Angular and `ngx-vflow` (replacing React and React Flow).
+  - Tool inputs are described by JSON Schema from the Tool registry and validated with Ajv (replacing Zod).
+  - Decisions are recorded in `docs/adr/` (replacing a single `DECISIONS.md` file that logged each choice).
+  - Output nodes create pending changes and never write files directly (replacing an output that wrote a chapter or scene draft).
 
 ## Further Notes
 
-- **Spike risks carried into `phase:canvas`**: real tablets and Safari, Material styling, large graphs, and layout were not tested. Each is an acceptance criterion or a recorded check above.
-  - Slower `ngx-vflow` releases and its 32 open reports are an accepted cost. The graph JSON is the contract, so the renderer can be swapped later as a UI change, not a data migration. `@foblex/flow` passed every check in the spike and remains the fallback.
-  - The spike also didn't test whether a node updates when its tool spec changes. The canvas re-derives ports when it loads a graph. Live update while a graph is open is not required in v1.
-- **`claims` and `check` outputs:** The decision on graph semantics for the story and recipe views says the output enum decides the target file kind, but no decision names a file location for claims lists or check reports. Writing them into `drafts/` would put them in the manuscript. This spec makes them inline-and-logged only in v1, rejected at output nodes by validation. If the owner wants them written, the smallest addition is a mapping for these kinds (for example, a report folder outside `drafts/`). That is an additive change to validation and the output mapping, needing no schema change.
-- **Choices made here that no recorded decision fixes:**
+- **Risks carried into `phase:canvas`**: real tablets and Safari, Material styling, large graphs, and layout were not tested in the canvas library evaluation. Each is an acceptance criterion or a recorded check above.
+  - Slower `ngx-vflow` releases and its 32 open reports are an accepted cost. The graph JSON is the contract, so the renderer can be swapped later as a UI change, not a data migration. `@foblex/flow` also passed every check and remains the fallback.
+  - The canvas library evaluation also did not test whether a node updates when its tool spec changes. The canvas re-derives ports when it loads a graph. Live update while a graph is open is not required in v1.
+- **`claims` and `check` outputs:** The output enum decides the target file kind, but no file location is defined for claims lists or check reports. Writing them into `drafts/` would put them in the manuscript. This spec makes them inline-and-logged only in v1, rejected at output nodes by validation. If they are later written to files, the smallest addition is a mapping for these kinds (for example, a report folder outside `drafts/`). That is an additive change to validation and the output mapping, needing no schema change.
+- **Design choices made in this spec:**
   - the six node statuses;
   - running nodes one at a time;
   - fail-fast on error;
@@ -431,6 +434,6 @@ Consumers:
   - graph id = file stem.
 
   Each one is the simplest option that can be widened later through expand–contract.
-- **Provenance:** the brief requires every draft to record the entity IDs and tool run behind it. For recipe runs, this is carried on the pending change's `recipe run` origin and in the run log. If the Project store's origin type lacks a field the runner needs (run id, graph id, output node id, sources used), the runner asks for it through expand–contract on `/project-store`. It does not invent a parallel record.
+- **Provenance:** every draft records the entity IDs and tool run behind it, so the author can trace any sentence back to its inputs. For recipe runs, this is carried on the pending change's `recipe run` origin and in the run log. If the Project store's origin type lacks a field the runner needs (run id, graph id, output node id, sources used), the runner asks for it through expand–contract on `/project-store`. It does not invent a parallel record.
 - **The canvas spike branch** (`spike/canvas-library-8`, `prototypes/canvas-spike/`) is throwaway. Its identical story and recipe fixtures were filler, not semantics.
 - **Scheduling:** the contract phase should land during wave 1, because Genre packs' propose-graph is blocked on it. The engine and canvas phases are wave 2 and demo M4.
