@@ -334,7 +334,7 @@ The Shell does not consume `/agent-loop`, `/graph-runner` or `/compile-export`. 
 ## Further Notes
 
 - **Milestone scope.** The M7 "done when" above is the Shell's criterion. The remix comparison view (M7) belongs to whichever module ships Remix (a Genre packs tool that rewrites a passage in another shape for side-by-side comparison). It can reuse the diff view's side-by-side layout, and extending the diff view to more than two variants would be an additive Shell change requested by that module.
-- **Merge-view edits and the Project store.** The editable merge view emits edited text. The Project store's accept request carries it as optional `content` (decided in the Project store spec).
+- **Merge-view edits and the Project store.** The editable merge view emits edited text. The Project store's accept request carries it as optional `content` (decided in Project store work units `work/project-store/PST-01-contract-slice.md` and `PST-16-apply-three-way-check.md`).
 - **Editor conflicts.** The Project store write request takes an optional `baseHash` and returns a distinct write-conflict error code, which the editor maps to `conflict`.
 - **Dev proxy vs Origin/Host checks.** The dev proxy forwards `Host` and `Origin` unchanged (no `changeOrigin`). `npm run dev` sets `SCRIBA_DEV_ORIGINS=http://localhost:4200` so Setup & auth's guard accepts the dev server's Host and Origin, and `SCRIBA_SETUP_URL_BASE` to the same origin so the cookie is set where the browser uses it.
 - **iOS Safari** drops `EventSource` connections when backgrounded. The reconcile tick on `visibilitychange` and `pageshow` is what keeps the phone and iPad correct. Event replay (`Last-Event-ID`) is not relied on, and Platform may add it later without Shell changes.
