@@ -287,7 +287,7 @@ Acceptance criteria:
 - [ ] An entity-type schema with a one-level array-of-objects field loads, and one with a nested object field fails lint.
 
 ### phase:executor (M2)
-Blocked by: `phase:loader-validation`; Model providers `phase:client` (implementation); Project store `phase:contract`.
+Blocked by: `phase:loader-validation`; Model providers `phase:client` (implementation); Project store `phase:contract`; Platform `phase:test-harness` (mock OpenAI server).
 
 Scope:
 - The template engine (`{{field}}`, `#each`, `#if/else`, `{{entity id}}`, comments).

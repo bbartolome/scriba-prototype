@@ -285,7 +285,7 @@ Acceptance criteria:
 - [ ] Contract tests pass in CI.
 
 ### `phase:engine` (M4)
-Blocked by: `phase:contract`; Project store `phase:files` (file API, `delete`, `move`, `appendLog`, switch hook) and `phase:pending-review` (propose with a supplied base, validator registration); Tool registry `phase:executor`; Setup & auth `phase:token-guard`.
+Blocked by: `phase:contract`; Project store `phase:files` (file API, `delete`, `move`, `appendLog`, switch hook) and `phase:pending-review` (propose with a supplied base, validator registration); Tool registry `phase:executor`; Setup & auth `phase:token-guard`; Platform `phase:test-harness` (mock OpenAI server).
 
 Scope:
 - the NestJS module, graph CRUD through the Project store file API, lazy-migration hook and newer-version refusal;

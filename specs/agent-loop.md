@@ -212,7 +212,8 @@ M1 to M7 are the build milestones, in order: M1 walking skeleton, M2 tool regist
 **Gates:**
 - Model providers `phase:client` and Project store `phase:files` (implementation; M1 needs them running);
 - Setup & auth `phase:token-guard`;
-- Shell `phase:core` and `phase:shared-components` (tool-call card).
+- Shell `phase:core` and `phase:shared-components` (tool-call card);
+- Platform `phase:test-harness` (mock OpenAI server).
 
 **Scope:**
 - The loop: start, steps, text ends the agent run, step cap, stop, one active agent run per project, project-switch stop.
