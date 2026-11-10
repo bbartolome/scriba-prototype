@@ -7,7 +7,7 @@ status: planned
 
 Batch: `[PLT-01]` (Platform, `phase:scaffold`, M1). This iteration writes the plan only. The plan is implemented in a later iteration, so no criterion is marked passed here.
 
-Revision 4. It answers Opus rejections 1, 2 and 3 (recorded in `plans/DECISIONS.md`, 2026-11-10). The Navigator's response to rejection 3 is to keep PLT-01 as one unit and fix the defects in place.
+Revision 5. Revision 4 was approved by Opus on 2026-11-10 (`plans/DECISIONS.md`). Revision 5 is documentation-only: it corrects the dev folder wording in section 2, the `/tmp/plt01-ac2/` procedure in AC 2, and the PLT-13 line citation in section 5. No criterion changed, so the approval carries over. Opus rejections 1, 2 and 3, and the Navigator's response to rejection 3 (keep the unit whole and fix it in place), are recorded in `plans/DECISIONS.md`.
 
 ## 1. Decisions this plan follows
 
@@ -45,7 +45,7 @@ Each is recorded in `plans/DECISIONS.md` (2026-11-10 entries):
 - **`tsconfig.base.json`**: `strict`, `skipLibCheck`, `target` `ES2022`, `module` and `moduleResolution` `NodeNext`. No `include` or `files`. Each workspace extends it.
 - **`eslint.config.mjs`**: a flat config that exports an array. It applies `@eslint/js` recommended and `typescript-eslint` recommended to `**/*.ts`, and ignores `**/dist/**`, `**/node_modules/**` and `**/.angular/**`. The array export lets PLT-09 add its entries.
 - **`.prettierrc.json`**: `{ "singleQuote": true, "trailingComma": "all" }`
-- **`.gitignore`**: `node_modules/`, `dist/`, `.angular/`, `coverage/`, `.scriba-dev/`, and `.claude/settings.local.json` (a local file that Claude Code writes, which Prettier would otherwise check). The last is the dev library folder that `SCRIBA_BOOKS_DIR` defaults to (PLT-01 Decisions line 27). PLT-01 adds only the ignore entry.
+- **`.gitignore`**: `node_modules/`, `dist/`, `.angular/`, `coverage/`, `.scriba-dev/`, and `.claude/settings.local.json` (a local file that Claude Code writes, which Prettier would otherwise check). `.scriba-dev/` is the dev library folder that `SCRIBA_BOOKS_DIR` defaults to (PLT-01 Decisions line 27). PLT-01 adds only the ignore entry.
 - **`deploy/.gitkeep`**, **`e2e/.gitkeep`**, **`examples/.gitkeep`**: empty.
 - **`scripts/pins.test.mjs`**: a `node:test` file. It reads `../package.json` relative to itself. It asserts that `scribaPins` is an object, and that its keys `angular`, `nestjs` and `zod` are present with non-empty string values. The test name is "pin section names the Angular, NestJS and Zod majors".
 
@@ -84,7 +84,7 @@ Note: `apps/web` gets no Angular. PLT-03 generates the app. `packages/packs` get
 - Pass: exit 0. `find . -name package-lock.json -not -path '*/node_modules/*'` lists one file. No `pnpm-lock.yaml` or `yarn.lock` exists.
 
 **AC 2 — `npm run build`, `npm test` and `npm run lint` pass from the root, and each runs in every workspace.**
-- Test: from the root, run `npm run build`, `npm test` and `npm run lint`. Each must exit 0. Then run each fan-out and save its output outside the repo: `npm run build --workspaces > /tmp/plt01-ac2/build.txt 2>&1`, `npm test --workspaces > /tmp/plt01-ac2/test.txt 2>&1`, `npm run lint --workspaces > /tmp/plt01-ac2/lint.txt 2>&1`. Each command must exit 0. Then `grep -c '^> @bbartolome/scriba-' /tmp/plt01-ac2/build.txt /tmp/plt01-ac2/test.txt /tmp/plt01-ac2/lint.txt` must print 4 for each file, one banner per package. Also run `npx eslint --print-config test/smoke.test.ts` inside one workspace, to confirm that the root ESLint config is found from a workspace.
+- Test: from the root, run `npm run build`, `npm test` and `npm run lint`. Each must exit 0. Run `mkdir -p /tmp/plt01-ac2/` first. Then run each fan-out and save its output outside the repo: `npm run build --workspaces > /tmp/plt01-ac2/build.txt 2>&1`, `npm test --workspaces > /tmp/plt01-ac2/test.txt 2>&1`, `npm run lint --workspaces > /tmp/plt01-ac2/lint.txt 2>&1`. Each command must exit 0. Then `grep -c '^> @bbartolome/scriba-' /tmp/plt01-ac2/build.txt /tmp/plt01-ac2/test.txt /tmp/plt01-ac2/lint.txt` must print 4 for each file, one banner per package. Also run `npx eslint --print-config test/smoke.test.ts` inside one workspace, to confirm that the root ESLint config is found from a workspace.
 - Prettier scope check: create a probe file `apps/api/src/modules/platform/probe.ts`, run `npx prettier --file-info apps/api/src/modules/platform/probe.ts`, and confirm `"ignored": false`. Run `npx prettier --file-info modules/platform.md` and confirm `"ignored": true`. Delete the probe file afterwards.
 - Pass: all six commands exit 0, each fan-out's banner count is 4, the ESLint print shows the root rules, and the two Prettier file-info results are as stated.
 
@@ -111,7 +111,7 @@ The plan agrees with the downstream units. The files each unit changes are named
 - **PLT-10:** reads Node from `.nvmrc` (consistent with section 2). Its `ci.yml` is a file the root `prettier --check .` reaches, so PLT-10 formats it.
 - **PLT-11:** adds `concurrently` to the root `devDependencies` and the root `dev` script. It uses the dev library defaults from PLT-01 (`.scriba-dev/` for `SCRIBA_BOOKS_DIR`). It adds a root `README.md`, which the root `prettier --check .` checks, so PLT-11 formats it.
 - **PLT-12:** adds the root `mock:openai` script. Its scenario JSON files under `e2e/fixtures/` are reached by the root `prettier --check .`, so PLT-12 formats them. Its unit (line 20) says it may make `e2e/` a workspace. If `e2e/` stays a plain folder, PLT-12's tests are not run by the root `npm test`, which runs only the workspaces and the pin test. In that case PLT-12 must either make `e2e/` a workspace (with `build`, `test` and `lint` scripts, because the fan-out has no `--if-present`) or add a root test script. Either option edits the root `package.json` and the lockfile, and removes `e2e/.gitkeep`.
-- **PLT-13:** adds the root `e2e` script (its unit, line 31). It makes `e2e/` a workspace only if it needs its own dev dependencies, as PLT-01 Decisions line 23 says. If `e2e/` stays a plain folder, PLT-13 adds `@playwright/test` to the root `devDependencies`.
+- **PLT-13:** adds the root `e2e` script (its unit, line 26). It makes `e2e/` a workspace only if it needs its own dev dependencies, as PLT-01 Decisions line 23 says. If `e2e/` stays a plain folder, PLT-13 adds `@playwright/test` to the root `devDependencies`.
 - **Root lockfile:** PLT-02, PLT-03, PLT-04, PLT-09, PLT-11, PLT-12 and PLT-13 each change the root `package-lock.json` when they add a dependency or a workspace. Each of those units commits the updated lockfile with its own change.
 
 ## 6. Points the Opus reviewer should check
