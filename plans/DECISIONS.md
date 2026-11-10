@@ -104,3 +104,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   - Note 6: byte-exact fixtures in later units (the reviewer names SHL-13 and GNP-02) need `.prettierignore` entries. Those units own them.
   - Note 7: PLT-10 runs tests before build, so contracts and api tests that import the built contracts package need a build step first. Owned by PLT-02 or PLT-10.
 - **Reason (Navigator):** These are text fixes that change no criterion, so the revision-4 Opus approval carries over. Re-sending revision 5 to Opus would risk a fourth rejection, and a fourth rejection stops the iteration.
+
+## 2026-11-10 — PLT-01 — versions resolved at implementation (plan section 3, steps 1a to 1e)
+
+- **Resolved (driver, Node v26.13.0, npm 11.20.0):** Angular major 22 (`@angular/core` 22.2.5). NestJS major 12 (`@nestjs/core` 12.4.2). Zod major 4 (`zod` 4.6.7). TypeScript 6.0.3, the highest of `typescript@6.0` (`npm view typescript@6.0 version` lists 6.0.2 and 6.0.3). Tools: `vitest` 5.1.0, `eslint` 10.14.0, `@eslint/js` 10.0.1, `typescript-eslint` 8.72.2, `prettier` 3.9.10. `packageManager` is `npm@11.20.0`, the npm bundled with Node 26.13.0.
+- **Peer checks (steps 1c and 1d):** `@angular/build@22.2.5` and `@angular/compiler-cli@22.2.5` both declare `typescript` `>=6.0 <6.1`, which admits 6.0.3. `@angular/build@22.2.5` declares `vitest` `^4.0.8 || ^5.0.0`, so the newest admitted vitest is 5.1.0. `typescript-eslint@8.72.2` declares `eslint` `^8.57.0 || ^9.0.0 || ^10.0.0` and `typescript` `>=4.8.4 <6.1.0`, which admit eslint 10.14.0 and TypeScript 6.0.3. `@eslint/js@10.0.1` declares `eslint` `^10.0.0`.
+- **Conflict rule (Angular and TypeScript):** not triggered. The newest Angular build tooling admits the 6.0.x line, so implementation continues.
+- **Implementation-time decision (note 4 of the approval entry):** `@eslint/js` and `eslint` are both on major 10, so the install and the ESLint config resolve.
+- **Install:** `npm install` at the root succeeded on Node 26.13.0 without `--legacy-peer-deps`, adding 132 packages and writing the single root `package-lock.json`. npm reported 10 moderate vulnerabilities. No criterion covers audit results, so they are not addressed in PLT-01.
