@@ -109,7 +109,7 @@ Setup & auth gives Scriba one way in and one guard.
 - **In-process exports** for other API modules (NestJS providers, not contract members): the global guard with its public marker, the request-identity accessor, and a read-only preferences reader (`authorName`, `defaultGenrePack`) that Compile & export uses as the fallback author name.
 
 ### Setup token
-- Generated on first start, only when no token exists: at least 256 bits from a CSPRNG, base64url. Persisted in its own 0600 file inside `/books/.scriba/` (directory 0700). That is the same floor as the app's secrets file: it guards against other OS users and casual reading, not strong encryption.
+- Generated on first start, only when no token exists: at least 256 bits from a CSPRNG, base64url. Persisted in its own 0600 file, `/books/.scriba/setup-token` (directory 0700). That is the same floor as the app's secrets file: it guards against other OS users and casual reading, not strong encryption.
 - **`setup-url`** (0600) is rewritten on every start from the persisted token and the current loopback base URL, `http://127.0.0.1:<SCRIBA_PORT>`. The port can change between starts, so the file is never trusted as the source of the token.
 - The setup URL is printed to stdout on first start, and again on every later start, which makes the logs a recovery path as well. Anyone with Docker access can read the logs, but Docker access already means control of the host.
 - The installer reads `setup-url` after the healthcheck passes and prints the URL (owned by Platform). The file's location and its single-line format are the interface. The setup URL points at the handshake endpoint with the token as a query parameter. A fragment can't be used, because the server has to see the token to set the cookie.
@@ -201,7 +201,7 @@ The guard handles each request in this order:
 
 ### Recovery (documented on the settings page and in the user docs)
 1. Re-open the setup URL. Print it with `cat ~/Books/.scriba/setup-url` or find it in `docker compose logs scriba`.
-2. To replace a leaked token, delete the token file in `~/Books/.scriba/` and restart. A new token is generated, `setup-url` is rewritten, and every existing cookie stops working.
+2. To replace a leaked token, delete `~/Books/.scriba/setup-token` and restart. A new token is generated, `setup-url` is rewritten, and every existing cookie stops working.
 3. Last resort: wipe `~/Books/.scriba/`. This also removes settings, secrets and search indexes, but projects stay untouched.
 4. If the allowlist locks out a tailnet device, use the Mac and the setup URL.
 

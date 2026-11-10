@@ -185,7 +185,7 @@ Scope:
 - test doubles: the fake API client and the fake event source, typed from the contract package.
 
 Acceptance criteria:
-- [ ] `npm run dev` serves the Shell. Through the proxy, `/healthz` answers and an `EventSource` on the events route receives a Platform test event with no buffering delay.
+- [ ] `npm run dev` serves the Shell. Through the proxy, `/healthz` answers and an `EventSource` on the events route receives `platform/hello`, and `platform/echo` envelopes triggered through `POST /api/platform/echo` arrive with no buffering delay.
 - [ ] A dummy feature registered with one route-table entry is lazy-loaded (its own chunk), shown in the nav with its label and icon, and absent from the initial bundle.
 - [ ] A feature with minimum class `tablet` is hidden from the phone nav. Opening its URL on a phone viewport shows the "larger screen" page. Resizing an open view below its class keeps it open and shows a notice.
 - [ ] Phone viewports show the bottom nav. Tablet shows the rail. Desktop shows the side nav.
@@ -208,7 +208,7 @@ Demo script (Shell part, under 5 minutes):
 5. Stop the API and see the reconnecting indicator, then the "server unreachable" banner.
 6. Start the API again and watch it reconnect and fire a reconcile tick (visible in the debug log).
 
-### `phase:shared-components` — M1 (tool-call card), M3 (read-only diff)
+### `phase:shared-components` — M1 (tool-call card, Markdown preview), M3 (read-only diff)
 Blocked by `phase:core`.
 
 Scope:
