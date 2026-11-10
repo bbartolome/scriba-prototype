@@ -28,7 +28,7 @@ Merging this **closes Graph runner `phase:contract`**. Zod + TS, shapes and cons
 - **Node-run-status** exactly `idle | queued | running | done | error | stopped`.
 - **SSE members** (module `graph-runner`): `run-started` (run state), `node-status` `{runId, nodeId, status, result?, error?}` (result = tool node `{output, sourcesUsed}` or output node `{pendingChangeId, path}`), `run-ended` `{runId, status, reason?}`.
 - **Run-log entry** union for `logs/recipe-runs/<runId>.jsonl`: run start, node status, tool call (validated arguments, output, sourcesUsed), error, pending change, run end.
-- **Routes** and the `GRAPH_*` error codes (see [`units/modules/graph-runner.md`](modules/graph-runner.md)).
+- **Routes** and the `GRAPH_*` error codes (see [`modules/graph-runner.md`](../modules/graph-runner.md)).
 - **Example fixtures:** one story graph and one recipe file used by contract tests.
 
 ## Acceptance criteria

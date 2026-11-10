@@ -1,21 +1,21 @@
 # Scriba — units of work
 
-Every file in this folder is one **unit of work**: one PR with self-contained context and its own acceptance criteria. The units replace the per-module specs (`specs/*.md`, deleted after conversion). This README is the single index: the shared conventions and the phase table. Each module has its own file in [`modules/`](modules/) (linked from the table below) with its ordering notes, dependency graph, parallelism and the decisions every unit in that module inherits.
+Every file in this folder is one **unit of work**: one PR with self-contained context and its own acceptance criteria. The units replace the per-module specs (`specs/*.md`, deleted after conversion). This README is the single index: the shared conventions and the phase table. Each module has its own file in [`modules/`](../modules/) at the repo root (linked from the table below) with its ordering notes, dependency graph, parallelism and the decisions every unit in that module inherits.
 
 ## Modules
 
 | Prefix | Module (as named in blockers) | Slug (contracts subpath, `/api/<slug>/…`, `features/<slug>/`) | Wave | Milestones |
 |---|---|---|---|---|---|
-| `PLT` | [Platform](modules/platform.md) | `platform` | 0 | M1–M2 (examples check through M6) |
-| `SHL` | [Frontend shell](modules/shell.md) | `shell` (no API, no events, empty slice) | 1 | M1–M3, M7 |
-| `SAU` | [Setup & auth](modules/setup-auth.md) | `setup-auth` | 1 | M1–M3 |
-| `MPR` | [Model providers](modules/providers.md) | `providers` (UI route `/providers`) | 1 | M1–M2 |
-| `PST` | [Project store](modules/project-store.md) | `project-store` | 1 | M1–M3, M7 |
-| `TRG` | [Tool registry](modules/tool-registry.md) | `tool-registry` | 1 | M2 |
-| `GNP` | [Genre packs](modules/genre-packs.md) | `genre-packs` (content only, empty slice) | 1 (nonfiction), 3 (fiction) | M2, M6, M7 |
-| `AGL` | [Agent loop](modules/agent-loop.md) | `agent-loop` | 2 | M1–M3, M7 |
-| `GRR` | [Graph runner](modules/graph-runner.md) | `graph-runner` | 2 (contract in wave 1) | M4 |
-| `CEX` | [Compile & export](modules/compile-export.md) | `compile-export` | 2 | M5 |
+| `PLT` | [Platform](../modules/platform.md) | `platform` | 0 | M1–M2 (examples check through M6) |
+| `SHL` | [Frontend shell](../modules/shell.md) | `shell` (no API, no events, empty slice) | 1 | M1–M3, M7 |
+| `SAU` | [Setup & auth](../modules/setup-auth.md) | `setup-auth` | 1 | M1–M3 |
+| `MPR` | [Model providers](../modules/providers.md) | `providers` (UI route `/providers`) | 1 | M1–M2 |
+| `PST` | [Project store](../modules/project-store.md) | `project-store` | 1 | M1–M3, M7 |
+| `TRG` | [Tool registry](../modules/tool-registry.md) | `tool-registry` | 1 | M2 |
+| `GNP` | [Genre packs](../modules/genre-packs.md) | `genre-packs` (content only, empty slice) | 1 (nonfiction), 3 (fiction) | M2, M6, M7 |
+| `AGL` | [Agent loop](../modules/agent-loop.md) | `agent-loop` | 2 | M1–M3, M7 |
+| `GRR` | [Graph runner](../modules/graph-runner.md) | `graph-runner` | 2 (contract in wave 1) | M4 |
+| `CEX` | [Compile & export](../modules/compile-export.md) | `compile-export` | 2 | M5 |
 
 ## Waves and milestones
 
