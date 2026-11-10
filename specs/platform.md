@@ -104,7 +104,7 @@ Platform is wave 0. It lands first and owns everything shared:
 
 - **One NestJS app, one port.** The app listens on 8080 on all interfaces inside the shared network namespace, which Docker's loopback publish needs. It serves the built Angular bundle with `@nestjs/serve-static`, with SPA fallback to `index.html` for non-API paths. Static files, `/api`, `/healthz` and the events route all share one origin. No CORS headers.
 - **Feature registration.** Each module adds one `@Module` import to the root module. Module controllers mount under `/api/<module>/…`. Each module's route constants live in its own contract slice.
-- **No direct tailnet connections.** The HTTP server drops connections whose peer address is in Tailscale's ranges (`100.64.0.0/10`, `fd7a:115c:a1e0::/48`). Without this filter, a tailnet peer could open `http://<100.x>:8080` and bypass Serve. That would defeat the HTTPS-only rule and Serve's identity-header stripping. Serve proxies from `127.0.0.1`, and the loopback publish arrives from the Docker gateway, so both pass. Setup & auth relies on the same distinction: it trusts the tailnet identity header only from a loopback peer. ST-1 records the peer addresses actually seen on both paths. *The recorded design decisions are silent on this; decided here.*
+- **No direct tailnet connections.** The HTTP server drops connections whose peer address is in Tailscale's ranges (`100.64.0.0/10`, `fd7a:115c:a1e0::/48`). Without this filter, a tailnet peer could open `http://<100.x>:8080` and bypass Serve. That would defeat the HTTPS-only rule and Serve's identity-header stripping. Serve proxies from `127.0.0.1`, and the loopback publish arrives from the Docker gateway, so both pass. Setup & auth relies on the same distinction: it trusts the tailnet identity header only from a loopback peer. ST-1 records the peer addresses actually seen on both paths.
 - **Env and config.** `SCRIBA_*` variables are parsed with Zod at boot, and a bad value stops boot with a readable message. Their names are constants in `/platform`.
 - **App-state folder check.** At boot, the app makes sure `/books/.scriba/` exists and is writable by its UID. If it isn't, the app exits non-zero with a message naming the UID/GID and the host path. The folder's contents belong to other modules: settings and sections, the secrets file (Model providers), the token and `setup-url` (Setup & auth), index files (Project store).
 - **`settings.yaml` startup migration hook.** Platform owns the file envelope and the hook. Modules own their sections.
@@ -113,7 +113,7 @@ Platform is wave 0. It lands first and owns everything shared:
   - At boot, before the server listens, the hook reads the file and, if it's behind, writes a timestamped backup next to it and applies the steps in order. It then writes the result atomically.
   - A file with a **newer** `schemaVersion` is refused: the app logs which version it found and how to roll back, then exits non-zero.
   - The hook also exposes atomic read/write of a section to its owning module.
-  - **Not here:** per-project files (`project.yaml`, entity and graph files) migrate lazily on open, with a backup and a `logs/` entry. That belongs to the Project store spec. *Decision on the brief's open ownership question: the eager app-state hook is Platform's because it runs in the composition root's boot sequence; lazy per-project migration is Project store's.*
+  - **Not here:** per-project files (`project.yaml`, entity and graph files) migrate lazily on open, with a backup and a `logs/` entry. That belongs to the Project store spec. Platform owns the eager app-state hook because it runs in the composition root's boot sequence; lazy per-project migration is Project store's.
 - **Errors.** A global exception filter maps every error to the base error shape:
   - Zod validation failures become `PLATFORM_VALIDATION_FAILED` (400) with the issues in `details`.
   - Unknown routes under `/api` become `PLATFORM_NOT_FOUND` (404).
@@ -217,7 +217,7 @@ Tailscale's own variables (`TS_AUTHKEY` in `.secret`, `TS_HOSTNAME=scriba`, `TS_
   - `TS_SOCKET=/var/run/tailscale/tailscaled.sock`.
   - `extra_hosts: ["host.docker.internal:host-gateway"]`. The shared network namespace means it shares `/etc/hosts` too.
   - The loopback publish `127.0.0.1:${SCRIBA_PORT:-8080}:8080`.
-  - Serve setup, per ST-1. The candidate is `TS_SERVE_CONFIG` pointing at a shipped Serve config with a `${TS_CERT_DOMAIN}:443` HTTPS handler proxying to `http://127.0.0.1:8080`. The fallback is a CLI loop: run containerboot, wait indefinitely for an IP, then `tailscale serve --bg --https=443 http://127.0.0.1:8080`. Unlike Tride, there's no 60-second give-up and no `--http=80` handler.
+  - Serve setup, per ST-1. The candidate is `TS_SERVE_CONFIG` pointing at a shipped Serve config with a `${TS_CERT_DOMAIN}:443` HTTPS handler proxying to `http://127.0.0.1:8080`. The fallback is a CLI loop: run containerboot, wait indefinitely for an IP, then `tailscale serve --bg --https=443 http://127.0.0.1:8080`. Unlike Tride (`bbartolome/tride`, the earlier project whose dispenser installer, Tailscale sidecar and multi-arch publish pipeline Scriba follows), there's no 60-second give-up and no `--http=80` handler.
 - **Shared socket volume.** A named volume is mounted at `/var/run/tailscale` in both services. The app's non-root UID must be able to call `GET /localapi/v0/status`. This is checked in `phase:image-compose`. The app gaining control of tailscaled is accepted for a single owner.
 - **`scriba` service:**
   - `image: bbartolome/scriba:${SCRIBA_IMAGE_TAG:-latest}`.
@@ -230,11 +230,11 @@ Tailscale's own variables (`TS_AUTHKEY` in `.secret`, `TS_HOSTNAME=scriba`, `TS_
 
 ### Installer and update
 
-- **Dispenser.** `docker run --rm -e SETUP=true bbartolome/scriba | bash`, a superset of Tride's dispenser.
+- **Dispenser.** `docker run --rm -e SETUP=true bbartolome/scriba | bash`, modelled on Tride's dispenser.
   - The script that's printed pins the image ref it came from.
   - It reads any interactive answers from `/dev/tty`, because stdin is the pipe.
   - It extracts the `deploy/` files by running the same image with `tar` over `/opt/installer`.
-- **Install folder.** This is the folder the one-liner runs in, as in Tride. Docs recommend a dedicated folder outside the library, so that `.secret` (the Tailscale auth key) is never readable by the app through the library mount. *The recorded design decisions are silent on this; decided here.*
+- **Install folder.** This is the folder the one-liner runs in, as in Tride. Docs recommend a dedicated folder outside the library, so that `.secret` (the Tailscale auth key) is never readable by the app through the library mount.
 - **First install** (no `.env` present):
   1. Check Docker and Compose v2.
   2. Extract the `deploy/` files.
@@ -314,6 +314,10 @@ These are manual, pre-release checklist items, run on real hardware and a real t
 ## Phases
 
 The phases are serial. **`phase:scaffold` is the gate every other module's first phase names.** It also publishes Platform's `/platform` contract slice, instead of a separate `phase:contract` (see Further Notes).
+
+The M-numbers in the phase names are product milestones. **M1** is the walking skeleton, done when the author types "summarize my outline" and gets a correct answer with visible tool calls. **M6** is the fiction pack, done when a dialogue scene between two characters keeps each voice distinct and respects their relationship notes.
+
+Milestones referenced here: M2 is the tool registry, M3 is review and grounding, M4 is canvas, and M5 is compile and export.
 
 ### `phase:scaffold`, M1
 
@@ -489,32 +493,32 @@ Also produced but not contracts: nine empty subpaths ready for their owners; the
   - The web composition root, route table, proxy, API/SSE clients and theming after the handover (Frontend shell).
   - The setup token, guard, cookie, origin and Host checks, the GET-never-mutates test, the Tailscale login UI and the compose-mismatch warning UI (Setup & auth).
   - Section contents of `settings.yaml` and the secrets file (Model providers, Setup & auth).
-  - Lazy per-project file migrations, `examples/` content and the "start from sample" mechanism (Project store and the modules named in the sample project contents decision).
+  - Lazy per-project file migrations. Project store owns `examples/`, the "start from sample" mechanism and the nonfiction skeleton (M1). Each other sample addition belongs to the module whose milestone demos it: Genre packs for the nonfiction entities (M2) and the whole fiction sample (M6), Agent loop for the grounding-claims draft (M3), Graph runner for the nonfiction recipe (M4), and Compile & export for the `project.yaml` order field (M5).
   - App-level export (Compile & export).
   - The Typst quality spike and any TeX Live derived image (Compile & export).
 - The manual real-model eval script (small and larger local model). It concerns the tool-calling loop and belongs with the Agent loop.
 - ST-4, userspace networking mode (deferred).
 - LAN mode and host `0.0.0.0` publishing, a second no-sidecar compose topology, a separate installer UI container, auto-update or Watchtower, an "update available" notice, a CLI reset-token, and per-user image layers.
 - pnpm, Yarn, Nx, Turborepo, nginx, Caddy, WebSockets and OpenAPI code generation.
-- **Where the recorded design decisions override the brief:**
-  - React, Vite and Fastify/Hono give way to Angular + Material and NestJS.
-  - "Runs on localhost" becomes loopback plus optional Tailscale HTTPS.
-  - SQLite as a run-log index is deferred; it's used only for FTS5 search.
-  - Zod for tool inputs gives way to JSON Schema. That doesn't affect Platform's own Zod contracts.
-  - `DECISIONS.md` gives way to `docs/adr/` plus the recorded design decisions.
+- **Replaced proposals** (each bullet states the current requirement and what it replaces):
+  - The frontend is Angular with Angular Material and the backend is NestJS. This replaces React, Vite and Fastify or Hono.
+  - The app is always published on loopback at `http://127.0.0.1:${SCRIBA_PORT:-8080}`. After an optional Tailscale login it is also reachable at `https://scriba.<tailnet>.ts.net`, over HTTPS on 443 only, with no plain-HTTP tailnet handler. This replaces "runs on localhost".
+  - SQLite is used only for FTS5 search. A run-log index in SQLite is deferred, and `logs/` stays the source of truth. This replaces the SQLite run-log index.
+  - Tool inputs are JSON Schema, not Zod. This replaces Zod for tool inputs. Platform's own contracts remain Zod.
+  - Decisions are logged in `docs/adr/`. This replaces `DECISIONS.md`.
 
 ## Further Notes
 
 - **Phase naming deviation.** By convention, a producer's first phase is `phase:contract`. Platform's first phase is `phase:scaffold`, because it creates the package every slice lives in. `phase:scaffold` publishes `/platform` and is the gate every module names. The work breakdown should treat `phase:scaffold` as Platform's contract phase.
-- **Decisions made here where the recorded design decisions are silent** (reviewer, please confirm):
+- **Decisions this spec makes** (reviewer, please confirm):
   - **The tailnet-address filter.** Listening on all interfaces is required for Docker's loopback publish, but it also exposes plain HTTP on `tailscale0`. Setup & auth should additionally trust `Tailscale-User-Login` only from a `127.0.0.1` peer. That note is for the Setup & auth spec.
-  - **The events route is `/events`.** This follows the repo, build, image and runtime topology decision's "proxy covers `/api`, `/healthz` and the events route". It's a constant, so it's cheap to move.
-  - **Error codes use SCREAMING_SNAKE with a module prefix.** This matches the Model providers draft (`PROVIDER_*`).
+  - **The events route is `/events`.** The dev proxy covers `/api`, `/healthz` and the events route. The path is a constant, so it's cheap to move.
+  - **Error codes use SCREAMING_SNAKE with a module prefix.** This matches the `PROVIDER_*` prefix that Model providers uses.
   - **The install folder is the current directory, kept outside the library,** so the app can't read `.secret`.
-  - **semantic-release runs inside `publish.yml`.** It plans first, publishes images, and tags last. That's the option from the CI/publishing decision without extra tokens.
+  - **semantic-release runs inside `publish.yml`.** It plans first, publishes images, and tags last. That's the option that needs no GitHub App or PAT.
   - **No SSE replay.** Reconnecting clients reconcile through state endpoints.
-  - **`settings.yaml` ownership.** Platform owns the file envelope and the eager startup hook. Modules own their sections and the steps that migrate them. This answers the open question flagged in the Model providers draft.
+  - **`settings.yaml` ownership.** Platform owns the file envelope and the eager startup hook. Modules own their sections and the steps that migrate them.
 - **Cookie `Secure` on `http://127.0.0.1`** is Setup & auth's to verify. Platform only guarantees one origin per access path.
 - **The app controls tailscaled** through the shared socket. This is accepted for a single owner and should be stated in the README's security notes.
 - **ST-1 changes compose.** This is why `phase:smoke` comes before `phase:installer`: the installer ships the compose that ST-1 approved.
-- **Waves.** Wave-1 modules start as soon as `phase:scaffold` closes. `phase:test-harness` follows right after, because Model providers and the Agent loop need the mock server. The release-track phases (image-compose → smoke → installer → ci-publish) can run alongside wave 1, since they only touch Platform-owned files. `phase:examples-check` finishes last because it waits on wave-1 and wave-2 contracts.
+- **Waves.** Wave 0 is Platform. Wave 1 is Frontend shell, Setup & auth, Model providers, Project store, Tool registry and Genre packs (nonfiction). Wave 2 is Agent loop, Graph runner and Compile & export. Wave 3 is the fiction pack and polish. Wave-1 modules start as soon as `phase:scaffold` closes. `phase:test-harness` follows right after, because Model providers and the Agent loop need the mock server. The release-track phases (image-compose → smoke → installer → ci-publish) can run alongside wave 1, since they only touch Platform-owned files. `phase:examples-check` finishes last because it waits on wave-1 and wave-2 contracts.
