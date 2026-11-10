@@ -1,0 +1,10 @@
+{
+  "name": "@bbartolome/scriba-web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint ."
+  }
+}

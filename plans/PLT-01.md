@@ -1,6 +1,6 @@
 ---
 id: PLT-01
-status: planned
+status: done
 ---
 
 # PLT-01 plan — root npm workspace, pins and scripts skeleton

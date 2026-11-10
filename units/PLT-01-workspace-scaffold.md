@@ -34,8 +34,8 @@ Ten modules build in parallel and none can start until there is something to bui
 - Empty `deploy/`, `e2e/`, `examples/` folders (with `.gitkeep`).
 
 ## Acceptance criteria
-- [ ] `npm ci` on a fresh clone succeeds with one root lockfile.
-- [ ] `npm run build`, `npm test` and `npm run lint` pass from the root and each runs in every workspace.
-- [ ] Exactly one TypeScript version is installed (`npm ls typescript` shows a single deduped version).
-- [ ] Node and npm pins are present (`.nvmrc`, `engines`, `packageManager`).
-- [ ] The root `package.json` pin section names the Angular, NestJS and Zod majors (a test asserts that the three names are present; version numbers are not checked). Added by Navigator decision, 2026-11-10 (see `plans/DECISIONS.md`).
+- [x] `npm ci` on a fresh clone succeeds with one root lockfile.
+- [x] `npm run build`, `npm test` and `npm run lint` pass from the root and each runs in every workspace.
+- [x] Exactly one TypeScript version is installed (`npm ls typescript` shows a single deduped version).
+- [x] Node and npm pins are present (`.nvmrc`, `engines`, `packageManager`).
+- [x] The root `package.json` pin section names the Angular, NestJS and Zod majors (a test asserts that the three names are present; version numbers are not checked). Added by Navigator decision, 2026-11-10 (see `plans/DECISIONS.md`).
