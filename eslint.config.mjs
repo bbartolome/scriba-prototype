@@ -27,12 +27,12 @@ export default defineConfig(
       'boundaries/elements': [
         {
           type: 'api-module',
-          pattern: '**/src/modules/*',
+          pattern: 'src/modules/*',
           capture: ['module'],
         },
         {
           type: 'web-feature',
-          pattern: '**/src/app/features/*',
+          pattern: 'src/app/features/*',
           capture: ['feature'],
         },
       ],
