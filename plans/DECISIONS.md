@@ -229,3 +229,15 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   7. Criterion 4 deferred to PLT-11, with the labelled structural proxy (YAML parse, one job, step order).
 - **Reason (Navigator):** Each is a plan-level detail that the unit does not fix. Each is additive and consistent with the unit and the settled decisions. None changes a criterion. Criteria 1 and 2 keep the order and the trigger set the unit writes.
 - **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
+
+## 2026-11-11 — PLT-02, PLT-03, PLT-09 — smaller plan choices accepted as drafted (Navigator decision)
+
+- **Decision (Navigator):** Accept all six defaults as drafted in the plans, with no criterion text changes:
+  1. PLT-02: the field types for the `/platform` slice (hello, echo, echo request, healthz, version info) are chosen in the plan, with expand-contract. PLT-04 or PLT-06 may tighten them later.
+  2. PLT-02: contracts export only the integer shape of `composeVersion`. PLT-04 owns the placeholder constant, and PLT-15 owns the real value (`units/PLT-04-api-composition-root.md` line 25).
+  3. PLT-03: the PLT-01 AC 2 probe (`npx eslint --print-config test/smoke.test.ts`) breaks when PLT-03 deletes `apps/web/test/smoke.test.ts`. PLT-11 re-points the probe to a surviving file, and the path is left to PLT-11. PLT-03 records the break in its section 5.
+  4. PLT-03: the placeholder uses one Material component (`mat-toolbar`), so the Material wiring is exercised. The criteria are the same with a bare heading.
+  5. PLT-09: the web routes file is `<m>.routes.ts`. Feature units must confirm the name, a forward dependency.
+  6. PLT-09: the "at all" ban (`units/PLT-09-module-boundaries-lint.md` line 19) also covers the agent-loop and graph-runner web features under `apps/web/src/app/features/`. This is the stronger reading of line 20 and is consistent with line 19.
+- **Reason (Navigator):** Each is a plan-level detail that the units and PLT-04 do not fix. Each is additive, and none changes a criterion.
+- **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
