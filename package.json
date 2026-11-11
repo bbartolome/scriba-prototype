@@ -20,7 +20,7 @@
   },
   "scripts": {
     "build": "npm run build --workspaces",
-    "test": "npm test --workspaces && node --test scripts/pins.test.mjs",
+    "test": "npm test --workspaces && node --test 'scripts/*.test.mjs'",
     "lint": "npm run lint --workspaces && prettier --check ."
   },
   "devDependencies": {
