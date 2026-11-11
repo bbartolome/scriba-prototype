@@ -60,6 +60,6 @@ Tailscale's own variables (`TS_AUTHKEY`, `TS_HOSTNAME`, `TS_STATE_DIR`, `TS_USER
 - Node runtime boot test that imports all ten subpaths (the Angular-build half of the boot test lands in PLT-11 once `apps/web` exists).
 
 ## Acceptance criteria
-- [ ] All ten `@bbartolome/scriba-contracts/<module>` subpaths resolve at runtime in Node (CJS `require` from a NestJS-style consumer). Importing the package root fails (no barrel).
-- [ ] Zod tests: valid and invalid envelopes (bad `module`, dotted `type`), valid and invalid error bodies (lower-case code, missing prefix), hello/echo members, healthz and version-info shapes.
-- [ ] The package has no runtime dependency other than Zod.
+- [x] All ten `@bbartolome/scriba-contracts/<module>` subpaths resolve at runtime in Node (CJS `require` from a NestJS-style consumer). Importing the package root fails (no barrel).
+- [x] Zod tests: valid and invalid envelopes (bad `module`, dotted `type`), valid and invalid error bodies (lower-case code, missing prefix), hello/echo members, healthz and version-info shapes.
+- [x] The package has no runtime dependency other than Zod.

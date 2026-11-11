@@ -27,6 +27,6 @@ unblocks: [PLT-11, "Frontend shell composition root (SHL-01)"]
 - An empty `src/app/features/` folder.
 
 ## Acceptance criteria
-- [ ] `npm run build -w @bbartolome/scriba-web` produces a static bundle with `index.html`.
-- [ ] `npm test -w @bbartolome/scriba-web` runs one passing Vitest component test of the placeholder page.
-- [ ] The proxy config covers exactly `/api`, `/healthz` and `/events`.
+- [x] `npm run build -w @bbartolome/scriba-web` produces a static bundle with `index.html`.
+- [x] `npm test -w @bbartolome/scriba-web` runs one passing Vitest component test of the placeholder page.
+- [x] The proxy config covers exactly `/api`, `/healthz` and `/events`.

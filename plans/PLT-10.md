@@ -1,6 +1,6 @@
 ---
 id: PLT-10
-status: planned
+status: done
 ---
 # PLT-10 plan — ci.yml — one job (npm ci → lint → test → build) plus PR-title check
 

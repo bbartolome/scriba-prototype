@@ -1,6 +1,6 @@
 ---
 id: PLT-02
-status: planned
+status: done
 ---
 # PLT-02 plan — contracts package with ten subpaths and the /platform slice
 

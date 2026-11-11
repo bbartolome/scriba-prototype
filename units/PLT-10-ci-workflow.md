@@ -21,7 +21,7 @@ CI runs lint, test, build and e2e on every PR and push to `main`, so `main` stay
 - Other modules extend this job additively (e.g. Compile & export installs Pandoc 3.13 and Typst, and CI turns a Pandoc-missing test skip into a failure).
 
 ## Acceptance criteria
-- [ ] The workflow runs on `pull_request` and `push` to `main` with no `paths` filter.
-- [ ] Steps run in order npm ci → lint → test → build in a single job.
-- [ ] A PR titled `update stuff` fails the title check; `feat(platform): scaffold` passes.
+- [x] The workflow runs on `pull_request` and `push` to `main` with no `paths` filter.
+- [x] Steps run in order npm ci → lint → test → build in a single job.
+- [x] A PR titled `update stuff` fails the title check; `feat(platform): scaffold` passes.
 - [ ] `ci.yml` is green on the scaffold PR (verified at PLT-11).

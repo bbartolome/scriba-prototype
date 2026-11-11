@@ -22,8 +22,8 @@ Boundaries like "the Agent loop and the Graph runner never call each other" must
 - Each module's entry file is its `<m>.module.ts` (API) / its routes file (web); document these as the only importable files.
 
 ## Acceptance criteria
-- [ ] A fixture import from `apps/api/src/modules/graph-runner/**` into `modules/agent-loop/**` fails lint, and the reverse fails too.
-- [ ] A fixture import of another module's internal service file fails lint; importing its `*.module.ts` passes.
-- [ ] A fixture cross-feature internal import in `apps/web/src/app/features/` fails lint.
-- [ ] Importing `@bbartolome/scriba-contracts/<m>` from any module passes.
-- [ ] Fixtures live under a lint-test folder and don't ship.
+- [x] A fixture import from `apps/api/src/modules/graph-runner/**` into `modules/agent-loop/**` fails lint, and the reverse fails too.
+- [x] A fixture import of another module's internal service file fails lint; importing its `*.module.ts` passes.
+- [x] A fixture cross-feature internal import in `apps/web/src/app/features/` fails lint.
+- [x] Importing `@bbartolome/scriba-contracts/<m>` from any module passes.
+- [x] Fixtures live under a lint-test folder and don't ship.

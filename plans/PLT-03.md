@@ -1,6 +1,6 @@
 ---
 id: PLT-03
-status: planned
+status: done
 ---
 # PLT-03 plan — apps/web bootstrap (Angular + Material placeholder and dev proxy)
 

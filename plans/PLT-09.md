@@ -1,6 +1,6 @@
 ---
 id: PLT-09
-status: planned
+status: done
 ---
 
 # PLT-09 plan — module-boundaries lint rule
