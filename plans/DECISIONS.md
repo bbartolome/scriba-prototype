@@ -150,3 +150,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Reason (Navigator):** The build step belongs to the package that needs it, and the CI order stays as the unit fixes it. Mismatch 1 already set the precedent of keeping PLT-10's criteria unchanged.
 - **Driver note:** apps/api tests that import the built contracts package (note 7) depend on `packages/contracts` running its `pretest` first. The root test fan-out runs `packages/contracts` first, so this holds by workspace order. PLT-04's plan must state this dependency, not rely on it silently.
 - **Driver note:** Recorded now, before the PLT-02 plan is drafted, because driver rule 5 requires each decision to be recorded and committed at once.
+
+## 2026-11-11 — PLT-09 — mismatch 3: lint fixtures versus the root ESLint config (Navigator decision)
+
+- **Decision (Navigator):** Option A. The PLT-09 lint-test fixture folder is added to the root ESLint `ignores` array (`eslint.config.mjs` line 7). `npm run lint`, and therefore PLT-10's CI lint step, stays green. The fixtures stay as `.ts` files, so their relative import paths stay valid. The PLT-09 test runs ESLint's Node API on each fixture with the ignore lifted (for example `new ESLint({ ignore: false, overrideConfig })` or `overrideConfigFile`), and asserts that the boundary errors appear.
+- **Rejected (Navigator):** Option B, a non-`.ts` extension with a temporary copy per test, because its temporary copy is fragile. Option C, a second ESLint config for the test, because it adds a second file on top of the same ignore.
+- **Reason (Navigator):** The root config's comment at line 4 anticipates later units adding entries. The ignore alone does not satisfy PLT-09 criterion 5 ("don't ship"). The PLT-09 plan must pin the fixture folder as a repo-root lint-test folder, outside `packages/` and `apps/`, and must state two mechanisms: the ESLint ignore, and the fact that the folder is not an npm workspace, so `npm run build --workspaces` never builds it.
+- **No criterion text changes.** PLT-10's CI order (npm ci → lint → test → build) is untouched. Recorded as a plan note for PLT-09, not as a criterion change.
+- **Driver note:** Recorded now, before the plans are drafted, because driver rule 5 requires each decision to be recorded and committed at once.
