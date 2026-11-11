@@ -193,3 +193,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Residual risk (not a blocker):** how an entry file (`*.module.ts`) is told apart from an internal file, and the base for path matching (cwd or config directory), are unconfirmed. The step 4 stop rule covers both.
 - **No criterion text changes.** The unit's Decisions line 21 is an implementation choice, not a criterion.
 - **Driver note:** Recorded now, before the plan is revised, because driver rule 5 requires each decision to be recorded and committed at once.
+
+## 2026-11-11 — PLT-03 — dev script ownership: web "start" only (Navigator decision)
+
+- **Decision (Navigator):** Option A. PLT-03 adds only the apps/web `start` script (`ng serve`, with the proxy wired for exactly `/api`, `/healthz` and `/events`). PLT-11 owns and adds the root `dev` script, which composes `start` with the API watch and `tsc --watch` on contracts. No criterion text changes.
+- **Rejected (Navigator):** Option B, PLT-03 adding the root `dev` script now. PLT-11 owns the `dev` script and `concurrently` (`units/PLT-11-scaffold-gate.md` line 25), so Option B would force PLT-11 to rewrite it, a one-way door against that ownership.
+- **Reason (Navigator):** None of PLT-03's three acceptance criteria (`units/PLT-03-web-bootstrap.md` lines 30 to 32) names the root `dev` script. Line 15 ("`npm run dev` must work end to end") is rationale. It is realized at the PLT-11 gate (criterion 1, line 28), not at PLT-03's merge.
+- **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
