@@ -1,0 +1,103 @@
+---
+id: PLT-02
+status: planned
+---
+# PLT-02 plan — contracts package with ten subpaths and the /platform slice
+
+Batch: [PLT-02, PLT-03, PLT-09, PLT-10] (Platform, phase:scaffold, M1). Revision 2, revised after the DECISIONS 2026-11-11 Opus reviews.
+
+## 1. Decisions this plan follows
+
+- Consumed as built JS plus `.d.ts`. NestJS and Angular import it with no code generation and no path aliases. Source: unit lines 15, 18.
+- Output format is CommonJS. `tsconfig.base.json` keeps `module` and `moduleResolution` NodeNext. `packages/contracts/package.json` has no `"type": "module"`, so tsc emits CJS. Reasons: criterion 1 names CJS `require`; the NestJS app is CJS by default; this avoids relying on require(esm). The Angular consequence is handed to PLT-11 (DECISIONS 2026-11-11, CommonJS entry). Source: unit line 20; criterion 1.
+- Ten subpath exports, one per module, each `./<slug>` with `types` then `default`. No `"."` entry, so the root import fails. Source: unit line 19; criterion 1.
+- Each module's entry is `src/<slug>/index.ts`. The nine empty slices contain only `export {};`, because an empty TypeScript file is not a module and emits nothing. Source: unit lines 19, 59.
+- `build` = `tsc -p tsconfig.build.json && tsc --noEmit -p tsconfig.json`. The first emits JS and `.d.ts` to `dist/`. The second type-checks `src` and `test`, as the PLT-01 build did. Source: unit line 57; PLT-01 workspace scripts.
+- `test` = `npm run build && vitest run`. This is the explicit-chain option of DECISIONS 2026-11-11 (mismatch 2, Option A). A `pretest` hook was the other allowed option. It is not used, because the chain shows the order on one line. Note 7 of the 2026-11-10 PLT-01 approval is assigned to this plan. CI order npm ci, lint, test, build is unchanged. Source: DECISIONS 2026-11-11; unit line 25 (PLT-10).
+- Runtime dependency: `zod` only, at `^4` in `packages/contracts` `dependencies`, resolved to the newest 4.x at implementation (4.6.7 was recorded on 2026-11-10). Root `scribaPins.zod` stays `"4"`. Source: unit line 22; criterion 3; DECISIONS 2026-11-10 (PLT-02 adds zod to packages/contracts).
+- Dev dependency `@types/node` at `^26` in `packages/contracts` `devDependencies`. The tests import `node:` modules, and no `@types/node` is installed (`node_modules/@types` checked). Not a runtime dependency. Source: DECISIONS 2026-11-11, @types/node entry.
+- `/platform` content follows unit lines 26 to 52: module slugs, SSE envelope, stream constants, base error shape, method convention, healthz, version info, settings envelope, and the SCRIBA_* names and defaults. Source: unit lines 26 to 52.
+- Route constants `/events`, `/api/platform/echo`, `/healthz` and `/api/platform/version` live in the `/platform` slice. Source: PLT-04 line 19; unit lines 30, 33, 34.
+- Envelope: base `{module, type, data}`. `module` must be one of the eight publishing slugs (not `shell`, not `genre-packs`). `type` matches `^[a-z][a-z0-9]*(-[a-z0-9]+)*$`, so dots are refused. `data` is required by each member schema, not by the base, because a key typed `z.unknown()` is optional in Zod 4 (verify at step 7). Source: unit line 27.
+- Error body: `code` matches `^(PLATFORM|SETUP|AUTH|PROVIDER|PROJECT|TOOL|AGENT|GRAPH|COMPILE)_[A-Z0-9]+(_[A-Z0-9]+)*$`. Platform's four codes are constants with their HTTP status. Source: unit line 31.
+- Field types the unit does not fix are chosen here (DECISIONS 2026-11-11, smaller choices item 1). hello: `streamId` and `version` non-empty strings, `serverTime` ISO datetime. echo: `seq` integer at least 1, `sentAt` ISO datetime. echo request: `count` integer at least 1, `intervalMs` integer at least 0. healthz: `status` literal `'ok'`, `version` non-empty string. version info: `version`, `revision`, `builtAt` non-empty strings, `composeVersion` integer. Source: unit lines 28, 29, 33, 34, 44.
+- Settings envelope: `schemaVersion` literal `1`. The five section keys are fixed. Unknown top-level keys are refused (strict object). Each section object needs an integer `schemaVersion`. Source: unit line 35.
+- SCRIBA_* names are exported as `SCRIBA_ENV_DEFAULTS`: 14 keys (the names), each valued with the documented default as text, or `null` where the installer stamps the value. The template default `http://127.0.0.1:${SCRIBA_PORT}` is kept as text. Parse rules belong to PLT-04. The `TS_*` variables are not exported. Source: unit lines 36 to 54; PLT-04 line 21.
+- Method convention is exported as `HTTP_METHOD_CONVENTION = { read: 'GET', command: 'POST' }`, with a comment that forbids PUT, PATCH and DELETE. Source: unit line 32.
+- Node 26 runs every test. The boot test spawns `process.execPath`. Source: DECISIONS 2026-11-10 (Node runtime for the tests); PLT-01 Node entry.
+- The existing `test/smoke.test.ts` stays. PLT-01's acceptance criteria require each workspace to run tests. Source: PLT-01 acceptance criteria.
+- Test files are CJS-format under NodeNext. They do not use `import.meta`, which TypeScript rejects in CJS output, and they use `__dirname` (open point 8). Source: this plan.
+- Out of scope here: serve-static and `create-test-app` (PLT-04, its line 32), `/events` (PLT-06), and the Angular half of the boot test (PLT-11). Source: PLT-04 line 32; unit line 60.
+
+## 2. Files to create or change
+
+Only the paths below change. Root `package.json`, `tsconfig.base.json`, `eslint.config.mjs`, `.prettierignore` and `.gitignore` do not change. `package-lock.json` changes through npm.
+
+| Path | Change | Purpose |
+|---|---|---|
+| `packages/contracts/package.json` | edit | `dependencies.zod`; `devDependencies["@types/node"]`; `exports` with ten entries, each `"./<slug>": {"types": "./dist/<slug>/index.d.ts", "default": "./dist/<slug>/index.js"}`, and no `"."`; `build` and `test` scripts from section 1 |
+| `packages/contracts/tsconfig.build.json` | new | extends `../../tsconfig.base.json`; `include: ["src"]`; `rootDir: "src"`; `outDir: "dist"`; `declaration: true`. The emit config for the build and for PLT-11's watch |
+| `packages/contracts/src/.gitkeep` | delete | the folder now holds files |
+| `packages/contracts/src/platform/index.ts` | new | re-exports the five files below with `export * from './<file>.js'` |
+| `packages/contracts/src/platform/slugs.ts` | new | `MODULE_SLUGS` (ten), `PUBLISHING_MODULE_SLUGS` (eight), types `ModuleSlug` and `PublishingModuleSlug` |
+| `packages/contracts/src/platform/events.ts` | new | `sseEnvelopeSchema`; `platformEventSchema` (discriminated union of `hello` and `echo`); `helloDataSchema`; `echoDataSchema`; `echoRequestSchema`; `EVENTS_ROUTE` `/events`; `ECHO_ROUTE` `/api/platform/echo`; `SSE_RETRY_MS` 3000; `SSE_HEARTBEAT_MS` 15000 |
+| `packages/contracts/src/platform/errors.ts` | new | `ERROR_CODE_PREFIXES` (nine); `errorCodeSchema`; `errorBodySchema`; `PLATFORM_ERROR_CODES`; `PLATFORM_ERROR_STATUS` (400, 404, 413, 500) |
+| `packages/contracts/src/platform/http.ts` | new | `HTTP_METHOD_CONVENTION`; `HEALTHZ_ROUTE` `/healthz`; `VERSION_ROUTE` `/api/platform/version`; `healthzSchema`; `versionInfoSchema` |
+| `packages/contracts/src/platform/settings.ts` | new | `SETTINGS_SCHEMA_VERSION` (1); `SETTINGS_SECTION_KEYS`; `settingsEnvelopeSchema` |
+| `packages/contracts/src/platform/env.ts` | new | `SCRIBA_ENV_DEFAULTS` (14 names, section 1) |
+| `packages/contracts/src/{agent-loop,compile-export,genre-packs,graph-runner,project-store,providers,setup-auth,shell,tool-registry}/index.ts` | new (nine files) | each holds only `export {};` |
+| `packages/contracts/test/platform.schema.test.ts` | new | criterion 2 (Zod tests); imports `../src/platform/index.js` |
+| `packages/contracts/test/boot.test.ts` | new | criterion 1; spawns `process.execPath` on the fixture |
+| `packages/contracts/test/fixtures/nest-style/consumer.cjs` | new | CJS consumer. Requires each `@bbartolome/scriba-contracts/<slug>`; requires the root and `.../dist/platform/index.js` and records the error codes; prints JSON |
+| `packages/contracts/test/package-deps.test.ts` | new | criterion 3; reads `package.json` and the non-relative `require()` specifiers in `dist/**/*.js` |
+| `package-lock.json` | changed by npm | adds zod and @types/node |
+| `packages/contracts/dist/` | generated, git-ignored | build output, not committed |
+
+## 3. Method
+
+Run from `/Users/bbartolome/workspace/scriba-prototype` on branch `unit/PLT-02`, created from `main`. Record `node -v` and `npm -v` beside each result. Do not push.
+
+1. Runtime. `node -v` prints `v26.x` and `npm -v` prints `11.20.0`. Node 26.13.0 is on PATH through `n` in this environment (driver, this session), so run every step below with it. Expected: `v26.x`.
+2. Branch. `git switch -c unit/PLT-02` on a clean tree. Expected: `Switched to a new branch 'unit/PLT-02'`.
+3. Resolve versions. `npm view zod@4 version` and `npm view @types/node@26 version`. Take the highest of each. Expected: a non-empty list of each. Record `<zod>` and `<types-node>`.
+4. Install. `npm install zod@^<zod> --workspace=@bbartolome/scriba-contracts`, then `npm install -D @types/node@^<types-node> --workspace=@bbartolome/scriba-contracts`. Expected: both exit 0. `packages/contracts/package.json` gains `dependencies.zod` and `devDependencies["@types/node"]`. `git diff --stat -- package.json` is empty. `npm ls zod @types/node` shows one copy each. `npm ls typescript` still shows one version.
+5. Write the files in section 2. Then `npx prettier --write packages/contracts/src packages/contracts/test packages/contracts/tsconfig.build.json packages/contracts/package.json`. Expected: each file is reported as written. `git status --short` lists only section 2 paths.
+6. Build. `npm run build -w @bbartolome/scriba-contracts`. Expected: exit 0. `ls packages/contracts/dist` lists exactly `agent-loop compile-export genre-packs graph-runner platform project-store providers setup-auth shell tool-registry`, with no `dist/index.js`. `head -n 1 packages/contracts/dist/platform/index.js` prints `"use strict";`. `grep -c '^export ' packages/contracts/dist/platform/index.js` prints `0`.
+7. Package tests. `npm test -w @bbartolome/scriba-contracts`. Expected: exit 0. The build runs first, then vitest runs four files (`smoke`, `platform.schema`, `boot`, `package-deps`), all passing, zero failures. Here the Zod `z.unknown()` assumption of section 1 is checked.
+8. Root gates. From the root: `npm run build`, `npm test`, `npm run lint`. Expected: each exits 0. `npm test` also runs `scripts/pins.test.mjs`. `npm run lint` ends with `All matched files use Prettier code style!`.
+9. Prettier ignores generated output. `npx prettier --file-info packages/contracts/dist/platform/index.js`. Expected: `"ignored": true`, because Prettier 3 reads `.gitignore` by default. If it prints `false`, stop and record it (open point 9).
+10. Runtime dependency check. `npm ls --omit=dev -w @bbartolome/scriba-contracts`. Expected: the package with one child, `zod`.
+11. Commit and fresh clone. Commit on `unit/PLT-02` with the message `feat(platform): publish contracts subpaths and the /platform slice`. Then `git clone --branch unit/PLT-02 /Users/bbartolome/workspace/scriba-prototype /tmp/plt02-fresh` into an empty target, and in it `npm ci && npm run build && npm test && npm run lint`. Expected: each exits 0. `npm ci` uses the committed `package-lock.json`.
+12. Record. Store the Node and npm versions and each command's output. A criterion in section 4 is marked passed only when its row's pass condition holds.
+
+## 4. Acceptance criteria and tests
+
+All three criteria run with `npm test -w @bbartolome/scriba-contracts` after the build. This plan marks nothing passed. All three can run in this environment once Node 26 is present. None needs a remote, a runner or Angular.
+
+| Criterion (unit lines 63 to 65) | Test file and seam | Command | Pass condition |
+|---|---|---|---|
+| "All ten `@bbartolome/scriba-contracts/<module>` subpaths resolve at runtime in Node (CJS `require` from a NestJS-style consumer). Importing the package root fails (no barrel)." | `test/boot.test.ts` spawns `process.execPath` on `test/fixtures/nest-style/consumer.cjs`. Seam: the built `dist`, reached by the package name from inside the package (Node self-reference, which exercises the exports map). The workspace symlink is not exercised here; PLT-11 criterion 3 covers workspace-level resolution. | `npm test -w @bbartolome/scriba-contracts` | The fixture exits 0. Each of the ten slugs `require`s without error. The root `require` and the deep path `.../dist/platform/index.js` both fail with `ERR_PACKAGE_PATH_NOT_EXPORTED`. The `platform` exports include `platformEventSchema`, `healthzSchema`, `versionInfoSchema` and `SCRIBA_ENV_DEFAULTS`. The nine empty slices are only checked to load, not for exact keys, so owners can add shapes. |
+| "Zod tests: valid and invalid envelopes (bad `module`, dotted `type`), valid and invalid error bodies (lower-case code, missing prefix), hello/echo members, healthz and version-info shapes." | `test/platform.schema.test.ts` imports `../src/platform/index.js`. Seam: the exported schemas, through `safeParse`. | same | Accepted: `module` `platform`; `type` `node-status`; `PLATFORM_NOT_FOUND`; valid hello, echo and echo request; healthz; version info. Rejected: `module` `shell` and `nope`; `type` `node.status`; `platform_not_found`, `NOT_FOUND` and `WIDGET_BROKEN`; `count: 0`; `status: 'down'`; version info without `composeVersion`. Extra, not named in the criterion: settings `schemaVersion` 1 accepted and 2 rejected; an unknown top-level key rejected. |
+| "The package has no runtime dependency other than Zod." | `test/package-deps.test.ts` reads `packages/contracts/package.json` and scans `dist/**/*.js` for non-relative `require()` specifiers. | same | `dependencies` keys are exactly `['zod']`. No `peerDependencies` or `optionalDependencies`. The scanned specifiers are exactly `['zod']`. |
+
+Criterion 1 covers a NestJS-style CJS consumer, not apps/api. Workspace-level resolution from apps/api and the Angular build is PLT-11 criterion 3, and the Angular half is PLT-11's.
+
+## 5. Downstream agreement
+
+- **PLT-04 (API composition root).** Needs from `/platform`: the SCRIBA names and defaults, the healthz and version-info shapes and routes, the `/events` and echo route constants, and the method convention. All are provided under `@bbartolome/scriba-contracts/platform`. Conflicts and gaps: (a) PLT-04's apps/api `build` and `test` must build contracts first. The root order (contracts before api) covers only the root fan-out. PLT-04 must state and enforce this (DECISIONS 2026-11-11 driver note). PLT-02 provides `npm run build -w @bbartolome/scriba-contracts` as the entry point. (b) PLT-04's `moduleResolution` must be `node16`, `nodenext` or `bundler`, not `node10` (open point 5). (c) PLT-04 supplies the `composeVersion` value. PLT-02 gives only the integer shape. (d) serve-static, `create-test-app`, the env parse schemas and `/events` stay with PLT-04 and PLT-06. PLT-02 provides none of them.
+- **PLT-11 (scaffold gate).** Needs: the ten subpaths with no root barrel (its criterion 3); `build`, `test` and `lint` in every workspace (its criterion 2); and `tsconfig.build.json` as the emit config for its `tsc --watch` under `npm run dev` (its line 20). All are provided. PLT-11 adds the watch script itself. Conflict risk: its Angular half must load CJS output. Angular is expected to warn about CommonJS dependencies. PLT-11 must confirm its build passes and decide whether to list the package in `allowedCommonJsDependencies` (handed to PLT-11, DECISIONS 2026-11-11, CommonJS entry). PLT-11 adds its Angular fixture in apps/web and does not edit `boot.test.ts`.
+- **MPR-01, PST-01, SAU-01 and TRG-01 (contract slices, first phase).** Their front matter names PLT-11 as the blocker and PLT-02 as the strict dependency. They need the subpath entries for `providers`, `project-store`, `setup-auth` and `tool-registry`, and their `src/<slug>/index.ts` placeholders. Both are provided. They add shapes only under `src/<slug>/`, so no package config is edited (unit line 15, story 30). Changes to `/platform` after merge follow expand–contract (unit line 21). Conflict to watch: TRG-01's tool inputs are JSON Schema, not Zod (`modules/platform.md`). If TRG-01 adds a JSON Schema runtime library to this package, criterion 3 fails. Zod must stay the only runtime dependency.
+
+## 6. Open points
+
+1. **CJS and the Angular bundler.** Chosen: CJS. PLT-11 must show the Angular build passes with it, using the CommonJS warning or an `allowedCommonJsDependencies` entry. If it cannot, the output must become ESM (`"type": "module"`; the `.js` paths already fit). Criterion 1 would then rely on Node's require(esm) on Node 26. Decided (DECISIONS 2026-11-11, CommonJS entry): CJS stays. The ESM switch is rejected.
+2. **Zod is not pinned at the root.** Root `devDependencies` does not list zod, and zod is not in `node_modules` (checked). DECISIONS 2026-11-10 says PLT-02 adds zod to packages/contracts, so this plan does that. Decided (DECISIONS 2026-11-10, PLT-02 zod entry).
+3. **`@types/node` is new.** Decided (DECISIONS 2026-11-11): a devDependency at `^26`. Tests stay in the type check, and criterion 3 counts runtime dependencies only.
+4. **Node 26 availability.** Resolved: Node 26.13.0 is on PATH through `n` in this environment (driver, this session). Step 1 confirms it before any test runs.
+5. **Subpath types for node10.** The `exports` map gives types only to `node16`, `nodenext` and `bundler` resolution. A `node10` consumer would not find the subpath types. The fix would be a `typesVersions` map, which is not added here. PLT-04 to confirm its resolution mode.
+6. **Field types the unit leaves open** (section 1): hello and echo fields, the echo request bounds, the `builtAt` format and `serverTime`. Decided (DECISIONS 2026-11-11, smaller choices item 1): chosen here. PLT-04 or PLT-06 may need them tightened, by expand–contract.
+7. **Where the expected compose version lives.** PLT-04 line 25 calls it a placeholder constant. Decided (DECISIONS 2026-11-11, smaller choices item 2): this plan exports the shape only, and PLT-04 owns the placeholder value.
+8. **Tooling checks at steps 5 to 7.** Confirm that Vitest 5 provides `__dirname` in test files. If it does not, pick another way to locate the fixture and record it. Confirm that Zod 4 treats `z.unknown()` keys as optional, which section 1 relies on.
+9. **Prettier and `dist/`.** Step 9 is the check. If Prettier does check `dist/`, the fix is `/packages/contracts/dist/` in `.prettierignore`. That edits a PLT-01 file, so it needs a Navigator decision first.
+10. **Parallel batch and the lockfile.** PLT-03 and PLT-09 also change `package-lock.json`. Whichever merges second must regenerate it with `npm install`. The driver orders the merges.
+11. **Batch scope.** Settled by the DECISIONS 2026-11-11 entries that act on this batch. The batch is PLT-02, PLT-03, PLT-09 and PLT-10. This plan covers PLT-02 only.

@@ -1,0 +1,106 @@
+---
+id: PLT-09
+status: planned
+---
+
+# PLT-09 plan — module-boundaries lint rule
+
+Batch: [PLT-02, PLT-03, PLT-09, PLT-10] (Platform, phase:scaffold, M1). Revision 2, revised after the DECISIONS 2026-11-11 Opus reviews.
+
+## 1. Decisions this plan follows
+
+- **Enforcement point:** the root `eslint.config.mjs`, so `npm run lint` enforces the rule (unit line 21). Rules R1 to R3 are the unit's Decisions (lines 18 to 20). R1 (line 18): an API module imports another module only through its `<m>.module.ts` and through `@bbartolome/scriba-contracts/<m>`. R2 (line 19): `agent-loop` and `graph-runner` import neither each other nor each other's `@Module` file ("at all"). R3 (line 20): feature folders in `apps/web/src/app/features/<m>/` follow the same rule.
+- **Entry files:** API `apps/api/src/modules/<m>/<m>.module.ts` (unit line 22). Web `apps/web/src/app/features/<m>/<m>.routes.ts`. The web name is this plan's choice (section 6, point 4).
+- **Interpretation:** the "at all" ban (line 19) also covers the web features `agent-loop` and `graph-runner` (section 6, point 7).
+- **Fixture folder, Option A (DECISIONS 2026-11-11, mismatch 3):** the pinned path is `lint-fixtures/` at the repo root, outside `packages/` and `apps/`. Two "don't ship" mechanisms: (1) `lint-fixtures/**` is added to the root `ignores` array (`eslint.config.mjs` line 7), so `eslint .` never lints it; (2) the folder is not an npm workspace: it is not in the root `workspaces` array and has no `package.json`, so `npm run build --workspaces` and `npm test --workspaces` never reach it. Fixtures stay `.ts`. The test lifts the ignore (section 3, step 6). No criterion text changes.
+- **Plugin:** `eslint-plugin-boundaries` 7.4.2 (latest on the registry on 2026-11-11), pinned exact as a new root devDependency. Its peer `eslint >=6.0.0` admits eslint 10.14.0. It declares no typescript-eslint peer, and its engines `node >=18.18` admit Node 26. It brings six transitive packages (`@boundaries/config`, `@boundaries/elements`, `@boundaries/policies`, `eslint-module-utils`, `eslint-import-resolver-node`, `chalk`). The version is re-resolved at implementation (step 2).
+- **Rejected alternative:** `no-restricted-imports`. Its patterns match the raw import string. A relative import such as `../agent-loop/agent-loop.service` cannot be matched reliably against file paths without resolving it, and the plugin resolves it.
+- **Root devDependencies only** (PLT-01 Decisions; workspaces have no dependencies).
+- **Runtime:** Node 26 (DECISIONS 2026-11-10, "Node runtime for the tests"). The test uses `node:test` and ESLint's Node API.
+- **Test location and root script (decided, DECISIONS 2026-11-11):** `scripts/boundaries.test.mjs`, root-owned like `scripts/pins.test.mjs` (DECISIONS 2026-11-10, "location and coverage"). The root `test` line is the glob `node --test 'scripts/*.test.mjs'`, set once by PLT-03. PLT-09 edits no `test` line. It adds only its file, which the glob picks up.
+- **Prettier:** the fixture folder is NOT in `.prettierignore`. That file excludes documents and the lockfile, which are not formatted code. The fixtures are ordinary TypeScript, so `prettier --check .` checks them. The approved `.prettierignore` does not change.
+- **`tseslint.config()` (PLT-01 implementation review, note 4):** switch to `defineConfig()` imported from `eslint/config`, the ESLint core helper that the typescript-eslint deprecation notice names. Behaviour is not changed silently: section 3, steps 5 and 7 save `npx eslint --print-config` output before and after, and the diff must add only the boundary rules.
+- **Criterion 4 scope:** section 4, criterion 4 is passed by part 4a alone (DECISIONS 2026-11-11).
+
+## 2. Files to create or change
+
+| Path | Change | Purpose |
+|---|---|---|
+| `eslint.config.mjs` | change | `defineConfig`; `lint-fixtures/**` added to `ignores`; boundary settings and the boundary-rule policies for `**/*.ts` (the rule name is confirmed at step 4) |
+| `package.json` | change | devDependency `"eslint-plugin-boundaries": "7.4.2"` (exact). The `test` line is not edited: the root glob set by PLT-03 runs `scripts/boundaries.test.mjs` (section 1) |
+| `package-lock.json` | change | written by the root install; committed |
+| `scripts/boundaries.test.mjs` | create | `node:test` file; runs ESLint's Node API with `ignore: false` and the real root config |
+| `lint-fixtures/**` | create, 17 `.ts` files | fixtures (below) |
+| `.prettierignore`, `tsconfig.base.json`, workspace files | no change | |
+
+**Fixture rules.** The path of a fixture is `lint-fixtures/` plus the real repo-relative path, so the rule's descriptors see the same path as for a real file. Element patterns start with `**/src/modules/` and `**/src/app/features/`, so both match. Each fixture is one line, `export * from '<specifier>';`, so no unused-variable message appears; targets are one line, `export class <Name> {}`. Relative specifiers resolve inside the fixture tree. Lists below are repo-relative under `lint-fixtures/`.
+
+- **Targets, no violation (8):** `apps/api/src/modules/agent-loop/agent-loop.module.ts`, `…/agent-loop/agent-loop.service.ts`, `…/graph-runner/graph-runner.module.ts`, `…/graph-runner/graph-runner.service.ts`, `…/project-store/project-store.module.ts`, `…/project-store/project-store.service.ts`, `apps/web/src/app/features/project-store/project-store.routes.ts`, `…/project-store/project-store.state.ts`.
+- **Must fail with a boundary-rule error (rule name confirmed at step 4) (6):** `apps/api/src/modules/graph-runner/bad-agent-loop-service.ts` (imports `../agent-loop/agent-loop.service`); `…/graph-runner/bad-agent-loop-module.ts` (`../agent-loop/agent-loop.module`); `…/agent-loop/bad-graph-runner-service.ts` (`../graph-runner/graph-runner.service`); `…/agent-loop/bad-graph-runner-module.ts` (`../graph-runner/graph-runner.module`); `…/tool-registry/bad-project-store-service.ts` (`../project-store/project-store.service`); `apps/web/src/app/features/tool-registry/bad-cross-feature.ts` (`../project-store/project-store.state`).
+- **Must pass with zero messages (3):** `apps/api/src/modules/tool-registry/ok-project-store-module.ts` (`../project-store/project-store.module`); `apps/web/src/app/features/tool-registry/ok-cross-feature-routes.ts` (`../project-store/project-store.routes`); `apps/api/src/modules/agent-loop/ok-contracts.ts` (`@bbartolome/scriba-contracts/agent-loop`).
+
+## 3. Method
+
+Each step gives the command and the expected result. Saved outputs go to `/tmp/plt09-*`, outside the repo.
+
+1. Create branch `unit/PLT-09` from `main` with `git switch -c unit/PLT-09`. Expected: the tree is clean.
+2. Resolve the version: `npm view eslint-plugin-boundaries version`, then `npm view eslint-plugin-boundaries@<v> peerDependencies engines`. Expected: `eslint` peer admits `10.14.0`, engines admit Node 26. If not, stop and record the conflict for the Navigator.
+3. Install: `npm install --save-dev --save-exact eslint-plugin-boundaries@<v>` at the root, without `--legacy-peer-deps`. Expected: exit 0; `package.json` gains one exact devDependency; the lockfile gains the plugin and its six transitive packages.
+4. Confirm the selectors against the installed README and the plugin docs (policies page: `https://www.jsboundaries.dev/docs/policies/`). The Elements page (`https://www.jsboundaries.dev/docs/elements/`) returned HTTP 404 during planning. Confirm: (a) the descriptor key that captures the module slug; (b) that a file category selects entry files and not internal files, by negation or by a separate pattern; (c) that the policies express rules R1 to R3 below. Stop rule: if any is not expressible, stop and record it for the Navigator, then take the named fallback (DECISIONS 2026-11-11, PLT-09): a local ESLint rule that resolves each import with `eslint-import-resolver-node`. Record the switch in `plans/DECISIONS.md` when it happens. Do not switch plugins silently.
+5. Save the config before the edit: `npx eslint --print-config apps/api/test/smoke.test.ts > /tmp/plt09-config-before.json`. Expected: exit 0.
+6. Red first: create `scripts/boundaries.test.mjs` and the 17 fixtures. Run `node --test scripts/boundaries.test.mjs`. Expected: criteria 1 to 3 fail, because no boundary error exists yet. Save the output.
+7. Edit `eslint.config.mjs`. Import `defineConfig` from `eslint/config`. Add `lint-fixtures/**` to `ignores`. Add the boundary plugin, settings and policies. Run `npx prettier --write eslint.config.mjs scripts/boundaries.test.mjs lint-fixtures package.json`. Then `npx eslint --print-config apps/api/test/smoke.test.ts > /tmp/plt09-config-after.json` and `diff` the two files. Expected: the diff only adds boundary rules and settings; no existing rule changes.
+8. Green: `node --test scripts/boundaries.test.mjs`. Expected: exit 0; all tests pass; the output names each criterion test.
+9. Negative control: temporarily remove the agent-loop and graph-runner ban policy, then run step 8. Expected: the criterion 1 tests fail. Restore the policy and rerun. Expected: pass. Report both results, as PLT-01 AC 5 did.
+10. Precondition: PLT-03 is merged first, so the root `test` line is the glob. Root test: no edit to the `test` line (section 1). Run `npm test`. Expected: exit 0; the workspace fan-out runs first, then the root glob runs `pins.test.mjs` and `boundaries.test.mjs`, each with a non-zero test count.
+11. Root checks first, with no temporary files present: `npm run lint` and `npm run build`. Workspace check: `mkdir -p` the two folders, then create a temporary target `apps/api/src/modules/graph-runner/graph-runner.service.ts` (`export class X {}`) and a temporary violating file `apps/api/src/modules/agent-loop/bad-temp.ts` that imports `../graph-runner/graph-runner.service`. Run `npm run lint -w @bbartolome/scriba-api` and expect it to FAIL with a `boundaries/` message. Then delete both temporary files and the folders created for them. Only the root `npm run lint` and `npm run build` are expected to exit 0, and they run with no temporary files present. In the lint output, `grep -c '^> @bbartolome/scriba-'` prints 4 for the workspace fan-out. Prettier passes over `lint-fixtures/` and `scripts/`.
+12. ESLint ignore mechanism: `npx eslint .` at the root. Expected: exit 0; no fixture file is linted. Then `npx eslint lint-fixtures` without the test harness is not a required check.
+13. Node 26: repeat steps 8, 10 and 11 on a Node 26 binary, recording `node -v`. Expected: `v26.x`. If no Node 26 binary is available, the criteria are not marked passed.
+14. Fresh clone: `git clone -b unit/PLT-09 --no-hardlinks <repo> <tmp>/fresh`, then in the clone `npm ci`, `npm run lint`, `npm test`. Expected: exit 0 each.
+15. Commit on `unit/PLT-09`. Run the implementation review (driver rule 7), then merge to `main`. Set `status: done` in the merge commit. No push.
+
+## 4. Acceptance criteria and tests
+
+Test file: `scripts/boundaries.test.mjs`. Command for each row: `node --test scripts/boundaries.test.mjs`, and the root `npm test` (step 10). The linter is `new ESLint({ cwd: ROOT, ignore: false })`, and the real root config is used, with no override. Boundary messages are those whose `ruleId` starts with `boundaries/`.
+
+**Criterion 1 — "A fixture import from `apps/api/src/modules/graph-runner/**` into `modules/agent-loop/**` fails lint, and the reverse fails too."**
+- Seam: `lintFiles` on the four `bad-*` fixtures of the two modules, service and `@Module` in both directions. Test name: "criterion 1: agent-loop and graph-runner do not import each other".
+- Pass: each of the four files has at least one boundary-rule message (rule name per step 4), and the test is `ok`.
+
+**Criterion 2 — "A fixture import of another module's internal service file fails lint; importing its `*.module.ts` passes."**
+- Seam: `tool-registry/bad-project-store-service.ts` and `tool-registry/ok-project-store-module.ts`.
+- Pass: the bad file has at least one boundary message; the ok file has zero messages of any rule.
+
+**Criterion 3 — "A fixture cross-feature internal import in `apps/web/src/app/features/` fails lint."**
+- Seam: `features/tool-registry/bad-cross-feature.ts` and `features/tool-registry/ok-cross-feature-routes.ts`. The ok file is this plan's addition, the pass case for the unit's "same rule" line 20.
+- Pass: the bad file has at least one boundary message; the ok file has zero messages.
+
+**Criterion 4 — "Importing `@bbartolome/scriba-contracts/<m>` from any module passes."**
+- Pass condition (the whole criterion): part 4a, always run: `lintText` of `export * from '@bbartolome/scriba-contracts/<slug>';` at the mirrored path `lint-fixtures/apps/api/src/modules/<slug>/ok-contracts.ts` for each of the ten slugs (PLT-02 line 19). The `agent-loop` case is the on-disk fixture. One further run at `lint-fixtures/apps/web/src/app/features/tool-registry/ok-contracts.ts` covers the web tree. Pass: zero messages in every run.
+- Resolution of the ten subpaths is not part of this criterion. PLT-11 criterion 3 checks it (DECISIONS 2026-11-11, PLT-09 criterion 4 disposition).
+- Criterion 4 is marked passed when part 4a passes. PLT-11 criterion 4 still requires part 4a on `main`.
+
+**Criterion 5 — "Fixtures live under a lint-test folder and don't ship."**
+- Seam: `await new ESLint({ cwd: ROOT }).isPathIgnored(path)` (async, so it is awaited; default ignore on) for each of the 17 fixture paths; `package.json` `workspaces` contains no entry equal to or containing `lint-fixtures`; `existsSync(lint-fixtures/package.json)` is false. Test name: "criterion 5: fixtures are ignored and are not a workspace".
+- Pass: 17 of 17 are ignored; no workspace entry; no fixture `package.json`. Step 11 (`npm run build`) also passes, and the build never reads the folder.
+
+## 5. Downstream agreement
+
+- **PLT-02 (contracts):** the ten subpaths' resolution is checked by PLT-11 criterion 3, not by this plan. PLT-09 edits no `packages/contracts` file. The boundaries test does not import the contracts package, so it does not depend on PLT-02's build-first test script (DECISIONS 2026-11-11, mismatch 2). No conflict.
+- **PLT-03 (web):** the generated Angular app must not add an ESLint config under `apps/web`. A nearer config would shadow the root config, and the boundary rule would stop applying to web files. `lint` stays `eslint .`. The feature routes file name `<m>.routes.ts` must be the name the feature units use (section 6, point 4).
+- **PLT-10 (ci.yml):** the order npm ci, lint, test, build is unchanged, and no PLT-10 criterion changes. The lint step runs the boundary rule and the Prettier check, and the fixture ignore keeps lint green. The test step runs `scripts/boundaries.test.mjs` through the root glob (DECISIONS 2026-11-11).
+- **PLT-11 (gate):** its criterion 4 ("PLT-04 … PLT-09 acceptance criteria all still pass on main") needs PLT-09's part 4a green on main. Subpath resolution is PLT-11 criterion 3 (units/PLT-11-scaffold-gate.md line 30). Its criterion 2 (`npm test` covers every workspace) is met for PLT-09 through the root glob, set by PLT-03 (DECISIONS 2026-11-11). No conflict.
+- **AGL-01 and GRR-01 (contract slices, blocked by PLT-11):** they need the `<m>.module.ts` entry naming and the agent-loop and graph-runner ban, which this plan provides. `modules/agent-loop.md` line 50 and `modules/graph-runner.md` line 38 both say the lint enforces the import ban, which matches. No conflict.
+
+## 6. Open points
+
+1. **Plugin selectors not confirmed.** The v7 Elements page returned HTTP 404 during planning. The policies page documents selectors, captured values (`{{from.element.captured.<name>}}`), negation with `!`, and last-match-wins. It does not say how a descriptor captures the module slug or how a file category separates entry files from internal files. Section 3, step 4 confirms both. If the plugin cannot express rules R1 to R3, the implementation stops for the Navigator, and the plugin is not switched silently. The named fallback is in section 3, step 4 and DECISIONS 2026-11-11.
+2. **Path base.** The plugin's base for matching paths (cwd or config directory) is not documented in the pages read. The patterns start with `**/`, so they should match from either. The lint that really runs on module files is each workspace's `eslint .`, with cwd inside the workspace. The criteria do not test that cwd, and the root negative control (step 9) does not either. Step 11 now runs `npm run lint -w @bbartolome/scriba-api`, which uses the workspace as cwd, so that path is exercised once. The gap is open until the plugin's cwd base is confirmed.
+3. **Resolver extensions.** `eslint-import-resolver-node` must resolve `../x` to `x.ts`. The bad fixtures prove it: they must error. If they do not, the resolver setting is wrong, not the rule.
+4. **Web routes file name.** Decided (DECISIONS 2026-11-11, smaller choices item 5): `<m>.routes.ts`. No document names it, and the feature units confirm the name when they are planned.
+5. **Cross-module providers.** The unit allows importing `<m>.module.ts` but does not say how a module gets another module's exported provider type (a re-export from the entry file, or a type in contracts). The rule does not decide this. The Navigator must decide before `GRR-02` or `AGL-03` needs it.
+6. **Ten-subpath resolution.** Decided (DECISIONS 2026-11-11, PLT-09 criterion 4 disposition): PLT-11 criterion 3 checks it. Criterion 4 of this plan passes on part 4a alone.
+7. **"At all" scope.** Line 19 is applied to the web features of agent-loop and graph-runner too. Decided (DECISIONS 2026-11-11, smaller choices item 6): the ban covers the web features too, which is the stronger reading of line 20 and matches line 19's "at all".
+8. **Root test script.** Decided (DECISIONS 2026-11-11): the glob, set by PLT-03. Nothing to approve here.
+9. **Shipping beyond the repo.** The Dockerfile (PLT-14, not read during planning) and any image copy must exclude `lint-fixtures/`. PLT-14 checks this when it is implemented.
+10. **Node 26.** Node 26.13.0 is on PATH through `n` in this environment (driver, this session). Step 13 uses it.
