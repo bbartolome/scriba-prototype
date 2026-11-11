@@ -53,6 +53,14 @@ describe('SSE envelope', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it('rejects a base envelope with no data key', () => {
+    const result = sseEnvelopeSchema.safeParse({
+      module: 'platform',
+      type: 'node-status',
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe('platform SSE members', () => {
