@@ -158,3 +158,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Reason (Navigator):** The root config's comment at line 4 anticipates later units adding entries. The ignore alone does not satisfy PLT-09 criterion 5 ("don't ship"). The PLT-09 plan must pin the fixture folder as a repo-root lint-test folder, outside `packages/` and `apps/`, and must state two mechanisms: the ESLint ignore, and the fact that the folder is not an npm workspace, so `npm run build --workspaces` never builds it.
 - **No criterion text changes.** PLT-10's CI order (npm ci → lint → test → build) is untouched. Recorded as a plan note for PLT-09, not as a criterion change.
 - **Driver note:** Recorded now, before the plans are drafted, because driver rule 5 requires each decision to be recorded and committed at once.
+
+## 2026-11-11 — batch [PLT-02, PLT-03, PLT-09, PLT-10] — root test script: one quoted glob (Navigator decision)
+
+- **Decision (Navigator):** Replace the explicit file list in the root `test` script with a quoted Node-native glob, `node --test 'scripts/*.test.mjs'`. PLT-03 is the first unit by ID that edits the root `test` line, so it sets the glob in its plan. PLT-09 and PLT-10 (and PLT-12 later) add their own test file only and do not edit the `test` line. No runner script is added.
+- **Change to an approved contract (recorded):** This changes the root `test` line that PLT-01 approved (DECISIONS 2026-11-10, "location and coverage of the pin-section test", which named one file). The glob is a superset: `scripts/pins.test.mjs` still runs. This is a one-way change to a PLT-01-approved line, and it is recorded here.
+- **Reason (Navigator):** A single line shared by four units conflicts at every merge. With a glob, a new root test needs no `package.json` edit. A glob is simpler than a runner script, and Node's own glob is cross-platform.
+- **Verified locally (driver, Node 24.21.0 at the time):** `node --test 'scripts/*.test.mjs'` and the shell-expanded form each ran every matching test file, reported 2 tests for 2 files, and did not run a non-test helper file. Node 26 behaviour is re-verified at implementation.
+- **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
