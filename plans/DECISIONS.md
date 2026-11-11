@@ -200,3 +200,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Rejected (Navigator):** Option B, PLT-03 adding the root `dev` script now. PLT-11 owns the `dev` script and `concurrently` (`units/PLT-11-scaffold-gate.md` line 25), so Option B would force PLT-11 to rewrite it, a one-way door against that ownership.
 - **Reason (Navigator):** None of PLT-03's three acceptance criteria (`units/PLT-03-web-bootstrap.md` lines 30 to 32) names the root `dev` script. Line 15 ("`npm run dev` must work end to end") is rationale. It is realized at the PLT-11 gate (criterion 1, line 28), not at PLT-03's merge.
 - **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
+
+## 2026-11-11 — PLT-03 — web tsconfig: a local override of two keys (Navigator decision)
+
+- **Decision (Navigator):** Option A. `apps/web/tsconfig.json` extends `../../tsconfig.base.json` and overrides only `module` and `moduleResolution`, keeping the Angular generator's values. Those values are decided at implementation, because the spec does not pin them and the generator is the right source.
+- **Verified (driver):** `tsconfig.base.json` lines 6 and 7 set both keys to NodeNext. `apps/web/tsconfig.json` and `apps/api/tsconfig.json` currently inherit them with no local override. The web override changes only apps/web. The base, the API and contracts stay as they are.
+- **Rejected (Navigator):** Option B, a second shared base such as `tsconfig.web.base.json`. It would add a root file and a shared config for one consumer, which the spec does not require.
+- **Not a criterion change.** Recorded as the disposition of `plans/PLT-03.md` section 6, point 3.
+- **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
