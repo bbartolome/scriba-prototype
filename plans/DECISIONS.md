@@ -333,3 +333,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Reason (Navigator):** the unit's criterion 4 only requires the contracts import to pass, not that a rule positively allows it.
 - **Verification gap (driver):** the Navigator's web searches did not confirm the `checkAllOrigins` default or `getDependencySkipReason`. The plugin is not yet installed (step 2 and 3 of PLT-09). The claim stays unverified until the install.
 - **Driver note:** open point 8 in `plans/PLT-09.md` is marked resolved. PLT-09 needs a new Opus plan review of revision 3 with this decision before it can be approved. Its status stays `planned`.
+
+## 2026-11-11 — PLT-09 — Opus plan review of revision 3 after the Navigator decision: NOT APPROVED (rejection 4 for PLT-09)
+
+- **Result (Opus subagent, fresh context):** NOT APPROVED. The reviewer checked the five criteria (all covered), and the rewritten open point 8 (matches the Navigator decision). Four blocking problems, all plan text, no criterion change:
+  1. The root `test` script on `main` is still `npm test --workspaces && node --test scripts/pins.test.mjs`. The glob `'scripts/*.test.mjs'` exists only on `batch/current` (commit 506e1f8, PLT-03). Plan steps 10 and 14 would fail on `main` or on the unit branch. Verified by the driver: `package.json` line 23 on `main` and on `batch/current`.
+  2. Plan step 15 says "merge to `main`" with `status: done` in a merge commit. prompt.md forbids merge commits (line 5). The correct route is rebase onto `batch/current` and fast-forward (steps 6 to 8).
+  3. `unit/PLT-09` already exists (a404e21, 333399b). Steps 1 to 3 cannot run as written, and the element patterns on that branch are the old `**/` ones. A resume paragraph is missing.
+  4. Open points are mis-numbered: point 3 and point 4 run together on one line, and two points are numbered 8. DECISIONS refers to "PLT-09 open point 8", which is ambiguous.
+- **Driver note:** Problems 1 to 4 are plan-text corrections. They are not a disagreement, so the Navigator is not asked again. The fixes go to a Haiku subagent of the unit (revision 4). Then a new Opus review. The four-rejection count is recorded here, not from memory.
