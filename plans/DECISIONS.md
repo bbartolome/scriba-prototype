@@ -174,3 +174,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Rejected (Navigator):** Option B, ESM with `"type": "module"`. It would make NestJS, which is CJS by default, load ESM through require(esm) on Node 26, which adds risk for no benefit. `units/PLT-02-contracts-package-platform-slice.md` line 20 allows either format if both runtimes load it, so CJS is a permitted choice, not a contradiction.
 - **Reason (Navigator):** The draft already emits CJS. The Angular consequence is additive (an `allowedCommonJsDependencies` entry can be added later), so this is a low-risk one-way door. PLT-03 names no output-format constraint.
 - **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
+
+## 2026-11-11 — PLT-10 — criterion 3 method: local PR-title script (Navigator decision)
+
+- **Decision (Navigator):** Option A. The PR-title check is the local Node script `scripts/check-pr-title.mjs`, tested with `node:test` through `spawnSync`, as `plans/PLT-10.md` sections 2 and 4 describe. The header pattern is the one in `plans/PLT-10.md` section 2. The title reaches the script only through the environment variable `PR_TITLE`, never inside a `run:` line, so the title cannot inject shell code.
+- **Rejected (Navigator):** Option B, a third-party action such as `amannn/action-semantic-pull-request`. It cannot run or be tested here without the network, and it adds third-party code that runs with the CI token. Option C, an inline regex in the YAML, because no test would run it.
+- **Reason (Navigator):** Criterion 3 names no method. The local script is the only option that runs and is tested in this environment, so criterion 3 can be verified here.
+- **No criterion text changes.** Criterion 4 stays deferred to PLT-11 (decision of 2026-11-10, PLT-10 mismatch 1).
+- **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
