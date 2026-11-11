@@ -182,3 +182,14 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Reason (Navigator):** Criterion 3 names no method. The local script is the only option that runs and is tested in this environment, so criterion 3 can be verified here.
 - **No criterion text changes.** Criterion 4 stays deferred to PLT-11 (decision of 2026-11-10, PLT-10 mismatch 1).
 - **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
+
+## 2026-11-11 — PLT-09 — rule implementation: eslint-plugin-boundaries, with a named fallback (Navigator decision)
+
+- **Decision (Navigator):** Option A. The boundary rule is `eslint-plugin-boundaries` 7.4.2, as a new exact root devDependency, as `plans/PLT-09.md` section 1 describes. Unit line 21 permits it. The plugin has the primitives the rules need: element types declared with a glob and a capture list (for the module slug), and ordered policies that allow or forbid element combinations.
+- **Two required refinements, recorded:**
+  1. **Rule name.** The draft's name `boundaries/dependencies` (plans/PLT-09.md lines 29, 39 and 68) is stale. The plugin's v2 migration guide renames the rule to `boundaries/element-types`. The v7 name is not confirmed by the search, so step 4 confirms it against the installed v7 docs. The config, the criteria and the file list then use that name.
+  2. **Fallback, named in advance.** If step 4 finds that the plugin cannot express rules R1 to R3, the fallback is Option B: a local ESLint rule that resolves each import with a module resolver (`eslint-import-resolver-node`, which the plugin already brings) and checks the module and feature rules. The switch is recorded in this file when it happens. It is not silent.
+- **Rejected (Navigator):** Option C, `no-restricted-imports` patterns alone, because the patterns match the raw import string and cannot see the file a relative import resolves to.
+- **Residual risk (not a blocker):** how an entry file (`*.module.ts`) is told apart from an internal file, and the base for path matching (cwd or config directory), are unconfirmed. The step 4 stop rule covers both.
+- **No criterion text changes.** The unit's Decisions line 21 is an implementation choice, not a criterion.
+- **Driver note:** Recorded now, before the plan is revised, because driver rule 5 requires each decision to be recorded and committed at once.
