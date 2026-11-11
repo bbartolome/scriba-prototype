@@ -166,3 +166,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Reason (Navigator):** A single line shared by four units conflicts at every merge. With a glob, a new root test needs no `package.json` edit. A glob is simpler than a runner script, and Node's own glob is cross-platform.
 - **Verified locally (driver, Node 24.21.0 at the time):** `node --test 'scripts/*.test.mjs'` and the shell-expanded form each ran every matching test file, reported 2 tests for 2 files, and did not run a non-test helper file. Node 26 behaviour is re-verified at implementation.
 - **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
+
+## 2026-11-11 — PLT-02 — output format: CommonJS (Navigator decision, disposition of PLT-02 open point 1)
+
+- **Decision (Navigator):** Option A, CommonJS, as drafted. `packages/contracts/package.json` has no `"type": "module"`, and `tsconfig.base.json` keeps `module` and `moduleResolution` NodeNext, so tsc emits CJS. PLT-02 criterion 1 (`units/PLT-02-contracts-package-platform-slice.md` line 63) is tested with a direct CJS `require` from a NestJS-style consumer, as the criterion names it.
+- **Consequence handed to PLT-11:** The Angular build may warn about a CommonJS dependency and may need an `allowedCommonJsDependencies` entry. PLT-11 owns the Angular half of the cross-runtime boot test (`units/PLT-11-scaffold-gate.md` lines 22 and 30), so it makes that decision.
+- **Rejected (Navigator):** Option B, ESM with `"type": "module"`. It would make NestJS, which is CJS by default, load ESM through require(esm) on Node 26, which adds risk for no benefit. `units/PLT-02-contracts-package-platform-slice.md` line 20 allows either format if both runtimes load it, so CJS is a permitted choice, not a contradiction.
+- **Reason (Navigator):** The draft already emits CJS. The Angular consequence is additive (an `allowedCommonJsDependencies` entry can be added later), so this is a low-risk one-way door. PLT-03 names no output-format constraint.
+- **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
