@@ -352,3 +352,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   4. The section 1 and 2 quote of main's `test` line omits the workspace part. Step 11 should say that the glob runs every `scripts/*.test.mjs` file.
   5. Two inconsistencies with the resume: the plugin bullet says "re-resolved at implementation (step 2)", but step 2 is skipped; the step-6 red run on main's config fails criteria 1, 2, 3 and 5, not only 1 to 3.
 - **Driver note:** These are plan-text corrections, not a disagreement, so the Navigator is not asked again. Fixes go to a Haiku subagent of the unit (revision 5), then a new Opus review. Rejection count: 5, recorded here.
+
+## 2026-11-11 — PLT-09 — Opus plan review of revision 5: APPROVED
+
+- **Result (Opus subagent, fresh context, review of `plans/PLT-09.md` revision 5):** APPROVED. The five problems of the previous review are fixed. The reviewer ran a test rebase in a scratch clone (a404e21 conflicts in `package-lock.json` only; 333399b and the element-pattern commit then apply cleanly) and a red run on main's config (criteria 1, 2, 3 and 5 fail, criterion 4 passes). Repo facts confirmed: 506e1f8 on batch/current, a404e21 and 333399b on `unit/PLT-09`, lockfile 162 to 190 entries, batch/current 532 entries.
+- **Not verified (plugin internals, not read by the reviewer):** the `checkAllOrigins` default and `getDependencySkipReason` (open point 8); `boundaries/element-types` as a deprecated alias; element patterns matching from the right and file patterns relative to cwd; the default extensions of `eslint-import-resolver-node`. These are checks for step 4 at implementation.
+- **Non-blocking notes, to fix when the code is implemented (not a re-review):** (1) the resume label in section 3 says "revision 4"; (2) step 11 is a placeholder; (3) step 10's "lockfile of batch/current" means the rebased branch's lockfile (batch's plus the plugin's 28 entries); (4) step 4 says "R1 to R3 below", they are in section 1; (5) step 6 says "create" the test and fixtures, which exist in 333399b.
+- **Driver note:** PLT-09 status stays `planned`. The code of `unit/PLT-09` is next (code mode, prompt.md step 4).
