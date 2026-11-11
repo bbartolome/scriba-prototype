@@ -216,3 +216,16 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Rejected (Navigator):** Option B, dropping the tests from the type-check. It would weaken the build that PLT-01 set up, and leave the `node:` imports untyped. The spec does not require that change.
 - **Not a criterion change.** Recorded as the disposition of `plans/PLT-02.md` section 6, point 3.
 - **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
+
+## 2026-11-11 — PLT-10 — smaller plan choices accepted as drafted (Navigator decision)
+
+- **Decision (Navigator):** Accept all seven defaults in `plans/PLT-10.md` section 6, as drafted:
+  1. The 11 Angular-convention title types, with scope `[A-Za-z0-9._-]+` and `!` allowed.
+  2. `edited` in the `pull_request` trigger types, so a retitled PR is checked again.
+  3. The title step runs after checkout and setup-node, before `npm ci`, so it fails fast. The fixed order npm ci → lint → test → build is unchanged.
+  4. The `yaml` devDependency, to parse the workflow structurally. Node has no built-in YAML parser.
+  5. `node:test` for root-owned script tests, following the PLT-01 precedent. The root glob picks up `scripts/pr-title.test.mjs`.
+  6. The `CI_WORKFLOW_PATH` override, used only by the mutation checks.
+  7. Criterion 4 deferred to PLT-11, with the labelled structural proxy (YAML parse, one job, step order).
+- **Reason (Navigator):** Each is a plan-level detail that the unit does not fix. Each is additive and consistent with the unit and the settled decisions. None changes a criterion. Criteria 1 and 2 keep the order and the trigger set the unit writes.
+- **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
