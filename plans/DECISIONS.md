@@ -325,3 +325,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Result (Opus subagent, fresh context, read-only review of `plans/PLT-02.md` revision 5):** APPROVED. The reviewer checked the revision-4 fixes: the base envelope requires `data`, with the no-`data` case in the schema test; the resume paragraph; the plan and log agreement on the stop step; the `feat(PLT-02): …` commit message.
 - **Driver note:** PLT-02 status stays `planned`. The code of `unit/PLT-02` continues from its commits in a later step (code mode).
+
+## 2026-11-11 — PLT-09 — open point 8 (criterion 4 weakness): option A (Navigator decision)
+
+- **Decision (Navigator, session f01b01fc…, answer to set_plan):** Option A. Keep criterion 4 and part 4a (zero-message `lintText` runs) exactly as written. Record the weakness: `checkAllOrigins` defaults to false, so the rule never checks external imports; zero messages prove no policy blocks the import, not that a policy allows it. The stronger positive-allow check is left to PLT-11 criterion 3 and 4.
+- **Rejected options:** (B) enable `checkAllOrigins`: unverified against the plugin source, and a one-way-door change that would make the rule check all external imports. (C) stop the unit: the criterion is testable as written, and the unit only requires the import to pass.
+- **Reason (Navigator):** the unit's criterion 4 only requires the contracts import to pass, not that a rule positively allows it.
+- **Verification gap (driver):** the Navigator's web searches did not confirm the `checkAllOrigins` default or `getDependencySkipReason`. The plugin is not yet installed (step 2 and 3 of PLT-09). The claim stays unverified until the install.
+- **Driver note:** open point 8 in `plans/PLT-09.md` is marked resolved. PLT-09 needs a new Opus plan review of revision 3 with this decision before it can be approved. Its status stays `planned`.
