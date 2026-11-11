@@ -208,3 +208,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Rejected (Navigator):** Option B, a second shared base such as `tsconfig.web.base.json`. It would add a root file and a shared config for one consumer, which the spec does not require.
 - **Not a criterion change.** Recorded as the disposition of `plans/PLT-03.md` section 6, point 3.
 - **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
+
+## 2026-11-11 — PLT-02 — @types/node for the contracts tests (Navigator decision, disposition of PLT-02 open point 3)
+
+- **Decision (Navigator):** Option A. `@types/node` at `^26` is a devDependency of `packages/contracts`, as the draft proposes. The build's second step type-checks `src` and `test` (`plans/PLT-02-...` section 1, line 15, "as the PLT-01 build did"), and the tests import `node:` modules, so the Node types are needed for that check to pass.
+- **Criterion 3 is unaffected.** It forbids runtime dependencies other than Zod (`units/PLT-02-contracts-package-platform-slice.md` line 65). A devDependency is outside it, and the criterion's check reads `dependencies` only.
+- **Rejected (Navigator):** Option B, dropping the tests from the type-check. It would weaken the build that PLT-01 set up, and leave the `node:` imports untyped. The spec does not require that change.
+- **Not a criterion change.** Recorded as the disposition of `plans/PLT-02.md` section 6, point 3.
+- **Driver note:** Recorded now, before the plans are revised, because driver rule 5 requires each decision to be recorded and committed at once.
