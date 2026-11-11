@@ -4,3 +4,4 @@ dist/
 coverage/
 .scriba-dev/
 .claude/settings.local.json
+prompt.md
