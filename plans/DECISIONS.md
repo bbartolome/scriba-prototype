@@ -342,3 +342,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   3. `unit/PLT-09` already exists (a404e21, 333399b). Steps 1 to 3 cannot run as written, and the element patterns on that branch are the old `**/` ones. A resume paragraph is missing.
   4. Open points are mis-numbered: point 3 and point 4 run together on one line, and two points are numbered 8. DECISIONS refers to "PLT-09 open point 8", which is ambiguous.
 - **Driver note:** Problems 1 to 4 are plan-text corrections. They are not a disagreement, so the Navigator is not asked again. The fixes go to a Haiku subagent of the unit (revision 4). Then a new Opus review. The four-rejection count is recorded here, not from memory.
+
+## 2026-11-11 — PLT-09 — Opus plan review of revision 4: NOT APPROVED (rejection 5 for PLT-09)
+
+- **Result (Opus subagent, fresh context, review of `plans/PLT-09.md` revision 4):** NOT APPROVED. The four problems of the previous review are fixed in content. Five new problems, all plan text, no criterion change:
+  1. Blocking: the step-7 element-pattern edit stays uncommitted until step 16, so `git rebase batch/current` (step 10) fails on a dirty tree. The rebase also conflicts in `package-lock.json`, which needs `npm install` and `git rebase --continue`. Verified by the driver: the repo has no `rebase.autoStash` (`git config --get rebase.autoStash` returns nothing).
+  2. Blocking: `node_modules/` is git-ignored and not in the new worktree, so steps 4(d), 7 and 8 cannot load the plugin unless `npm ci` runs in the worktree first.
+  3. The step 16 reference "driver rule 7" does not exist. Verified by the driver: `grep -c "rule 7" prompt.md` returns 0. The review is prompt.md step 5, and its diff is `git diff batch/current...unit/PLT-09`.
+  4. The section 1 and 2 quote of main's `test` line omits the workspace part. Step 11 should say that the glob runs every `scripts/*.test.mjs` file.
+  5. Two inconsistencies with the resume: the plugin bullet says "re-resolved at implementation (step 2)", but step 2 is skipped; the step-6 red run on main's config fails criteria 1, 2, 3 and 5, not only 1 to 3.
+- **Driver note:** These are plan-text corrections, not a disagreement, so the Navigator is not asked again. Fixes go to a Haiku subagent of the unit (revision 5), then a new Opus review. Rejection count: 5, recorded here.
