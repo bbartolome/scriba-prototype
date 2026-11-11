@@ -388,3 +388,19 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Decision (driver, the simplest option):** the gate means "no existing package entry changes version or content". A comma on the unit's own workspace entry is part of that unit's change and passes the gate. The PLT-02 rebase is accepted. Its tests pass after `npm ci` (42 of 42 in `packages/contracts`).
 - **Procedure used for the lockfile:** `git checkout --ours package-lock.json`, then `npm install --package-lock-only --ignore-scripts`, then `git add` and `rebase --continue`. For PLT-09 the rebase applied cleanly; after it, `npm ci`, `npm ls --all` (exit 0), boundaries 5/5, `npm test` 17/17, `npm run lint` and `npm run build` all exit 0; the lockfile diff against `batch/current` is 359 added and 0 removed.
 - **Batch state after step 6:** `batch/current` (head 2fd80ee) holds PLT-03, PLT-10, PLT-02 and PLT-09. The `unit/PLT-02` and `unit/PLT-09` branches and their worktrees are deleted (both were on `batch/current`; `git branch -d` refused because it checks against `main`, so `-D` was used after `merge-base --is-ancestor` confirmed both).
+
+## 2026-11-11 — PLT-04 — Opus plan review of revision 1: NOT APPROVED (rejection 1 for PLT-04 plan)
+
+- **Result (Opus subagent, fresh context, review of `plans/PLT-04.md` revision 1):** NOT APPROVED. The five criteria match the unit verbatim. Eleven items, of which four are blocking:
+  1. Open point 1 (CommonJS vs ESM for apps/api, NestJS 12 is ESM-only). Left to the Navigator. The reason "NestJS is CJS by default" in the PLT-02 CommonJS entry is false for NestJS 12.
+  2. Blocking: the AC 3 and AC 4 tests would pass even if the criteria broke. Assert no stack-frame lines and the labelled forms (`SCRIBA_LOG_LEVEL` message, `UID <n>`, `GID <n>` from `getuid()` and `getgid()`).
+  3. Blocking: `create-test-app` imports `...COMPOSED_MODULES, ...(modules ?? [])`, a superset of the unit's "a given subset of modules". Use `...(modules ?? COMPOSED_MODULES)`, add `modules` to `BootOptions`, and state that `createTestApp` runs `bootstrap()` then `listen(0, '127.0.0.1')`.
+  4. Blocking: "ConsoleLogger writes to stdout" is false for `@nestjs/common` 12.4.2. `error` and `fatal` go to stderr (`services/console-logger.service.js` lines 110 and 148). Fix with a ConsoleLogger subclass in `platform/boot/` that forces stdout.
+  5. Non-blocking: spawned tests need a timeout or an async spawn that kills the child.
+  6. Non-blocking: the AC 2 `staticRoot` must be resolved from `__dirname`, not the repo root.
+  7. Non-blocking: the step 6 lockfile gate must compare `resolved` and `integrity` as well as `version`, and allow flag-only changes (`dev`).
+  8. Non-blocking: unit line 22 says "host path"; the container cannot know it. Print the container path, and add `SCRIBA_LIBRARY` only when set.
+  9. Non-blocking, downstream: open point 17 has PLT-07 and PLT-08 both edit `bootstrap.ts`, which conflicts with unit line 20 and the Parallelism section of `modules/platform.md`. Use provider hooks in their own folders. PLT-11's dev script must pass absolute `SCRIBA_BOOKS_DIR`, `SCRIBA_PACKS_DIR` and `SCRIBA_EXAMPLES_DIR`.
+  10. Non-blocking: build the serve-static exclude list from `HEALTHZ_ROUTE` and `EVENTS_ROUTE`.
+  11. Non-blocking: close open points 13 and 14 and the `__dirname` assumption (verified by Opus: `getDependencySkipReason`, TypeScript 6.0.3 accepts the decorator options, Vitest 5.1.0 injects `__dirname`).
+- **Driver note:** Problems 2, 3 and 4 are plan-text and file-list corrections, not disagreements, so they go to the Haiku subagent of the unit (revision 2). Problem 1 is a decision to settle: the Navigator is required, and the driver cannot invoke `navigator:pair` (the skill is reserved for explicit user invocation). PLT-04 status stays `draft`. Rejection count for PLT-04 plan: 1.
