@@ -2,9 +2,51 @@
   "name": "@bbartolome/scriba-contracts",
   "version": "0.0.0",
   "private": true,
+  "exports": {
+    "./platform": {
+      "types": "./dist/platform/index.d.ts",
+      "default": "./dist/platform/index.js"
+    },
+    "./setup-auth": {
+      "types": "./dist/setup-auth/index.d.ts",
+      "default": "./dist/setup-auth/index.js"
+    },
+    "./providers": {
+      "types": "./dist/providers/index.d.ts",
+      "default": "./dist/providers/index.js"
+    },
+    "./project-store": {
+      "types": "./dist/project-store/index.d.ts",
+      "default": "./dist/project-store/index.js"
+    },
+    "./tool-registry": {
+      "types": "./dist/tool-registry/index.d.ts",
+      "default": "./dist/tool-registry/index.js"
+    },
+    "./agent-loop": {
+      "types": "./dist/agent-loop/index.d.ts",
+      "default": "./dist/agent-loop/index.js"
+    },
+    "./graph-runner": {
+      "types": "./dist/graph-runner/index.d.ts",
+      "default": "./dist/graph-runner/index.js"
+    },
+    "./compile-export": {
+      "types": "./dist/compile-export/index.d.ts",
+      "default": "./dist/compile-export/index.js"
+    },
+    "./shell": {
+      "types": "./dist/shell/index.d.ts",
+      "default": "./dist/shell/index.js"
+    },
+    "./genre-packs": {
+      "types": "./dist/genre-packs/index.d.ts",
+      "default": "./dist/genre-packs/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json && tsc --noEmit -p tsconfig.json",
+    "test": "npm run build && vitest run",
     "lint": "eslint ."
   },
   "dependencies": {
