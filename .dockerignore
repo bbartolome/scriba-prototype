@@ -1,0 +1,11 @@
+.git
+**/node_modules
+**/dist
+**/.angular
+plans
+units
+modules
+prompt.md
+.claude
+.scriba-dev
+e2e/test-results
