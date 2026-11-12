@@ -1,4 +1,4 @@
-import { readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import { BootError } from '../boot/boot-error';
@@ -53,6 +53,7 @@ export function writeSettingsAtomic(
     writeFileSync(temp, stringify(doc));
     renameSync(temp, path);
   } catch (error) {
+    rmSync(temp, { force: true });
     throw new BootError(`Cannot write ${path}: ${errorReason(error)}.`);
   }
 }
