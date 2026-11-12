@@ -657,3 +657,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Text 4:** criterion 5 runs two flows in one test. Correction: two `test.concurrent` cases, each resetting only its own scenario.
 - **Text 5:** step 0 always stops because `plans/PLT-12.md` is untracked and HEAD moves. Correction: check `git merge-base --is-ancestor 339c716 HEAD` and `git diff --quiet 339c716 HEAD -- ':!plans'`.
 - **Text 6–9 (non-blocking):** add a `GET /v1/models` assertion to criterion 1; define the SSE format; pick one `turnIndex` rule on models requests; `.mjs` files have no ESLint rules. Implement in a fresh worktree.
+
+## 2026-11-12 — PLT-12 — Opus plan review of revision 2 (`plans/PLT-12.md`, status draft): NOT APPROVED (rejection 2 of 3; one blocking item, six text items)
+
+- **Blocking 1:** the wire format in decisions 23 and 24 omits `role` and the tool-call `type`. Without them the SDK's streaming helper (`chat.completions.stream(...).finalChatCompletion()`) fails ("missing role for choice 0", "tool call snapshot missing `type`"), so MPR-04 cannot use it against the mock. The SDK types `tool_calls[i]` as a union, so criterion 2's `.function.arguments` needs a `type === 'function'` check first. Correction: the first streamed delta carries `role: "assistant"`; each call's first chunk carries `index`, `id`, `type: "function"`, `function.name` and `function.arguments: ""`; the non-streamed reply has `message.role` and `type: "function"`; criterion 1 adds a `finalChatCompletion()` assertion on `tool-call`; criterion 2 checks `type` before reading `.function.arguments`.
+- **Text 2:** step 3 should run a plain `npm install`, not an explicit `@types/node@^26.6.6` re-resolve, or state that the lock gate stops if a newer 26.x is published first.
+- **Text 3:** section 3 should carry the revision-1 note "implement in a fresh worktree" (the main checkout's `node_modules` is from 2026-11-10 and has no `@types/node`).
+- **Text 4:** step 12 should name the banner-count command, as PLT-11 criterion 2 does: `grep -o '^> @bbartolome/scriba-[a-z0-9]*' | sort -u | wc -l`.
+- **Text 5:** no test covers the `header`, `turnIndex`, `lastMessageRole`/`lastMessageContent` matchers or `chunkDelayMs`, though MPR-04, AGL-08 and AGL-16 rely on them. Add a small test for each and define `lastMessageContent` for array content parts.
+- **Text 6:** section 7 cites `core/error.d.ts` line 8 as `Headers`; the file says `readonly headers: THeaders` (generic).
+- **Text 7:** section 5 should record that MPR-04 pins `openai` 7.55.0 in apps/api, so the repository keeps one copy.
