@@ -110,11 +110,7 @@ export class PlatformExceptionFilter implements ExceptionFilter {
     const mapped = mapException(exception);
     if (mapped.unexpected) {
       const error = exception instanceof Error ? exception : undefined;
-      this.logger.error(
-        error?.message ?? String(exception),
-        error?.stack,
-        PlatformExceptionFilter.name,
-      );
+      this.logger.error(error?.message ?? String(exception), error?.stack);
     }
     const body: ErrorBody = {
       error: {
