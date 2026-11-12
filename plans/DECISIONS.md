@@ -727,3 +727,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Decision (by the driver, applying the PLT-11 precedent of 2026-11-12, criterion 5, option (a)):** the repository has no git remote, so the runner part of criterion 2 cannot run here. The plan (`plans/PLT-13.md`, status planned) gives local proxies C2a to C2d: the workflow YAML, the trace retention and the browser-variable checks. The checkbox stays unticked. This decision was not yet put to the Navigator; if the Navigator decides otherwise, it can change the checkbox.
 - **Browser:** the CI step sets `SCRIBA_E2E_CHROMIUM=/usr/bin/chromium` (the image's pre-installed Chromium, 156.0.8078.0 per the runner-images readme). The local run uses Playwright's Chromium 1254 lookup or the 1248 cache, as the plan's section 7 records.
+
+## 2026-11-12 — PLT-13 — Opus code review of `unit/PLT-13` (head e49b92e, base main 801bd72): APPROVED (five non-blocking notes)
+
+- **Result (Opus subagent, fresh context):** APPROVED. Nine files, all in plan section 2; nothing under plans/, units/, modules/, apps/, packages/, examples/ or scripts/ changed. The lock adds only the three Playwright packages at 1.65.0. Runs: `npm run e2e` exit 0 (three boot lines, five pending lines in order, 1 passed); C2a ok; C2b exit 0 with 0 traces; C2c (M1) exit 1 with 1 trace; C2d(i) exit 0 with browser 156.0.8078.4; C2d(ii) exit 1; C3a count 5; C3d (M2) exit 0; M3 (A4) exit 1 in `app loads`; S1 12 passed; S2 `Total: 1 test in 1 file`; lint and build exit 0; root `npm test` exit 0 (contracts 42, api 29, web 1, packs 1, e2e 12, node:test 19). Extra probes: no Chromium exit 1; port 8080 held exit 1; API exits early exit 1 with cleanup.
+- **Non-blocking notes (not applied; a later edit may take them):**
+  1. `startApi()` runs outside the `try` and has no `error` listener, so a spawn error would crash without cleanup.
+  2. `stop()` waits for the API to exit with no timeout; an API that ignores SIGTERM would hang teardown.
+  3. An empty `SCRIBA_E2E_CHROMIUM` value is passed through as is.
+  4. Locally the default lookup launches `chromium_headless_shell-1254`, not `chromium-1254`; the version is the same (158.0.8127.18). Text-only.
+  5. `/tmp/scriba-e2e-Cbs3am` (2026-11-06) predates this unit and was not made by these runs.
