@@ -7,6 +7,7 @@ import { EchoController } from './events/echo.controller';
 import { EventsController } from './events/events.controller';
 import { EventsPublisher } from './events/events.publisher';
 import { SettingsService } from './settings/settings.service';
+import { TailnetFilter } from './tailnet/tailnet-filter';
 
 // Modules outside platform import these from this entry file only.
 export { SCRIBA_ENV, type ScribaEnv } from './boot/env';
@@ -31,6 +32,7 @@ export type {
     { provide: APP_FILTER, useClass: PlatformExceptionFilter },
     EventsPublisher,
     SettingsService,
+    TailnetFilter,
   ],
   exports: [EventsPublisher, SettingsService],
 })
