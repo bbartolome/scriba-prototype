@@ -1,6 +1,6 @@
 ---
 id: PLT-13
-status: planned
+status: done
 ---
 # PLT-13 plan — Playwright harness, one e2e journey with five pending steps, e2e in CI
 

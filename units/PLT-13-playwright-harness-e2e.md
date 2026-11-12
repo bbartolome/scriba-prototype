@@ -29,6 +29,6 @@ Module builders turn on their journey step at their milestone instead of writing
 - `e2e/` Playwright config, harness global setup/teardown, the journey spec with placeholders, `npm run e2e`, and an `e2e` step appended to the single `ci.yml` job (after build) that uploads Playwright traces on failure.
 
 ## Acceptance criteria
-- [ ] `npm run e2e` boots the app against a temp library and the mock server, passes the app-loads check, and reports the five journey steps as pending.
+- [x] `npm run e2e` boots the app against a temp library and the mock server, passes the app-loads check, and reports the five journey steps as pending.
 - [ ] CI runs the e2e and uploads Playwright traces on failure.
-- [ ] Each placeholder step is a clearly named, independently enable-able block with a comment naming its owning module and milestone.
+- [x] Each placeholder step is a clearly named, independently enable-able block with a comment naming its owning module and milestone.
