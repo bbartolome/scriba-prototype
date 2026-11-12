@@ -648,3 +648,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Criteria 2, 3 and 4:** passed at the batch (root build, test and lint exit 0; the subpath test and the Angular `contracts-boot` build; the named API tests and the boundaries rule).
 - **Criterion 5 (`ci.yml` green on this PR):** not ticked, by the Navigator's decision (option (a), commit 76461e3). The local proxies pass: `scripts/ci-workflow.test.mjs` 5 of 5, the four steps in a fresh clone, and the `@v7` tags.
 - **Batch:** `unit/PLT-11` (head `4f9007b`) rebased onto `main` `a54533a`, fast-forwarded to `batch/current`, checked at the root (build, test, lint, `prettier --check .`, `npm ci` all exit 0), then `main` fast-forwarded. No merge commits were added.
+
+## 2026-11-12 — PLT-12 — Opus plan review of revision 1 (`plans/PLT-12.md`, status draft): NOT APPROVED (three blocking items, five text items)
+
+- **Blocking 1:** the export of `server.mjs` has no declaration file, so `apps/api`'s strict type check (TS7016) fails on import. Correction: add `e2e/fixtures/mock-openai/server.d.mts`, list it in plan section 2, and close open point 5.
+- **Blocking 2:** MPR-04 criterion 1 needs a stream of text deltas, then a tool call, then a finish event. The reply shape cannot produce that. Correction: extend the reply to content plus `toolCalls` with per-call `index` and argument chunks, and test content-then-tool-call. Fix the MPR-04 line citation (lines 29 to 35).
+- **Blocking 3:** the `e2e` workspace is not in the root `build` and is never type-checked. Correction: add `e2e/tsconfig.json`, a `build` script, `@types/node` as devDependency, `-w @bbartolome/scriba-e2e` on the root build, and the banner count 5.
+- **Text 4:** criterion 5 runs two flows in one test. Correction: two `test.concurrent` cases, each resetting only its own scenario.
+- **Text 5:** step 0 always stops because `plans/PLT-12.md` is untracked and HEAD moves. Correction: check `git merge-base --is-ancestor 339c716 HEAD` and `git diff --quiet 339c716 HEAD -- ':!plans'`.
+- **Text 6–9 (non-blocking):** add a `GET /v1/models` assertion to criterion 1; define the SSE format; pick one `turnIndex` rule on models requests; `.mjs` files have no ESLint rules. Implement in a fresh worktree.
