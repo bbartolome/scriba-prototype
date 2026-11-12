@@ -737,3 +737,16 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   3. An empty `SCRIBA_E2E_CHROMIUM` value is passed through as is.
   4. Locally the default lookup launches `chromium_headless_shell-1254`, not `chromium-1254`; the version is the same (158.0.8127.18). Text-only.
   5. `/tmp/scriba-e2e-Cbs3am` (2026-11-06) predates this unit and was not made by these runs.
+
+## 2026-11-12 — PLT-14 — Opus plan review of revision 1 (`plans/PLT-14.md`, status draft): NOT APPROVED (rejection 1 of 3; four blocking items, six text items)
+
+- **Blocking 1:** criterion 2(b) cannot pass as written. The shell runs in a container on a bridge network, so `127.0.0.1:18080` does not reach the published port; `$HOME` is not shared with the Docker daemon (only `/Users/bbartolome/workspace` is). Correction: `LIB=$(mktemp -d /Users/bbartolome/workspace/.plt14-books.XXXX)`; the HTTP asserts run inside the container (`docker exec ... node -e "fetch('http://127.0.0.1:8080/healthz')"`); clean up the daemon-side probe folder with a `docker run` rm.
+- **Blocking 2:** port 8080 is held by a stale API process left by the planner's probe (PID 2822220, cwd deleted, running about 3h44m). It gives a false 200. Correction: a step 0 guard that `curl 127.0.0.1:8080/healthz` prints `000`; the local procedure asserts the new PID is alive (`kill -0`) when the 200 arrives. The planner stops its own leftover process.
+- **Blocking 3:** the runtime tree omits `packages/contracts/node_modules` (the lock has zod 4.6.7 there; root zod is 4.6.6). Correction: copy `packages/contracts/node_modules` (and `apps/api/node_modules` if present); add a check that contracts resolves zod from its own nested folder.
+- **Blocking 4:** the size figure is wrong and undefined. The containerd snapshotter adds unpacked and compressed sizes together. `node:26-slim` arm64 is about 274 MiB unpacked and 82 MiB compressed; the finished image is about 530 MiB unpacked and 140–175 MB compressed. The `.deb` in a `COPY --from` leaves a 36 MB layer. Correction: record both sizes for both arches in a committed file, state which one is compared with story 26, install the `.deb` with a bind mount, and flag "recorded in the PR" as not possible locally.
+- **Text 5:** criterion 5's cause is analogous to PLT-11 and PLT-13 (no amd64 host here, not no remote). Keep it as an open point for the Navigator.
+- **Text 6:** the PDF check uses the unit's exact flags `--to=typst --pdf-engine=typst`; a failure stops and is reported.
+- **Text 7:** close open point 9: `node:26-slim` already has libc6 2.41, libgmp10 6.3.0 and zlib1g 1.3.1.
+- **Text 8:** cite the PLT-02, PLT-03, PLT-09 DECISIONS entry (item 2), not the ambiguous 2026-11-11 "smaller plan choices" entries.
+- **Text 9:** add an in-image LTS check: `node -p process.release.lts` prints `Lithium`.
+- **Text 10:** note that `/opt/scriba/packs` gets `package.json`, `tsconfig.json`, `src/` and `test/`, matching the dev `SCRIBA_PACKS_DIR`.
