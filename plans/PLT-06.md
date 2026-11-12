@@ -1,10 +1,16 @@
 ---
 id: PLT-06
-status: planned
+status: draft
 ---
 # PLT-06 plan — `/events` stream, publisher, hello, heartbeat, echo and backpressure
 
-Batch: [PLT-05, PLT-06, PLT-07, PLT-08] (Platform, phase:scaffold, M1); this plan is PLT-06 only. Revision 2.
+Batch: [PLT-05, PLT-06, PLT-07, PLT-08] (Platform, phase:scaffold, M1); this plan is PLT-06 only. Revision 3.
+
+Revision 3 changes (after the code stop of PLT-06 revision 2, mutation e):
+- AC 5 gains a closure assertion: the stalled stream's body must end, close or error within 10 s. The count assertion is kept.
+- Mutation (e) (no `destroy()`) must now fail AC 5 through the closure assertion (section 4).
+- Open point 4 records a shutdown-window gap, default A. No guard is added to the procedure.
+- Status stays draft.
 
 Read at `main` HEAD `bd95da8`. Sources: `units/PLT-06-sse-stream-publisher.md`, `units/README.md`, `modules/platform.md`, `plans/DECISIONS.md`, `plans/PLT-04.md`, and the committed code and contracts. Section 7 lists what was checked and what is assumed. Nothing here has been run.
 
@@ -132,7 +138,7 @@ Each test is one `it` through `createTestApp`, with the default modules and a fi
 | 2 | `events-echo.test.ts` | none | (b) write to one stream only |
 | 3 | `events-heartbeat.test.ts` | fake `setInterval` | (c) interval 30000 ms |
 | 4 | `events-headers.test.ts` | none | (d) `Cache-Control: no-cache` |
-| 5 | `events-backpressure.test.ts` | `WriteLimitModule`, 256 KiB | (e) no `destroy()` |
+| 5 | `events-backpressure.test.ts` | `WriteLimitModule`, 256 KiB | (e) no `destroy()`: closure assertion |
 | 6 | `events-no-id.test.ts` | none | (f) `id:` prefix |
 | 7 | `events-envelope.test.ts` | none | (g) `sentAt` not a date |
 
@@ -144,7 +150,7 @@ Each test is one `it` through `createTestApp`, with the default modules and a fi
 
 **AC 4 (cache headers, no encoding) — `events-headers.test.ts`.** `fetch` `/events` with `accept: text/event-stream` and `accept-encoding: gzip, deflate, br`. `cache-control` is exactly `no-cache, no-transform`. `content-encoding` is `null`. `content-type` starts with `text/event-stream`. Cancel the body. Mutation (d): the `Cache-Control` value is `no-cache`.
 
-**AC 5 (slow stream closed, others keep receiving) — `events-backpressure.test.ts`.** This test is the slow one, and its own deadlines add up to 30 s, so its `it` takes a 40000 ms timeout; the config's `testTimeout` is 20000 ms (PLT-04 section 1 item 17). Use `createTestApp({modules: [PlatformModule, WriteLimitModule]})`, which lowers the limit to 256 KiB. Stalled client S: `fetch` `/events` and never read the body. Healthy client H: `openSse`, read hello, then run a background loop that collects echo `seq` values with `next(20000)`. `POST {count: 100000, intervalMs: 0}`. Wait until H has 100000 echoes (20 s deadline). Drain S to `done` or an error, under a 10 s deadline, and count the `"type":"echo"` occurrences in the drained text. Assert the count is below 100000. Then `POST {count: 1, intervalMs: 0}` and assert H's `seq` list is `1..100000` followed by `1`. Cancel H and S before `close()`. If S still receives all 100000 (A4), raise N, never the limit. Mutation (e): in `send`, replace `res.destroy()` with `void res;`. S then receives everything, and the `below 100000` assertion fails.
+**AC 5 (slow stream closed, others keep receiving) — `events-backpressure.test.ts`.** This test is the slow one, and its own deadlines add up to 30 s, so its `it` takes a 40000 ms timeout; the config's `testTimeout` is 20000 ms (PLT-04 section 1 item 17). Use `createTestApp({modules: [PlatformModule, WriteLimitModule]})`, which lowers the limit to 256 KiB. Stalled client S: `fetch` `/events` and never read the body. Healthy client H: `openSse`, read hello, then run a background loop that collects echo `seq` values with `next(20000)`. `POST {count: 100000, intervalMs: 0}`. Wait until H has 100000 echoes (20 s deadline). Drain S: read its body until it ends, under a 10 s deadline. Closure assertion: S's body emits `end`, `close` or `error` within those 10 s, and the test fails if the deadline passes first. Count the `"type":"echo"` occurrences in the drained text and assert the count is below 100000 (count assertion, kept from revision 1). Then `POST {count: 1, intervalMs: 0}` and assert H's `seq` list is `1..100000` followed by `1`. Cancel H and S before `close()`. If S still receives all 100000 (A4), raise N, never the limit. Mutation (e): in `send`, replace `res.destroy()` with `void res;`. The stream is still removed from the set, so writes stop, and the count assertion still passes. The connection stays open, so S's body never ends, and the closure assertion fails at its 10 s deadline. Mutation (e) must trip the closure assertion, not the count assertion.
 
 **AC 6 (no `id:` lines) — `events-no-id.test.ts`.** Open, read hello, `POST {count:3, intervalMs:0}`, and read three echo blocks. Split each received block into lines. No line starts with `id:`. Mutation (f): `publish` prefixes each block with `id: 1\n`.
 
@@ -168,6 +174,8 @@ No two units edit the same file, with one exception: `platform.module.ts` is edi
 1. **`platform.module.ts` is shared.** PLT-05, PLT-06, PLT-07 and PLT-08 each add entries to its arrays, which breaks "no two units edit the same file". Options: (A) keep the shared file: each unit adds its own entries, and the batch collection merges them in the order PLT-05, PLT-06, PLT-07, PLT-08, resolving array conflicts by hand; (B) one unit owns the file for the batch, and the others rebase onto it. DECIDED: option A (revision 2, by the coordinator). Reason: PLT-04 section 5 and DECISIONS line 426 already accept the shared file, and batch collection resolves array conflicts.
 2. **Echo body validation.** Default: inline `echoRequestSchema.parse` (decision 9), so PLT-06 does not wait for PLT-05. Option B: use PLT-05's pipe after PLT-05 merges, which makes PLT-06 depend on PLT-05 and breaks the parallel rule. A bad body becomes 400 `PLATFORM_VALIDATION_FAILED` once PLT-05 maps `z.ZodError` (PLT-05 revision 3, decision 4). Until then, Nest's default 500 applies. DECIDED: option A (revision 2, by the coordinator). Reason: PLT-06 stays parallel with PLT-05 and does not depend on it.
 3. **Echo `count` cap.** `echoRequestSchema.count` has no maximum (`events.ts`), so one POST can run a very long emission. Options: (A) no cap, contract unchanged (default; a cap in the published contract needs expand–contract under PLT-02); (B) a handler-side cap that is not in the contract. The guard arrives later with Setup & auth (SAU-04). DECIDED: option A (revision 2, by the coordinator). Reason: no cap, and the contract stays unchanged; a cap would need expand–contract under PLT-02.
+
+4. **Shutdown window (known gap).** A stream that opens after `beforeApplicationShutdown` runs and before dispose is not guarded: `subscribe()` does not check `stopping`. The code author found this at the PLT-06 revision 2 code stop, and this plan did not cover it. Options: (A) leave it as a known gap of the shutdown window (default); (B) guard `subscribe()` with the closing flag, which adds one check to the procedure. Consequence (ASSUMED, A10): that stream is not ended by `beforeApplicationShutdown` and may keep dispose waiting. No guard is in section 3 unless the Navigator chooses (B).
 
 ## 7. Facts checked and assumed
 
@@ -201,5 +209,7 @@ Assumed (ASSUMED):
 - A6. `z.iso.datetime()` accepts `Date.prototype.toISOString()` output. Checked by AC 1 and AC 7.
 - A7. PLT-04 A2 (decorator metadata under unplugin-swc) is first exercised here, because `EchoController` injects `EventsPublisher` by class. Checked by AC 2 and step 13.
 - A8. Same-folder imports from `events/` to `../build-info` pass the boundaries rule. Partly checked by DECISIONS line 456; checked by step 15.
+- A9. Destroying the response makes the client's body emit `end`, `close` or `error` (Node socket close). Checked by AC 5.
+- A10. A stream opened after `beforeApplicationShutdown` is not ended by it and may hold dispose (open point 4). ASSUMED; no test covers it.
 
 Not verified: the lint result (step 15); every file in section 2 (none is written yet); every mutation result (none has run).
