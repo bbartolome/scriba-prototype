@@ -1,6 +1,6 @@
 ---
 id: PLT-11
-status: planned
+status: draft
 ---
 
 # PLT-11 plan — scaffold gate: dev script, build order, subpath checks, end-to-end checks
