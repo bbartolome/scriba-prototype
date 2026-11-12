@@ -404,3 +404,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   10. Non-blocking: build the serve-static exclude list from `HEALTHZ_ROUTE` and `EVENTS_ROUTE`.
   11. Non-blocking: close open points 13 and 14 and the `__dirname` assumption (verified by Opus: `getDependencySkipReason`, TypeScript 6.0.3 accepts the decorator options, Vitest 5.1.0 injects `__dirname`).
 - **Driver note:** Problems 2, 3 and 4 are plan-text and file-list corrections, not disagreements, so they go to the Haiku subagent of the unit (revision 2). Problem 1 is a decision to settle: the Navigator is required, and the driver cannot invoke `navigator:pair` (the skill is reserved for explicit user invocation). PLT-04 status stays `draft`. Rejection count for PLT-04 plan: 1.
+
+## 2026-11-12 — PLT-04 — Opus plan review of revision 2: APPROVED (point 1 still open)
+
+- **Result (Opus subagent, fresh context, review of `plans/PLT-04.md` revision 2):** APPROVED. All eleven revision-1 problems (A to K) are fixed. The five acceptance criteria match the unit verbatim. Opus re-verified from the packed `@nestjs/common` 12.4.2 source that `error` and `fatal` write to stderr, and that the stdout logger's two overrides cover every stderr path. It also checked the init and shutdown order that PLT-06 and PLT-08 depend on, and ran TypeScript 6.0.3 and Node 26.13.0 on the CommonJS path.
+- **Open point 1 is not decided by this review.** The approval covers the plan text as written, which keeps apps/api CommonJS. The Navigator still has to settle CommonJS vs ESM before `status: planned`. The driver cannot invoke `navigator:pair`, so the choice goes to the user.
+- **Non-blocking notes to apply in revision 3** (no criterion change):
+  - `SCRIBA_LIBRARY` defaults to `~/Books` in `env.ts`, so "only when set" must be decided from the raw environment, with no default. Add a test for no host line when unset, and a PLT-15 handoff to pass the variable through.
+  - `NestFactory.create` defaults to `abortOnError: true`, which can call `process.exit(1)` inside a Vitest worker. Pass `abortOnError: false` so `bootstrap()` rejects.
+  - AC 4 root case: chmod the temporary library to 0o755 so only `.scriba` fails.
+  - The spawn timeout (20000) equals the Vitest `testTimeout`. Use about 15000 for the spawn.
+  - Stale text: `HEAD is bb80437` (now 73cbda0). "Three gaps" in section 5 lists more.
+  - Wording: PLT-07 and PLT-08 both add a provider line to `platform.module.ts`; no unit edits `bootstrap.ts`.
+  - `main.ts` handles only `BootError`; other errors are rethrown. PLT-07's "newer schemaVersion" refusal must throw `BootError`.
+- **Driver note:** Rejection count for the PLT-04 plan: 1. PLT-04 status stays `draft`.
