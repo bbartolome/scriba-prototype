@@ -750,3 +750,14 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Text 8:** cite the PLT-02, PLT-03, PLT-09 DECISIONS entry (item 2), not the ambiguous 2026-11-11 "smaller plan choices" entries.
 - **Text 9:** add an in-image LTS check: `node -p process.release.lts` prints `Lithium`.
 - **Text 10:** note that `/opt/scriba/packs` gets `package.json`, `tsconfig.json`, `src/` and `test/`, matching the dev `SCRIBA_PACKS_DIR`.
+
+## 2026-11-12 — PLT-14 — Opus plan review of revision 2 (`plans/PLT-14.md`, status draft): NOT APPROVED (rejection 2 of 3; one blocking item, four text items, two notes)
+
+- **Result (Opus subagent, fresh context):** revision 1 items 1–10 are resolved. The build stage matches the real outputs; as UID 1000, `/healthz` returns the expected JSON and the app-state failure exits 1; the nested zod 4.6.7 resolves; the Pandoc and Typst digests match GitHub; the arm64 probe measured 495 MiB unpacked and 151 MB compressed, which agrees with the plan.
+- **Blocking 1:** the PDF decision check always fails in the planned image. Pandoc 3.13 writes `./media-<hash>` into the current directory when it creates a PDF through Typst; WORKDIR `/opt/scriba/app` is root-owned, so UID 1000 gets `permission denied`. With `-w /tmp` the same command exits 0 and the file starts with `%PDF-`. Correction: run the check with `-w /tmp` (exact flags kept); replace the section 8 assumption with this fact; tell CEX-10, CEX-13, CEX-15 and PLT-19's PDF smoke to run Pandoc from a writable folder.
+- **Text 2:** (a) run the `du -sxk /` size measure with `--user 0` (the baseline ran as root); (b) measure the amd64 size on `bbartolome/scriba:local-amd64` with `--platform linux/amd64` after criterion 5 builds it.
+- **Text 3:** `build-image.sh` passes `--build-arg VERSION="$VERSION"` (and REVISION, BUILT_AT) explicitly, or exports all three; add a check that `local-arm64` holds the validated values (`node -p` on `apps/api/dist/modules/platform/build-info.js` in the image).
+- **Text 4:** step 12's DECISIONS commit goes on the main checkout, as the other `docs(PLT-*)` records do, not on `unit/PLT-14`.
+- **Text 5:** section 7's `ci.yml` step list omits the first step, "Check PR title"; correct the list.
+- **Note 1:** declare the `ARG VERSION/REVISION/BUILT_AT` lines just before the `build-info.ts` write, not before `npm ci`, so the install layer stays cached (matters for PLT-19's cache).
+- **Note 2:** say in section 5 how PLT-17 reads the pinned version (from `build-info.js` or an OCI label or ENV), or leave the choice to PLT-19.
