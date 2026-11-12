@@ -1,0 +1,15 @@
+{
+  "name": "@bbartolome/scriba-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "openai": "7.55.0"
+  }
+}
