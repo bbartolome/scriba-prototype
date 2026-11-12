@@ -19,12 +19,14 @@
     "typescript": "6.0.3"
   },
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api -w @bbartolome/scriba-web -w @bbartolome/scriba-packs",
+    "dev": "npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api && concurrently -n contracts,api-tsc,api,web \"tsc -p packages/contracts/tsconfig.build.json --watch --preserveWatchOutput\" \"tsc -p apps/api/tsconfig.build.json --watch --preserveWatchOutput\" \"SCRIBA_BOOKS_DIR=$PWD/.scriba-dev SCRIBA_PACKS_DIR=$PWD/packages/packs SCRIBA_EXAMPLES_DIR=$PWD/examples SCRIBA_DEV_ORIGINS=http://localhost:4200 SCRIBA_SETUP_URL_BASE=http://localhost:4200 node --watch apps/api/dist/main.js\" \"npm run start -w @bbartolome/scriba-web\"",
     "test": "npm test --workspaces && node --test 'scripts/*.test.mjs'",
     "lint": "npm run lint --workspaces && prettier --check ."
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "concurrently": "10.0.7",
     "eslint": "10.14.0",
     "eslint-plugin-boundaries": "7.4.2",
     "prettier": "3.9.10",
