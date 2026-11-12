@@ -711,3 +711,14 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Text 4:** step 8a checks the port on `0.0.0.0` (the API's own address) and closes the probe socket before the spawn.
 - **Text 5:** step 8g, when setup fails, also closes the mock and removes the library, not only kills the API.
 - **Text 6 (section 5):** add PLT-19 (line 33 is the image smoke that stands in for export in the e2e) and PLT-20 (its "unit tests never read `examples/`" grep must exempt `e2e/harness` and `*.e2e.ts`, which pass `<repo>/examples`).
+
+## 2026-11-12 — PLT-13 — Opus plan review of revision 3 (`plans/PLT-13.md`): APPROVED (six non-blocking items, to be applied to the plan before status planned)
+
+- **Result (Opus subagent, fresh context):** APPROVED. Rejection 1 items (B1–B3, T4–T9) and rejection 2 items (B1, T2–T6) are resolved. The browser claim was checked against the source with `gh api`: `install-google-chrome.sh` sets `CHROME_BIN=/usr/bin/google-chrome` (line 41) and unpacks Chromium to `/usr/local/share/chromium`, linked as `/usr/bin/chromium` (lines 78–87); `ubuntu-latest` is `ubuntu-24.04`, which ships Chromium 156.0.8078.0. Playwright 1.65.0 ran a headless test on `chromium-1248` (156.0.8078.4) through `executablePath`; the default lookup is `chromium-1254` (158), a version gap noted in the plan. The lock gate, scoping (S1, S2), Prettier and the port check were probed in /tmp copies.
+- **Non-blocking items to apply (text and check additions only):**
+  1. The repository has no remote (DECISIONS 2026-11-12, PLT-11 criterion 5). The runner part of criterion 2 cannot be tested locally. Drop the throwaway-branch option (open point 3); mark the runner part "cannot test locally (no remote)"; label C2a–C2c as local proxies; leave that checkbox unticked unless the Navigator decides otherwise.
+  2. Add C2d: `CI=1 SCRIBA_E2E_CHROMIUM=$HOME/.cache/ms-playwright/chromium-1248/chrome-linux-arm64/chrome npm run e2e` exits 0 and records a 156.x browser; `SCRIBA_E2E_CHROMIUM=/nonexistent npm run e2e` fails at launch. C2a asserts `env.SCRIBA_E2E_CHROMIUM === '/usr/bin/chromium'` on the E2E step.
+  3. Move the first section 8 assumption to section 7 as verified, with the 156-versus-158 gap and the passing probe.
+  4. Section 7 citations: line 89 tests Chrome and line 90 tests Chromium; the snapshot URL is on line 77; the "main at d810dd8, then 57d9922" header is stale (main is at dd74821).
+  5. Step 8d: the API process gets `stdio` `inherit` or `ignore`, never an unread `pipe`.
+  6. Optional: A1 also greps five `pending: <name>` lines in the criterion-1 log.
