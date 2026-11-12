@@ -701,3 +701,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Text 7:** the list and JSON reporters do not show `test.step.skip` as skipped; keep the annotation plus console line (open point 4).
 - **Text 8:** optionally, S1 fails if Vitest lists any file other than the mock test.
 - **Text 9:** base `npm ci` warns for both `lmdb@3.5.6` and `msgpackr-extract@3.0.7`; state both.
+
+## 2026-11-12 — PLT-13 — Opus plan review of revision 2 (`plans/PLT-13.md`, status draft): NOT APPROVED (rejection 2 of 3; one blocking item, four text items)
+
+- **Result (Opus subagent, fresh context):** the reviewer built revision 2 in a /tmp copy of HEAD. Base `npm ci` passes; the plain install adds only the three Playwright packages; e2e build, lint and run exit 0; the A3 output, the trace mutants, M2, M3, S1 and S2 behave as planned; the root `dev` script sets `SCRIBA_SETUP_URL_BASE=http://localhost:4200`, and the harness's `127.0.0.1:8080` default is correct. Rejection 1 items B1, B2, B3, T4, T6, T7, T8 and T9 are resolved.
+- **Blocking 1 (rejection 1, text 5 not resolved):** the reason given for using Google Chrome in CI is false. The GitHub `ubuntu-latest` image has Google Chrome at `/usr/bin/google-chrome` and also Chromium at `/usr/bin/chromium` (install script `images/ubuntu/scripts/build/install-google-chrome.sh`, lines 41 and 78 to 87, in actions/runner-images). Correction: step 11 sets `SCRIBA_E2E_CHROMIUM: /usr/bin/chromium`; section 5's browser bullet, open point 2, item T5 and the first assumption in section 8 name the image's pre-installed Chromium and say the first CI run settles it.
+- **Text 2:** after M3, remove the `<tmpdir>/scriba-e2e-elsewhere` directory (the API creates it; the teardown removes only the library).
+- **Text 3:** S2's expected output uses Playwright's path relative to `testDir` (`journey.e2e.ts:11:1 › …`).
+- **Text 4:** step 8a checks the port on `0.0.0.0` (the API's own address) and closes the probe socket before the spawn.
+- **Text 5:** step 8g, when setup fails, also closes the mock and removes the library, not only kills the API.
+- **Text 6 (section 5):** add PLT-19 (line 33 is the image smoke that stands in for export in the e2e) and PLT-20 (its "unit tests never read `examples/`" grep must exempt `e2e/harness` and `*.e2e.ts`, which pass `<repo>/examples`).
