@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { AddressInfo } from 'node:net';
-import type { Type } from '@nestjs/common';
+import type { INestApplication, Type } from '@nestjs/common';
 import { bootstrap } from '../src/bootstrap';
 import { readSse } from './sse';
 
@@ -36,18 +36,26 @@ export async function createTestApp(
   const ownsLibrary = options.libraryDir === undefined;
   const library =
     options.libraryDir ?? mkdtempSync(join(tmpdir(), 'scriba-api-test-'));
-  const app = await bootstrap({
-    env: {
-      SCRIBA_BOOKS_DIR: library,
-      SCRIBA_PACKS_DIR: join(library, 'packs'),
-      SCRIBA_EXAMPLES_DIR: join(library, 'examples'),
-      SCRIBA_LOG_LEVEL: 'error',
-      ...options.env,
-    },
-    staticRoot: options.staticRoot ?? DEFAULT_STATIC_ROOT,
-    modules: options.modules,
-  });
-  await app.listen(0, '127.0.0.1');
+  let app: INestApplication | undefined;
+  try {
+    app = await bootstrap({
+      env: {
+        SCRIBA_BOOKS_DIR: library,
+        SCRIBA_PACKS_DIR: join(library, 'packs'),
+        SCRIBA_EXAMPLES_DIR: join(library, 'examples'),
+        SCRIBA_LOG_LEVEL: 'error',
+        ...options.env,
+      },
+      staticRoot: options.staticRoot ?? DEFAULT_STATIC_ROOT,
+      modules: options.modules,
+    });
+    await app.listen(0, '127.0.0.1');
+  } catch (error) {
+    // A failed setup must not leak the temp library or an initialized app.
+    await app?.close();
+    if (ownsLibrary) rmSync(library, { recursive: true, force: true });
+    throw error;
+  }
   const { port } = app.getHttpServer().address() as AddressInfo;
   const baseUrl = `http://127.0.0.1:${port}`;
   return {
