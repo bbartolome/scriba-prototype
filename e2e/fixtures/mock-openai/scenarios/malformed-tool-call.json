@@ -1,0 +1,41 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "models" },
+      "reply": {
+        "kind": "status",
+        "status": 200,
+        "body": {
+          "object": "list",
+          "data": [
+            { "id": "mock-model", "object": "model", "owned_by": "scriba-mock" }
+          ]
+        }
+      }
+    },
+    {
+      "match": { "endpoint": "chat", "attempt": 1 },
+      "reply": {
+        "kind": "toolCalls",
+        "calls": [
+          {
+            "name": "echo_text",
+            "argumentChunks": ["{\"text\": \"hello world"]
+          }
+        ]
+      }
+    },
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "toolCalls",
+        "calls": [
+          {
+            "name": "echo_text",
+            "argumentChunks": ["{\"text\":", " \"hello world\"}"]
+          }
+        ]
+      }
+    }
+  ]
+}

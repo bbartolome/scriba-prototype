@@ -1,0 +1,24 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat", "attempt": 1 },
+      "reply": {
+        "kind": "status",
+        "status": 429,
+        "headers": { "Retry-After": "1" },
+        "body": {
+          "error": { "message": "rate limited", "type": "rate_limit_error" }
+        }
+      }
+    },
+    {
+      "match": { "endpoint": "chat", "attempt": 2 },
+      "delayMs": 400,
+      "reply": { "kind": "stream", "deltas": ["ok"] }
+    },
+    {
+      "match": { "endpoint": "chat", "attempt": 3 },
+      "reply": { "kind": "drop" }
+    }
+  ]
+}

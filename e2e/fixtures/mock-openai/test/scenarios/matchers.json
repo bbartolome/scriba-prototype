@@ -1,0 +1,28 @@
+{
+  "steps": [
+    {
+      "match": { "header": { "name": "x-mock-case", "value": "header" } },
+      "reply": { "kind": "stream", "deltas": ["header-step"] }
+    },
+    {
+      "match": { "turnIndex": 1 },
+      "reply": { "kind": "stream", "deltas": ["turn-step"] }
+    },
+    {
+      "match": { "lastMessageRole": "tool" },
+      "reply": { "kind": "stream", "deltas": ["role-step"] }
+    },
+    {
+      "match": { "lastMessageContent": "content-check" },
+      "reply": { "kind": "stream", "deltas": ["content-step"] }
+    },
+    {
+      "match": { "lastMessageContent": "chunk-check" },
+      "reply": {
+        "kind": "stream",
+        "chunkDelayMs": 150,
+        "deltas": ["a", "b", "c"]
+      }
+    }
+  ]
+}
