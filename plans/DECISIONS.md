@@ -442,3 +442,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   - The CommonJS default is internally consistent. Downstream units PLT-05 to PLT-08 and PLT-11 agree with the plan, once item 6 is applied.
   - Facts spot-checked: 18, of which wrong: 1 (the reviewer did not say which one).
 - **Driver note:** Items 1 to 9 go to the Haiku subagent of the unit, which writes revision 5. Open point 1 (CommonJS vs ESM) is unchanged and still waits for the Navigator. PLT-04 status stays `draft`. Rejection count for the PLT-04 plan: 2. At three rejections the disagreement goes to the Navigator.
+
+## 2026-11-12 — PLT-04 — Opus plan review of revision 5: NOT APPROVED (rejection 3 for PLT-04 plan)
+
+- **Result (Opus subagent, fresh context, review of `plans/PLT-04.md` revision 5):** NOT APPROVED. Six items:
+  1. [blocking] Open point 8 default (a) gives no command and lists no entries. Step 3 compares against "the lock at the start of implementation", which under (a) already holds the driver's entries, so the lock gate checks nothing. `plans/PLT-01.md` line 115 says PLT-04 commits its own lockfile. Correction: make option (b) the defined path, run after step 2 with `npm install --package-lock-only --ignore-scripts` (the method at lines 374 and 389 of this file), then `npm ci`, then diff the lock against `d5b353d` and list the expected new entries.
+  2. [blocking] `enableShutdownHooks({useProcessExit: true})` is wrong: options is the second parameter, so tsc 6.0.3 fails with TS2353. Correction: `enableShutdownHooks([], {useProcessExit: true})`, which a scratch run shows exits 0 on SIGTERM.
+  3. [non-blocking] A7 says the AC 3 and AC 4 spawns load platform-express. `NestFactory.create` loads it through `import()` after the env check, so they never do. Correction: say step 17 covers platform-express.
+  4. [non-blocking] The spawn path `apps/api/dist/main.js` is relative, but Vitest runs with `apps/api` as its working folder. Correction: `resolve(__dirname, '..', 'dist', 'main.js')`.
+  5. [non-blocking] No step formats the new files, yet step 16 runs `prettier --check .`. Correction: add `npx prettier --write` on the new `apps/api` files before step 13.
+  6. [non-blocking] Line 18 cites DECISIONS line 294 for the PLT-09 patterns; they are at line 295. Correction: cite line 295.
+  - Earlier items fixed: 7 of 9. Item 1 is partly fixed (open point 8 lists no entries). Item 2 is not fixed (wrong call form).
+  - Also checked, no problem: a scratch lint with the repo's ESLint config passes the planned imports from both working folders, and only a cross-module import of `boot/env` is flagged. Downstream units agree, the criteria are verbatim, and open point 1 stays open with both options.
+  - Facts spot-checked: 21, of which wrong: 0.
+- **Driver note:** Rejection count for the PLT-04 plan: 3. Per the rule at three rejections, the open disagreement goes to the Navigator. This round has no disagreement with the reviewer: items 1 to 6 are text and call-form corrections that the unit's subagent applies. The one open decision is point 1 (CommonJS vs ESM). It must be settled before `status: planned` anyway, so it goes to the Navigator now. Items 1 to 6 go to the Haiku subagent in parallel; point 1's answer follows as a separate change. PLT-04 status stays `draft`.
