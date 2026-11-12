@@ -482,3 +482,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   5. The plan is labelled revision 6, with open point 1 "decided". The HEAD reference is updated to `a4ab77a`.
   6. Open point 6 also needs the uid 65534 child, when the runner is root, to read the repo's `dist` and `node_modules`.
 - **Driver note:** The reviewer did not say which of the 24 facts was wrong. Its item 1 is about the PLT-11 watch command, which is not a fact row. The plan's status is set to `planned` in the next commit, on `main`, with the edits above applied.
+
+## 2026-11-12 — PLT-04 — code stop at plan step 16(a): plan revision (step 16 mutations and two code differences)
+
+- **Situation:** the code subagent on `unit/PLT-04` (head `3fd05dc`) finished plan steps 1 to 15 and 20. AC 1, 2, 3 and 5 pass. AC 4 passes on the non-root branch (the runner is uid 1000); the root branch is not run. Step 16(a) stopped the run. Changing `status` to `'up'` fails `tsc` before vitest runs, so the mutation tests nothing. Mutation (c) may hit the same problem.
+- **Differences the code makes from the plan:** (1) `ensureAppState(env)` takes one argument, because `ScribaEnv` already holds the raw `SCRIBA_LIBRARY`. (2) `createTestApp` removes the temp library it creates itself on `close()`; a given `libraryDir` is never removed.
+- **Revision (driver):** plan step 16 now uses type-correct mutations: (a) `BUILD_INFO.version` replaced by `'0.0.0-mutant'`; (c) `.catch('info')` appended to the `logLevel` rule, which makes an invalid value fall back with no error. The section 2 row for `app-state.ts` and bullet 19 describe the two differences above. The plan's status is set to `draft` until Opus approves this text, as the method requires when a plan does not work.
+- **Not yet reviewed:** the code on `unit/PLT-04`, mutations (b) to (e), step 17, step 18 and step 19. The uid 65534 branch of AC 4 is not run (runner uid 1000; passwordless `sudo` exists on this machine, so it could be run later).
