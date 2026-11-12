@@ -24,8 +24,7 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/material-theme.scss", "src/styles.css"],
-            "allowedCommonJsDependencies": ["@bbartolome/scriba-contracts"]
+            "styles": ["src/material-theme.scss", "src/styles.css"]
           },
           "configurations": {
             "production": {
@@ -47,6 +46,12 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "contracts-boot": {
+              "browser": "src/contracts-boot.ts",
+              "outputPath": "dist/contracts-boot",
+              "budgets": [],
+              "allowedCommonJsDependencies": ["@bbartolome/scriba-contracts"]
             }
           },
           "defaultConfiguration": "production"
