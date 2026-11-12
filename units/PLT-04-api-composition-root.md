@@ -32,8 +32,8 @@ Each module registers its NestJS `@Module` with one import in the composition ro
 - Root module, `main.ts`, platform module skeleton, env parsing, app-state check, serve-static + SPA fallback, `/healthz`, version info, SIGTERM handling, `create-test-app` (SSE helper can be a thin `fetch` stream reader; `/events` itself lands in PLT-06).
 
 ## Acceptance criteria
-- [ ] `GET /healthz` returns `{status:'ok', version}` with 200; `GET /api/platform/version` returns the version-info shape.
-- [ ] A non-API path returns `index.html` (tested with a fixture static dir).
-- [ ] An invalid `SCRIBA_*` value makes boot exit non-zero with a readable message naming the variable.
-- [ ] An unwritable `.scriba/` folder makes the app exit non-zero with a message naming the UID/GID and the path.
-- [ ] A test using `create-test-app` boots against a temp library on an ephemeral port and reads `/healthz`.
+- [x] `GET /healthz` returns `{status:'ok', version}` with 200; `GET /api/platform/version` returns the version-info shape.
+- [x] A non-API path returns `index.html` (tested with a fixture static dir).
+- [x] An invalid `SCRIBA_*` value makes boot exit non-zero with a readable message naming the variable.
+- [x] An unwritable `.scriba/` folder makes the app exit non-zero with a message naming the UID/GID and the path.
+- [x] A test using `create-test-app` boots against a temp library on an ephemeral port and reads `/healthz`.

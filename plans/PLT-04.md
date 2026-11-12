@@ -1,6 +1,6 @@
 ---
 id: PLT-04
-status: planned
+status: done
 ---
 # PLT-04 plan — NestJS composition root, env parsing, app-state check, /healthz, version info, create-test-app
 
