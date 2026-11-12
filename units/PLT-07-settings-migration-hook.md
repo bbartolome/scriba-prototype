@@ -28,9 +28,9 @@ App settings must be migrated automatically at startup, with a backup (story 21)
 - Registration API, boot hook, backup, atomic write, section read/write service, tests with a test-only section.
 
 ## Acceptance criteria
-- [ ] A `settings.yaml` with a test section that's behind gets a `settings.yaml.bak-<timestamp>` backup and is migrated by that section's registered steps, in order, before `/healthz` answers.
-- [ ] A missing file is treated as `{schemaVersion: 1}`; sections with non-null defaults are written; `null`-default sections stay absent.
-- [ ] A file already current is not rewritten and no backup is created.
-- [ ] An unknown top-level key survives a migration unchanged.
-- [ ] A newer envelope `schemaVersion` and, separately, a newer section `schemaVersion` each make the app exit non-zero with a message naming the section (or envelope) and the version.
-- [ ] Section write is atomic (temp file + rename) and round-trips through section read.
+- [x] A `settings.yaml` with a test section that's behind gets a `settings.yaml.bak-<timestamp>` backup and is migrated by that section's registered steps, in order, before `/healthz` answers.
+- [x] A missing file is treated as `{schemaVersion: 1}`; sections with non-null defaults are written; `null`-default sections stay absent.
+- [x] A file already current is not rewritten and no backup is created.
+- [x] An unknown top-level key survives a migration unchanged.
+- [x] A newer envelope `schemaVersion` and, separately, a newer section `schemaVersion` each make the app exit non-zero with a message naming the section (or envelope) and the version.
+- [x] Section write is atomic (temp file + rename) and round-trips through section read.

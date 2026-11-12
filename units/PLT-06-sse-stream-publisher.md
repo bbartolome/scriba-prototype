@@ -30,10 +30,10 @@ Module builders need an injectable publisher that puts their events on every ope
 - Stream controller, publisher service, hello, heartbeat, echo endpoint, backpressure close, `create-test-app` SSE helper wired to the real stream.
 
 ## Acceptance criteria
-- [ ] A client on `/events` gets `platform/hello` first, preceded by `retry: 3000`.
-- [ ] `POST /api/platform/echo {count:3, intervalMs:50}` delivers three `platform/echo` envelopes in `seq` order to **each of two** open streams.
-- [ ] A heartbeat comment arrives at least every 15 s (fake timers or a configurable interval in test).
-- [ ] Responses carry `Cache-Control: no-cache, no-transform` and no `Content-Encoding`.
-- [ ] A stream whose client stops reading is closed once the buffer limit is passed; other streams keep receiving.
-- [ ] No `id:` lines are ever sent.
-- [ ] Every message validates against the `/platform` envelope schema.
+- [x] A client on `/events` gets `platform/hello` first, preceded by `retry: 3000`.
+- [x] `POST /api/platform/echo {count:3, intervalMs:50}` delivers three `platform/echo` envelopes in `seq` order to **each of two** open streams.
+- [x] A heartbeat comment arrives at least every 15 s (fake timers or a configurable interval in test).
+- [x] Responses carry `Cache-Control: no-cache, no-transform` and no `Content-Encoding`.
+- [x] A stream whose client stops reading is closed once the buffer limit is passed; other streams keep receiving.
+- [x] No `id:` lines are ever sent.
+- [x] Every message validates against the `/platform` envelope schema.

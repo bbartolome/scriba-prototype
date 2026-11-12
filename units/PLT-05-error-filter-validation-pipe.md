@@ -28,9 +28,9 @@ Every module's errors must look alike to the Shell's API client (story 34), and 
 - Filter, pipe, module-error helper, and a test-only controller exercising them.
 
 ## Acceptance criteria
-- [ ] An invalid body to a test controller using the pipe returns 400 `PLATFORM_VALIDATION_FAILED` in the base shape with Zod issues in `details`.
-- [ ] An unknown `/api/...` route returns 404 `PLATFORM_NOT_FOUND`; an unknown non-API path still returns `index.html`.
-- [ ] A body over the limit returns 413 `PLATFORM_PAYLOAD_TOO_LARGE`.
-- [ ] A thrown plain `Error` returns 500 `PLATFORM_INTERNAL` with no stack in the body and the error logged.
-- [ ] A module error with a custom code/status is returned unchanged in the base shape.
-- [ ] Every error body validates against the `/platform` error schema.
+- [x] An invalid body to a test controller using the pipe returns 400 `PLATFORM_VALIDATION_FAILED` in the base shape with Zod issues in `details`.
+- [x] An unknown `/api/...` route returns 404 `PLATFORM_NOT_FOUND`; an unknown non-API path still returns `index.html`.
+- [x] A body over the limit returns 413 `PLATFORM_PAYLOAD_TOO_LARGE`.
+- [x] A thrown plain `Error` returns 500 `PLATFORM_INTERNAL` with no stack in the body and the error logged.
+- [x] A module error with a custom code/status is returned unchanged in the base shape.
+- [x] Every error body validates against the `/platform` error schema.

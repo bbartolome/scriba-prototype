@@ -1,6 +1,6 @@
 ---
 id: PLT-08
-status: planned
+status: done
 ---
 # PLT-08 plan — Tailnet-address connection filter
 

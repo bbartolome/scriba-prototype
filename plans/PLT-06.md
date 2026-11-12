@@ -1,6 +1,6 @@
 ---
 id: PLT-06
-status: planned
+status: done
 ---
 # PLT-06 plan — `/events` stream, publisher, hello, heartbeat, echo and backpressure
 

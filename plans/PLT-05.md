@@ -1,6 +1,6 @@
 ---
 id: PLT-05
-status: planned
+status: done
 ---
 # PLT-05 plan — global error filter, Zod validation pipe, module error
 

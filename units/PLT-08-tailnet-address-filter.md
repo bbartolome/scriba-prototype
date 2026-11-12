@@ -22,6 +22,6 @@ Tailnet devices must not reach the app's plain HTTP port directly, so nothing by
 - Testing exception: socket-level faking isn't possible, so the check is tested **as a predicate**, plus a test that the filter is installed on the server's `connection` event.
 
 ## Acceptance criteria
-- [ ] The predicate refuses `100.64.0.1`, `100.127.255.254`, `::ffff:100.100.1.1` and `fd7a:115c:a1e0::1`.
-- [ ] The predicate accepts `127.0.0.1`, `::1`, `::ffff:127.0.0.1`, `172.17.0.1` and `100.63.255.255` / `100.128.0.0` (range edges).
-- [ ] A real loopback connection to the test app is served.
+- [x] The predicate refuses `100.64.0.1`, `100.127.255.254`, `::ffff:100.100.1.1` and `fd7a:115c:a1e0::1`.
+- [x] The predicate accepts `127.0.0.1`, `::1`, `::ffff:127.0.0.1`, `172.17.0.1` and `100.63.255.255` / `100.128.0.0` (range edges).
+- [x] A real loopback connection to the test app is served.

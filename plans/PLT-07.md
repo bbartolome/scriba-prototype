@@ -1,6 +1,6 @@
 ---
 id: PLT-07
-status: planned
+status: done
 ---
 # PLT-07 plan — `settings.yaml` startup migration hook and section registration
 
