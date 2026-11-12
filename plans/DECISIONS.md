@@ -677,3 +677,14 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   3. Preamble and section 7: main is at `c1dac25`; `339c716` is the last commit that changed code. Basing the worktree on `339c716` is still fine.
   4. Decision 2: cite only the root devDependencies as the exact-pin convention (apps/api uses ranges).
   5. Section 5: "the exact version in `e2e/package.json` (7.55.0 at planning)", not a fixed pin.
+
+## 2026-11-12 — PLT-12 — Opus code review of `unit/PLT-12` (head 1233780, base main 5dbcc6c): APPROVED (five non-blocking notes)
+
+- **Result (Opus subagent, fresh context):** APPROVED. Every changed file is in plan section 2; nothing under plans/, units/, modules/, apps/, packages/, scripts/ or .github/ changed. The lock diff only adds the `e2e` workspace entry, the scriba-e2e link and `node_modules/openai` 7.55.0, and appends `e2e` to the root workspaces list. `@types/node` stays at 26.6.6. The reviewer broke the code in a /tmp copy four ways (valid first chunk in the malformed scenario; a reset that does nothing; `role` removed from the first chunk; one attempt counter shared across scenarios); each mutation failed the matching criterion.
+- **Test counts and exits (worktree at 1233780):** `-t "criterion 1"` through `"criterion 6"`: 1, 1, 1, 1, 2 and 1 passed, exit 0. `-t "matcher"`: 5 passed. Full e2e suite: 12 of 12, exit 0. Root `build`, `lint` and `test`: exit 0, five workspace banners each.
+- **Non-blocking notes (not applied; a later edit may add them):**
+  1. Criterion 1's split-arguments check and final answer after the tool result use the raw-HTTP helper; the SDK side is covered by `models.list()`, `.stream().finalChatCompletion()` and the non-streamed call (plan section 4 (b) and (e)).
+  2. Criterion 4's `authorization` check reads a header set by the test helper, not one the SDK sent. MPR-04's key-only-in-Authorization test covers the SDK.
+  3. The loader does not reject unknown matcher names; a misspelt matcher never matches. Load-time checking would help MPR-04, AGL-08 and AGL-16 authors.
+  4. A step that matches only on `header` also matches `GET /v1/models` (decision 7); downstream scenario authors should add `endpoint`.
+  5. A client that disconnects before the request body is read leaves no record. No downstream unit depends on it.
