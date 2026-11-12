@@ -425,3 +425,20 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Factual correction (non-blocking, to apply in revision 4):** the plan says the `abortOnError` default "prints nothing". That is wrong. Nest's exception handler logs the error and its stack through the app logger, then calls `process.exit(1)`. With `abortOnError: false`, the error is logged and `create` rejects. Also, a rejected `onApplicationBootstrap` makes `init()` reject in both modes; the option matters only for errors while providers are built.
 - **Other non-blocking notes for revision 4:** the AC 3 and AC 4 tests do not reach any PLT-07 hook, so line 145 must not say they catch a PLT-07 stack. The reviewer's `os.tmpdir()` note (uid 65534 must be able to enter it) goes into point 16. PLT-05 and PLT-06 also edit `platform.module.ts`, so the wording becomes "each of PLT-05 to PLT-08". Line 131 must say both `SCRIBA_LIBRARY` cases use the unwritable-`.scriba` setup. `SCRIBA_LIBRARY=""` fails the non-empty rule, so PLT-15 must not pass an empty value.
 - **Driver note:** These are text corrections. The reviewer approved the plan with them listed as non-blocking, so they are applied in revision 4 without a further review. Point 1 (CommonJS vs ESM) is still open and waits for the Navigator and the user. PLT-04 status stays `draft`. Rejection count for the PLT-04 plan: 1.
+
+## 2026-11-12 — PLT-04 — Opus plan review of the fresh redraft (`plans/PLT-04.md`, labelled revision 1 in the file): NOT APPROVED (rejection 2 for PLT-04 plan)
+
+- **Context:** the untracked revision-4 draft was discarded under prompt.md step 1 (uncommitted work on `main`). The redraft was written from the entries above, not from that file.
+- **Result (Opus subagent, fresh context):** NOT APPROVED. Nine items, one blocking:
+  1. [blocking] Step 1 builds `packages/contracts` before anything is installed. A fresh worktree has no `node_modules`, and the checkout's `node_modules` lacks `zod` and `@types/node`. Step 3 then runs `npm install` over a stale tree, which is the PLT-09 lockfile drift (line 373). Correction: start with `npm ci`, then build contracts.
+  2. [non-blocking] Step 17 expects exit 0 after SIGTERM. `enableShutdownHooks()` with no options re-sends the signal, so the exit is by signal (status 143). Correction: pass `{useProcessExit: true}`, or expect termination by signal.
+  3. [non-blocking] Five test files are expected. `smoke.test.ts` also matches `test/**/*.test.ts`. Correction: expect six.
+  4. [non-blocking] A7 says step 10 and AC 1 check that the Nest packages load through `require`. They do not. Correction: name the AC 3 and AC 4 spawns and step 17.
+  5. [non-blocking] Mutation 14(d) changes the test setup, not the code. Correction: mutate `boot/app-state.ts`.
+  6. [non-blocking] `SCRIBA_ENV` is in a non-entry file. Any other module that injects it breaks PLT-09 rule R1. Correction: re-export `SCRIBA_ENV` and `ScribaEnv` from `platform.module.ts`.
+  7. [non-blocking] serve-static has six peers, two of them required. Line 217 says the four peers are optional. Line 211 is out of date. Correction: reword both.
+  8. [non-blocking] The "Revision 1" header clashes with the rejected revision 1 (line 392). Correction: label it revision 5.
+  9. [non-blocking] Old note 6 (line 400) is applied only as "absolute path". Correction: state `resolve(__dirname, 'fixtures/static')`.
+  - The CommonJS default is internally consistent. Downstream units PLT-05 to PLT-08 and PLT-11 agree with the plan, once item 6 is applied.
+  - Facts spot-checked: 18, of which wrong: 1 (the reviewer did not say which one).
+- **Driver note:** Items 1 to 9 go to the Haiku subagent of the unit, which writes revision 5. Open point 1 (CommonJS vs ESM) is unchanged and still waits for the Navigator. PLT-04 status stays `draft`. Rejection count for the PLT-04 plan: 2. At three rejections the disagreement goes to the Navigator.
