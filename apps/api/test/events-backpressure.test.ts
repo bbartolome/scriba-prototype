@@ -88,25 +88,28 @@ it('closes a stream whose client stops reading once the buffer limit is passed, 
       'the healthy stream to receive every echo',
     );
 
-    // Drain S under a deadline. A stream the server closed ends with an error, which is expected.
+    // Drain S under a 10 s deadline. It is closed once a read resolves done or rejects.
     const body = stalled.body;
     if (!body) throw new Error('no body on the stalled stream');
     const reader = body.getReader();
     stalledReader = reader;
     const decoder = new TextDecoder();
     let stalledText = '';
+    let closed = false;
     const drained = (async (): Promise<void> => {
       try {
         for (;;) {
           const { value, done } = await reader.read();
-          if (done) return;
+          if (done) break;
           stalledText += decoder.decode(value, { stream: true });
         }
       } catch {
         // The server destroyed the stream; the text read so far is what counts.
       }
+      closed = true;
     })();
     await within(drained, 10000);
+    expect(closed, 'the stalled stream closed within 10 s').toBe(true);
     const stalledEchoes = (stalledText.match(/"type":"echo"/g) ?? []).length;
     expect(stalledEchoes).toBeLessThan(TOTAL);
 
