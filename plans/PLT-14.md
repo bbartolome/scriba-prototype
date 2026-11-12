@@ -1,6 +1,6 @@
 ---
 id: PLT-14
-status: planned
+status: done
 ---
 # PLT-14 plan — two-stage Dockerfile, entrypoint and local build script
 

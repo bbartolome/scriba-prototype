@@ -34,7 +34,7 @@ Export must work with nothing else installed (story 13), images for Apple Silico
 
 ## Acceptance criteria
 - [ ] `docker build` produces an image whose runtime stage has Node LTS, Pandoc 3.13, Typst, `ca-certificates`, and no `git` or compiler (`cc`, `gcc`, `make` absent). Size measured and recorded in the PR.
-- [ ] `docker run` with no library mount fails clearly on the app-state check; with a writable `/books` mount, `/healthz` returns 200.
-- [ ] `docker run --rm -e SETUP=true <image>` prints only a script to stdout that passes `bash -n`.
-- [ ] An FTS5 `MATCH` query through `node:sqlite` returns a row inside the image.
+- [x] `docker run` with no library mount fails clearly on the app-state check; with a writable `/books` mount, `/healthz` returns 200.
+- [x] `docker run --rm -e SETUP=true <image>` prints only a script to stdout that passes `bash -n`.
+- [x] An FTS5 `MATCH` query through `node:sqlite` returns a row inside the image.
 - [ ] The image builds natively on both amd64 and arm64.
