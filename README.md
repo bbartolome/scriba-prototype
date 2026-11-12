@@ -20,7 +20,7 @@ npm run lint    # every workspace, then prettier --check .
 
 Each module has a contract slice, an API module and, when it has a screen, a web feature. Follow these steps.
 
-1. **Contract slice.** Add `packages/contracts/src/<slug>/` with an `index.ts`, and add a `./<slug>` key to the `exports` map in `packages/contracts/package.json`. Module slugs are fixed in `MODULE_SLUGS` (`packages/contracts/src/platform/slugs.ts`). The package has no root barrel, so import only a subpath, such as `@bbartolome/scriba-contracts/<slug>`.
+1. **Contract slice.** Fill in the existing `packages/contracts/src/<slug>/index.ts`; its folder and its `./<slug>` key in the `exports` map of `packages/contracts/package.json` already exist for all ten subpaths. Module slugs are fixed in `MODULE_SLUGS` (`packages/contracts/src/platform/slugs.ts`). The package has no root barrel, so import only a subpath, such as `@bbartolome/scriba-contracts/<slug>`.
 2. **Compose the API module.** Add the Nest module under `apps/api/src/modules/<slug>/` and add one line to `COMPOSED_MODULES` in `apps/api/src/app.module.ts`.
 3. **Routes.** Serve HTTP routes under `/api/<slug>/`. Define each route path as a constant in the contract slice, as the platform does with `ECHO_ROUTE`.
 4. **Events.** Publish through `EventsPublisher`, which the platform entry file (`apps/api/src/modules/platform/platform.module.ts`) exports. The envelope's `module` is your slug.
