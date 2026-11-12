@@ -37,6 +37,7 @@ export class EventsPublisher implements BeforeApplicationShutdown {
 
   // Writes `retry` and the hello, then registers the stream, all in one synchronous step.
   subscribe(res: ServerResponse): void {
+    if (res.destroyed) return;
     res.on('error', () => this.remove(res));
     res.on('close', () => this.remove(res));
     const hello: PlatformEvent = {
