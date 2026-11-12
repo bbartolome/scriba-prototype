@@ -722,3 +722,8 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   4. Section 7 citations: line 89 tests Chrome and line 90 tests Chromium; the snapshot URL is on line 77; the "main at d810dd8, then 57d9922" header is stale (main is at dd74821).
   5. Step 8d: the API process gets `stdio` `inherit` or `ignore`, never an unread `pipe`.
   6. Optional: A1 also greps five `pending: <name>` lines in the criterion-1 log.
+
+## 2026-11-12 — PLT-13 — criterion 2 runner part ("CI green on the PR"): cannot test locally; checkbox left unticked (option (a), PLT-11 precedent)
+
+- **Decision (by the driver, applying the PLT-11 precedent of 2026-11-12, criterion 5, option (a)):** the repository has no git remote, so the runner part of criterion 2 cannot run here. The plan (`plans/PLT-13.md`, status planned) gives local proxies C2a to C2d: the workflow YAML, the trace retention and the browser-variable checks. The checkbox stays unticked. This decision was not yet put to the Navigator; if the Navigator decides otherwise, it can change the checkbox.
+- **Browser:** the CI step sets `SCRIBA_E2E_CHROMIUM=/usr/bin/chromium` (the image's pre-installed Chromium, 156.0.8078.0 per the runner-images readme). The local run uses Playwright's Chromium 1254 lookup or the 1248 cache, as the plan's section 7 records.
