@@ -667,3 +667,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Text 5:** no test covers the `header`, `turnIndex`, `lastMessageRole`/`lastMessageContent` matchers or `chunkDelayMs`, though MPR-04, AGL-08 and AGL-16 rely on them. Add a small test for each and define `lastMessageContent` for array content parts.
 - **Text 6:** section 7 cites `core/error.d.ts` line 8 as `Headers`; the file says `readonly headers: THeaders` (generic).
 - **Text 7:** section 5 should record that MPR-04 pins `openai` 7.55.0 in apps/api, so the repository keeps one copy.
+
+## 2026-11-12 — PLT-12 — Opus plan review of revision 3 (`plans/PLT-12.md`): APPROVED (five non-blocking text items, applied to the plan before status planned)
+
+- **Result (Opus subagent, fresh context):** APPROVED. Every acceptance criterion has a test through the openai SDK or HTTP. Downstream needs (MPR-04, TRG-12, GNP-02, GRR-04, PLT-13, AGL-03/08/16/19) match in names and shapes. Both earlier rejections (revision 1 items 1–9, revision 2 items 1–7) are resolved. The reviewer probed `finalChatCompletion()` with the decision-23 chunk shape, the 429 and socket-error classes, the abort-to-`closedByClient` path, and criterion 6's detached process group, in a throwaway clone (deleted; no repo file changed). The lock diff only adds entries; `@types/node` stays at 26.6.6.
+- **Text items (applied by the plan's author; no further review, as for PLT-11 revision 4):**
+  1. Step 9: run `npm run build -w @bbartolome/scriba-contracts` before the apps/api build (`dist/` is gitignored; the apps/api import fails with TS2307 otherwise).
+  2. Step 2: drop the `npx prettier --write package.json` run before the install (npx would fetch prettier@latest, not the locked 3.9.10; DECISIONS line 63 says format after the install).
+  3. Preamble and section 7: main is at `c1dac25`; `339c716` is the last commit that changed code. Basing the worktree on `339c716` is still fine.
+  4. Decision 2: cite only the root devDependencies as the exact-pin convention (apps/api uses ranges).
+  5. Section 5: "the exact version in `e2e/package.json` (7.55.0 at planning)", not a fixed pin.
