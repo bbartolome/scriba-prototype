@@ -538,3 +538,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **PLT-08: APPROVED.** Two non-blocking items: the sketch's `httpAdapter.getHttpServer()` is typed `any`, so `(socket) =>` fails `strict` (TS7006). Correction: type the server as `Server` from `node:http`. Lines 134 and 139 say "one line each", but PLT-06 and PLT-07 also add `exports` entries and re-exports. Correction: fix the text.
 - **Cross-plan A to E:** A ok (the four plans touch `platform.module.ts` arrays, and the batch order resolves the text conflicts). B ok (no path or test-name collisions). C ok (only PLT-06 changes `sse.ts`). D ok (the re-exports do not clash). E: the PLT-05 row in section 5 (item 3 above) contradicts PLT-06's decision. The other "unchanged" lists are fine.
 - **Driver note:** PLT-06, PLT-07 and PLT-08 have only non-blocking text items, so the authors apply them without a further review, as with earlier plan revisions. PLT-05 has two blocking items, so it goes to revision 3 and then to a new Opus review. Status stays `draft` for all four until each is approved.
+
+## 2026-11-12 — PLT-05 — Opus plan review of revision 3: APPROVED (three non-blocking text items)
+
+- **Result (Opus subagent, fresh context):** APPROVED. The two blocking items of revision 2 are fixed: the body-parser errors are identified by `exception.cause` (Nest 12.4.2 `routes-resolver.js` line 96 calls `mapException` first), and `z.ZodError` maps to 400 `PLATFORM_VALIDATION_FAILED` with the issues in `details`. The PLT-06 row in section 5 matches `plans/PLT-06.md`.
+- **Non-blocking items, applied as text by the plan's author without a further review:**
+  1. Open point 4 cites the charset 415 path (body-parser `lib/read.js` lines 77 to 83). Other 415, 400 and `URIError` cases also become a logged 500. They are known gaps under option (a), and no criterion covers them. Line 31 narrows to malformed JSON.
+  2. Fact F10 and A8 note that the lock has two zod copies (root 4.6.6 serves apps/api; `packages/contracts/node_modules/zod` 4.6.7 serves the contract schemas). The 400 still holds, because `z.ZodError`'s `Symbol.hasInstance` checks `_zod.traits`.
+  3. Fact F10 cites one `mapException` call site (line 96), not the default definition.
+- **Driver note:** PLT-05 goes to `planned` after these text items are applied. PLT-08's code review is the next Opus review, and PLT-06 and PLT-07 code reports are still pending.
