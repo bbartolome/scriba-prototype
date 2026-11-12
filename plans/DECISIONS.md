@@ -470,3 +470,15 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Correction:** the 2026-11-11 entry gives "NestJS, which is CJS by default" as the reason to reject ESM. That is false for NestJS 12, which is ESM-only. The decision stands: CommonJS for `packages/contracts`. Its real reason is that the draft already emits CJS, and the Angular consequence is additive (an `allowedCommonJsDependencies` entry can be added later).
 - **Source:** Navigator decision of 2026-11-12, session `d057c67d2d0a4138867903c9519fad6c`. The 2026-11-11 lines are not edited; this entry is the correction.
 - **Driver note:** Only this entry is added.
+
+## 2026-11-12 — PLT-04 — Opus plan review after open point 1 (`plans/PLT-04.md`, labelled revision 5): APPROVED
+
+- **Result (Opus subagent, fresh context, review of the plan text with open point 1 decided, commit a4ab77a):** APPROVED. Checks A to F: the six corrections of the previous rejection are fixed; open point 1 is consistent across the plan and the DECISIONS entry; the section 5 rows match the unit files, except for item 1 below; the five acceptance criteria are verbatim; the procedure order is valid; the files list matches the procedure.
+- **Non-blocking items (applied to the plan text without a further review, as with revision 3):**
+  1. The PLT-11 row presents `tsc -p tsconfig.build.json --watch` plus `node --watch dist/main.js` as the watch under option A. PLT-11's unit line 20 says only "the API in watch mode". The command is one option for PLT-11 to choose. The "Must not" citation to DECISIONS line 392, item 9, does not say that, so it is fixed or dropped.
+  2. The PLT-06 row says "one line in `platform.module.ts`". PLT-06 adds two controllers, a provider and an export. The row now says one entry per array.
+  3. A2 (decorator metadata) is not verified by step 12, because no PLT-04 class has a constructor parameter typed with a class. A2 stays assumed until PLT-05 to PLT-08 check it.
+  4. Mutation checks run with `npm test -w @bbartolome/scriba-api`, which rebuilds `dist/` first. A direct `npx vitest run` could test a stale build of `dist/main.js`.
+  5. The plan is labelled revision 6, with open point 1 "decided". The HEAD reference is updated to `a4ab77a`.
+  6. Open point 6 also needs the uid 65534 child, when the runner is root, to read the repo's `dist` and `node_modules`.
+- **Driver note:** The reviewer did not say which of the 24 facts was wrong. Its item 1 is about the PLT-11 watch command, which is not a fact row. The plan's status is set to `planned` in the next commit, on `main`, with the edits above applied.
