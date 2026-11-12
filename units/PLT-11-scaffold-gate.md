@@ -25,10 +25,10 @@ One command must give a working app with live reload (story 28), and contract su
 - `dev` script and `concurrently`; the Angular-build subpath boot test; README "getting started" for module builders (how to add a module: contract slice, one-line `@Module` import, route prefix, publisher, error codes, settings section, `create-test-app`).
 
 ## Acceptance criteria (the `phase:scaffold` checklist)
-- [ ] On a fresh clone, `npm ci && npm run dev` serves the placeholder web app through the Angular dev server; `/api`, `/healthz` and `/events` are proxied to the API (SSE unbuffered).
-- [ ] `npm run build`, `npm test` and `npm run lint` pass from the root and cover every workspace.
-- [ ] All ten contract subpaths resolve in both the API runtime and the Angular build; no root barrel.
-- [ ] PLT-04 … PLT-09 acceptance criteria all still pass on `main`.
+- [x] On a fresh clone, `npm ci && npm run dev` serves the placeholder web app through the Angular dev server; `/api`, `/healthz` and `/events` are proxied to the API (SSE unbuffered).
+- [x] `npm run build`, `npm test` and `npm run lint` pass from the root and cover every workspace.
+- [x] All ten contract subpaths resolve in both the API runtime and the Angular build; no root barrel.
+- [x] PLT-04 … PLT-09 acceptance criteria all still pass on `main`.
 - [ ] `ci.yml` is green on this PR.
 
 ## Demo (under 5 minutes)
