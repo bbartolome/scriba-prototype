@@ -122,7 +122,7 @@ Convention: `isTailnetAddress(a)` returns `true` when the filter refuses `a`. Th
 | a | `tailnet-address.ts`: delete the `addSubnet('fd7a:115c:a1e0::', 48, 'ipv6')` call | AC 1 on `fd7a:115c:a1e0::1` | removes a call |
 | b | `tailnet-address.ts`: IPv4 prefix `10` becomes `9` | AC 2 on `100.63.255.255` (true with prefix 9, section 7) | number literal |
 | c | `tailnet-address.ts`: first statement `if (address.startsWith('::ffff:')) return false;` | AC 1 on `::ffff:100.100.1.1` | returns a boolean |
-| d | `tailnet-filter.ts`: `socket.destroy()` without the `if` | AC 3 (fetch rejects) and the `tailnet-filter` test (loopback stub destroyed) | removes a condition |
+| d | `tailnet-filter.ts`: `socket.destroy()` without the `if` | AC 3 (fetch rejects) and the `tailnet-filter` test (loopback stub destroyed). Also fail, as expected: `create-test-app`, `healthz-version` and `static-fallback`, because an unconditional destroy drops every real loopback connection they make (not a defect of the filter) | removes a condition |
 | e | `tailnet-filter.ts`: delete the `server.on('connection', …)` statement | the `tailnet-filter` test (no new listener) | `tsconfig.base.json` has no `noUnusedLocals`, so the unused `server` is accepted |
 
 ## 5. Agreement with the other units
