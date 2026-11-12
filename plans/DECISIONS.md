@@ -456,3 +456,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   - Also checked, no problem: a scratch lint with the repo's ESLint config passes the planned imports from both working folders, and only a cross-module import of `boot/env` is flagged. Downstream units agree, the criteria are verbatim, and open point 1 stays open with both options.
   - Facts spot-checked: 21, of which wrong: 0.
 - **Driver note:** Rejection count for the PLT-04 plan: 3. Per the rule at three rejections, the open disagreement goes to the Navigator. This round has no disagreement with the reviewer: items 1 to 6 are text and call-form corrections that the unit's subagent applies. The one open decision is point 1 (CommonJS vs ESM). It must be settled before `status: planned` anyway, so it goes to the Navigator now. Items 1 to 6 go to the Haiku subagent in parallel; point 1's answer follows as a separate change. PLT-04 status stays `draft`.
+
+## 2026-11-12 — PLT-04 — open point 1: CommonJS for apps/api (Navigator decision, disposition of the PLT-04 plan's open point 1)
+
+- **Decision (Navigator, session `d057c67d2d0a4138867903c9519fad6c`):** Option A, CommonJS. `apps/api/package.json` has no `"type"` field. `tsconfig.base.json` keeps `module` and `moduleResolution` NodeNext, so tsc emits CJS. `__dirname` is used in `bootstrap.ts` and `create-test-app.ts`. The ESM-only NestJS 12 packages are loaded from CJS through `require`.
+- **Evidence:** the scratch CJS build in `plans/PLT-04.md` section 7 (TypeScript 6.0.3, NodeNext) booted `@nestjs/core` 12.4.2 on Node v26.13.0 with no warning. Opus approved revisions 2 and 3 on this path. Search results (secondary sources, not opened) say Node 22.12.0 enables require(esm) by default and that it is marked stable from Node 25.4.0.
+- **Rejected (Navigator):** Option B, ESM with `"type": "module"`. It needs `.js` suffixes on every relative import, `fileURLToPath` for `__dirname`, and Vitest and SWC config changes. Those changes reach PLT-05 to PLT-08 and give no benefit.
+- **Downstream effect:** PLT-05 to PLT-08 write imports without `.js` suffixes and use `__dirname`. PLT-09's boundaries lint is unchanged. PLT-11 owns the Angular half, including any `allowedCommonJsDependencies` entry (line 173 of this file).
+- **Driver note:** Open point 1 is settled by this entry. PLT-04 status stays `draft`. The Navigator's suggestion to set `planned` now was not taken: prompt.md step 5 sets `planned` only after Opus approves the plan text. Revision 5 was rejected (`af54076`), its corrections are applied, and they have not been re-reviewed.
+
+## 2026-11-12 — PLT-02 — correction of the stated reason for the CommonJS decision (entry of 2026-11-11, lines 170 to 175)
+
+- **Correction:** the 2026-11-11 entry gives "NestJS, which is CJS by default" as the reason to reject ESM. That is false for NestJS 12, which is ESM-only. The decision stands: CommonJS for `packages/contracts`. Its real reason is that the draft already emits CJS, and the Angular consequence is additive (an `allowedCommonJsDependencies` entry can be added later).
+- **Source:** Navigator decision of 2026-11-12, session `d057c67d2d0a4138867903c9519fad6c`. The 2026-11-11 lines are not edited; this entry is the correction.
+- **Driver note:** Only this entry is added.
