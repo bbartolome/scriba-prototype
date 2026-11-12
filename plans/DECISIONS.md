@@ -688,3 +688,16 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   3. The loader does not reject unknown matcher names; a misspelt matcher never matches. Load-time checking would help MPR-04, AGL-08 and AGL-16 authors.
   4. A step that matches only on `header` also matches `GET /v1/models` (decision 7); downstream scenario authors should add `endpoint`.
   5. A client that disconnects before the request body is read leaves no record. No downstream unit depends on it.
+
+## 2026-11-12 — PLT-13 — Opus plan review of revision 1 (`plans/PLT-13.md`, status draft): NOT APPROVED (rejection 1 of 3; three blocking items, six text items)
+
+- **Result (Opus subagent, fresh context):** the reviewer built the plan in a /tmp copy of `d810dd8`. `npm ci` passed; the plain install adds only `@playwright/test`, `playwright` and `playwright-core`; root `e2e`, lint, test and build exit 0; the CI-mode trace mutant leaves one trace file; `--list` shows one test.
+- **Blocking 1:** criterion 3 ("independently enable-able") is not tested. M2 comments out the agent-run step, which shows removal, not enabling. Correction: M2 replaces only the `pending(testInfo, 'agent run')` call with a live body (for example `expect((await page.request.get('/healthz')).ok()).toBe(true)`). Expected: exit 0, the six step titles unchanged and in order, and the pending annotations equal the other four names in order.
+- **Blocking 2:** criterion 1 ("boots the app against a temp library") has no external check. A1 reads only the harness's own log; A2 checks the path prefix and that the folder is gone afterwards. Correction: the live app-loads step asserts that `join(process.env.SCRIBA_E2E_LIBRARY, '.scriba', 'settings.yaml')` exists (the API boot creates it), which also proves the variable reaches the worker. Add a mutation: with `SCRIBA_BOOKS_DIR` pointed elsewhere the run fails.
+- **Blocking 3:** step 0 does not stop on a stale base. Correction: add `git diff --quiet d810dd8 main -- ':!plans'` to step 0 and stop if it fails (the guard PLT-12 adopted as its change R5).
+- **Text 4:** section 5 should say that `baseURL` is `http://127.0.0.1:8080` (the dev script leaves `SCRIBA_SETUP_URL_BASE` unset), for SAU-08's setup step.
+- **Text 5:** unit line 25 says "pre-installed Chromium" but CI points at `/usr/bin/google-chrome`. Point at the image's Chromium or record why Chrome is used (open point 2 already flags it).
+- **Text 6:** the `GET /scenario/tool-call/v1/models` probe leaves a record and an attempt; follow it with the reset endpoint.
+- **Text 7:** the list and JSON reporters do not show `test.step.skip` as skipped; keep the annotation plus console line (open point 4).
+- **Text 8:** optionally, S1 fails if Vitest lists any file other than the mock test.
+- **Text 9:** base `npm ci` warns for both `lmdb@3.5.6` and `msgpackr-extract@3.0.7`; state both.
