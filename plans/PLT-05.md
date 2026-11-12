@@ -1,6 +1,6 @@
 ---
 id: PLT-05
-status: draft
+status: planned
 ---
 # PLT-05 plan — global error filter, Zod validation pipe, module error
 
@@ -8,7 +8,8 @@ Batch: [PLT-04 done; PLT-05 batch with PLT-06, PLT-07, PLT-08] (Platform, phase:
 
 Revision 4 changes (Opus code review of `unit/PLT-05`, head a48cf50; `plans/DECISIONS.md`, "2026-11-12 — PLT-05 — Opus code review of `unit/PLT-05` (head a48cf50): NOT APPROVED (one blocking item, one non-blocking item)"; commit ee7978a, as given by the coordinator):
 - Blocking 1 (type): the pipe's schema parameter is structural, `{ parse(value: unknown): unknown }`, with no zod import (decision 4, step 2, section 2 sketch). Cause: two zod copies (F10, A8). A root `ZodType` parameter fails `tsc` with TS2345 for `echoRequestSchema`, a 4.6.7 contract schema.
-- Blocking 1 (coverage): AC 1 gains a contract-schema route, `POST /api/platform/probe/contract`, as one extra assertion inside the same `it` (step 5, section 4). Mutation M8 (root `ZodType` in the pipe) fails the build, and is recorded as a build failure.
+- Blocking 1 (coverage): AC 1 gains a contract-schema route, `POST /api/platform/probe/contract`, as one extra assertion inside the same `it` (step 5; section 4 AC 1 and its M8 bullet; the section 4 intro). Mutation M8 (root `ZodType` in the pipe) fails the build, and is recorded as a build failure (step 10).
+- Facts and assumptions: F10 (the two zod copies and the reported TS2345), A8 (the 4.6.7 path is tested on the contract route), A9 (new: structural assignability).
 - Non-blocking 2: the 500 log is `this.logger.error(message, stack)`, with no class-name argument (decision 7, step 3).
 - Status is `draft` until the Opus delta review.
 
@@ -115,7 +116,7 @@ export class PlatformExceptionFilter implements ExceptionFilter {
 7. Format: `npx prettier --write` on the new and changed files under `apps/api` (sources, tests and `platform.module.ts`), then `npx prettier --check apps/api` must pass.
 8. Build: `npm run build -w @bbartolome/scriba-api`. Then `grep -c "design:paramtypes" apps/api/dist/modules/platform/errors/platform-exception.filter.js` gives at least 1, and the file mentions `HttpAdapterHost` (A2 on the tsc path). `apps/api/dist` must not contain `error-probe`.
 9. Test run: `npm test -w @bbartolome/scriba-api`. Expect 12 of 12 files and 12 of 12 tests. Fallbacks, used only if the named failure occurs: (a) if Nest reports that it cannot resolve the filter's dependencies, add `@Inject(HttpAdapterHost)` to the constructor parameter (A1); (b) if the AC 3 `fetch` raises a socket error instead of the 413, send that one request with `node:http` and read the response (A2). Hand check, not committed: in a scratch test, POST `{` with `content-type: application/json` to `/api/platform/probe/validate` and expect 400 `PLATFORM_VALIDATION_FAILED` with no `details` (decision 3, malformed row).
-10. Mutations (section 4). One at a time: apply the edit, run `npm test -w @bbartolome/scriba-api`, record which test file fails, restore the edit. M8 fails at the build step, which `npm test` runs first; its recorded result is that build failure. M2 is the only edit to `app.module.ts`, and it is reverted before step 11.
+10. Mutations (section 4). One at a time: apply the edit, run `npm test -w @bbartolome/scriba-api`, record which test file fails, restore the edit. M8 fails in the second build pass (`tsc --noEmit -p tsconfig.json`, which `npm test` runs first); the first pass still writes `dist`. Its recorded result is that build failure. M2 is the only edit to `app.module.ts`, and it is reverted before step 11.
 11. Lint: `npm run lint -w @bbartolome/scriba-api`. Record the result. This checks A4 and the platform folder against PLT-09's rules.
 12. Root gate from the repo root: `npm run build`, `npm test`, `npm run lint`. Record `node -v` and `npm -v`.
 13. Smoke, not an acceptance test: start `node apps/api/dist/main.js` with `SCRIBA_BOOKS_DIR`, `SCRIBA_PACKS_DIR` and `SCRIBA_EXAMPLES_DIR` set to temp folders. Run `curl -s -i 127.0.0.1:8080/api/platform/nope`: expect 404 with `PLATFORM_NOT_FOUND`. Send SIGTERM: exit 0.
@@ -131,7 +132,7 @@ Test: `error-validation.test.ts`, via `createTestApp({modules: [PlatformModule, 
 - `body.error.details` `toEqual` `JSON.parse(JSON.stringify(probeSchema.safeParse({count: 0}).error!.issues))`, and its first entry's `path` is `['count']`.
 - Contract route, same `it`: `POST /api/platform/probe/contract` with `{count: 0, intervalMs: 0}`, where `echoRequestSchema` comes from `@bbartolome/scriba-contracts/platform` (zod 4.6.7). Status 400; `errorBodySchema.parse(body)` does not throw; `body.error.code` is `PLATFORM_VALIDATION_FAILED`; `body.error.details` `toEqual` `JSON.parse(JSON.stringify(echoRequestSchema.safeParse({count: 0, intervalMs: 0}).error!.issues))`. This covers the cross-copy `instanceof` path (A8) and the structural pipe type at runtime (A9) (added in revision 4).
 - M1 (filter, `z.ZodError` branch): pass `undefined` as `details`. The response then has no `details`, so the test fails at the `details` assertion. `details` is `unknown`, so `tsc` accepts it.
-- M8 (`errors/zod-validation.pipe.ts`, type mutation): change the schema parameter back to root zod's `z.ZodType` (`import { z } from 'zod'`). `tsc` fails on `new ZodValidationPipe(echoRequestSchema)` with TS2345, so `npm run build` fails before vitest runs. Recorded result: build failure, not a test failure. This is the one mutation expected to fail `tsc`.
+- M8 (`errors/zod-validation.pipe.ts`, type mutation): change the schema parameter back to root zod's `z.ZodType` (`import { z } from 'zod'`). The TS2345 error comes from `apps/api/test/error-probe.ts` in the second build pass (`tsc --noEmit -p tsconfig.json`). `tsconfig.build.json` covers only `src`, so the first pass still succeeds and writes `dist`; `npm run build` then fails before vitest runs. Recorded result: build failure, not a test failure. This is the one mutation expected to fail `tsc`.
 
 **AC 2.** `- [ ] An unknown `/api/...` route returns 404 `PLATFORM_NOT_FOUND`; an unknown non-API path still returns `index.html`.`
 Test: `error-not-found.test.ts`, via `createTestApp({staticRoot: resolve(__dirname, 'fixtures/static')})`.
