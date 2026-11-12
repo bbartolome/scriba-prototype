@@ -40,6 +40,12 @@ export async function bootstrap(
       logger: new StdoutLogger(env.SCRIBA_LOG_LEVEL),
     },
   );
-  await app.init();
+  try {
+    await app.init();
+  } catch (error) {
+    // The original error is the one to report, so a failing close is ignored here.
+    await app.close().catch(() => undefined);
+    throw error;
+  }
   return app;
 }

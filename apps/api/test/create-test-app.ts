@@ -30,13 +30,18 @@ const DEFAULT_STATIC_ROOT = resolve(
 );
 
 // Boots the composed app on 127.0.0.1 with an ephemeral port, against a temp library.
+// An owned temp library is removed on every path: a failed setup, and close (even when close throws).
 export async function createTestApp(
   options: TestAppOptions = {},
 ): Promise<TestApp> {
   const ownsLibrary = options.libraryDir === undefined;
   const library =
     options.libraryDir ?? mkdtempSync(join(tmpdir(), 'scriba-api-test-'));
+  const removeLibrary = (): void => {
+    if (ownsLibrary) rmSync(library, { recursive: true, force: true });
+  };
   let app: INestApplication | undefined;
+  let baseUrl: string;
   try {
     app = await bootstrap({
       env: {
@@ -50,20 +55,28 @@ export async function createTestApp(
       modules: options.modules,
     });
     await app.listen(0, '127.0.0.1');
+    const { port } = app.getHttpServer().address() as AddressInfo;
+    baseUrl = `http://127.0.0.1:${port}`;
   } catch (error) {
-    // A failed setup must not leak the temp library or an initialized app.
-    await app?.close();
-    if (ownsLibrary) rmSync(library, { recursive: true, force: true });
+    try {
+      await app?.close();
+    } catch {
+      // The original error is the one to report.
+    } finally {
+      removeLibrary();
+    }
     throw error;
   }
-  const { port } = app.getHttpServer().address() as AddressInfo;
-  const baseUrl = `http://127.0.0.1:${port}`;
+  const started = app;
   return {
     baseUrl,
     sse: (path) => readSse(baseUrl + path),
     close: async () => {
-      await app.close();
-      if (ownsLibrary) rmSync(library, { recursive: true, force: true });
+      try {
+        await started.close();
+      } finally {
+        removeLibrary();
+      }
     },
   };
 }
