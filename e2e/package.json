@@ -6,9 +6,11 @@
   "scripts": {
     "build": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "1.65.0",
     "@types/node": "^26.6.6",
     "openai": "7.55.0"
   }

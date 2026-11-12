@@ -5,3 +5,4 @@ coverage/
 .scriba-dev/
 .claude/settings.local.json
 prompt.md
+e2e/test-results/
