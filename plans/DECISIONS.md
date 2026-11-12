@@ -561,3 +561,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Non-blocking code item, applied on `unit/PLT-07` by its code author, with no criterion change:** if the atomic write or the rename fails, `settings.yaml.tmp` is left in `.scriba/`. The fix removes the temp file in the `catch` before the `BootError` is thrown. The failure path has no criterion, so no test is added.
 - **Notes, no change needed:** `MigrationResult` and `withSchemaVersion` in `settings.migrate.ts`, and `errorReason` in `settings.file.ts`, are not re-exported from `platform.module.ts`, so rule R1 keeps them inside the folder.
 - **Driver note:** the fix is small and touches only a failure path. The batch-level Opus review of the final diff covers it before `main` moves.
+
+## 2026-11-12 — PLT-06 — open point 4 (shutdown window): option (A), a known gap (driver decision, recorded before `planned`)
+
+- **Situation:** a stream that opens after `beforeApplicationShutdown` runs and before dispose is not guarded, because `subscribe()` does not check the stopping flag. The code author found this at the PLT-06 revision 2 code stop. The heartbeat keeps such a stream active, so `server.close()` waits until the client leaves, and a SIGTERM exit can stall. Nothing in the plan's procedure covers it.
+- **Decision (driver, the simplest option, option A):** leave it as a known gap of the shutdown window. Do not guard `subscribe()` in this unit.
+- **Reason:** no acceptance criterion of `units/PLT-06-sse-stream-publisher.md` covers shutdown. The gap only opens for a stream opened after `beforeApplicationShutdown` has begun. Option B adds one check to the procedure and is a behaviour change to the publisher's public path; it is not needed for the criteria. A later unit or a shutdown test can add the guard.
+- **Opus note, recorded:** the review of revision 3 (`a47be7f048b8f9020`, approved with four text items) asked for this decision to be recorded before `planned`. The text items are applied to `plans/PLT-06.md` on main.
