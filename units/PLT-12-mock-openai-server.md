@@ -28,9 +28,9 @@ Module builders test model behaviour without a model (story 37), select a scenar
 - Tested through the **official `openai` SDK** as a client.
 
 ## Acceptance criteria
-- [ ] The `openai` SDK pointed at `…/scenario/tool-call/v1` gets a streamed tool call with arguments split across chunks, then a final text answer after the tool result is sent.
-- [ ] `malformed-tool-call` returns invalid tool-call arguments on the first turn and valid ones on the retry.
-- [ ] A scenario can return a status with headers (e.g. 429 with `Retry-After`), delay, or drop the connection.
-- [ ] Recorded requests are readable and resettable per scenario.
-- [ ] Two tests using different scenarios in parallel don't interfere.
-- [ ] `npm run mock:openai` starts the server and prints its base URL.
+- [x] The `openai` SDK pointed at `…/scenario/tool-call/v1` gets a streamed tool call with arguments split across chunks, then a final text answer after the tool result is sent.
+- [x] `malformed-tool-call` returns invalid tool-call arguments on the first turn and valid ones on the retry.
+- [x] A scenario can return a status with headers (e.g. 429 with `Retry-After`), delay, or drop the connection.
+- [x] Recorded requests are readable and resettable per scenario.
+- [x] Two tests using different scenarios in parallel don't interfere.
+- [x] `npm run mock:openai` starts the server and prints its base URL.

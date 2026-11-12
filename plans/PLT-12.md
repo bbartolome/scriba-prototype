@@ -1,6 +1,6 @@
 ---
 id: PLT-12
-status: planned
+status: done
 ---
 # PLT-12 plan — scripted mock OpenAI-compatible server with scenarios
 
