@@ -761,3 +761,15 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Text 5:** section 7's `ci.yml` step list omits the first step, "Check PR title"; correct the list.
 - **Note 1:** declare the `ARG VERSION/REVISION/BUILT_AT` lines just before the `build-info.ts` write, not before `npm ci`, so the install layer stays cached (matters for PLT-19's cache).
 - **Note 2:** say in section 5 how PLT-17 reads the pinned version (from `build-info.js` or an OCI label or ENV), or leave the choice to PLT-19.
+
+## 2026-11-12 — PLT-14 — Opus plan review of revision 3 (`plans/PLT-14.md`): APPROVED (text notes to apply before status planned)
+
+- **Result (Opus subagent, fresh context):** APPROVED. Every item of both rejections is fixed. The reviewer built the planned Dockerfile in a `git archive` copy of main for arm64 (about 1m34s) and amd64 (about 2m02s) under emulation; both exit 0. Criteria 1–4 and the decision checks print the expected output, including the PDF from `-w /tmp` (`%PDF-`) and the `createDirectory: permission denied` cause from `/`. The Pandoc and Typst digests, the Node LTS name and the `node:26-slim` layer sums match GitHub.
+- **Text notes to apply (no further review, as for PLT-11 revision 4):**
+  1. Criterion 1's "recorded in the PR" is replaced by the DECISIONS.md entry; say explicitly whether criterion 1's checkbox is ticked, or add that to open point 1.
+  2. Criterion 5's `build-image.sh` check asserts exit 1 with a message on stderr, before any docker call (the spec says "non-zero").
+  3. The size example in criterion 1 (88.4 MB) is stale after an amd64 pull of the base image (`docker image ls node:26-slim` then reads 463MB / 174MB). Say that the scriba images are single-platform and that the base's listed size depends on what was pulled.
+  4. Expected probe sizes for the real build's record: arm64 548,816 KiB unpacked, 156 MB content size; amd64 522,736 KiB unpacked, 153 MB content size. Both sit within the open point 2 estimate; the Navigator's choice of measure decides whether story 26 is met.
+  5. Step 2 bases the worktree on the tip of main (currently `ceac02c` or later), not on `20e2349`.
+  6. For PLT-17 and PLT-19 (no change to PLT-14): non-release builds may bake `VERSION=0.0.0-dev`, which is not a pullable tag, so the dispenser may need to pin by revision. `/opt/installer` ships `deploy/.gitkeep`, which a tar of the whole folder would extract into the install folder. Record these in PLT-17 and PLT-19's notes via this entry.
+  7. The planner's scratch folders `/tmp/plt14-pdf-EFcR` and `/Users/bbartolome/workspace/.plt14-pdf-mzQd` still exist; a safety check blocked their removal. Leave them for the user; they are not part of the repository.
