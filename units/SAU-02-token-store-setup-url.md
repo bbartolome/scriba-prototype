@@ -25,7 +25,7 @@ The installer finishes by printing one URL (story 1); the URL is in a private fi
 - Registers the **`setupAuth`** section with Platform's hook (PLT-07): version 1, default `{schemaVersion: 1, steps: {access: 'pending', tailscale: 'pending', providers: 'pending', preferences: 'pending', firstProject: 'pending'}, complete: false, preferences: {}, allowlist: {enabled: false, logins: []}}`. All writes to it are **field-level merges** via Platform's section read/write.
 
 ## Acceptance criteria
-- [ ] First start creates the token (0600, dir 0700) and a 0600 `setup-url`, and prints the URL to stdout.
-- [ ] A restart keeps the same token and rewrites `setup-url` with the current port.
-- [ ] Deleting the token file and restarting creates a new token and a new `setup-url`.
-- [ ] The token value never appears in logs other than the setup URL line.
+- [x] First start creates the token (0600, dir 0700) and a 0600 `setup-url`, and prints the URL to stdout.
+- [x] A restart keeps the same token and rewrites `setup-url` with the current port.
+- [x] Deleting the token file and restarting creates a new token and a new `setup-url`.
+- [x] The token value never appears in logs other than the setup URL line.

@@ -1,6 +1,6 @@
 ---
 id: SAU-02
-status: planned
+status: done
 ---
 # SAU-02 plan — token store and setup URL
 
