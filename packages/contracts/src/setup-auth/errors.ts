@@ -1,0 +1,23 @@
+// Setup & auth error codes. Each code has the AUTH_ or SETUP_ prefix, which errorCodeSchema checks.
+// The key is the short name, as PLATFORM_ERROR_CODES does.
+export const SETUP_AUTH_ERROR_CODES = {
+  REQUIRED: 'AUTH_REQUIRED',
+  HOST_REJECTED: 'AUTH_HOST_REJECTED',
+  ORIGIN_REJECTED: 'AUTH_ORIGIN_REJECTED',
+  TAILNET_IDENTITY_MISSING: 'AUTH_TAILNET_IDENTITY_MISSING',
+  TAILNET_NOT_ALLOWED: 'AUTH_TAILNET_NOT_ALLOWED',
+  TOKEN_INVALID: 'SETUP_TOKEN_INVALID',
+  ALLOWLIST_LOCKOUT: 'SETUP_ALLOWLIST_LOCKOUT',
+} as const;
+
+// HTTP status for each code. The five AUTH codes take the statuses the unit gives.
+// The two SETUP codes take the statuses chosen in the plan.
+export const SETUP_AUTH_ERROR_STATUS = {
+  AUTH_REQUIRED: 401,
+  AUTH_HOST_REJECTED: 403,
+  AUTH_ORIGIN_REJECTED: 403,
+  AUTH_TAILNET_IDENTITY_MISSING: 403,
+  AUTH_TAILNET_NOT_ALLOWED: 403,
+  SETUP_TOKEN_INVALID: 401,
+  SETUP_ALLOWLIST_LOCKOUT: 403,
+} as const;
