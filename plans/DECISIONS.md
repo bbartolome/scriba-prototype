@@ -1839,3 +1839,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Why now:** `providerCreateSchema` is unpublished (phase:contract), so a one-field addition is cheap now. Deferring would leave MPR-02's acceptance without a slug source.
 - **Driver's checks:** `plans/MPR-01.md` line 58 (SD3: the create body has no label and no id field today); `units/MPR-01-contract-slice.md` line 18 (the id bullet; the Navigator's citation of line 14 was wrong); `units/MPR-02-registry-seeding.md` lines 23 and 29.
 - **Process:** the plan changes are text only, plus one unit line. They go to the planner, then to a targeted Opus review, before the MPR-01 code adds the field and step 13 commits.
+
+## 2026-11-13 — MPR-01 — Coordinator decisions D-a, D-b and D-c on the create body (the gaps Opus found after the Navigator's decision c1d4804)
+
+- **D-a (at least one id source):** `providerCreateSchema` is refined so that the body carries `presetId` or `label`, or both. A body with neither is refused. Without this, a valid body had no id base (Opus review, DECISIONS entry "targeted review of the label change").
+- **D-b (preset ids only):** `presetId` is `z.enum(PROVIDER_PRESET_IDS)`, where `PROVIDER_PRESET_IDS` is the tuple `ollama`, `lm-studio`, `openai`, `openrouter`. So `presetId: '!!!'` is refused. Before this, any non-empty string passed, and it could slug to an empty base.
+- **D-c (ASCII slug rule):** the label is lowercased first. Then each run of characters other than a–z and 0–9 becomes one hyphen, and leading and trailing hyphens are trimmed. The label must contain at least one ASCII letter or digit (`/[A-Za-z0-9]/`), so the slug is never empty. Examples: "My Local Llama" gives `my-local-llama`; "Café 2" gives `caf-2`; "日本語 1" gives `1`; "!!!" is refused.
+- **Why coordinator decisions:** each is a small choice that the unit and module do not settle, and each only tightens the Navigator's option (a) (c1d4804). None changes the Navigator's rule that the label is optional and not stored, and the id base is `presetId`, else the slug of `label`.
+- **Process:** the plan cites this entry next to c1d4804. The text goes through a targeted Opus review before `status: planned`.
