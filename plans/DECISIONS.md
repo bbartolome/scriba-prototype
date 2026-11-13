@@ -1863,3 +1863,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Rejected:** option (b), a resolver callback in the client. It would move resolution into the client and make the client depend on the project store.
 - **Driver's checks:** `plans/MPR-04.md` lines 13 and 30 (the client takes a resolved target; `streamChat(target, request)`); `units/TRG-12-executor.md` line 26 (the active project's resolved target); `units/MPR-05-model-resolution.md` line 18 and criterion line 26 (edited in this commit).
 - **Still open (Navigator):** decision 2, a persistent 503 and the Ollama hint in MPR-07; decision 3, the keyHint for keys of four or fewer characters.
+
+## 2026-11-13 — MPR-04 — Navigator decision 2 of 3: a persistent 503 maps to PROVIDER_BAD_RESPONSE (option b), not PROVIDER_UNREACHABLE (Navigator session 4f72bf661d544ca681c339ebea1a4b61)
+
+- **Decision (Navigator):** a 503 that persists beyond `retries` is PROVIDER_BAD_RESPONSE. The retry list is unchanged, and 503-then-200 still succeeds within `retries`. The contract is unchanged: BAD_RESPONSE is 502 in PROVIDER_ERROR_STATUS, and no code is added.
+- **Reason:** a 503 means the server was reached and answered. PROVIDER_UNREACHABLE would be false for a live server, and MPR-07's Ollama hint ("is Ollama running?") would show a false "start Ollama" message.
+- **Rejected:** (a) PROVIDER_UNREACHABLE (the draft). (c) a new code, PROVIDER_UNAVAILABLE: an expand of the contract and its status table, for a case BAD_RESPONSE already covers.
+- **Consequence for MPR-07 (a future unit):** the unit gains a generic BAD_RESPONSE hint and stage mapping. The Ollama hint stays bound to PROVIDER_UNREACHABLE only. The unit names no hint for bad responses today.
+- **Driver's checks:** `packages/contracts/src/providers/errors.ts` (ten codes; no UNAVAILABLE; BAD_RESPONSE 502); `packages/contracts/src/providers/connection-test.ts` (the hint is free text set by the producer); `units/MPR-07-connection-test.md` (the Ollama hint is named for unreachable Ollama only).
+- **Still open (Navigator):** decision 3, the keyHint for keys of four or fewer characters.
