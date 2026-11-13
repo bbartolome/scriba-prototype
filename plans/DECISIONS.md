@@ -1435,3 +1435,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Downstream (reviewer):** OK for SAU-03 to SAU-10, SAU-15, SAU-19 and PLT-17 (the setup-URL reader).
 - **Not verified by the reviewer:** nothing was built or installed (`node_modules/@nestjs` and `apps/api/dist` are absent); chmod on a Docker bind mount; the fixture's stdout flush.
 - **Next:** revision 2 from the same Haiku subagent. The rejection count for SAU-02 is 1. The `status` stays `draft`.
+
+## 2026-11-13 — SAU-02 — Opus plan review of revision 2 (`plans/SAU-02.md`, draft): APPROVED (text notes to fix before planned)
+
+- **Result (Opus subagent, fresh context):** APPROVED. The five items of rejection 1 (0eafc32) are corrected: criterion 4 expects exactly one token-containing line per spawn, equal to `Setup URL: <url>`; step 6 expects 4 `.js` files (only `packages/contracts/tsconfig.build.json` sets `declaration`); DECISIONS line 707 is cited and line 698 treated as superseded; the refusal check states `SCRIBA_LOG_LEVEL=error`; `matches()` writes a warn line with no token value, with the SAU-03 wrong-token test as the external check.
+- **Criteria (reviewer):** lines 28, 29, 30 and 31 COVERED.
+- **Downstream (reviewer):** OK for SAU-03 to SAU-10, SAU-15, SAU-19 and PLT-17; the inverse of `unblocks` holds (SAU-03, SAU-04 and SAU-05 have `blocked_by: [SAU-02]`).
+- **Checked by the reviewer:** the token and setup-url files and their modes against unit lines 18 to 31; the Nest 12.4.2 hook order (Platform before SetupAuth, so the settings refusal stops boot before the URL prints); the existing tests (only three spawn `main.js`, and each fails before the store's hook runs); the root `dev` script sets `SCRIBA_SETUP_URL_BASE=http://localhost:4200`.
+- **Text notes to fix before `status: planned` (none blocks approval):** (1) open point 1 still offers an "extra in-process test" option, which `modules/setup-auth.md` line 50 forbids: drop it; (2) section 5 has no PLT-17 row (item 7 covers it): add one; (3) a `setup-url.tmp` left by a crash keeps its old mode, because the write sets the mode only when it creates the file: remove or chmod the temp file before the write.
+- **Not verified by the reviewer:** nothing was built or installed; `chmod` on a Docker bind mount; the fixture's stdout flush on macOS; Vitest keeping the module cache across starts within one file (mutation M6 relies on it).
+- **Next:** the planner applies the three notes; then `status: planned` and a commit of the plan on `main`. The rejection count for SAU-02 stays at 1.
