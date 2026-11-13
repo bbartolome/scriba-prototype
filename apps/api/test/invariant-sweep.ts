@@ -69,8 +69,18 @@ interface Fixture {
 }
 
 // One entry per route template that contains ':' or '{'. A module with a path parameter adds its entry here.
+// The providers entries use no-such-provider, so the sweep never reaches a stored provider.
 export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   [SPA_FALLBACK_TEMPLATE]: { path: '/spa-probe-path' },
+  '/api/providers/:id/update': {
+    path: '/api/providers/no-such-provider/update',
+  },
+  '/api/providers/:id/delete': {
+    path: '/api/providers/no-such-provider/delete',
+  },
+  '/api/providers/:id/models': {
+    path: '/api/providers/no-such-provider/models',
+  },
 };
 
 // The disposable derived caches, exempt from the library snapshot. The exemption covers each path and

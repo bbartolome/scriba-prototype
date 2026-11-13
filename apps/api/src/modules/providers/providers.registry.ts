@@ -27,6 +27,12 @@ export class ProvidersRegistry {
     return this.current().list.find((provider) => provider.id === id);
   }
 
+  // The stored config with the id. An unknown id is NOT_FOUND.
+  find(id: string): ProviderConfig {
+    const section = this.current();
+    return section.list[indexOf(section.list, id)];
+  }
+
   appDefault(): ModelChoice | null {
     return this.current().appDefault;
   }
@@ -82,6 +88,17 @@ export class ProvidersRegistry {
       ...section,
       appDefault: { providerId: choice.providerId, model: choice.model },
     });
+  }
+
+  // Sets the keyRef of a provider, or removes the property when keyRef is undefined. One write.
+  setKeyRef(id: string, keyRef: string | undefined): void {
+    const section = this.current();
+    const index = indexOf(section.list, id);
+    const config: ProviderConfig = { ...section.list[index], keyRef };
+    if (keyRef === undefined) delete config.keyRef;
+    const list = [...section.list];
+    list[index] = config;
+    this.save({ ...section, list });
   }
 
   // An absent section reads as an empty one. The section is parsed, so a stored shape that breaks the schema fails here.
