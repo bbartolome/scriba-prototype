@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import {
   APP_DEFAULT_ROUTE,
+  CONNECTION_TEST_ROUTE,
   EFFECTIVE_MODEL_ROUTE,
   KEY_CLEAR_ROUTE,
   KEY_SET_ROUTE,
@@ -17,12 +18,14 @@ import {
   PROVIDER_DELETE_ROUTE,
   PROVIDER_UPDATE_ROUTE,
   PROVIDERS_ROUTE,
+  connectionTestRequestSchema,
   effectiveModelQuerySchema,
   keyClearRequestSchema,
   keySetRequestSchema,
   modelChoiceSchema,
   providerCreateSchema,
   providerUpdateSchema,
+  type ConnectionTestRequest,
   type EffectiveModelQuery,
   type KeyClearRequest,
   type KeySetRequest,
@@ -31,6 +34,7 @@ import {
   type ProviderUpdate,
 } from '@bbartolome/scriba-contracts/providers';
 import { ZodValidationPipe } from '../platform/platform.module';
+import { ConnectionTestService } from './providers.connection-test';
 import { ProvidersService } from './providers.service';
 
 // The providers HTTP API, behind Setup & auth's guard. Reads are GET and never mutate; every command is a POST.
@@ -38,7 +42,10 @@ import { ProvidersService } from './providers.service';
 // for a delete, and 200 for the other commands (Nest's POST default is 201).
 @Controller()
 export class ProvidersController {
-  constructor(private readonly providers: ProvidersService) {}
+  constructor(
+    private readonly providers: ProvidersService,
+    private readonly connectionTest: ConnectionTestService,
+  ) {}
 
   @Get(PROVIDERS_ROUTE)
   list() {
@@ -113,5 +120,14 @@ export class ProvidersController {
     query: EffectiveModelQuery,
   ) {
     return this.providers.effectiveModel(query);
+  }
+
+  @Post(CONNECTION_TEST_ROUTE)
+  @HttpCode(200)
+  test(
+    @Body(new ZodValidationPipe(connectionTestRequestSchema))
+    body: ConnectionTestRequest,
+  ) {
+    return this.connectionTest.run(body);
   }
 }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PlatformModule, SettingsService } from '../platform/platform.module';
+import { ConnectionTestService } from './providers.connection-test';
 import { ProvidersController } from './providers.controller';
 import { ProvidersRegistry } from './providers.registry';
 import { ModelResolver } from './providers.resolution';
@@ -36,6 +37,7 @@ const PROVIDERS_SECTION_REGISTRATION = 'PROVIDERS_SECTION_REGISTRATION';
     SecretsStore,
     ModelResolver,
     ProvidersService,
+    ConnectionTestService,
   ],
   exports: [ProvidersRegistry, SecretsStore, ModelResolver],
 })

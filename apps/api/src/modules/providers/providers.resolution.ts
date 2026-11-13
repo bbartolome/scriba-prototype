@@ -120,7 +120,7 @@ export function isOllamaProvider(
 }
 
 // The Ollama preset's pull line (D6), so the text has one source.
-function ollamaPullHint(): string {
+export function ollamaPullHint(): string {
   const line = PROVIDER_PRESETS.find(
     (preset) => preset.id === 'ollama',
   )?.hints.find((hint) => hint.includes('ollama pull'));
