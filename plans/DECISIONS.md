@@ -959,3 +959,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Text items to fix in passing (none blocks approval):** section 7(a) HEAD and tree state (now `5507274`, not clean); the DECISIONS line range (the file has 948 lines); the order of the open points (1, 3, 2).
 - **Not verified by the reviewer:** Vite's handling of Host when `changeOrigin` is unset (step 13); Playwright 1.65 launching chromium-1254; the live npm registry; whether `RouterOutlet` breaks `app.spec.ts`; whether the Angular test builder type-checks spec files. Each is covered by a step.
 - **Next:** `status: planned` on the plan and a commit of `plans/SHL-01.md` on `main`. The code starts in a later iteration (prompt.md Step 3: no plan and code in the same iteration).
+
+## 2026-11-13 — PLT-16 — Navigator decisions N1 to N4 (plan revision 2, section 6; Navigator session 43e5a7b0)
+
+- **N1 (tailnet login, option a):** one human login approval is the only step done by a person. Once it is approved, run steps 12b to 12f of the plan locally from this shell. If LocalAPI reads `NeedsLogin` (step 12a), the approval is pending: record it, skip 12b to 12f, and defer 1c-HTTPS, 2c, 2d and 3b with the cause in the plan. Reason: prompt.md lines 151 to 152 require a local procedure first; the PLT-15 deferral entry (lines 909 to 913) is the pattern for what remains.
+- **N2 (reboot part of ST-1, option a):** defer the reboot part of criterion 1 (1c). The restart part (step 12c) runs locally. Reason: no local procedure for a host reboot; a container restart is not a host reboot.
+- **N3 (ST-3 Linux leg, option b):** accept the Docker Desktop (Mac) leg of criterion 4 as the local pass. Record the Linux Docker Engine leg as deferred. Criterion 4 stays unticked, with the cause recorded. Reason: no Linux Docker Engine host is reachable; the PLT-15 deferral pattern (lines 909 to 913) applies.
+- **N4 ("records both attempts"):** D6 stands. When attempt A passes, attempt B is recorded in the ADR as `Result: not run (attempt A passed)`. Reason: unit line 21 makes attempt B conditional on A failing. Requiring B always would change the criterion's sequence, which only the Navigator may do (prompt.md line 146).
+- **Navigator's citation correction:** the conditional of attempt B is unit line 21, not line 13 (line 13 is blank).
+- **Open for the coordinator:** whether `phase:smoke` may close while 1c-reboot, 2c and the Linux leg are deferred. The N1 fallback and N2 and N3 already decide that the unit is complete without those parts; the checkboxes stay unticked.
