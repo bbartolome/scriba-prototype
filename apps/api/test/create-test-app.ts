@@ -13,10 +13,41 @@ export interface TestAppOptions {
   modules?: Type<unknown>[]; // replaces COMPOSED_MODULES when set
 }
 
+// One method of one enumerated route. `ALL` is a route registered with `all`.
+export interface RouteEntry {
+  method: string;
+  path: string;
+}
+
 export interface TestApp {
   baseUrl: string;
   sse: (path: string) => AsyncGenerator<string>;
   close: () => Promise<void>;
+  routes: () => RouteEntry[]; // read from the Nest router, after init
+}
+
+// The parts of Express's router that the route list reads. apps/api has no @types/express, so the type is structural.
+interface RouterLayer {
+  route?: { path: string; methods: Record<string, boolean | undefined> };
+}
+
+interface ExpressInstance {
+  router: { stack: RouterLayer[] };
+}
+
+// Every route the Nest router mounted, one entry per method, in the order the router holds them.
+function enumerateRoutes(app: INestApplication): RouteEntry[] {
+  const instance = app.getHttpAdapter().getInstance() as ExpressInstance;
+  return instance.router.stack.flatMap((layer) => {
+    const route = layer.route;
+    if (route === undefined) return [];
+    return Object.keys(route.methods)
+      .filter((key) => route.methods[key] === true)
+      .map((key) => ({
+        method: key === '_all' ? 'ALL' : key.toUpperCase(),
+        path: route.path,
+      }));
+  });
 }
 
 const DEFAULT_STATIC_ROOT = resolve(
@@ -71,6 +102,7 @@ export async function createTestApp(
   return {
     baseUrl,
     sse: (path) => readSse(baseUrl + path),
+    routes: () => enumerateRoutes(started),
     close: async () => {
       try {
         await started.close();
