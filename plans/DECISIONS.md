@@ -1647,3 +1647,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Design (checked by the reviewer):** `GET /media` with `redirect: false` gives 200 from the SPA fallback with the hook's CSP (`@nestjs/serve-static` 12.1.1 and `serve-static` 2.2.1 read in the npm cache); with the default redirect it gives a 301 with `default-src 'none'`, which M12 catches. The placement before the body parser is correct (`nest-application.js` line 127 inside `init()`).
 - **Criteria (reviewer):** 1 to 7 COVERED, with the stated limits of criterion 6 (the identity, status and Continue 401s cannot be told apart from the guard's).
 - **Not verified:** nothing installed, built or run; the mutations were not executed.
+
+## 2026-11-13 — SAU-04 — Opus code review of unit/SAU-04 (branch `unit/SAU-04`, commits beef94a and ac66155): APPROVED
+
+- **Result (Opus subagent, fresh context):** APPROVED. The reviewer re-ran the unit's tests in the worktree: the API workspace suite 36 files and 55 tests passed (main at e81abf8 had 35 files and 47 tests, so N+1 and M+8); `setup-auth-guard.test.ts` 8 of 8 passed; lint and prettier clean; 13 emitted setup-auth files. The diff is the 20 paths of plan section 2 (rows 1 to 4 and 7 to 22); rows 5 and 6 unchanged.
+- **Criteria:** 1 to 7 PASSED.
+- **Plan text (not code), corrected in the batch commit that sets the plan to done:** (1) M6 also fails criteria 3 and 7, and M11b also fails criterion 3, because the refusal helper asserts the CSP on every 403; the plan's lists for M6 and M11b are corrected. (2) `headersOnly` drops the socket only for an event stream; any other reply is read in full. (3) `sessionCookie` returns the `name=value` pair (the Cookie header to send). (4) Decision 7: each dev entry must equal its normalised origin (`new URL(entry).origin`) with a non-default port, so a default port, a trailing slash, upper case or a fragment is refused. (5) The guard imports `PUBLIC_ROUTE_KEY` only, not `Public`; row 1 lists `requestPath`.
+- **Not verified by the reviewer:** the 13 mutations (read-only review); the root gates; the step 15 curl check; the e2e run.
+- **Optional, not required:** the boot refusal's wording says "explicit port" for `:80`; a dev entry sharing a loopback host and port but not the scheme replaces that Host's origin (fails closed, dev only).
