@@ -875,3 +875,25 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   3. The `bbartolome/scriba:dev` tag now points to `90de5f45e264`; `scriba-check2` was created when it pointed to `9b392c90203c`. Say "(the tag has since moved)".
   4. The reviewer created a scratch file `/tmp/.none` (19 bytes) by a test command. It is outside the repo; the driver removes it.
 - **Driver note:** the text notes are applied by the driver, not by a further planner revision, as for PLT-11 revision 4. Status is set to `planned` in the same commit as the plan.
+
+## 2026-11-13 — PLT-15 — Compose checks (plan section 3, steps 0 to 10; step 11 partial, LAN half and step 12 pending)
+
+- **Commit:** `dfbd250` on `unit/PLT-15` (`feat(PLT-15): compose with tailscale sidecar, shared socket and healthcheck`). Files: `deploy/compose.yaml`, `deploy/serve/serve.json`, `deploy/compose-version`, `deploy/.gitkeep` (deleted), `apps/api/src/modules/platform/compose-version.ts`, `apps/api/test/compose-version.test.ts`.
+- **Environment:** Node v26.13.0, npm 11.20.0, Docker Desktop server 29.8.2 (aarch64), Compose v5.6.0.
+- **Paths printed at step 9:** `INST=/Users/bbartolome/workspace/.plt15-inst.HnbQ`, `LIB=/Users/bbartolome/workspace/.plt15-books.dOpe`, `CFG=/tmp/plt15-cfg.e3ie`.
+- **Step 0 (guards):** all pass as written.
+- **Steps 1 to 10:** all pass. Step 3 `prettier --check .` exit 0; step 4 (a) 0, (b) 1 naming `SCRIBA_LIBRARY`, (c) `TS_AUTHKEY` present, (d) `"1"`, (e) `null`, (f) `""`; step 5 build, test and lint exit 0; step 8 image `bbartolome/scriba:plt15-check` = `1fbdc49085ae`; step 9 `up=0`, scriba healthy, serve.json byte-identical, `printenv SCRIBA_COMPOSE_VERSION` = `1`; step 9b with the key removed `printenv` exit 1 and no value, then restored to `1`; step 10 criterion 5 test exit 0, mutation (constant 2) exit 1 with "expected 2 to be 1", revert exit 0.
+- **Criteria:**
+  1. Docker half passed: `up=0`; scriba healthy; PortBindings only `{"8080/tcp":[{"HostIp":"127.0.0.1","HostPort":"18080"}]}`; `/healthz` 200; `/api/platform/version` `composeVersion` 1. **LAN half not tested** (the shell is a container; the Mac-terminal recipe of step 9c is pending).
+  2. Process-UID half passed: `id -u` 1001, `id -g` 1001, `scriba-dir=present`. **Host-owner half not tested** (Navigator decision A, DECISIONS 2026-11-13: unticked; the native Linux leg is optional).
+  3. Passed: `id -u` 1001; the socket status request returns `200 NeedsLogin`.
+  4. Passed: hosts grep exit 0 with `192.168.65.254<TAB>host.docker.internal` (IPv6 line `fdc4:f303:9324::254` also present); the IPv4 DNS lookup returns `192.168.65.254`.
+  5. Passed (see step 10).
+- **Differences from the plan (implementer report):**
+  1. Step 3: `prettier --write` reflowed the healthcheck `test` array in `compose.yaml` across lines. Formatting only; the committed file is the formatted one.
+  2. Step 9: the step-0 "plt15-check image absent" guard cannot hold after step 8 builds the image. Read as covering the compose project and volumes only.
+  3. `plans/PLT-15.md` is tracked on `main` (848ffcd), not untracked as section 7 says. It is not in `dfbd250`.
+  4. Step 9b restore appended `SCRIBA_COMPOSE_VERSION=1` at the end of `.env` (same content).
+  5. `docker compose --wait` reports `tailscale` as Healthy although it has no healthcheck (fact 26; no change needed).
+- **Left in place for step 12:** compose project `plt15-check` (containers `plt15-check-scriba-1`, `plt15-check-tailscale-1`; volumes `plt15-check_tailscale-state`, `plt15-check_tailscale-socket`); the `INST` and `LIB` folders; `/tmp/plt15-cfg.e3ie`, `/tmp/plt15-fresh`, `/tmp/plt15-wt`; images `bbartolome/scriba:plt15-check` (removed in step 12) and `tailscale/tailscale:v1.104.4` (kept on purpose). Untouched: `scriba-check2`, `tride`, `installer-tailscale-1`, `bbartolome/scriba:local-arm64`.
+- **Pending:** the step 9c LAN half (criterion 1) and the Navigator's decision on whether the unit is complete without it; then step 11 (LAN result) and step 12 (cleanup).
