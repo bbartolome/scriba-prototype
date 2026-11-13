@@ -2,10 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { App } from '../app';
 import { NoticesService } from './notices';
+import { SseClient } from './sse-client';
+import { SSE_CLIENT } from './tokens';
 
 // Renders the whole App. The test acts as a feature: it calls only the public NoticesService.
 async function render(): Promise<ComponentFixture<App>> {
-  await TestBed.configureTestingModule({ imports: [App] }).compileComponents();
+  await TestBed.configureTestingModule({
+    imports: [App],
+    providers: [{ provide: SSE_CLIENT, useClass: SseClient }],
+  }).compileComponents();
   const fixture = TestBed.createComponent(App);
   fixture.detectChanges();
   await fixture.whenStable();

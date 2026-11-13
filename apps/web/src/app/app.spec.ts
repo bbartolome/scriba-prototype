@@ -1,11 +1,14 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { App } from './app';
+import { SseClient } from './shell/sse-client';
+import { SSE_CLIENT } from './shell/tokens';
 
 describe('App', () => {
   it('renders the Scriba heading', async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [{ provide: SSE_CLIENT, useClass: SseClient }],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(App);

@@ -2,13 +2,21 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatToolbar } from '@angular/material/toolbar';
 import { AppNav } from './shell/app-nav';
+import { ConnectionStatus } from './shell/connection-status';
 import { DeviceClassService } from './shell/device-class';
 import { NoticeBanners } from './shell/notice-banners';
 import { ThemeService } from './shell/theme';
 import { ThemeToggle } from './shell/theme-toggle';
 
 @Component({
-  imports: [MatToolbar, RouterOutlet, NoticeBanners, AppNav, ThemeToggle],
+  imports: [
+    MatToolbar,
+    RouterOutlet,
+    ConnectionStatus,
+    NoticeBanners,
+    AppNav,
+    ThemeToggle,
+  ],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',

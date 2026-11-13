@@ -1,10 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { App } from '../app';
+import { SseClient } from './sse-client';
+import { SSE_CLIENT } from './tokens';
 
 // Renders the whole App; the tests read and click only the DOM and localStorage.
 async function render(): Promise<ComponentFixture<App>> {
-  await TestBed.configureTestingModule({ imports: [App] }).compileComponents();
+  await TestBed.configureTestingModule({
+    imports: [App],
+    providers: [{ provide: SSE_CLIENT, useClass: SseClient }],
+  }).compileComponents();
   const fixture = TestBed.createComponent(App);
   fixture.detectChanges();
   await fixture.whenStable();
