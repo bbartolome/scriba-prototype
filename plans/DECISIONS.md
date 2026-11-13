@@ -1956,3 +1956,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **The Ollama rule is exported through the module entry.** `isOllamaProvider` is re-exported from `providers.module.ts`, so E3 tests it through the module's API (the testing rule in `units/README.md` line 133).
 - **E2 uses a second keyless provider.** A `models-failing` provider sits in the same `settings.yaml` as the `models-non-empty` one, so one boot reaches both scenarios.
 - **Driver's checks:** `client/errors.ts` 114, 129 and 139; `retry.ts` 7 to 17 and 46 to 53; `defaults.ts` lines 8 and 9; the mock's `server.mjs` 279 to 302 and the scenario order (qwen2.5, gemma3, llama3.1).
+
+## 2026-11-13 — PLT-16 — the host reboot check is removed from ST-1 (the user's instruction)
+
+- **Decision (the user).** ST-1 no longer requires a host reboot check. Its HTTPS part requires an answer within 60 seconds after login, and the same answer after `docker compose restart`. The refusal and peer-address parts are unchanged. The unit (`units/PLT-16-smoke-st1-st3.md`, line 21), the plan (`plans/PLT-16.md`), the runbook (`deploy/RUNBOOK.md`, ST-1) and the ADR (`docs/adr/0001-tailscale-serve-mechanism.md`, on `unit/PLT-16`) match this.
+- **N2.** N2 no longer applies: the reboot part it deferred is removed. N1, N3, N4 and N5 are unchanged.
+- **Earlier entries.** The entries above that cite N2 or the reboot check are records, so they are not edited.
+- **Ticks.** This entry ticks no criterion. Whether criterion 1 is ticked is the coordinator's decision.
+- **Not committed.** The changes are in the working tree of `main` and in `/tmp/wt-PLT-16` on `unit/PLT-16`.
