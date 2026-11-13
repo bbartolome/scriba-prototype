@@ -28,7 +28,7 @@ Shipped variant: B, the CLI loop (1c-HTTPS and 1c-restart both passed on the pos
 
 ## Peer addresses
 
-Published path (the loopback publish, read in `scriba`): pending.
+Published path (the loopback publish, read in `scriba`): remote `172.22.0.1`, the Docker gateway, not loopback. This is the peer seen in the 2b check (DECISIONS line 1050).
 
 Serve path (read during an open `/events` request, plan step 12e on the tailnet run): loopback only. Before the stream there was one socket row with local `127.0.0.1:8080` and remote `127.0.0.1` (the healthcheck); during the open stream there were two such rows. The second row is taken to be the Serve proxy's connection, since the rows are counted, not separated per request. No remote is in `100.64.0.0/10`, which passes the Serve-path expectation. The Serve proxy connects from `127.0.0.1` (`0100007F`).
 
