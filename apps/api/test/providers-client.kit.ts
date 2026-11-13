@@ -30,10 +30,18 @@ export function targetFor(
   scenario: string,
   options: TargetOptions = {},
 ): ProviderTarget {
+  return targetAt(`${mock.baseUrl}/scenario/${scenario}/v1`, options);
+}
+
+// A resolved target at any base URL (for example a local test server).
+export function targetAt(
+  baseURL: string,
+  options: TargetOptions = {},
+): ProviderTarget {
   const config: OpenAICompatibleConfig = {
     id: 'mock',
     kind: 'openai-compatible',
-    baseURL: `${mock.baseUrl}/scenario/${scenario}/v1`,
+    baseURL,
     model: 'mock-model',
     temperature: PROVIDER_DEFAULTS.temperature,
     contextSize: PROVIDER_DEFAULTS.contextSize,

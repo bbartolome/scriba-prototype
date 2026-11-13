@@ -318,30 +318,59 @@ async function* runStreamAttempt(
   yield* assembler.finish();
 }
 
-// One model-list attempt. Throws AttemptFailure when it fails.
+// One model-list attempt. The raw body is read and checked: the SDK's page turns any body into a list,
+// so a 200 HTML page would look like an empty list. Throws AttemptFailure when it fails.
 async function listOnce(
   client: OpenAI,
   scope: AttemptScope,
 ): Promise<string[]> {
   try {
     scope.arm();
-    const page = await client.models.list({
+    const body: unknown = await client.get('/models', {
       signal: scope.signal,
       timeout: scope.limitMs,
       maxRetries: 0,
     });
     scope.disarm();
     const state = scope.state();
-    if (state.callerAborted || state.timedOut || !Array.isArray(page.data)) {
+    if (state.callerAborted || state.timedOut) {
       throw new AttemptFailure(classifyFailure(undefined, state));
     }
-    return page.data.map((model) => model.id);
+    const ids = modelIds(body);
+    if (ids === undefined) {
+      throw new AttemptFailure(classifyFailure(undefined, state));
+    }
+    return ids;
   } catch (raw) {
     if (raw instanceof AttemptFailure) {
       throw raw;
     }
     throw new AttemptFailure(classifyFailure(raw, scope.state()));
   }
+}
+
+// A model list is an object whose `data` is an array of objects, each with a string `id`.
+// Any other body gives undefined, which the caller maps to PROVIDER_BAD_RESPONSE.
+function modelIds(body: unknown): string[] | undefined {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    return undefined;
+  }
+  const data: unknown = (body as { data?: unknown }).data;
+  if (!Array.isArray(data)) {
+    return undefined;
+  }
+  const ids: string[] = [];
+  for (const item of data) {
+    const id: unknown =
+      typeof item === 'object' && item !== null
+        ? (item as { id?: unknown }).id
+        : undefined;
+    if (typeof id !== 'string') {
+      return undefined;
+    }
+    ids.push(id);
+  }
+  return ids;
 }
 
 interface PartialCall {
