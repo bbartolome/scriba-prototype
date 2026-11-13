@@ -1,6 +1,6 @@
 ---
 id: SAU-01
-status: planned
+status: done
 ---
 # SAU-01 plan — setup-auth contract slice
 

@@ -27,6 +27,6 @@ Merging this **closes Setup & auth `phase:contract`**. Zod + TS, shapes and cons
 - **Example payloads** for contract tests.
 
 ## Acceptance criteria
-- [ ] The subpath exports every shape above and builds as part of the contracts package.
-- [ ] Zod schemas accept the example payloads and reject malformed ones (wrong `BackendState`, missing login on a tailnet identity, unknown step state).
-- [ ] No runtime code beyond schemas and constants.
+- [x] The subpath exports every shape above and builds as part of the contracts package.
+- [x] Zod schemas accept the example payloads and reject malformed ones (wrong `BackendState`, missing login on a tailnet identity, unknown step state).
+- [x] No runtime code beyond schemas and constants.
