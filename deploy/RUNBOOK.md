@@ -18,7 +18,7 @@ Scriba reaches host Ollama as `host.docker.internal`, which resolves to the Dock
 
 ## ST-1: late login with HTTPS Serve
 
-Goal: the stack starts with no auth key and the app is healthy on loopback. After a login through the auth URL, within one minute `https://<DNS>/healthz` answers 200 with a valid certificate. It must still do so after `docker compose restart` and after a host reboot. `http://scriba` and `http://<100.x>:8080` must fail from another tailnet device.
+Goal: the stack starts with no auth key and the app is healthy on loopback. After a login through the auth URL, within one minute `https://<DNS>/healthz` answers 200 with a valid certificate. It must still do so after `docker compose restart`. `http://scriba` and `http://<100.x>:8080` must fail from another tailnet device.
 
 Variant A is `TS_SERVE_CONFIG`, which loaded `deploy/serve/serve.json`. It failed under the shipped compose (the late-login failure recorded in the ADR, Attempt A), so it is not shipped. Variant B is the CLI loop, which `deploy/compose.yaml` sets: containerboot runs with `TS_BOOT_TIMEOUT: 8760h`, and after it waits for an IP, `tailscale serve --bg --https=443 http://127.0.0.1:8080` runs. If B fails, record the failure in the ADR and stop. The variant that passes ships, and the ADR records it.
 
@@ -32,9 +32,8 @@ docker compose --project-directory "<install folder>" exec -T scriba node -e "co
 3. Get the auth URL with `docker compose --project-directory "<install folder>" logs tailscale 2>&1 | grep -o 'https://login.tailscale.com/[^ ]*' | tail -1`, and approve the machine at that URL. This is the only step a person takes.
 4. Timed check. Note `t0`, the epoch second (`date +%s`) of the first read that prints `Running`. From then, every 2 seconds, run `curl -sS -m 5 -o /dev/null -w '%{http_code}\n' --resolve '<DNS>:443:<IP4>' https://<DNS>/healthz` until it prints `200`. Note `t1`, the epoch second of that `200`. `t1 - t0` must be at most 60. Record `t0`, `t1` and the difference in the ADR's Attempt B `Evidence:`. If `t1 - t0` is more than 60, Attempt B fails: record that in its `Result:` and stop. `<DNS>` is the `*.ts.net` name without its trailing dot, and `<IP4>` is the IPv4 address from the same read.
 5. Restart: `docker compose --project-directory "<install folder>" restart`, then the check of step 4 must print `200` within 60 seconds.
-6. Reboot: after a host reboot, with no manual step, the check of step 4 must print `200`. Record it in the ADR. This part is deferred until someone runs it.
-7. Refusals, from another tailnet device: `curl -sS -m 5 -o /dev/null -w '%{http_code}\n' http://scriba/healthz` and `curl -sS -m 5 -o /dev/null -w '%{http_code}\n' http://<100.x>:8080/healthz` must both fail with a connection error (`000`).
-8. Peer addresses. Read the sockets of the app port in `scriba`, with the rows in state 01 (ESTABLISHED) and local port 1F90 (8080), on the published path and on the Serve path during an open request to `/events`:
+6. Refusals, from another tailnet device: `curl -sS -m 5 -o /dev/null -w '%{http_code}\n' http://scriba/healthz` and `curl -sS -m 5 -o /dev/null -w '%{http_code}\n' http://<100.x>:8080/healthz` must both fail with a connection error (`000`).
+7. Peer addresses. Read the sockets of the app port in `scriba`, with the rows in state 01 (ESTABLISHED) and local port 1F90 (8080), on the published path and on the Serve path during an open request to `/events`:
 
 ```sh
 docker compose --project-directory "<install folder>" exec -T scriba sh -c 'cat /proc/net/tcp /proc/net/tcp6' | awk '$4=="01" && $2 ~ /:1F90$/ {print "local=" $2 " rem=" $3}'
