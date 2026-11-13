@@ -26,9 +26,9 @@ One click signs in without a password (2); the token leaves the address bar (3);
 - **Identity endpoint** `GET /api/setup-auth/identity` (public marker, but answers 401 with no credential): `{via: 'loopback'}` or `{via: 'tailnet', login}`.
 
 ## Acceptance criteria
-- [ ] Opening the setup URL sets an HttpOnly, SameSite=Strict, host-only, port-suffixed cookie and 303s to `/setup` with no token in `Location`; `Referrer-Policy: no-referrer` present.
-- [ ] A wrong token gets the explanatory page and no cookie.
-- [ ] Both `127.0.0.1:<port>` and `localhost:<port>` Hosts work.
-- [ ] After the token is replaced, an old cookie gets 401.
-- [ ] Sign-out expires the cookie; the identity endpoint then returns 401.
+- [x] Opening the setup URL sets an HttpOnly, SameSite=Strict, host-only, port-suffixed cookie and 303s to `/setup` with no token in `Location`; `Referrer-Policy: no-referrer` present.
+- [x] A wrong token gets the explanatory page and no cookie.
+- [x] Both `127.0.0.1:<port>` and `localhost:<port>` Hosts work.
+- [x] After the token is replaced, an old cookie gets 401.
+- [x] Sign-out expires the cookie; the identity endpoint then returns 401.
 - [ ] The `Secure` matrix is recorded in the module docs, and the cookie attributes match it.

@@ -1,6 +1,6 @@
 ---
 id: SAU-03
-status: planned
+status: done
 ---
 # SAU-03 plan — handshake, session cookie, sign-out and identity
 
@@ -61,7 +61,7 @@ Code mode runs in a git worktree on branch `unit/SAU-03`, cut from `main` (`prom
 3. **Gate the Nest names.** `node -e "const c=require('@nestjs/common'); console.log(['Controller','Get','Post','HttpCode','Headers','Res','SetMetadata'].map(k=>typeof c[k]).join(' '))"`: expected seven `function` words. If any is not a function, stop and record it.
 4. **Gate the SAU-02 surface.** `grep -n "secret()\|matches(\|cookieName()\|sign(\|verify(" apps/api/src/modules/setup-auth/*.ts`: expected one definition line for each of `secret`, `matches`, `cookieName`, `sign` and `verify`. `grep -n "BootError" apps/api/src/modules/platform/platform.module.ts`: expected line 14.
 5. **Baseline.** `npm run build -w @bbartolome/scriba-contracts`: expected exit 0. `ls apps/api/test/*.test.ts | wc -l`: expected `33`. `grep -E "^\s*it\(" apps/api/test/*.test.ts | wc -l`: expected `36`. `npm test -w @bbartolome/scriba-api`: expected exit 0, `Test Files  33 passed (33)` and `Tests  36 passed (36)`. If any fails, stop and report: main is not green.
-6. **Write the files**, in this order: `setup-session.cookie.ts`, `public-route.decorator.ts`, `setup-session.controller.ts`, the edit to `setup-auth.module.ts`, then `setup-auth-handshake.test.ts`. The test imports nothing from the store, the signer or the cookie helpers (module line 50).
+6. **Write the files**, in this order: `setup-session.cookie.ts`, `public-route.decorator.ts`, `setup-session.controller.ts`, the edit to `setup-auth.module.ts`, then `setup-auth-handshake.test.ts`. The test imports nothing from the store, the signer or the cookie helpers (module line 65, the testing principles, after the module docs change).
 7. **Format.** `npx prettier --write apps/api/src/modules/setup-auth apps/api/test/setup-auth-handshake.test.ts`: expected each file reported, exit 0. `npx prettier --check apps/api`: expected `All matched files use Prettier code style!`, exit 0.
 8. **Build.** `npm run build -w @bbartolome/scriba-api`: expected exit 0. The `tsc --noEmit` pass covers `src` and `test` (`apps/api/tsconfig.json`). `ls apps/api/dist/modules/setup-auth`: expected the four SAU-02 `.js` files plus `setup-session.controller.js`, `setup-session.cookie.js` and `public-route.decorator.js`, seven in all.
 9. **The new test file.** `npm test -w @bbartolome/scriba-api -- setup-auth-handshake`: expected exit 0, `Test Files  1 passed (1)`, `Tests  7 passed (7)`, none skipped.
@@ -72,11 +72,11 @@ Code mode runs in a git worktree on branch `unit/SAU-03`, cut from `main` (`prom
 14. **Mutations.** One at a time, each reverted before the next; each must keep `tsc` green, and each runs `npm test -w @bbartolome/scriba-api -- setup-auth-handshake`. Expected: the named test fails.
     - M1: drop `HttpOnly` from the cookie. Fails criterion 1.
     - M2: drop `SameSite=Strict`. Fails criterion 1.
-    - M3: put the token into `Location`. Fails criterion 1.
+    - M3: put the token into `Location`. Fails criteria 1 and 3, and the redirect-to-`/` test (each asserts the exact `Location`).
     - M4: drop `Referrer-Policy` from the 303. Fails criterion 1.
     - M5: issue a cookie on a wrong token. Fails criterion 2.
     - M6: drop `Max-Age`. Fails criterion 1.
-    - M7: name the cookie `scriba_setup` without the port. Fails criteria 1 and 3.
+    - M7: name the cookie `scriba_setup` without the port. Fails criteria 1, 3 and 5 (sign-out asserts the port-suffixed name), and the redirect-to-`/` test.
     - M8: identity answers 200 without calling `verify`. Fails criteria 4 and 5.
     - M9: sign-out without `Max-Age=0`. Fails criterion 5.
     - M10: the handshake always writes `/setup`. Fails the extra redirect test.
@@ -88,7 +88,7 @@ Code mode runs in a git worktree on branch `unit/SAU-03`, cut from `main` (`prom
 
 The unit has six criteria, numbered 1 to 6 as in the unit (lines 29 to 34). Criteria 1 to 5 run locally through HTTP responses, cookies and files on disk, in `apps/api/test/setup-auth-handshake.test.ts`, against `createTestApp` with a temp library. Criterion 6 is a file check that needs a browser run this environment cannot make. Its box stays unticked, and the Navigator decided the unit is complete without it (open point 1).
 
-Common to the tests: `SCRIBA_PORT` is `'9123'` (decision 21), so the Host headers are `127.0.0.1:9123` or `localhost:9123`, the cookie name is `scriba_setup_9123`, and the Origin is `http://127.0.0.1:9123`. The socket goes to the ephemeral port `createTestApp` returns. The setup URL is read from `setup-url` on disk. Each test creates its temp library with `mkdtemp`, passes it as `libraryDir`, and removes it in `finally`: `createTestApp` returns no library path and removes only a library it created (`apps/api/test/create-test-app.ts` lines 16 to 20 and 41). Criterion 4 and the redirect test start twice on the same library. No literal `8080` appears in the test file. Helper names are local to the test file. No test imports the store, the signer or the cookie helpers (module line 50).
+Common to the tests: `SCRIBA_PORT` is `'9123'` (decision 21), so the Host headers are `127.0.0.1:9123` or `localhost:9123`, the cookie name is `scriba_setup_9123`, and the Origin is `http://127.0.0.1:9123`. The socket goes to the ephemeral port `createTestApp` returns. The setup URL is read from `setup-url` on disk. Each test creates its temp library with `mkdtemp`, passes it as `libraryDir`, and removes it in `finally`: `createTestApp` returns no library path and removes only a library it created (`apps/api/test/create-test-app.ts` lines 16 to 20 and 41). Criterion 4 and the redirect test start twice on the same library. No literal `8080` appears in the test file. Helper names are local to the test file. No test imports the store, the signer or the cookie helpers (module line 65, the testing principles, after the module docs change).
 
 **Criterion 1** (unit line 29): "Opening the setup URL sets an HttpOnly, SameSite=Strict, host-only, port-suffixed cookie and 303s to `/setup` with no token in `Location`; `Referrer-Policy: no-referrer` present."
 - Test: `setup-auth-handshake.test.ts`, one `it`. Read the setup URL from `setup-url`; request its path with Host `127.0.0.1:9123`, without following redirects.
