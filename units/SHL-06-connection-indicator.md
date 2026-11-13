@@ -17,4 +17,4 @@ unblocks: [SHL-09]
 
 ## Acceptance criteria
 - [ ] Stopping the API shows the reconnecting indicator, then the "server unreachable" banner; restarting clears both and fires a reconcile tick.
-- [ ] Component tests drive the states through the fake event source.
+- [ ] Component tests drive the states through the stubbed EventSource.

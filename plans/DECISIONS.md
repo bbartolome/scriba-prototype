@@ -1191,3 +1191,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Gates:** web 18 tests pass; lint, tsc for both configs and prettier pass; the production build is 325.50 kB with 0 CommonJS lines and no `scriba-contracts` in the browser bundle.
 - **Protected paths:** unchanged from the merge base 3345bfe.
 - **Next:** the main batch is assembled (SHL-02, SHL-03, SHL-04 in ID order).
+
+## 2026-11-13 — SHL-06 — criterion 2 reading: "the fake event source" is the stubbed global EventSource (Navigator decision; session 57d851d74d62450ca9f7cab2d9b775ec)
+
+- **Decision (Navigator, reading a):** criterion 2 of SHL-06 (unit line 20) means the stubbed global `EventSource` (the seam of `modules/shell.md` line 85), not SHL-07's `FakeEventSource`. SHL-06 stays `parallel_with` SHL-07; its front matter is unchanged. The wording of unit line 20 is amended to "Component tests drive the states through the stubbed EventSource." (a disambiguation, not a change of meaning; a criterion change is the Navigator's to make, prompt.md line 146).
+- **Reason:** `modules/shell.md` line 85 names the SSE client's seam as "a stubbed global `EventSource`", and line 84 reserves SHL-07's fake for rendered routes. Line 21 lists SHL-06 as needing 03 only, and line 36 keeps 05, 06 and 07 parallel. SHL-03 (merged) tests through a stubbed global `EventSource`, and its shared-with column states that SHL-07 "does not reuse this file". The SHL-07 draft recommends this reading.
+- **Consequence:** SHL-07's fakes remain available to features, but SHL-06's criterion does not require them.
