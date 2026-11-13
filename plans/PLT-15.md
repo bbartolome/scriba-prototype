@@ -1,6 +1,6 @@
 ---
 id: PLT-15
-status: planned
+status: done
 ---
 # PLT-15 plan — compose with Tailscale sidecar, shared socket and healthcheck
 

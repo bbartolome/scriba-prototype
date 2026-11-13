@@ -29,6 +29,6 @@ Always reachable at `http://127.0.0.1:${SCRIBA_PORT}` (story 6), never on the LA
 ## Acceptance criteria
 - [ ] `docker compose up -d` with no auth key reaches `healthy`; the app answers on `127.0.0.1:${SCRIBA_PORT}` and on no other host interface.
 - [ ] Files the app writes into the library are owned by `SCRIBA_UID:SCRIBA_GID` on the host.
-- [ ] From the `scriba` container as its non-root UID, `GET /localapi/v0/status` over the shared socket returns `BackendState` (`NeedsLogin` before login).
-- [ ] `host.docker.internal` resolves inside the `scriba` container.
-- [ ] `GET /api/platform/version` reports the shipped `composeVersion`.
+- [x] From the `scriba` container as its non-root UID, `GET /localapi/v0/status` over the shared socket returns `BackendState` (`NeedsLogin` before login).
+- [x] `host.docker.internal` resolves inside the `scriba` container.
+- [x] `GET /api/platform/version` reports the shipped `composeVersion`.
