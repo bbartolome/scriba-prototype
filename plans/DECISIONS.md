@@ -1911,3 +1911,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Why.** The last Opus review (NOT APPROVED) found only a stale base: `main` had moved to c49e944 (the append at DECISIONS line 1902). The planner changed the base in lines 7, 70, 72 and 176, and added that the plan holds at any later `main` that only appends to plans/DECISIONS.md.
 - **Check (coordinator, by git, not a further Opus review).** `git diff --stat 76ce5fc c49e944` lists only plans/DECISIONS.md (+8). The cited lines (DEC 1876, 1884, 1895) do not move. The plan's status is set to `planned` on this basis.
+
+## 2026-11-13 — MPR-04 — coordinator decision on a stream that ends normally after the first chunk (abort or timer)
+
+- **Decision.** When the SDK's stream iterator ends normally after the first chunk, the client first checks the caller's abort (PROVIDER_ABORTED) and then its own timer (PROVIDER_TIMEOUT). Only if neither fired does the finish rule of S9 apply. Reason: the SDK returns silently on an abort (`core/streaming.js` lines 136 to 139 and 499 to 514), so without this check a cut-off stream would be reported as `finish stop`.
+- **Accepted gap.** The path where the client's timer fires after the first chunk and the SDK iterator ends silently has no test: the mock's `chunkDelayMs` applies before every delta. It is named as a mock gap (MPR-04 open point 8). The timer before the first byte is tested (criterion 5, D11).
+- **Driver's checks:** the SDK copy (openai 7.55.0, `core/streaming.js` 136 to 141 and 499 to 514). The stream-end rule is recorded in `plans/MPR-04.md` (lines 49, 50, 52, 207).
