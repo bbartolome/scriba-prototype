@@ -2210,3 +2210,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Live state (checked by the reviewer).** `git worktree list` shows only main, so `/tmp/wt-PLT-16` is absent. `plt16-check` is running; both containers show RestartCount 0 and StartedAt 20:19:03Z. Step 15 has not run.
 - **Count.** Rejections of the rewrite: 9. These are stale-summary corrections, not disagreements with a settled decision.
 - **Next.** The subagent applies items 1 and 2 to `plans/PLT-16.md` (uncommitted). Then Opus reviews again.
+
+## 2026-11-13 — PLT-16 — Opus review of the rewritten plan (rejection 10 of the rewrite): NOT APPROVED
+
+- **Result.** The tenth Opus review of the rewrite returned NOT APPROVED. Rejection 9's items and the other checks hold; every recorded value matches `9bb78fa`. Two factual items remain.
+  1. Line 180 (the step 13 gap list; line 7 points to it): the list omits the step 12d ST-2 results (the POST returned 202; ten echoes arrived with lags of 13 to 20 ms and gaps of 995 to 1009 ms). The step 13 entry records only HTTP/2 for 3b (DECISIONS line 2062). Revision 5 step 13 (`git show 0dd5234:plans/PLT-16.md`, line 153) requires the step 12 results, and these values are only in ADR line 23. The line also says the approval state is "implied only by the entry's title"; the entry body (DECISIONS line 2058) also says "the post-approval state". Correction: add "the ST-2 results of step 12d (POST 202; ten echoes; lags 13 to 20 ms; gaps 995 to 1009 ms; ADR line 23)" to the gaps; write "the login approval state (`given`; implied by 'post-approval' in the title and in line 2058, never stated)".
+  2. Line 20 says "C9 names Attempt B for step 12b, RUNBOOK line 33 and the worktree". C9 (lines 173 to 180) does not name RUNBOOK line 33; the section 2 RUNBOOK row (line 114) does, as the 8bee3bd review asked (DECISIONS line 1775). Correction: "C9 names Attempt B for step 12b and the worktree `/tmp/wt-PLT-16` (now absent; open point 8); the section 2 RUNBOOK row names RUNBOOK line 33".
+- **Live state (checked by the reviewer).** `git worktree list` shows only main and `/tmp/wt-MPR-07`; `/tmp/wt-PLT-16` is absent; `unit/PLT-16` is at `9bb78fa`; `plt16-check` is running (both containers RestartCount 0, StartedAt 20:19:03Z); step 15 has not run.
+- **Count.** Rejections of the rewrite: 10. These are factual corrections, not disagreements with a settled decision.
+- **Next.** The subagent applies items 1 and 2 to `plans/PLT-16.md` (uncommitted). Then Opus reviews again.
