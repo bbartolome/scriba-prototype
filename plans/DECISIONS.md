@@ -1354,3 +1354,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Shared files (reviewer):** OK with SHL-06 (`e4c99b1`) and SHL-07 (`4e27bdb`).
 - **Not verified by the reviewer:** `npm ci`, Vitest, `tsc`, the build, Playwright with Chromium 1254, the eslint boundaries rule on the probe's import, the nav geometry numbers, `npm view` at implementation time.
 - **Next:** revision 5 from the same Haiku subagent. The rejection count for SHL-05 is 4. The `status` stays `draft`.
+
+## 2026-11-13 — SHL-05 — Opus plan review of revision 5 (`plans/SHL-05.md`, draft): APPROVED (wording fixes to make before planned)
+
+- **Result (Opus subagent, fresh context):** APPROVED. Both items of rejection 4 (50f310d) are corrected: G1 expects `Location.path()` to be `''` at the root after the back step, keeping the DOM checks and the browser value `/` (`URL.pathname`); section 7(a) names HEAD `50f310d` and records rejections 3 and 4, and the `Location.back` to popstate step is FACT with the chain cited. The earlier items continue: the loader wrap (decision 6 iv, G4 and G5), the componentless sibling with a `**` child (decision 8, G6 and G7), the untagged-children rule (decision 6 iii, G8), the `grep -c '\.material-icons'` premise, the hashed media woff2 check, the demo step 4 wording, the notice recomputed at `NavigationEnd` (decision 10, D4), and `setUpLocationChangeListener()` before the first navigation in G1.
+- **Criteria (reviewer):** 1 covered (N6, G1, G6, G7, browser values). 2 covered (D1 to D4). 3 covered (N1 to N5; browser label, x, width and bottom at five sizes). 4 covered (G2 to G5, G8; browser `/phone-view/canvas` at phone and tablet).
+- **Navigator decisions (reviewer):** nav slot FOLLOWED (d2a3a4f); gated URL FOLLOWED (option a, 1852df7).
+- **Shared files (reviewer):** OK with SHL-06 (`e4c99b1`) and SHL-07 (`4e27bdb`).
+- **Text items to fix before `status: planned`:** (1) section 7(a) first bullet: add the titles of the revision 3 and revision 4 rejection entries (the commits are already listed); (2) G1's citation of `_location-chunk.mjs` should start at line 269 (`normalize` is at 269 to 270), not 268.
+- **Not verified by the reviewer:** `npm ci`, Vitest, `tsc`, lint, the build, Playwright with Chromium 1254; the nav geometry; the eslint boundary rule on the probe import; `npm view` at implementation time; the jsdom `insertRule` path.
+- **Next:** the planner applies the two items; then `status: planned` and a commit of the plan on `main`. The rejection count for SHL-05 stays at 4 (revisions 1 to 4 rejected; revision 5 approved).
