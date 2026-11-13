@@ -2233,3 +2233,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   2. The Node and npm versions required by plan lines 108 and 127 had no log. Correction: `/tmp/mpr07-versions.txt` records Node v26.13.0 and npm 11.20.0.
 - **Count.** Rejections of MPR-07's code: 1, log only (no code change).
 - **Next.** A focused Opus re-check of the two log items; the code is unchanged since the first review.
+
+## 2026-11-13 — MPR-07 — Opus focused re-check of the evidence: APPROVED
+
+- **Result.** A focused Opus re-check of the two log items returned APPROVED. The timing baseline `/tmp/mpr06-invariant-after.txt` (29.01 s) is a run of the same test on identical `apps/`, `packages/` and `e2e/` trees; the MPR-07 run is 30.15 s; the difference (+1.14 s) is inside the plan's limit. `/tmp/mpr07-versions.txt` records Node v26.13.0 and npm 11.20.0, which the plan asks for. The full-suite, lint and red-run logs show the claimed results.
+- **Result on the code.** The code of `unit/MPR-07` (e6d1da2, 877d424) was approved by the code review above, after the two log items were corrected. Criteria 1 and 2 are passed; E1 to E8 pass.
+- **Next.** Collect `unit/MPR-07` onto `batch/current` (rebase, fast-forward), run the batch checks, tick criteria 1 and 2, set the plan to `done`, and fast-forward `main`.
