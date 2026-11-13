@@ -3,6 +3,7 @@ import { PlatformModule, SettingsService } from '../platform/platform.module';
 import { ProvidersRegistry } from './providers.registry';
 import { PROVIDERS_SECTION_DEF } from './providers.section';
 import { ProvidersSeeder } from './providers.seeding';
+import { SecretsStore } from './secrets/secrets-store';
 
 const PROVIDERS_SECTION_REGISTRATION = 'PROVIDERS_SECTION_REGISTRATION';
 
@@ -20,7 +21,8 @@ const PROVIDERS_SECTION_REGISTRATION = 'PROVIDERS_SECTION_REGISTRATION';
     },
     ProvidersRegistry,
     ProvidersSeeder,
+    SecretsStore,
   ],
-  exports: [ProvidersRegistry],
+  exports: [ProvidersRegistry, SecretsStore],
 })
 export class ProvidersModule {}
