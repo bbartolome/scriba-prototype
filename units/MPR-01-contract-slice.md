@@ -32,7 +32,22 @@ Merging this **closes Model providers `phase:contract`**. Zod + TS, shapes and c
 - **`ModelChoice`** `{providerId, model}` (empty `model` = the provider's own default). App default request; per-project override set/clear requests; **effective-model response** `{choice, source: 'project'|'app'|'auto', contextSize, warning?}`.
 - **Write-only key requests:** set `{providerId, key}`, clear `{providerId}`.
 - **`providers` settings section** shape `{schemaVersion: 1, list, appDefault: ModelChoice | null}` and a contract example of the seeded section.
-- **Error codes:** `PROVIDER_UNREACHABLE`, `PROVIDER_UNAUTHORIZED`, `PROVIDER_MODEL_NOT_FOUND`, `PROVIDER_TIMEOUT`, `PROVIDER_RATE_LIMITED`, `PROVIDER_BAD_RESPONSE`, `PROVIDER_ABORTED`, `PROVIDER_NOT_CONFIGURED`, plus `PROVIDER_DEFAULT_IN_USE` (409, delete refused) and `PROVIDER_NOT_FOUND`.
+- **Error codes and HTTP statuses:** `PROVIDER_UNREACHABLE`, `PROVIDER_UNAUTHORIZED`, `PROVIDER_MODEL_NOT_FOUND`, `PROVIDER_TIMEOUT`, `PROVIDER_RATE_LIMITED`, `PROVIDER_BAD_RESPONSE`, `PROVIDER_ABORTED`, `PROVIDER_NOT_CONFIGURED`, plus `PROVIDER_DEFAULT_IN_USE` (409, delete refused) and `PROVIDER_NOT_FOUND`. Status table (Navigator decision, plans/DECISIONS.md 1bef5ff):
+
+  | Code | HTTP status |
+  |---|---|
+  | `PROVIDER_UNREACHABLE` | 502 |
+  | `PROVIDER_UNAUTHORIZED` | 502 |
+  | `PROVIDER_MODEL_NOT_FOUND` | 502 |
+  | `PROVIDER_TIMEOUT` | 504 |
+  | `PROVIDER_RATE_LIMITED` | 503 |
+  | `PROVIDER_BAD_RESPONSE` | 502 |
+  | `PROVIDER_ABORTED` | 409 |
+  | `PROVIDER_NOT_CONFIGURED` | 409 |
+  | `PROVIDER_DEFAULT_IN_USE` | 409 |
+  | `PROVIDER_NOT_FOUND` | 404 |
+
+  No PROVIDER code is 401. The Shell sends every HTTP 401 to `/setup` (apps/web/src/app/shell/api-client.ts lines 104 and 105), so a bad provider key must not look like a lost setup session.
 - **Route constants** under `/api/providers/`.
 
 ## Acceptance criteria
