@@ -1791,3 +1791,15 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Result 2 (Opus re-check of the seven fixes):** the seven items are fixed. One text fix remains before `status: planned`: lines 156 and 158 contradict each other. Line 156 says to run on branch `unit/MPR-01` from the main checkout, but git will not check that branch out there while `/tmp/wt-MPR-01` holds it. Steps 3 to 12 run in `/tmp/wt-MPR-01`; step 13's clone path still works. Nits: the line 158 citation placement; the reason given for not squashing `50c66c2` (PLT-02 step 11 does not state a rule that each commit carries the id); and the front-matter line range "1 to 10", plus "both" in criterion 1's quote.
 - **Count:** this is the second NOT APPROVED on MPR-01's plan text (rejection 1 was revision 1). Below the three-rejection threshold for the Navigator.
 - **Checked by the reviewer:** every status against the unit table and DECISIONS 1765; no PROVIDER-to-401 mapping; the git log and stats of `82935a3`, `50c66c2` and `unit/MPR-01`; the filter and guard lines.
+
+## 2026-11-13 — PLT-16 — Opus re-check of variant B revision 2 (text fixes, `plans/PLT-16.md`): APPROVED, with six text fixes applied
+
+- **Result (Opus subagent, fresh context):** APPROVED. Six text fixes were needed before `status: planned`, and all six are now applied. None changes a decision.
+  1. The variant A evidence is at DECISIONS lines 1061 to 1062, not 1060 (blank). Every citation now reads "1061 to 1062".
+  2. Section 1a has a new "What each part relies on" bullet, so the reference to Tride's "HTTP mode" comment has its support: `--https=443 http://127.0.0.1:8080` is a Web handler (checked at step 12b-SERVE).
+  3. The ADR's row (b) adds an `Evidence:` line after the Attempt B section (branch line 21), holding the M1 to M4 values and then t0, t1 and the difference.
+  4. The serve-failure wording reads "if it fails or does not configure Serve". "HTTPS off makes `tailscale serve --bg` exit non-zero" is listed as ASSUMED (7b). `--yes` appears in the help listings with its help text.
+  5. The `deploy/serve/` folder is described as deleted on `unit/PLT-16` at C2, not as already absent.
+  6. The M4 expectation is 2 lines per start; the stop rule adds "or an M4 rise".
+- **Checked by the reviewer:** the citations after the fixes; the variant B design against PLT-15 line 22; the Navigator decisions in this log. Criterion 1 stays unticked by the mechanism check.
+- **Status:** the plan is `status: planned` after this record. The code stage (compose change, ADR, runbook, compose version) is next, then the teardown (C1), then the retest (C5 to C9). Criterion 1's HTTPS parts wait for the user (open point 4: turn on HTTPS for the tailnet, with the N1 login approval).
