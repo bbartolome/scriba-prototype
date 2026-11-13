@@ -11,11 +11,11 @@ API work for `phase:token-guard` starts before Frontend shell `phase:core`; only
 ```
 SAU-01 contract slice  ══> phase:contract
  └─ SAU-02 module skeleton, token store, setup-url, cookie signing, setupAuth section
-     ├─ SAU-03 handshake, cookie issue, sign-out, identity endpoint, Secure-flag matrix
-     ├─ SAU-04 global guard (default-deny, Host, cookie credential, Origin, no CORS, CSP, accessor)
-     │    └─ SAU-07 cross-module invariant tests
-     ├─ SAU-05 status endpoint + Continue (access-only)
-     └─ SAU-06 minimal /setup page + sign-in notice   (needs 05 + Shell phase:core)
+     └─ SAU-03 handshake, cookie issue, sign-out, identity endpoint, Secure-flag matrix
+         ├─ SAU-04 global guard (default-deny, Host, cookie credential, Origin, no CORS, CSP, accessor)
+         │    └─ SAU-07 cross-module invariant tests
+         ├─ SAU-05 status endpoint + Continue (access-only)
+         └─ SAU-06 minimal /setup page + sign-in notice   (needs 05 + Shell phase:core)
  SAU-08 token-guard gate (e2e setup step, demo)  ══> phase:token-guard
  SAU-09 setup-flow API (steps, preferences, preferences reader) ─┐
  SAU-10 compose-version status ──────────────────────────────────┤
@@ -32,7 +32,7 @@ SAU-01 contract slice  ══> phase:contract
 ```
 
 ### Parallelism
-- After SAU-02: SAU-03, SAU-04, SAU-05 in parallel; SAU-06 once Shell `phase:core` lands; SAU-07 after SAU-04.
+- After SAU-02: SAU-03. After SAU-03: SAU-04 and SAU-05 in parallel; SAU-06 once Shell `phase:core` lands; SAU-07 after SAU-04.
 - After SAU-08: SAU-09, SAU-10 and SAU-17 in parallel. After SAU-11: SAU-12, SAU-13, SAU-14 in parallel; SAU-15 in parallel with SAU-11.
 - After SAU-17: SAU-18 and SAU-20 in parallel.
 

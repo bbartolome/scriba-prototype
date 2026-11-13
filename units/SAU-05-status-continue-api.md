@@ -4,8 +4,8 @@ title: Setup status endpoint and Continue (access-only)
 module: setup-auth
 phase: phase:token-guard
 milestone: M1
-blocked_by: [SAU-02]
-parallel_with: [SAU-03, SAU-04, SAU-07]
+blocked_by: [SAU-02, SAU-03]
+parallel_with: [SAU-04, SAU-07]
 unblocks: [SAU-06, SAU-08]
 ---
 

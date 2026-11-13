@@ -5,7 +5,7 @@ module: setup-auth
 phase: phase:token-guard
 milestone: M1
 blocked_by: [SAU-04]
-parallel_with: [SAU-03, SAU-05, SAU-06]
+parallel_with: [SAU-05, SAU-06]
 unblocks: [SAU-08, "every module's 'GET is side-effect free' acceptance criterion"]
 ---
 

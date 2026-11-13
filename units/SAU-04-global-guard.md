@@ -4,8 +4,8 @@ title: Global default-deny guard — Host allowlist, cookie credential, Origin c
 module: setup-auth
 phase: phase:token-guard
 milestone: M1
-blocked_by: [SAU-02]
-parallel_with: [SAU-03, SAU-05]
+blocked_by: [SAU-02, SAU-03]
+parallel_with: [SAU-05]
 unblocks: [SAU-07, SAU-08, SAU-18]
 ---
 
