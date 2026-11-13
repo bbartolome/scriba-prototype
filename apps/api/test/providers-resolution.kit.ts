@@ -6,10 +6,10 @@ import { send, type Reply } from './guard-request';
 import { LOOPBACK_HOST } from './invariant-sweep';
 
 export const RESOLVE_TEST_PATH = '/api/providers-test/resolve';
-export const MODELS_TEST_PATH = '/api/providers-test/models';
 
-// Test-only routes for MPR-05. They are not in COMPOSED_MODULES, so the composed app and the invariant sweep never
-// see them. MPR-06 adds the real routes; the resolve route stays for criterion 4 (DECISIONS, MPR-05 second draft).
+// A test-only route. It is not in COMPOSED_MODULES, so the composed app and the invariant sweep never see it. MPR-06
+// adds the real effective-model route; this resolve route stays only for criterion 4, which needs the stored config
+// for streamChat (DECISIONS line 1954).
 @Controller('api/providers-test')
 class ResolutionTestController {
   constructor(private readonly resolver: ModelResolver) {}
@@ -25,11 +25,6 @@ class ResolutionTestController {
       source: resolved.source,
       warning: resolved.warning,
     };
-  }
-
-  @Get('models')
-  async models(@Query('providerId') providerId: string) {
-    return { models: await this.resolver.modelList(providerId) };
   }
 }
 

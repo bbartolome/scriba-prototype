@@ -2,6 +2,7 @@ import { readFileSync, rmSync } from 'node:fs';
 import { afterAll, beforeAll, beforeEach, expect, it } from 'vitest';
 import { stringify } from 'yaml';
 import {
+  EFFECTIVE_MODEL_ROUTE,
   PROVIDER_DEFAULTS,
   PROVIDER_ERROR_STATUS,
   PROVIDER_PRESETS,
@@ -14,7 +15,6 @@ import { isOllamaProvider } from '../src/modules/providers/providers.module';
 import { createTestApp, type TestApp } from './create-test-app';
 import { sessionCookie, type Reply } from './guard-request';
 import {
-  MODELS_TEST_PATH,
   RESOLVE_TEST_PATH,
   ResolutionKitModule,
   getJson,
@@ -34,7 +34,16 @@ const SCENARIOS = [
   'text-stream',
 ];
 
+// The effective-model response (GET /api/providers/effective-model).
 interface ResolveBody {
+  choice: ModelChoice;
+  source: string;
+  contextSize: number;
+  warning?: string;
+}
+
+// The test-only resolve route, which carries the stored config (criterion C4 only).
+interface KitResolveBody {
   config: OpenAICompatibleConfig;
   model: string;
   contextSize: number;
@@ -135,7 +144,7 @@ async function resolveBody(
   cookie: string,
   query = '',
 ): Promise<ResolveBody> {
-  const reply = await getJson(app, cookie, `${RESOLVE_TEST_PATH}${query}`);
+  const reply = await getJson(app, cookie, `${EFFECTIVE_MODEL_ROUTE}${query}`);
   expect(reply.status).toBe(200);
   return JSON.parse(reply.body) as ResolveBody;
 }
@@ -154,10 +163,10 @@ it('C1: an empty app-default model and an empty provider model resolve to the fi
       await withApp(library, async (app, cookie) => {
         const before = readFileSync(settingsFilePath(library), 'utf8');
         const body = await resolveBody(app, cookie);
-        expect(body.model).toBe('qwen2.5');
+        expect(body.choice.model).toBe('qwen2.5');
         expect(body.source).toBe('auto');
         expect(body.contextSize).toBe(64000);
-        expect(body.config.id).toBe('mock');
+        expect(body.choice.providerId).toBe('mock');
         const after = readFileSync(settingsFilePath(library), 'utf8');
         expect(after).toBe(before);
         expect(after).not.toContain('auto');
@@ -178,7 +187,7 @@ it("C2: a provider model wins over auto, and the app default's model wins over t
     async (library) => {
       await withApp(library, async (app, cookie) => {
         const body = await resolveBody(app, cookie);
-        expect(body.model).toBe('llama3.1');
+        expect(body.choice.model).toBe('llama3.1');
         expect(body.source).toBe('app');
       });
       expect(await recordsOf(mock, 'models-non-empty')).toEqual([]);
@@ -196,7 +205,7 @@ it("C2: a provider model wins over auto, and the app default's model wins over t
     async (library) => {
       await withApp(library, async (app, cookie) => {
         const body = await resolveBody(app, cookie);
-        expect(body.model).toBe('gemma3');
+        expect(body.choice.model).toBe('gemma3');
         expect(body.source).toBe('app');
       });
       expect(await recordsOf(mock, 'models-non-empty')).toEqual([]);
@@ -212,7 +221,7 @@ it('C3: an empty Ollama model list gives PROVIDER_NOT_CONFIGURED with the pull h
     }),
     async (library) => {
       await withApp(library, async (app, cookie) => {
-        const reply = await getJson(app, cookie, RESOLVE_TEST_PATH);
+        const reply = await getJson(app, cookie, EFFECTIVE_MODEL_ROUTE);
         expect(reply.status).toBe(
           PROVIDER_ERROR_STATUS.PROVIDER_NOT_CONFIGURED,
         );
@@ -234,7 +243,13 @@ it('C4: a chat whose target comes from resolving a project id sends the resolved
     }),
     async (library) => {
       await withApp(library, async (app, cookie) => {
-        const body = await resolveBody(app, cookie, '?projectId=p-1');
+        const reply = await getJson(
+          app,
+          cookie,
+          `${RESOLVE_TEST_PATH}?projectId=p-1`,
+        );
+        expect(reply.status).toBe(200);
+        const body = JSON.parse(reply.body) as KitResolveBody;
         expect(body.model).toBe('gemma3');
         const stream = streamChat(
           { config: body.config, model: body.model },
@@ -256,7 +271,7 @@ it('E1: with no app default, or an app default naming a missing provider, resolu
     settingsWith([mockProvider('mock', 'models-non-empty', '')], null),
     async (library) => {
       await withApp(library, async (app, cookie) => {
-        const reply = await getJson(app, cookie, RESOLVE_TEST_PATH);
+        const reply = await getJson(app, cookie, EFFECTIVE_MODEL_ROUTE);
         expect(reply.status).toBe(
           PROVIDER_ERROR_STATUS.PROVIDER_NOT_CONFIGURED,
         );
@@ -276,7 +291,7 @@ it('E1: with no app default, or an app default naming a missing provider, resolu
     }),
     async (library) => {
       await withApp(library, async (app, cookie) => {
-        const reply = await getJson(app, cookie, RESOLVE_TEST_PATH);
+        const reply = await getJson(app, cookie, EFFECTIVE_MODEL_ROUTE);
         expect(reply.status).toBe(
           PROVIDER_ERROR_STATUS.PROVIDER_NOT_CONFIGURED,
         );
@@ -300,11 +315,7 @@ it('E2: the model list is sorted, a rejected list is a coded 502, and an unknown
       await withApp(library, async (app, cookie) => {
         const before = readFileSync(settingsFilePath(library), 'utf8');
 
-        const listed = await getJson(
-          app,
-          cookie,
-          `${MODELS_TEST_PATH}?providerId=mock`,
-        );
+        const listed = await getJson(app, cookie, '/api/providers/mock/models');
         expect(listed.status).toBe(200);
         expect(JSON.parse(listed.body)).toEqual({
           models: ['gemma3', 'llama3.1', 'qwen2.5'],
@@ -313,7 +324,7 @@ it('E2: the model list is sorted, a rejected list is a coded 502, and an unknown
         const rejected = await getJson(
           app,
           cookie,
-          `${MODELS_TEST_PATH}?providerId=mock-failing`,
+          '/api/providers/mock-failing/models',
         );
         expect(rejected.status).toBe(502);
         expect(errorOf(rejected).code).toBe('PROVIDER_UNAUTHORIZED');
@@ -321,7 +332,7 @@ it('E2: the model list is sorted, a rejected list is a coded 502, and an unknown
         const unknown = await getJson(
           app,
           cookie,
-          `${MODELS_TEST_PATH}?providerId=no-such-provider`,
+          '/api/providers/no-such-provider/models',
         );
         expect(unknown.status).toBe(404);
         expect(errorOf(unknown).code).toBe('PROVIDER_NOT_FOUND');
@@ -345,7 +356,7 @@ it('E3: the pull hint goes only to Ollama, by port 11434 or by an id that starts
     }),
     async (library) => {
       await withApp(library, async (app, cookie) => {
-        const reply = await getJson(app, cookie, RESOLVE_TEST_PATH);
+        const reply = await getJson(app, cookie, EFFECTIVE_MODEL_ROUTE);
         expect(reply.status).toBe(
           PROVIDER_ERROR_STATUS.PROVIDER_NOT_CONFIGURED,
         );

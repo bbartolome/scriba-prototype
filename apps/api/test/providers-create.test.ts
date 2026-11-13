@@ -1,21 +1,40 @@
 import { readFileSync, rmSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { parse } from 'yaml';
-import { PROVIDERS_EXAMPLES } from '@bbartolome/scriba-contracts/providers';
+import {
+  PROVIDERS_EXAMPLES,
+  PROVIDERS_ROUTE,
+} from '@bbartolome/scriba-contracts/providers';
 import { COMPOSED_MODULES } from '../src/app.module';
-import { createTestApp } from './create-test-app';
-import { sessionCookie } from './guard-request';
-import { ProvidersKitModule, postCreate } from './providers.kit';
+import { createTestApp, type TestApp } from './create-test-app';
+import { send, sessionCookie, type Reply } from './guard-request';
+import { LOOPBACK_HOST, LOOPBACK_ORIGIN } from './invariant-sweep';
 import { makeLibrary, settingsFilePath } from './settings.kit';
 
 type ProvidersDoc = { providers: { list: { id: string }[] } };
+
+// One POST to the collection route, with the loopback Host and Origin and the session cookie from sessionCookie.
+function postCreate(
+  app: TestApp,
+  cookie: string,
+  body: unknown,
+): Promise<Reply> {
+  return send(app.baseUrl, {
+    host: LOOPBACK_HOST,
+    origin: LOOPBACK_ORIGIN,
+    cookie,
+    method: 'POST',
+    path: PROVIDERS_ROUTE,
+    body: JSON.stringify(body),
+  });
+}
 
 it('two providers created from one preset get distinct ids that stay the same after a restart', async () => {
   const library = makeLibrary();
   try {
     const app = await createTestApp({
       libraryDir: library,
-      modules: [...COMPOSED_MODULES, ProvidersKitModule],
+      modules: COMPOSED_MODULES,
     });
     try {
       const cookie = await sessionCookie(app, library);
@@ -60,7 +79,7 @@ it('a label gives its ASCII slug as the id, and a taken slug takes the next free
   try {
     const app = await createTestApp({
       libraryDir: library,
-      modules: [...COMPOSED_MODULES, ProvidersKitModule],
+      modules: COMPOSED_MODULES,
     });
     try {
       const cookie = await sessionCookie(app, library);
