@@ -19,5 +19,5 @@ Owned here, run in CI against the **composed** app, so they cover every module's
 - Route enumeration comes from the Nest router, so new modules are covered with no test edits. A module needing extra path-param seeding adds a fixture entry (documented).
 
 ## Acceptance criteria
-- [ ] Both tests run in CI against the composed app and pass.
-- [ ] A deliberately mutating GET in a test-only module makes test 1 fail; an unguarded test-only POST makes test 2 fail.
+- [x] Both tests run in CI against the composed app and pass.
+- [x] A deliberately mutating GET in a test-only module makes test 1 fail; an unguarded test-only POST makes test 2 fail.
