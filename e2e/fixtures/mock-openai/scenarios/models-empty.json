@@ -1,0 +1,12 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "models" },
+      "reply": {
+        "kind": "status",
+        "status": 200,
+        "body": { "object": "list", "data": [] }
+      }
+    }
+  ]
+}

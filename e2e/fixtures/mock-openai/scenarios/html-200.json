@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "status",
+        "status": 200,
+        "headers": { "content-type": "text/html" },
+        "body": "<html><body>Not an event stream.</body></html>"
+      }
+    }
+  ]
+}

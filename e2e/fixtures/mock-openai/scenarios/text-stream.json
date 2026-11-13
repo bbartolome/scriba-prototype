@@ -1,0 +1,11 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["Hello", " world"]
+      }
+    }
+  ]
+}

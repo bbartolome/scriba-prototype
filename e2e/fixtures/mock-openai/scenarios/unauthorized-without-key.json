@@ -1,0 +1,31 @@
+{
+  "steps": [
+    {
+      "match": {
+        "endpoint": "chat",
+        "header": {
+          "name": "Authorization",
+          "value": "Bearer sk-test-key-0001"
+        }
+      },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["ok"]
+      }
+    },
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "status",
+        "status": 401,
+        "body": {
+          "error": {
+            "message": "Incorrect API key provided.",
+            "type": "invalid_request_error",
+            "code": "invalid_api_key"
+          }
+        }
+      }
+    }
+  ]
+}

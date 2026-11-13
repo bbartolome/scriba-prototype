@@ -1,0 +1,39 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat", "attempt": 1 },
+      "reply": {
+        "kind": "status",
+        "status": 429,
+        "headers": { "retry-after": "1" },
+        "body": {
+          "error": {
+            "message": "Rate limit reached.",
+            "type": "rate_limit_error"
+          }
+        }
+      }
+    },
+    {
+      "match": { "endpoint": "chat", "attempt": 2 },
+      "reply": {
+        "kind": "status",
+        "status": 429,
+        "headers": { "retry-after": "1" },
+        "body": {
+          "error": {
+            "message": "Rate limit reached.",
+            "type": "rate_limit_error"
+          }
+        }
+      }
+    },
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["ok"]
+      }
+    }
+  ]
+}

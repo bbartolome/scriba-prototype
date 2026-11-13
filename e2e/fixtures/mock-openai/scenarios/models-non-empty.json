@@ -1,0 +1,19 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "models" },
+      "reply": {
+        "kind": "status",
+        "status": 200,
+        "body": {
+          "object": "list",
+          "data": [
+            { "id": "qwen2.5", "object": "model", "owned_by": "scriba-mock" },
+            { "id": "gemma3", "object": "model", "owned_by": "scriba-mock" },
+            { "id": "llama3.1", "object": "model", "owned_by": "scriba-mock" }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "status",
+        "status": 404,
+        "body": {
+          "error": {
+            "message": "The model does not exist.",
+            "type": "invalid_request_error",
+            "param": null,
+            "code": "model_not_found"
+          }
+        }
+      }
+    }
+  ]
+}

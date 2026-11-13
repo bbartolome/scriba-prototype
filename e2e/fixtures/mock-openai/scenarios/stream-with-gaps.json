@@ -1,0 +1,12 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["a", "b", "c", "d"],
+        "chunkDelayMs": 200
+      }
+    }
+  ]
+}
