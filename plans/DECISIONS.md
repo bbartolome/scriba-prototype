@@ -2036,3 +2036,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   2. Line 237 (section 8): "MPR-09 sends every config field in its create body and every key in its update body, as SD2 requires." SD2 (`plans/MPR-01.md` line 57) requires only the input fields. SD3 (line 58) and `packages/contracts/src/providers/config.ts` make the update body `openaiCompatibleInputSchema.partial()`. Correction: delete "and every key in its update body", so that line 237 matches line 159.
 - **Count and the Navigator.** This is the third rejection of MPR-06. The two problems are factual corrections, checked against the lines they cite (plan lines 42, 64, 72, 159 and 237; `plans/MPR-01.md` lines 57 and 58). They are not a disagreement with the reviewer, so there is nothing to settle with the Navigator. The Navigator is not reachable in this environment (no local Ollama; see the PLT-16 entries). If the next review rejects the plan again on a point of disagreement, the disagreement goes to the Navigator, and MPR-06 waits for it.
 - **Next.** The orchestrator applies problems 1 and 2 in the plan. Then Opus reviews again. The plan stays `draft` until Opus approves.
+
+## 2026-11-13 — MPR-06 — Opus fourth review of the plan (revision 3, main 0c0105a): NOT APPROVED (rejection 4)
+
+- **Result.** A fourth Opus reviewer returned NOT APPROVED for `plans/MPR-06.md`. Its checks (a), (b), (c) and (f) pass. The three problems are factual errors, not disagreements with a settled decision, so there is nothing to send to the Navigator.
+- **Problems.**
+  1. Line 56 (D5): "The reference is kept as long as the provider lives and reused when the key is replaced." This contradicts D7 (line 60: `setKeyRef(id, undefined)` removes the property), test C2 (line 135: "the settings text has no `keyRef`") and unit line 23 ("Clear key removes the secret entry and `keyRef`"). Correction: "The reference is kept until the key is cleared (D7) or the provider is deleted (D8), and is reused when the key is replaced."
+  2. Line 54 (D4): "there is no cache, as the module requires." The module file has no cache rule; the rule is MPR-03 D5 (`plans/MPR-03.md` line 35) and the comment at `apps/api/src/modules/providers/secrets/secrets-store.ts` line 26. Correction: cite those.
+  3. Lines 130 and 216: the imports of `providers-resolution.test.ts` are cited as "lines 1 to 25". The import block runs from line 1 to line 28, and `makeLibrary` is imported on line 28. Correction: "lines 1 to 28".
+- **Count.** Rejections of MPR-06: 4.
+- **Next.** The orchestrator applies the three corrections (done in the plan file, then re-reviewed).
