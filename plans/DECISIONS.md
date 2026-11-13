@@ -1891,3 +1891,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Batch order and shared file (MPR-02, MPR-03, MPR-04).** The batch builds in unit-id order: MPR-02, then MPR-03, then MPR-04. MPR-03 owns the `SecretsStore` entries in `providers.module.ts` (its D16). MPR-02 adds no SecretsModule import. MPR-04 does not touch the file.
 - **App default (MPR-02).** It can only be set to an existing provider; it cannot be cleared. A malformed providers section refuses boot, and the file is left alone.
 - **Driver's checks:** the Opus reviews of the three drafts (NOT APPROVED, with the items above); the Navigator decisions 1 to 3 (c8e4262); the installed openai 7.55.0 read-only (`client.js` lines 184, 241, 248, 254 to 263, 1405 to 1424).
+
+## 2026-11-13 — MPR-02 — coordinator decisions recorded for the draft (SD13 edge; the hook-order stop rule)
+
+- **The SD13 edge is accepted.** A malformed `providers` section refuses boot, and the file is left alone. The edge: when Platform's hook has already written a backup and added a missing default (`setupAuth`), the seeder then refuses, and the file is not rolled back. The plan states this edge. Accepted because Platform's own write happens before the seeder runs, and the alternative (a validator in `onModuleInit`) would duplicate Platform's refusal rule.
+- **Hook order (MPR-02 open point 2): a stop rule, not a decision.** The seeder must run after Platform's `onApplicationBootstrap`. The plan checks this against `@nestjs/core` 12.4.2 after `npm ci` (step 4), and stops if it differs.
+- **Freed ids (open point 5, MPR-02) are not decided here.** The options (never reuse an id; a retired-id list) are for the MPR-06 and MPR-12 planners.
+- **Driver's checks:** the Opus review of MPR-02 (NOT APPROVED, text items), which asked for these two decisions to be recorded (the entry "coordinator decisions on the drafts" did not record them).
