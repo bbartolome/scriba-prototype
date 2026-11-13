@@ -2087,3 +2087,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Correction to earlier claims.** `.prettierignore` lists `/plans/`, so `npx prettier --check plans/...` checks nothing for plan and DECISIONS files. The earlier "prettier passed" statements for `plans/MPR-06.md` and `plans/PLT-16.md` were not checks. The plan files are not reformatted by prettier, and no claim of prettier conformance for them stands.
 - **Count.** Rejections of the rewrite: 1. The Navigator's decision (option a) stands; these are corrections within it.
 - **Next.** Subagent applies items 1 to 7 to `plans/PLT-16.md` (uncommitted). Then Opus reviews again.
+
+## 2026-11-13 — PLT-16 — Opus review of the rewritten plan (rejection 2 of the rewrite): NOT APPROVED
+
+- **Result.** The second Opus review of the rewrite returned NOT APPROVED. Items 1 to 7 of rejection 1 are fixed. Four factual items remain; none disagrees with a settled decision.
+  1. Section 4, 5a (line 216): "It was ticked in the smoke run." DECISIONS lines 1056 and 1070 record criterion 5 as ticked, but the unit's box (`units/PLT-16-smoke-st1-st3.md` line 31) is unticked on main and on `unit/PLT-16`, and no commit on the unit ticks it. Correction: "5a passed in the smoke run. DECISIONS lines 1056 and 1070 record criterion 5 as ticked, but the unit's box (line 31) is unticked. The tick is the coordinator's, after the grep is re-run on the edited runbook."
+  2. Line 185 (1b): "covered now, step C8". The C8 commit `98ffac1` wrote Attempt B `Result: passed (mechanism only; login approval pending)` and `Shipped variant: pending`; the strings 1b checks came later (`Shipped variant: B` at `96d03f7`; the Attempt B result text at `5eb7e21` and `57c5208`). Correction: "covered by the ADR at `9bb78fa` (C8, then `96d03f7`, `5eb7e21` and `57c5208`)".
+  3. Line 20: "C9 names Attempt B for step 12b, RUNBOOK line 33 and the kept worktree". The worktree `/tmp/wt-PLT-16` is absent now (line 176; open point 8). Correction: "...and the worktree `/tmp/wt-PLT-16` (now absent; open point 8)".
+  4. Line 279 (7b): "The give-up did not return with `8760h` (section 7(d))." Section 7(d) (lines 297 to 300) has no such bullet. The support is open point 2 (line 244), 7(c) (line 289) and the ADR's Attempt B Evidence. Correction: cite those, or add the bullet to 7(d).
+- **Count.** Rejections of the rewrite: 2. The Navigator's decision (option a) stands; these are corrections within it. A third factual rejection is still a correction, not a disagreement; a disagreement with a settled decision goes to the Navigator.
+- **Next.** The subagent applies items 1 to 4 to `plans/PLT-16.md` (uncommitted). Then Opus reviews again.
