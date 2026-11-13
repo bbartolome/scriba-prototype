@@ -1364,3 +1364,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Text items to fix before `status: planned`:** (1) section 7(a) first bullet: add the titles of the revision 3 and revision 4 rejection entries (the commits are already listed); (2) G1's citation of `_location-chunk.mjs` should start at line 269 (`normalize` is at 269 to 270), not 268.
 - **Not verified by the reviewer:** `npm ci`, Vitest, `tsc`, lint, the build, Playwright with Chromium 1254; the nav geometry; the eslint boundary rule on the probe import; `npm view` at implementation time; the jsdom `insertRule` path.
 - **Next:** the planner applies the two items; then `status: planned` and a commit of the plan on `main`. The rejection count for SHL-05 stays at 4 (revisions 1 to 4 rejected; revision 5 approved).
+
+## 2026-11-13 — SHL-07 — Opus code review of `unit/SHL-07` (head ab3567e, base main 791c086): APPROVED
+
+- **Result (Opus subagent, fresh context):** APPROVED. Two commits, `e7fe16e` (test-doubles.ts and test-doubles.spec.ts) and `ab3567e` (template-feature.ts and template-feature.spec.ts), add only the four planned files under `apps/web/src/app/shell/testing/`. The protected paths are unchanged.
+- **Criteria:** 1 passes (T1 and T2: the rendered value, the injected `API_CLIENT` identity, and the live update with exactly one request; the verbose run gives 44 passed, the baseline 35 plus 9). 2 passes (T3 to T9; the negative control, with `body as T` in place of `parseResponse`, fails only T3 and T4).
+- **Checked by the reviewer:** the fakes implement `ApiClient` and the `Pick` of `SseClient`'s public surface, with no private access; the providers give `API_CLIENT` and `SSE_CLIENT` by `useValue` and a throwing `HttpBackend`, not `HttpClient`; mutation checks fail T1 and T2 without the provider, T2 on a wrong slug, and T8 on a plain `Error` in place of `TypeError`; no runtime contracts import in the non-spec files; the production build is 471.49 kB, the same as the baseline, and the built bundle contains none of the helper strings.
+- **Not checked by the reviewer:** `npm ci` skipped the install scripts for esbuild, lmdb and msgpackr; the build and tests ran anyway.
+- **Next:** the batch waits for the SHL-05 and SHL-06 code reviews.
