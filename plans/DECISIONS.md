@@ -1596,3 +1596,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Criteria (reviewer):** 1 to 4, 6 and 7 COVERED; 5 COVERED, with its asserted statuses to be made explicit (item 1b).
 - **Not verified by the reviewer:** nothing installed, built or run.
 - **Process:** this is the third rejection of SAU-04 (revision 1 at 1484; revision 3 at 6490a25 and 1543... see the entries above). `prompt.md` step 5 sends the disagreement to the Navigator at three rejections; the driver asks the Navigator whether to correct and re-review, or to stop the unit.
+
+## 2026-11-13 — SAU-03 — Opus code review of unit/SAU-03 (branch `unit/SAU-03`, commits afdc205, 1dcdb0a, 78e0730): APPROVED
+
+- **Result (Opus subagent, fresh context):** APPROVED. The reviewer re-ran the unit's tests in the worktree: `setup-auth-handshake.test.ts` 7 passed; `npm test -w @bbartolome/scriba-api` 34 files and 43 tests passed; lint and prettier clean; the root lint exit 0. The diff is exactly the six paths of plan section 2, with three commits on main 6d08702.
+- **Criteria:** 1 to 5 PASSED. Criterion 6 is not ticked (Navigator decision, commit 122533a), and that is not a defect.
+- **Mutation lists (plan text, not code):** the step 14 lists are incomplete. M3 also fails the redirect-to-`/` test (its `Location` is asserted exactly). M7 also fails criterion 3, criterion 5 (sign-out asserts the port-suffixed cookie name) and the redirect test. The plan is corrected in the batch commit that sets its status to done, so the lists match the test suite.
+- **Plan citations (plan text):** after the module docs change, the testing-principles line is module line 65, not line 50. The docs sentence "module line 47" is correct.
+- **Not verified by the reviewer:** the mutations were not executed (read-only review); the manual curl check; root `npm run build` and `npm test` (the implementer's run is recorded in the unit report); browser behaviour (the Secure matrix and RFC 6265 default path in real browsers).
+- **Next:** the batch on `batch/current` (SAU-03 alone): rebase, root gates, tick criteria 1 to 5, set the plan to done, fast-forward `main`.
