@@ -1413,3 +1413,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Text items to fix before `status: planned` (none blocks approval):** (1) section 1 says "as PLT-02's tests do for the platform slice"; PLT-02 has no `typeof` test, so reword it to "PLT-02's fixture pattern"; (2) step 12's "no second copy of zod" has no command that checks it: add a check, or drop the claim.
 - **Not verified by the reviewer:** no build, test or `npm ci` (dist and node_modules are absent); TypeScript 6.0.3's CJS emit of `export *` was not checked directly.
 - **Next:** the planner applies the two items; then `status: planned` and a commit of the plan on `main`. The rejection count for SAU-01 stays at 1.
+
+## 2026-11-13 — SAU-01 — Opus code review of `unit/SAU-01` (head 568a2bb, base main 5b9a280): APPROVED
+
+- **Result (Opus subagent, fresh context):** APPROVED. One commit, `568a2bb`, changes eleven files, all in the plan's section 2: the eight `src/setup-auth` files, the two schema and export tests, and the nest-style consumer fixture. The protected paths are unchanged.
+- **Criteria:** 1 passes (the build emits `dist/setup-auth` with the eight files; the consumer fixture lists 34 exports; the `expectTypeOf` checks for the 12 types pass). 2 passes (51 tests: all 16 examples accepted through `safeParse`, and 17 malformed cases rejected, including `Connected`, `running`, `{via:'tailnet'}`, `login:''` and `access:'started'`). 3 passes (no function export; the fixture types are 20 objects, 12 strings and 2 numbers; the source has no `=>`, `function` or `class`; zod is the only runtime dependency).
+- **Checked by the reviewer:** the schemas match the Shapes of unit lines 17 to 27; mutation checks (an exported arrow function fails the no-function test; an optional tailnet login fails the no-login test) show the tests are not vacuous; no `apps/web` file changed, so the Shell still has no runtime zod; the root gates pass (web initial total 496.03 kB, no warning).
+- **Note for SAU-06 and other consumers:** `SETUP_AUTH_EXAMPLES` is `as const`, so a readonly `logins` cannot be assigned directly to a mutable `string[]` type (TS2322). Consumers parse or copy the examples first.
+- **Next:** the batch assembly and the plan's close-out.
