@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatToolbar } from '@angular/material/toolbar';
+import { NoticeBanners } from './shell/notice-banners';
 import { ThemeService } from './shell/theme';
 import { ThemeToggle } from './shell/theme-toggle';
 
 @Component({
-  imports: [MatToolbar, RouterOutlet, ThemeToggle],
+  imports: [MatToolbar, RouterOutlet, NoticeBanners, ThemeToggle],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
