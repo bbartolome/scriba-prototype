@@ -2073,3 +2073,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Notes from the implementer, checked by the reviewer.** The node_modules symlink failed (TS2688), so the worktree ran `npm ci`; that also emptied the main repo's node_modules, which was restored with `npm ci` in main (370 entries, git status clean). The invariant get-head sweep rose from 17.11 s to 29.01 s, within the 16.8 s allowance. `setKeyRef` removes the property with `delete`.
 - **Count.** Code rejections of MPR-06: 0.
 - **Next.** Collect the unit onto `batch/current` (rebase, tests, fast-forward), then the batch checks on `main`'s base, then the checkboxes and status `done`.
+
+## 2026-11-13 — PLT-16 — Opus review of the rewritten plan (rejection 1 of the rewrite): NOT APPROVED; and a correction to earlier prettier claims
+
+- **Result.** An Opus reviewer returned NOT APPROVED for the rewritten `plans/PLT-16.md` (option a, the Navigator's decision in the entry above). All findings are factual, not disagreements with a settled decision.
+  1. Lines 187 and 190, and the "not owed" statements at lines 7 and 176: the 1c-HTTPS line omits ADR line 23's sentence "The sidecar log shows the NeedsLogin state ending at 20:05:28Z; no NeedsLogin read was taken." Revision 5 steps 11 and 12a start the poll at the URL handover and record the last NeedsLogin read before t0; that was not done, so t1 is 108 s after the login in the log. Correction: carry this as a deviation from step 12a and say the coordinator weighs it; the step 13 record has no NeedsLogin read.
+  2. Line 198 (2e) drops "fail with a connection error" from runbook step 6. A name-resolution failure also prints `000`. Correction: "both fail with a connection error (000), not a resolution error; run at step 12f after 2c; deferred with 2c under N5".
+  3. Line 110: row 94 (ST-3, Mac) says "Not yet run", which contradicts section 4a (line 209), N3 (line 967) and the smoke run (line 1051). Correction: row 94 records the Mac leg passed under N3; row 95 reads "deferred (N3)".
+  4. Lines 222 and 223 (SAU-18, PLT-08) say "2d after N1"; 2d passed (ADR line 33). Correction: "2d, passed in the post-approval run (Serve-path peer 127.0.0.1)".
+  5. Lines 220 and 252: closing `phase:smoke` names only the Linux leg as open. Criterion 2 is open too (2c under N5, and 2e). Correction: name both.
+  6. Lines 176 and 250 (open point 8): `/tmp/wt-PLT-16` does not exist now; `git worktree list` shows no worktree for `unit/PLT-16` (the branch is intact at `9bb78fa`). Correction: record the worktree as absent, to be re-added before the checklist change, and drop "kept".
+  7. Smaller factual errors: line 7 says the post-approval run ran "at commits 96d03f7 and 5eb7e21"; those commits change only the ADR and the stack was built from `9f76fcc`, so write "recorded at". Line 266 lists 4 of the 9 commits after `c75948c`. Line 17 says "Section 6 has no new Navigator decision", which contradicts line 235.
+- **Correction to earlier claims.** `.prettierignore` lists `/plans/`, so `npx prettier --check plans/...` checks nothing for plan and DECISIONS files. The earlier "prettier passed" statements for `plans/MPR-06.md` and `plans/PLT-16.md` were not checks. The plan files are not reformatted by prettier, and no claim of prettier conformance for them stands.
+- **Count.** Rejections of the rewrite: 1. The Navigator's decision (option a) stands; these are corrections within it.
+- **Next.** Subagent applies items 1 to 7 to `plans/PLT-16.md` (uncommitted). Then Opus reviews again.
