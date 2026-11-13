@@ -1,10 +1,12 @@
 import { resolve } from 'node:path';
 import { expect, it } from 'vitest';
 import { versionInfoSchema } from '@bbartolome/scriba-contracts/platform';
+import { PlatformModule } from '../src/modules/platform/platform.module';
 import { createTestApp } from './create-test-app';
 
 it('GET /healthz returns status ok, and GET /api/platform/version returns the version-info shape', async () => {
   const app = await createTestApp({
+    modules: [PlatformModule],
     staticRoot: resolve(__dirname, 'fixtures/static'),
   });
   try {

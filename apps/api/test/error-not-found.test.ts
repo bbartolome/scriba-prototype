@@ -1,12 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, it } from 'vitest';
+import { PlatformModule } from '../src/modules/platform/platform.module';
 import { createTestApp } from './create-test-app';
 
 it('an unknown /api route returns 404 PLATFORM_NOT_FOUND, and an unknown non-API path still returns index.html', async () => {
   const staticRoot = resolve(__dirname, 'fixtures/static');
   const index = readFileSync(resolve(staticRoot, 'index.html'));
-  const app = await createTestApp({ staticRoot });
+  const app = await createTestApp({ staticRoot, modules: [PlatformModule] });
   try {
     for (const path of ['/', '/deep/link/x']) {
       const response = await fetch(app.baseUrl + path);

@@ -4,11 +4,13 @@ import {
   ECHO_ROUTE,
   platformEventSchema,
 } from '@bbartolome/scriba-contracts/platform';
+import { PlatformModule } from '../src/modules/platform/platform.module';
 import { createTestApp } from './create-test-app';
 import { dataOf, openSse } from './sse';
 
 it('every message on /events validates against the platform envelope schema', async () => {
   const app = await createTestApp({
+    modules: [PlatformModule],
     staticRoot: resolve(__dirname, 'fixtures/static'),
   });
   const stream = await openSse(app.baseUrl + '/events');

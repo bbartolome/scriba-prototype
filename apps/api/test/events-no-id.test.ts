@@ -1,11 +1,13 @@
 import { resolve } from 'node:path';
 import { expect, it } from 'vitest';
 import { ECHO_ROUTE } from '@bbartolome/scriba-contracts/platform';
+import { PlatformModule } from '../src/modules/platform/platform.module';
 import { createTestApp } from './create-test-app';
 import { openSse } from './sse';
 
 it('never sends an id: line on /events', async () => {
   const app = await createTestApp({
+    modules: [PlatformModule],
     staticRoot: resolve(__dirname, 'fixtures/static'),
   });
   const stream = await openSse(app.baseUrl + '/events');

@@ -1,11 +1,21 @@
 import { Module } from '@nestjs/common';
-import { PlatformModule, SettingsService } from '../platform/platform.module';
+import { APP_GUARD } from '@nestjs/core';
+import {
+  PlatformModule,
+  SCRIBA_ENV,
+  SettingsService,
+  type ScribaEnv,
+} from '../platform/platform.module';
+import { REQUEST_POLICY, buildRequestPolicy } from './request-policy';
 import { SETUP_AUTH_SECTION_DEF } from './setup-auth.section';
+import { SetupAuthGuard } from './setup-auth.guard';
 import { SetupCookieSigner } from './setup-cookie.signer';
 import { SetupSessionController } from './setup-session.controller';
 import { SetupStatusController } from './setup-status.controller';
 import { SetupStatusService } from './setup-status.service';
 import { SetupTokenStore } from './setup-token.store';
+
+export { RequestIdentity } from './request-identity';
 
 const SETUP_AUTH_SECTION_REGISTRATION = 'SETUP_AUTH_SECTION_REGISTRATION';
 
@@ -25,6 +35,13 @@ const SETUP_AUTH_SECTION_REGISTRATION = 'SETUP_AUTH_SECTION_REGISTRATION';
     SetupTokenStore,
     SetupCookieSigner,
     SetupStatusService,
+    {
+      provide: REQUEST_POLICY,
+      inject: [SCRIBA_ENV],
+      useFactory: (env: ScribaEnv) => buildRequestPolicy(env),
+    },
+    // The default-deny guard for every route of the composed app.
+    { provide: APP_GUARD, useClass: SetupAuthGuard },
   ],
   exports: [SetupTokenStore, SetupCookieSigner],
 })

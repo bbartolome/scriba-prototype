@@ -37,6 +37,8 @@ export function buildRootModule(options: RootModuleOptions): DynamicModule {
       ServeStaticModule.forRoot({
         rootPath: options.staticRoot,
         exclude: ['/api{/*rest}', HEALTHZ_ROUTE, EVENTS_ROUTE],
+        // A directory request (GET /media) is served by the SPA fallback, not redirected, so the CSP header stays.
+        serveStaticOptions: { redirect: false },
       }),
       ...(options.modules ?? COMPOSED_MODULES),
     ],

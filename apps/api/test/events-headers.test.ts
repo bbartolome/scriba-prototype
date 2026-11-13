@@ -1,9 +1,11 @@
 import { resolve } from 'node:path';
 import { expect, it } from 'vitest';
+import { PlatformModule } from '../src/modules/platform/platform.module';
 import { createTestApp } from './create-test-app';
 
 it('GET /events is sent as text/event-stream with Cache-Control no-cache, no-transform and no Content-Encoding', async () => {
   const app = await createTestApp({
+    modules: [PlatformModule],
     staticRoot: resolve(__dirname, 'fixtures/static'),
   });
   const response = await fetch(app.baseUrl + '/events', {

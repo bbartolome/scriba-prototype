@@ -5,11 +5,13 @@ import {
   echoDataSchema,
   platformEventSchema,
 } from '@bbartolome/scriba-contracts/platform';
+import { PlatformModule } from '../src/modules/platform/platform.module';
 import { createTestApp } from './create-test-app';
 import { dataOf, openSse } from './sse';
 
 it('POST /api/platform/echo delivers three platform/echo envelopes in seq order to each of two streams', async () => {
   const app = await createTestApp({
+    modules: [PlatformModule],
     staticRoot: resolve(__dirname, 'fixtures/static'),
   });
   const streamA = await openSse(app.baseUrl + '/events');

@@ -2,6 +2,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { expect, it } from 'vitest';
+import { PlatformModule } from '../src/modules/platform/platform.module';
 import { createTestApp } from './create-test-app';
 
 it('GET /api/platform/version reports the composeVersion shipped in deploy/compose-version', async () => {
@@ -14,6 +15,7 @@ it('GET /api/platform/version reports the composeVersion shipped in deploy/compo
   const libraryDir = mkdtempSync(join(tmpdir(), 'scriba-compose-version-'));
   try {
     const app = await createTestApp({
+      modules: [PlatformModule],
       libraryDir,
       staticRoot: resolve(__dirname, 'fixtures/static'),
     });
