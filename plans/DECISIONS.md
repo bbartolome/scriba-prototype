@@ -2027,3 +2027,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   4. Line 179 cites `plans/MPR-04.md` lines 182 to 185 as the MPR-06 notes, but the plan does not deal with line 185 (timeout 0 means the default 300 000 ms, not no limit; DECISIONS line 1902 replaces line 1889). Correction: add one sentence to section 5: the API has no field hints and stores `timeout` as given; MPR-09 owns the hint text.
 - **Count.** Rejections of this plan: 2. At 3, the disagreement goes to the Navigator.
 - **Next.** The MPR-06 subagent applies problems 1 to 4. Then Opus reviews again. The plan stays `draft` until Opus approves.
+
+## 2026-11-13 — MPR-06 — Opus third review of the plan (revision 3): NOT APPROVED (rejection 3)
+
+- **Result.** A third Opus reviewer, with no earlier context, returned NOT APPROVED for `plans/MPR-06.md` (revision 3). Ten problems of rejections 1 and 2 are fixed, and no other statement is stale.
+- **Problems.**
+  1. Line 72 (D13): "Both presets and app default are read-only." D2 (line 42) and D9 (line 64) add `POST APP_DEFAULT_ROUTE`. Correction: "Both GET routes write nothing."
+  2. Line 237 (section 8): "MPR-09 sends every config field in its create body and every key in its update body, as SD2 requires." SD2 (`plans/MPR-01.md` line 57) requires only the input fields. SD3 (line 58) and `packages/contracts/src/providers/config.ts` make the update body `openaiCompatibleInputSchema.partial()`. Correction: delete "and every key in its update body", so that line 237 matches line 159.
+- **Count and the Navigator.** This is the third rejection of MPR-06. The two problems are factual corrections, checked against the lines they cite (plan lines 42, 64, 72, 159 and 237; `plans/MPR-01.md` lines 57 and 58). They are not a disagreement with the reviewer, so there is nothing to settle with the Navigator. The Navigator is not reachable in this environment (no local Ollama; see the PLT-16 entries). If the next review rejects the plan again on a point of disagreement, the disagreement goes to the Navigator, and MPR-06 waits for it.
+- **Next.** The orchestrator applies problems 1 and 2 in the plan. Then Opus reviews again. The plan stays `draft` until Opus approves.
