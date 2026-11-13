@@ -1245,3 +1245,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Checked by the reviewer:** HttpClient is root-provided in `@angular/common` 22.2.5 (`_module-chunk.mjs` lines 1522, 1368, 1262, 1028); the `tsconfig.app.json` line numbers (types 6, include 8, exclude 9); the step 5c check prints nothing for multi-line and single-line `import type`; the decision-11 message `Not a Platform envelope.` matches T8 and step 9; a typecheck sketch outside the repo passed.
 - **Not verified by the reviewer:** `npm ci`, Vitest and `ng build` (no `@angular` installed); the `HttpBackend` override at run time.
 - **Next:** revision 3 from the same Haiku subagent. The rejection count for SHL-07 is 2. The `status` stays `draft`.
+
+## 2026-11-13 — SHL-07 — Opus plan review of revision 3 (`plans/SHL-07.md`, draft): APPROVED (text items to fix before planned)
+
+- **Result (Opus subagent, fresh context):** APPROVED. The three items of the rejection of revision 2 (8936be4) are corrected: the step 5a and 10 check is `git status --short -uall -- ':!plans'` (four `??` lines; the default folds the folder into one line, as the reviewer verified in a scratch repo); F1 names a later HEAD that changes only `plans/`; T8 subscribes before its first push, and decision 13 states the guard's scope (it catches only HTTP sent around `API_CLIENT` while the helper is in use).
+- **Criteria (reviewer):** 1 covered (T1 checks the rendered value and the `API_CLIENT` identity; T2 checks the live update and `requests.length === 1`). 2 covered (T3 rejects mismatches for GET and POST; T4 gives the same `ApiSchemaError` as the real client through `HttpTestingController`; the negative control fails only T3 and T4).
+- **Checked by the reviewer:** `HttpBackend` provided by TestBed reaches `HttpClient` in `@angular/common` 22.2.5 (the root factories); `tsconfig.app.json` lines 6, 8 and 9; `angular.json` lines 75 to 77; the eslint boundaries; `git diff --quiet eb30048 HEAD -- apps packages` exits 0.
+- **Text items to fix before `status: planned` (none blocks approval):** line 8 calls SHL-06 "revision 1" (it is revision 2; its file set is unchanged); F18 is labelled "at revision 2" and should say what it checks; F1 lists the commits out of order.
+- **Shared files (reviewer):** OK with SHL-05 and SHL-06.
+- **Not verified by the reviewer:** `npm ci`, Vitest, `tsc` and `ng build` (no `@angular` installed); A2 to A4 and the run-time `HttpBackend` override remain untested until the implementation runs.
+- **Next:** the planner applies the three text items; then `status: planned` and a commit of the plan on `main`. The rejection count for SHL-07 stays at 2.
