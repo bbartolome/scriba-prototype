@@ -146,5 +146,30 @@ describe('providers client: authorization', () => {
     );
 
     expect(await recordsOf(mock, 'text-stream')).toHaveLength(0);
+
+    // An empty key is no key (coordinator decision on the Opus review of MPR-04).
+    // A keyRef with an empty key is not configured, and sends no request.
+    await expectCoded(
+      collectStream(
+        streamChat(
+          targetFor(mock, 'text-stream', { keyRef: 'providers/mock', key: '' }),
+          {
+            messages: [USER],
+          },
+        ),
+      ),
+      'PROVIDER_NOT_CONFIGURED',
+    );
+    expect(await recordsOf(mock, 'text-stream')).toHaveLength(0);
+
+    // A keyless target with an empty key sends the placeholder, not an empty bearer.
+    await collectStream(
+      streamChat(targetFor(mock, 'text-stream', { key: '', retries: 0 }), {
+        messages: [USER],
+      }),
+    );
+    const records = await recordsOf(mock, 'text-stream');
+    expect(records).toHaveLength(1);
+    expect(records[0]?.headers.authorization).toBe('Bearer scriba-keyless');
   });
 });

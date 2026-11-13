@@ -182,7 +182,8 @@ function assertConfigured(target: ProviderTarget, needsModel: boolean): void {
   if (needsModel && target.model === '') {
     throw providerError('PROVIDER_NOT_CONFIGURED');
   }
-  if (target.config.keyRef !== undefined && target.key === undefined) {
+  // An empty key is no key (coordinator decision on the Opus review of MPR-04).
+  if (target.config.keyRef !== undefined && !target.key) {
     throw providerError('PROVIDER_NOT_CONFIGURED');
   }
 }
@@ -196,16 +197,18 @@ function limitFor(
 }
 
 function clientFor(target: ProviderTarget, limitMs: number): OpenAI {
+  // An empty key is no key, so it takes the placeholder too.
+  const key = target.key || KEYLESS_PLACEHOLDER;
   return new OpenAI({
     baseURL: target.config.baseURL,
-    apiKey: target.key ?? KEYLESS_PLACEHOLDER,
+    apiKey: key,
     // S25: explicit values stop the SDK from reading its environment variables.
     adminAPIKey: null,
     organization: null,
     project: null,
     webhookSecret: null,
     logLevel: 'off',
-    fetch: ownHeadersFetch(`Bearer ${target.key ?? KEYLESS_PLACEHOLDER}`),
+    fetch: ownHeadersFetch(`Bearer ${key}`),
     maxRetries: 0,
     timeout: limitMs,
   });
