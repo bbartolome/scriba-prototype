@@ -2066,3 +2066,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Correction.** The entries "2026-11-13 — PLT-16 — Opus third review ... (rejection 3)" and "2026-11-13 — MPR-06 — Opus fourth review ... (rejection 4)"-era text said that the Navigator "is not reachable in this environment (no local Ollama)". That was not verified: the session had been started but no question had been sent. The Navigator answered a probe on 2026-11-13 and this decision. The earlier "no Navigator call" reasoning for MPR-06 rejections 3 and 4 stands, because those were factual corrections, not disagreements.
 - **Line 1966 is superseded.** The "Not committed" line of the reboot entry is no longer true: `dc0f9e5` (main) and `57c5208` (`unit/PLT-16`) hold the changes. This file is append-only, so this entry records it.
 - **Next.** The plan rewrite (sections 4, 7, open points and the stale lines the Navigator listed) is done by a subagent; then Opus reviews the rewritten plan.
+
+## 2026-11-13 — MPR-06 — Opus review of the code (unit/MPR-06: de7730f, ee76d68): APPROVED
+
+- **Result.** An Opus reviewer with no earlier context returned APPROVED for the code of MPR-06, against the approved plan (`plans/MPR-06.md`, status planned at 3de2e48). The four criteria (C1 to C4 in `apps/api/test/providers-api.test.ts`) pass in the logs; E1 to E7 pass; the red run failed first; the full API suite passed (119 tests in 50 files; baseline 108 in 49); lint and a fresh clone passed.
+- **Notes from the implementer, checked by the reviewer.** The node_modules symlink failed (TS2688), so the worktree ran `npm ci`; that also emptied the main repo's node_modules, which was restored with `npm ci` in main (370 entries, git status clean). The invariant get-head sweep rose from 17.11 s to 29.01 s, within the 16.8 s allowance. `setKeyRef` removes the property with `delete`.
+- **Count.** Code rejections of MPR-06: 0.
+- **Next.** Collect the unit onto `batch/current` (rebase, tests, fast-forward), then the batch checks on `main`'s base, then the checkboxes and status `done`.
