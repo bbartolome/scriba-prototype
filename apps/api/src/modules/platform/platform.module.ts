@@ -12,6 +12,7 @@ import { TailnetFilter } from './tailnet/tailnet-filter';
 // Modules outside platform import these from this entry file only.
 export { SCRIBA_ENV, type ScribaEnv } from './boot/env';
 export { BootError } from './boot/boot-error';
+export { EXPECTED_COMPOSE_VERSION } from './compose-version';
 export { ModuleError, ZodValidationPipe } from './errors/index';
 export { EventsPublisher } from './events/events.publisher';
 export { SettingsService } from './settings/settings.service';
