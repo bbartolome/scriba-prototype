@@ -11,7 +11,6 @@ import {
   collectStream,
   streamChat,
   type ChatMessage,
-  type StreamEvent,
 } from '../src/modules/providers/client';
 import {
   expectCoded,
@@ -46,12 +45,6 @@ beforeEach(async () => {
     await resetScenario(mock, scenario);
   }
 });
-
-async function drain(events: AsyncIterable<StreamEvent>): Promise<void> {
-  for await (const event of events) {
-    void event;
-  }
-}
 
 function sleepFor(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -115,9 +108,10 @@ describe('providers client: timeout and abort', () => {
     const second = await events.next();
     expect(second.value).toEqual({ type: 'text-delta', text: 't01' });
 
+    // One read after the abort: the next read rejects with the abort, not a further delta.
     controller.abort();
     const started = performance.now();
-    await expectCoded(drain(events), 'PROVIDER_ABORTED');
+    await expectCoded(events.next(), 'PROVIDER_ABORTED');
     expect(performance.now() - started).toBeLessThan(1000);
 
     await vi.waitFor(async () => {
@@ -166,11 +160,27 @@ describe('providers client: timeout and abort', () => {
       expect(before).toHaveLength(1);
       expect(before[0]?.attempt).toBe(1);
 
+      // Reads until the failure, counting the text deltas that arrive before it.
+      let deltasBeforeFailure = 0;
+      const readUntilFailure = async (): Promise<void> => {
+        for (;;) {
+          const next = await events.next();
+          if (next.done) {
+            return;
+          }
+          if (next.value.type === 'text-delta') {
+            deltasBeforeFailure += 1;
+          }
+        }
+      };
+
       await own.close();
       const closedAt = performance.now();
-      await expectCoded(drain(events), 'PROVIDER_UNREACHABLE');
+      await expectCoded(readUntilFailure(), 'PROVIDER_UNREACHABLE');
       // A retry would first wait 500 ms, the first backoff, so this bound is the no-retry evidence.
       expect(performance.now() - closedAt).toBeLessThan(400);
+      // At most one delta was in flight at the close (long-stream sends a delta every 100 ms).
+      expect(deltasBeforeFailure).toBeLessThanOrEqual(1);
     } finally {
       await own.close().catch(() => undefined);
     }
