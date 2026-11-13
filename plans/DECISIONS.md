@@ -2052,3 +2052,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Result.** A fifth Opus reviewer, with no earlier context, returned APPROVED for `plans/MPR-06.md` (revision 3, base `c664d25`, with the corrections of rejections 3 and 4). The plan covers criteria 1 to 4 with one named test each, agrees with MPR-05, MPR-07, MPR-08, MPR-09 and MPR-12 and with `modules/providers.md`, follows the settled decisions, and keeps open point 1 (the warning for an override naming a deleted provider and reused ids) as an open coordinator decision.
 - **Count.** Rejections of MPR-06 before this approval: 4 (no Navigator call; each was a factual correction, not a disagreement).
 - **Next.** The orchestrator sets `status: planned` and commits `plans/MPR-06.md`. The code stage is the next iteration (step 3: no plan and code in one iteration). The open point 1 stays with the coordinator; the code follows the plan's current first-free-id rule.
+
+## 2026-11-13 — PLT-16 — the post-approval run is recorded (revision 5 step 13); the Navigator's decision on the plan text; a correction
+
+- **Navigator decision (option a).** The Navigator (session e441ef9487974df3be73d324870f7d76, pair mode, the `decide` tool) chose: rewrite `plans/PLT-16.md` sections 4 and 7 and the open points to the post-approval state, using the ADR's recorded results as the record, without re-verifying the tailnet run. Reason: the plan states the unit's current state and guides the next step; the append-only history lives here. Option (b), labelling each stale statement as planning-time, would leave known-false "pending" text in the plan and has already cost three review cycles.
+- **The recorded run (revision 5 step 13).** Source: the Attempt B `Evidence:` and `Decision` of `docs/adr/0001-tailscale-serve-mechanism.md` on `unit/PLT-16` at `9bb78fa` (commits `96d03f7`, `5eb7e21`). Recorded as the ADR records it; not re-run here.
+  - 1c-HTTPS: first request returned 200 with no certificate error; t1 - t0 = 37 s (at most 60): pass.
+  - 1c-restart: `compose restart` at 20:07:38Z; the first request after it returned 200, about 2 s later: pass.
+  - 3b: `/healthz` and the events stream both negotiated HTTP/2: pass.
+  - 2d: Serve-path peer is loopback only (`127.0.0.1`): pass. Published-path peer is `172.22.0.1`, the Docker gateway (2b; line 1050).
+  - Shipped variant: B, the CLI loop. Attempt B: passed. Attempt A: failed (late login; unchanged).
+- **Criterion 1.** The tick is still the coordinator's decision (line 1965). This entry ticks no criterion.
+- **Correction.** The entries "2026-11-13 — PLT-16 — Opus third review ... (rejection 3)" and "2026-11-13 — MPR-06 — Opus fourth review ... (rejection 4)"-era text said that the Navigator "is not reachable in this environment (no local Ollama)". That was not verified: the session had been started but no question had been sent. The Navigator answered a probe on 2026-11-13 and this decision. The earlier "no Navigator call" reasoning for MPR-06 rejections 3 and 4 stands, because those were factual corrections, not disagreements.
+- **Line 1966 is superseded.** The "Not committed" line of the reboot entry is no longer true: `dc0f9e5` (main) and `57c5208` (`unit/PLT-16`) hold the changes. This file is append-only, so this entry records it.
+- **Next.** The plan rewrite (sections 4, 7, open points and the stale lines the Navigator listed) is done by a subagent; then Opus reviews the rewritten plan.
