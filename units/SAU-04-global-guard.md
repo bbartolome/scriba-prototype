@@ -27,10 +27,10 @@ Other websites can't reach the local port (11); unexpected Hosts are refused (12
 - **Request-identity accessor** (NestJS provider/decorator) returning the contract identity shape.
 
 ## Acceptance criteria
-- [ ] Without the cookie, every non-public API route returns 401 in Platform's error shape; `/events` too.
-- [ ] Any Host outside the allowlist gets 403, except `/healthz`; static paths still get the Host check.
-- [ ] A mutation with missing, `null`, foreign or wrong-scheme Origin gets 403.
-- [ ] A loopback request with only a `Tailscale-User-Login` header gets 401.
-- [ ] No response carries `Access-Control-*`; every response carries `frame-ancestors 'none'`.
-- [ ] A test pins the public route set.
-- [ ] With `SCRIBA_DEV_ORIGINS` set, the dev origin/Host pass; without it, they're rejected.
+- [x] Without the cookie, every non-public API route returns 401 in Platform's error shape; `/events` too.
+- [x] Any Host outside the allowlist gets 403, except `/healthz`; static paths still get the Host check.
+- [x] A mutation with missing, `null`, foreign or wrong-scheme Origin gets 403.
+- [x] A loopback request with only a `Tailscale-User-Login` header gets 401.
+- [x] No response carries `Access-Control-*`; every response carries `frame-ancestors 'none'`.
+- [x] A test pins the public route set.
+- [x] With `SCRIBA_DEV_ORIGINS` set, the dev origin/Host pass; without it, they're rejected.
