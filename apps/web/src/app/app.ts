@@ -1,11 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatToolbar } from '@angular/material/toolbar';
+import { ThemeService } from './shell/theme';
+import { ThemeToggle } from './shell/theme-toggle';
 
 @Component({
-  imports: [MatToolbar, RouterOutlet],
+  imports: [MatToolbar, RouterOutlet, ThemeToggle],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
 })
-export class App {}
+export class App {
+  // Starts the theme service, so the stored choice applies before the first render.
+  private readonly theme = inject(ThemeService);
+}
