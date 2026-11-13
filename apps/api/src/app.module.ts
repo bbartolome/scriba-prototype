@@ -9,9 +9,13 @@ import {
   SCRIBA_ENV,
   type ScribaEnv,
 } from './modules/platform/platform.module';
+import { SetupAuthModule } from './modules/setup-auth/setup-auth.module';
 
 // The composition root. Each feature module adds one import here.
-export const COMPOSED_MODULES: Type<unknown>[] = [PlatformModule];
+export const COMPOSED_MODULES: Type<unknown>[] = [
+  PlatformModule,
+  SetupAuthModule,
+];
 
 export interface RootModuleOptions {
   env: ScribaEnv;
