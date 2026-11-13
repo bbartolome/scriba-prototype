@@ -46,6 +46,21 @@ SAU-01 contract slice  ══> phase:contract
 ### Settled decisions (do not reopen)
 The token is reusable; loopback requires a cookie; the tailnet is trusted. `frame-ancestors 'none'`, port-suffixed cookie names, the stateless cookie keyed from the token (replacing the token revokes all cookies), and the peer-address check on the identity header (with a dedicated Serve listener as the fallback if ST-1 disproves it) are adopted. Where a manual check (the `Secure` matrix, the socket-permission smoke test, Serve Host preservation) could disprove an assumption, apply the named fallback and record the result instead of stopping.
 
+### Secure-flag matrix
+The check is whether each browser keeps a cookie that the server sets over plain `http` on each loopback Host. The matrix was not run, so the outcome is unknown:
+
+| Browser | `127.0.0.1` | `localhost` | Status |
+|---|---|---|---|
+| Safari, macOS | not run | not run | Not run: this environment is a Linux container with Chromium only. |
+| Chrome, macOS | not run | not run | Not run: the same reason. |
+| Firefox, macOS | not run | not run | Not run: the same reason. |
+| Firefox (Playwright build) | not run | not run | Not run: no run was made. |
+| WebKit (Playwright build) | not run | not run | Not run: no run was made. |
+
+Cookies are issued only on loopback, and they are issued without the `Secure` attribute (the handshake test for criterion 1 asserts this).
+
+The no-`Secure` fallback is applied (module line 47). A Chromium probe, if run, is optional evidence, not a pass. No Chromium probe was run.
+
 ### Testing principles
 - External behaviour only: HTTP status codes, headers, cookies, redirects, files on disk, rendered UI — never internal services, the token store or the signing helper.
 - Primary seam: the composed NestJS app (Platform's `create-test-app`) against a temp library folder.
