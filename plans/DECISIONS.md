@@ -1306,3 +1306,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Decision (Navigator, option b):** SHL-09 demo step 4 (`units/SHL-09-core-gate.md` line 29) now reads: "Switch dev tools to a phone viewport: the bottom nav appears and the graphs list stays in it. Open the canvas URL directly: the 'larger screen' page in place." No nav change and no criterion change.
 - **Reason:** the canvas route is nav "no" (`modules/shell.md` line 60), so there is no canvas nav item to hide. The graphs entry is phone-minimum (line 59) and stays visible on a phone. The demo text is SHL-09's, and a demo change is the Navigator's call (prompt.md line 152). The criteria (`units/SHL-09-core-gate.md` lines 17 to 21) never name the canvas.
+
+## 2026-11-13 — SHL-06 — open point 2 closed: the banner follows serverReachable only (Navigator decision; session 57d851d74d62450ca9f7cab2d9b775ec)
+
+- **Decision (Navigator, option a):** accepted. The "server unreachable" banner follows `serverReachable` (the stream's `/healthz` probes) only. No hook is added to SHL-02's `HttpApiClient`, and no criterion or unit wording changes. A single failed feature call while the stream stays open shows no banner.
+- **Reason:** criterion 1 (unit line 19) tests stopping the API, which the probe path covers. The parenthetical in unit line 16 modifies "`/healthz` can't be reached"; it is not a second independent trigger. A single failed call is transient, and no criterion covers it. A status-0 signal on `HttpApiClient` would change merged SHL-02 code, and the testing rule (`modules/shell.md` lines 82 to 84) discourages signal wiring of that kind.
+- **Stale statement recorded:** `plans/SHL-02.md` line 134 promised SHL-06 "a signal from an API network failure", but the merged `HttpApiClient` has no signal (`api-client.ts` lines 97 to 103 map each failure to an `ApiError`). The SHL-02 row is stale; a later annotation is cosmetic and not required for this batch.
