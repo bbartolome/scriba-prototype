@@ -946,3 +946,16 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Facts the reviewer verified:** unit lines 14 and 17 to 21; modules/shell.md lines 42, 47 to 63 and 69; the lock versions (Angular 22.2.5, Material 22.2.7, `@playwright/test` 1.65.0, no zone.js or ngx-markdown); ngx-markdown 22.1.1 with a required `marked` peer; `provideAnimationsAsync` deprecated since 20.2; the boundaries policy skips a local import whose target is unknown; the Chromium cache path exists (`~/.cache/ms-playwright/chromium-1254`, aarch64); `/opt/pw-browsers` is absent.
 - **Not verified by the reviewer:** Vite's handling of Host and Origin under the proxy (step 13); Playwright 1.65 launching chromium-1254 through `executablePath`; the live npm registry; whether `RouterOutlet` breaks `app.spec.ts`.
 - **Next:** revision 2 from the same Haiku subagent; then a new Opus review. The `status` stays `draft`.
+
+## 2026-11-13 — SHL-01 — Opus plan review of revision 2 (`plans/SHL-01.md`, draft): APPROVED
+
+- **Result (Opus subagent, fresh context):** APPROVED. The five items of the rejection of revision 1 (commit 5507274) are each corrected:
+  1. One named Routes export per owned path (`setupRoutes`, `settingsRoutes`, `projectsRoutes`, `filesRoutes`, `reviewRoutes`, and the rest). Each entry loads only its own export. Step 10 probes a feature with two paths, and each test expects a different text.
+  2. Section 5 lists PST-09, PST-10, PST-20 and TRG-05 (and TRG-13), with the counts: Project store 3, Setup & auth 2, every other feature 1, total 10. The "some two" gap in the unit wording is open point 3.
+  3. `pathMatch: 'full'` on `/projects` (children at `''`), so `/projects/p1/chat` falls to `projects/:projectId`.
+  4. "Material theme" reads as the CSS theme only: `src/material-theme.scss` in `styles` of `angular.json` (line 27). `@angular/material` 22.2.7 exports only `provideNativeDateAdapter` as a provide function, plus the `MATERIAL_ANIMATIONS` token.
+  5. Decision 12 cites PLT-03 plan line 13 (the feature-folder line).
+- **Facts the reviewer verified:** the route lines of SAU-06, SAU-15, PST-09, PST-10, PST-20, TRG-05 and TRG-13; the module table of 10 top-level paths (`modules/shell.md` lines 47 to 63, 69); the lock versions; ngx-markdown 22.1.1 with a required `marked` peer; `provideAnimationsAsync` deprecated since 20.2; the boundaries policy skips unknown local targets; the proxy keys with no `changeOrigin`; the Chromium 1254 path, with `/opt/pw-browsers` absent.
+- **Text items to fix in passing (none blocks approval):** section 7(a) HEAD and tree state (now `5507274`, not clean); the DECISIONS line range (the file has 948 lines); the order of the open points (1, 3, 2).
+- **Not verified by the reviewer:** Vite's handling of Host when `changeOrigin` is unset (step 13); Playwright 1.65 launching chromium-1254; the live npm registry; whether `RouterOutlet` breaks `app.spec.ts`; whether the Angular test builder type-checks spec files. Each is covered by a step.
+- **Next:** `status: planned` on the plan and a commit of `plans/SHL-01.md` on `main`. The code starts in a later iteration (prompt.md Step 3: no plan and code in the same iteration).
