@@ -291,7 +291,7 @@ describe('SseClient', () => {
       expect(sources).toHaveLength(1);
       expect(debug).toHaveBeenCalledWith(
         '[sse] /setup navigation failed',
-        expect.any(Error),
+        new Error('NG04002'),
       );
 
       replies[SETUP_STATUS_ROUTE] = 200;
