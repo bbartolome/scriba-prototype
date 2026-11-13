@@ -21,7 +21,7 @@ From this unit on, the Shell owns `apps/web`'s composition root, route table and
 - **Not-found page** owned by the Shell.
 
 ## Acceptance criteria
-- [ ] `npm run dev` serves the Shell; through the proxy `/healthz` answers and an `EventSource` on `/events` receives `platform/hello`; `platform/echo` envelopes from `POST /api/platform/echo` arrive with no buffering delay.
-- [ ] The proxy forwards Host and Origin unchanged (asserted on a request echo).
-- [ ] An unknown path renders the not-found page.
-- [ ] The route `data` type is exported for features.
+- [x] `npm run dev` serves the Shell; through the proxy `/healthz` answers and an `EventSource` on `/events` receives `platform/hello`; `platform/echo` envelopes from `POST /api/platform/echo` arrive with no buffering delay.
+- [x] The proxy forwards Host and Origin unchanged (asserted on a request echo).
+- [x] An unknown path renders the not-found page.
+- [x] The route `data` type is exported for features.

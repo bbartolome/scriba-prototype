@@ -1,6 +1,6 @@
 ---
 id: SHL-01
-status: planned
+status: done
 ---
 
 # SHL-01 plan — composition root, route table, not-found page, dev proxy
