@@ -1014,3 +1014,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Reviewer's checks passed:** `externalDependencies` at line 205 of the application builder schema, and absent from the dev-server schema; the dev server reads it from the build options; `contracts-boot` inherits the key; ngx-markdown line 252 has the dynamic import; no unit or module mentions KaTeX or math.
 - **Not verified by the reviewer:** the browser run with the change (the figures are the code subagent's, and steps 11A and 12 reproduce them); Playwright launching Chromium 1254; the live npm registry; Vite's default for `changeOrigin`.
 - **Next:** the planner fixes (a) to (d) in the plan; then `status: planned` and a commit of the plan on `main`. The rejection count for SHL-01 stays at 2.
+
+## 2026-11-13 — PLT-16 — Navigator decision N5 (criterion 2c, the `http://scriba` name half; Navigator session 43e5a7b0)
+
+- **N5 (option b):** criterion 2c is deferred. Criterion 2 stays unticked. The cause, recorded verbatim: "no MagicDNS resolution of scriba from this shell: 127.0.0.1:4168 ECONNREFUSED (no listener in namespace); 100.100.100.100 SERVFAIL for scriba, scriba.ts.net, installer-tailscale-1; node Running; resolv.conf 127.0.0.11 only".
+- **Why the first answer was challenged:** the Navigator's first answer (option b with a precondition) assumed that tailscaled's local DNS listens at 127.0.0.1:4168 in the shell's namespace. The driver checked and found no listener: the `/proc` tables (udp, udp6, tcp, tcp6) show no socket on hex 0x1048 (4168), with a positive control (a temporary listener on 127.0.0.1:4168 shows as `0100007F:1048`, then disappears). A node DNS query to 127.0.0.1:4168 returns ECONNREFUSED. The driver also queried 100.100.100.100:53, which returns SERVFAIL for `scriba`, `scriba.ts.net` and `installer-tailscale-1`.
+- **Rejected option (a):** `curl --resolve scriba:80:<IP4>` tests the IP, not the name. It would weaken the criterion (prompt.md line 146).
+- **Rejected:** `tailscale set-dns` changes the tailnet, which is barred (prompt.md line 146).
+- **Reason:** prompt.md lines 148 to 153: no local procedure exists, so the Navigator defers and the checkbox stays unticked. The PLT-15 deferral pattern (lines 909 to 913) applies.
