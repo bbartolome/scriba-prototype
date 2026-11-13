@@ -2141,3 +2141,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   6. Line 239 says main "is at 08c75ef now"; main is at 182b10d, and e4e2d20 records this plan's rejection 1. Line 203 cites `connection-test.ts` "line 8" for the error shape; line 8 is `connectionTestStageSchema`, and the error schema is lines 10 to 15.
 - **Count.** Rejections of MPR-07: 2. All six are factual; none disagrees with a settled decision.
 - **Next.** The MPR-07 subagent applies items 1 to 6 to `plans/MPR-07.md` (untracked). Then Opus reviews again.
+
+## 2026-11-13 — PLT-16 — Opus review of the rewritten plan (rejection 5 of the rewrite): NOT APPROVED
+
+- **Result.** The fifth Opus review of the rewrite returned NOT APPROVED. The four items of rejection 4 are fixed in substance (the step 13 gap list, the status-cell notes, the revision 2 approval citation, the DECISIONS row). Three factual items remain.
+  1. Line 24 (the note on the Status column) says "The Status column is the planning-time state, before the post-approval run", but D19 (line 35) has a Status cell that records the post-approval state ("Recorded. The wording is the ADR's, and the decision is Shipped variant B", with the ADR at `9bb78fa` as source). Correction: "The Status column, except D19's, is the planning-time state", or reword D19's cell as planning-time.
+  2. Section 7(b) (line 285) and D21 (line 36): 7(b) lists "Compose's `command:` replaces the image's CMD ... (D21)" under "Assumed (not checked)", but ADR line 23 records the Serve config "re-applied by the CLI loop at 20:07:38.70", and that loop exists only in the `command:` block, so the wrapper ran in place of the CMD. Section 7(d) has no D21 bullet, so D21's "not run here" still stands. Correction: add a 7(d) bullet saying the wrapper ran (ADR line 23), which shows that `command:` replaced the CMD; keep only "`exec` makes containerboot the foreground process (no process read)" in 7(b).
+  3. The RUNBOOK row (line 114) cites "section 4a, line 209". The new notes moved section 4a to line 213; line 209 is now criterion 3's closing bullet. Correction: "section 4a, line 213", or drop the line number.
+- **Count.** Rejections of the rewrite: 5. These are factual and internal-consistency corrections, not disagreements with a settled decision.
+- **Next.** The subagent applies items 1 to 3 to `plans/PLT-16.md` (uncommitted). Then Opus reviews again.
