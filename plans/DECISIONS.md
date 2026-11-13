@@ -1279,3 +1279,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Shared files (reviewer):** OK with SHL-06 (the `app.ts` imports and line 9 conflict, and the `app.html` toolbar and outlet changes, each with a merge rule) and SHL-07 (only the new `shell/testing/match-media.ts`).
 - **Not verified by the reviewer:** real runs (no `node_modules`); Playwright launching Chromium 1254; the jsdom `insertRule` path; `Location` under `RouterTestingHarness`.
 - **Next:** revision 2 from the same Haiku subagent; the Navigator decides candidates (a) to (c). The rejection count for SHL-05 is 1. The `status` stays `draft`.
+
+## 2026-11-13 — SHL-05 — nav content slot (Navigator decision; session 57d851d74d62450ca9f7cab2d9b775ec)
+
+- **Decision (Navigator, option b):** SHL-05 adds one named content slot in the Shell's nav component (a projected `ng-content` named `nav-project`) that a feature may fill. The route-data nav (label, icon, order, minimum class, scope) remains the only mechanism for static entries. PST-09 fills the slot with the active-project picker (PST-09 unit line 23). AGL-07's docked slot is optional and deferred (AGL-07 unit line 8); it is not added now.
+- **Reason:** PST-09 asks for a live widget in the nav slot, which a route-table row cannot express; option (a) would force PST-09 to amend its own unit. Option (c) is incoherent because the nav component is Shell-owned (`modules/shell.md` line 69), so a feature cannot project content into it; the slot has to be Shell-owned, which is option (b). An empty slot renders nothing, so existing navs are unaffected.
+- **Documentation:** one row is added to the Angular APIs table of `modules/shell.md` (line 74), "Nav content slot (named `ng-content`, `nav-project`) for a live widget in the nav | project-scoped features (the PST-09 picker) | SHL-05", mirroring the active-project signal row (SHL-08). The slot is inert until SHL-08's signal and PST-09 exist.

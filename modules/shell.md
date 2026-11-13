@@ -71,6 +71,7 @@ Pages with richer layouts on larger screens (files editing, the Tools editor) de
 | SSE client: per-module stream, connection-state signal, reconcile tick | Agent loop, Graph runner, Project store | SHL-03 |
 | Device-class signal, breakpoint gate, `deviceClassGuard` | every feature UI | SHL-05 |
 | Active-project signal | project-scoped features | SHL-08 |
+| Nav content slot (named `ng-content`, `nav-project`) for a live widget in the nav | project-scoped features (the PST-09 picker) | SHL-05 |
 | Notices service; theme toggle component | Setup & auth (compose warning, preferences step), any feature | SHL-04 |
 | Fake API client + fake event source | every feature's route tests | SHL-07 |
 | Tool-call card | Agent loop chat (M1); optionally Graph runner node results | SHL-10 |
