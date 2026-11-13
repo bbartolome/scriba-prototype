@@ -22,7 +22,7 @@ Live tokens, cards, node statuses and queue updates (9); catch-up after the iPad
 - **Reconcile tick:** emitted once when the stream re-opens after a drop, when the page becomes visible (`visibilitychange`), on `online`, and on `pageshow` from the back/forward cache. Features register a reconcile callback that fetches their own "current run state" endpoint. No event replay is relied on.
 
 ## Acceptance criteria (via a stubbed global `EventSource`)
-- [ ] Envelope events for module A reach only A's subscribers; unknown modules and types are ignored without error.
-- [ ] Simulated drop then re-open, `visibilitychange` to visible, `online` and `pageshow` each emit exactly one reconcile tick.
-- [ ] A `CLOSED` stream is recreated with capped backoff after a `/healthz` check.
-- [ ] The connection-state signal transitions correctly through each case.
+- [x] Envelope events for module A reach only A's subscribers; unknown modules and types are ignored without error.
+- [x] Simulated drop then re-open, `visibilitychange` to visible, `online` and `pageshow` each emit exactly one reconcile tick.
+- [x] A `CLOSED` stream is recreated with capped backoff after a `/healthz` check.
+- [x] The connection-state signal transitions correctly through each case.

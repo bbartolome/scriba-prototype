@@ -17,5 +17,5 @@ unblocks: [SHL-05, SHL-06, SHL-09]
 - **Notices service** (root): an app-wide banner area and snackbars. Features post notices (e.g. Setup & auth's compose-version mismatch warning); the connection indicator and the "server unreachable" banner (SHL-06) and the breakpoint "view below class" notice (SHL-05) use it. Notices can be dismissible.
 
 ## Acceptance criteria
-- [ ] Light and dark themes follow the OS setting; the override persists across reloads on the same device and makes no server call.
-- [ ] A feature-posted banner and snackbar render in the shared area and can be dismissed.
+- [x] Light and dark themes follow the OS setting; the override persists across reloads on the same device and makes no server call.
+- [x] A feature-posted banner and snackbar render in the shared area and can be dismissed.

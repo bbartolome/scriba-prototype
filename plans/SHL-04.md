@@ -1,6 +1,6 @@
 ---
 id: SHL-04
-status: planned
+status: done
 ---
 
 # SHL-04 plan — theming, theme toggle and notices service

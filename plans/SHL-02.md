@@ -1,6 +1,6 @@
 ---
 id: SHL-02
-status: planned
+status: done
 ---
 
 # SHL-02 plan — typed API client

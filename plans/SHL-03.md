@@ -1,6 +1,6 @@
 ---
 id: SHL-03
-status: planned
+status: done
 ---
 
 # SHL-03 plan — SSE client: one stream, per-module streams, connection state, reconnect, reconcile tick

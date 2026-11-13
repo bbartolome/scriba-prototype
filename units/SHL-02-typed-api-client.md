@@ -22,6 +22,6 @@ Features never parse errors by hand (story 38); plain-language errors with the c
 - Only `get` and `post` methods; no "GET with side effects" helper, no other verbs.
 
 ## Acceptance criteria
-- [ ] Returns parsed data for a valid response; a typed error (status, code, message) for a Platform error body; a distinct failure for a schema mismatch.
-- [ ] A 401 navigates to `/setup`.
-- [ ] Requests are same-origin with credentials and no added auth headers.
+- [x] Returns parsed data for a valid response; a typed error (status, code, message) for a Platform error body; a distinct failure for a schema mismatch.
+- [x] A 401 navigates to `/setup`.
+- [x] Requests are same-origin with credentials and no added auth headers.
