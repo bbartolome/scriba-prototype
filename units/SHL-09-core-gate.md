@@ -26,6 +26,6 @@ Merging this **closes Frontend shell `phase:core`**.
 1. `npm run dev`, open the app.
 2. Check the landing page's version and health.
 3. Toggle dark mode and reload; the choice persists.
-4. Switch dev tools to a phone viewport: the bottom nav appears and the canvas entry is hidden. Open the canvas URL directly: the "larger screen" page.
+4. Switch dev tools to a phone viewport: the bottom nav appears and the graphs list stays in it. Open the canvas URL directly: the "larger screen" page in place.
 5. Stop the API: reconnecting indicator, then the "server unreachable" banner.
 6. Start the API: it reconnects and fires a reconcile tick (visible in the debug log).
