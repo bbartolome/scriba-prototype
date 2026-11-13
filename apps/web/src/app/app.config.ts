@@ -1,6 +1,8 @@
 import { provideHttpClient } from '@angular/common/http';
 import {
   ApplicationConfig,
+  inject,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
   SecurityContext,
@@ -8,6 +10,8 @@ import {
 import { provideRouter } from '@angular/router';
 import { provideMarkdown, SANITIZE } from 'ngx-markdown';
 import { APP_ROUTES } from './app.routes';
+import { SseClient } from './shell/sse-client';
+import { SSE_CLIENT } from './shell/tokens';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,6 +21,10 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideMarkdown({
       sanitize: { provide: SANITIZE, useValue: SecurityContext.HTML },
+    }),
+    { provide: SSE_CLIENT, useClass: SseClient },
+    provideAppInitializer(() => {
+      inject(SSE_CLIENT).start();
     }),
   ],
 };
