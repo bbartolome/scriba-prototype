@@ -2219,3 +2219,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Live state (checked by the reviewer).** `git worktree list` shows only main and `/tmp/wt-MPR-07`; `/tmp/wt-PLT-16` is absent; `unit/PLT-16` is at `9bb78fa`; `plt16-check` is running (both containers RestartCount 0, StartedAt 20:19:03Z); step 15 has not run.
 - **Count.** Rejections of the rewrite: 10. These are factual corrections, not disagreements with a settled decision.
 - **Next.** The subagent applies items 1 and 2 to `plans/PLT-16.md` (uncommitted). Then Opus reviews again.
+
+## 2026-11-13 — PLT-16 — Opus eleventh review of the rewritten plan: APPROVED
+
+- **Result.** An Opus reviewer with no earlier context returned APPROVED for `plans/PLT-16.md` (the option (a) rewrite, status `planned`, on top of `cd8eba7`). The five criteria each have named checks (criterion 2 has 2a to 2e); every recorded result matches the branch ADR at `9bb78fa`; the NeedsLogin deviation is stated as one the coordinator weighs; no criterion is ticked, and criteria 1 and 5 are left to the coordinator (line 1965 for criterion 1).
+- **Count.** Rejections of the rewrite: 10 (all factual or consistency corrections; no Navigator call beyond the one recorded above).
+- **Next.** The orchestrator commits `plans/PLT-16.md`. The unit's code is on `unit/PLT-16` (variant B, 9bb78fa); the next step for that batch is the batch collection and checks, subject to the coordinator's decisions on criteria 1 and 5.
