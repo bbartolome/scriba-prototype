@@ -1,0 +1,3 @@
+Linux: Ollama must listen beyond 127.0.0.1, or Scriba cannot reach it through host.docker.internal.
+Set OLLAMA_HOST=0.0.0.0 in the environment of the Ollama service on this host, then restart Ollama.
+OLLAMA_HOST=0.0.0.0 also listens on the LAN, so block port 11434 in the firewall on a shared network.
