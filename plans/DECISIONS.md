@@ -914,3 +914,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Checkboxes:** criterion 1 stays unticked (the Docker half passed; the LAN half is deferred). Criterion 2 stays unticked (Navigator decision A, dffd203). Criteria 3, 4 and 5 passed (6e06730) and are ticked in the batch step.
 - **Step 11 record, completed here:** the `CFG` line printed at step 4 is `/tmp/plt15-cfg.e3ie`; the `INST` and `LIB` lines printed at step 9 are `/Users/bbartolome/workspace/.plt15-inst.HnbQ` and `/Users/bbartolome/workspace/.plt15-books.dOpe` (see 6e06730). The `tailscale/tailscale:v1.104.4` image is left in place on purpose (PLT-16 reuses it). The native Linux leg (criterion 2 `stat -c %u:%g` on the host path, open point 3): not run. The existing exited `scriba-check2` is untouched.
 - **Step 12 (cleanup) follows in the next record.**
+
+## 2026-11-13 — PLT-15 — Cleanup (plan step 12) after the Navigator deferral
+
+- `docker compose -p plt15-check --project-directory /Users/bbartolome/workspace/.plt15-inst.HnbQ down -v`: containers `plt15-check-scriba-1` and `plt15-check-tailscale-1` removed; volumes `plt15-check_tailscale-state` and `plt15-check_tailscale-socket` removed; network `plt15-check_default` removed. No `plt15-check` row in `docker compose ls -a`; no `plt15-check_` volume.
+- `.scriba/` removed as root in a busybox container from `/Users/bbartolome/workspace/.plt15-books.dOpe`; then `rm -rf` of `.plt15-books.dOpe`, `.plt15-inst.HnbQ` and `/tmp/plt15-cfg.e3ie`. No removal was refused.
+- Image `bbartolome/scriba:plt15-check` untagged and deleted (`1fbdc49085ae`). `/tmp/plt15-fresh` removed. `git worktree remove /tmp/plt15-wt` succeeded.
+- Kept on purpose: `tailscale/tailscale:v1.104.4` (PLT-16 reuses it); `bbartolome/scriba:local-arm64` (`a5fca3e65422`); the existing exited `scriba-check2` (untouched); branch `unit/PLT-15` (holds the commit `dfbd250`; the batch step moves it to `main`).
