@@ -2195,3 +2195,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **For the coordinator (not a plan defect).** Both `plt16-check` containers show StartedAt 2026-11-13T20:19:03Z with RestartCount 0. That is a start after the ADR's 20:07:38Z restart, and no record in the ADR or DECISIONS covers it. Its cause is not checked here.
 - **Count.** Rejections of the rewrite: 8. These are factual corrections, not disagreements with a settled decision.
 - **Next.** The subagent applies items 1 and 2 to `plans/PLT-16.md` (uncommitted). Then Opus reviews again.
+
+## 2026-11-13 — MPR-07 — Opus fifth review of the plan (revision 5): APPROVED
+
+- **Result.** An Opus reviewer with no earlier context returned APPROVED for `plans/MPR-07.md` (revision 5). The two criteria (unit lines 24 and 25) each have a named test through HTTP on the composed app against the mock; the live-provider half is recorded as untestable in CI (`units/README.md` line 133). No probe remains; the stages come from the list call's codes (MPR-04 line 181). H6 is the single BAD_RESPONSE hint for list and chat, with the credit sentence. E6, E7 and E8 have their scenario files.
+- **Count.** Rejections of MPR-07 before this approval: 4 (all factual; no Navigator call).
+- **Next.** The orchestrator sets `status: planned` and commits `plans/MPR-07.md`. The code stage is the next iteration (step 3: no plan and code in one iteration).
