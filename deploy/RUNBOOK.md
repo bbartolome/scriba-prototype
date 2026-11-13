@@ -87,10 +87,10 @@ ST-4 is deferred: this runbook covers kernel mode only, which `deploy/compose.ya
 
 ## Pre-release checklist
 
-| Check                                       | Where it runs        | Status                                                                                                                                                  |
-| ------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ST-1 late login, HTTPS within 60 s, restart | Real tailnet, manual | Variant B in compose; mechanism retest failed (ADR Attempt B); HTTPS not run (login approval pending). See `docs/adr/0001-tailscale-serve-mechanism.md` |
-| ST-1 refusals and peer addresses            | Real tailnet, manual | Not yet run                                                                                                                                             |
-| ST-2 SSE over the tailnet URL, HTTP/2       | Real tailnet, manual | Not yet run                                                                                                                                             |
-| ST-3 host Ollama, Mac (Docker Desktop)      | Mac, manual          | Not yet run                                                                                                                                             |
-| ST-3 host Ollama, Linux (Docker Engine)     | Linux host, manual   | Not yet run                                                                                                                                             |
+| Check                                       | Where it runs        | Status                                                                                                                                                             |
+| ------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ST-1 late login, HTTPS within 60 s, restart | Real tailnet, manual | Variant B in compose; mechanism retest passed (reader: --network host container); HTTPS pending (login approval). See `docs/adr/0001-tailscale-serve-mechanism.md` |
+| ST-1 refusals and peer addresses            | Real tailnet, manual | Not yet run                                                                                                                                                        |
+| ST-2 SSE over the tailnet URL, HTTP/2       | Real tailnet, manual | Not yet run                                                                                                                                                        |
+| ST-3 host Ollama, Mac (Docker Desktop)      | Mac, manual          | Not yet run                                                                                                                                                        |
+| ST-3 host Ollama, Linux (Docker Engine)     | Linux host, manual   | Not yet run                                                                                                                                                        |

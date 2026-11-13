@@ -1,6 +1,6 @@
 # ADR 0001: Tailscale Serve mechanism
 
-Status: draft. The manual ST-1 run is not complete, and no variant is shipped. Attempt A failed, and Attempt B failed the mechanism retest.
+Status: draft. The manual ST-1 run is not complete, and no variant is shipped. Attempt A failed. Attempt B passed the mechanism retest; its HTTPS and restart checks wait for the login approval.
 
 ## Context
 
@@ -16,11 +16,11 @@ Evidence: smoke run on `plt16-check` (DECISIONS lines 1061 to 1062; the decision
 
 ## Attempt B: CLI loop
 
-Design (PLT-16 plan revision 2, section 1a): containerboot stays the foreground process, through `exec`. A background loop waits for an IP with no timeout, then runs `tailscale serve reset` and `tailscale serve --bg --https=443 http://127.0.0.1:8080` once. `TS_BOOT_TIMEOUT: 8760h` lifts containerboot's boot deadline (assumed; the retest read no restart 61 s after start, and its later reads did not run). `TS_SERVE_CONFIG` and `deploy/serve/` are removed.
+Design (PLT-16 plan revision 2, section 1a): containerboot stays the foreground process, through `exec`. A background loop waits for an IP with no timeout, then runs `tailscale serve reset` and `tailscale serve --bg --https=443 http://127.0.0.1:8080` once. `TS_BOOT_TIMEOUT: 8760h` lifts containerboot's boot deadline (assumed; the retest read no restart from t0 to t0+180 s, see Evidence). `TS_SERVE_CONFIG` and `deploy/serve/` are removed.
 
-Result: failed (mechanism retest, C6 stop rule: the M3 host read at t0 was 000, connection refused; the cause is not established, see Evidence)
+Result: passed (mechanism only; login approval pending)
 
-Evidence: `docker compose up -d --wait` (project `plt16-check`, image `bbartolome/scriba:plt16-check` built from `unit/PLT-16` at `47026a1`) returned 0 at t0 = 2026-11-13T16:28:07Z. M1 at 16:28:31Z: `restarts=0`, `started=2026-11-13T16:28:01.395848386Z`, `running=true`; a re-read at 16:29:02Z (61 s after the start) gave the same values. M2 at 16:28:31Z: `tailscale ip -4` printed no IP (its message went to stderr, exit 1), `tailscale serve status` printed `No serve config`, and the LocalAPI status of step 12a printed `NeedsLogin`. M3 at 16:28:31Z: scriba `healthy`, `/healthz` in `scriba` 200, and host `127.0.0.1:18080/healthz` 000 (curl exit 7, connection refused); the host read was 000 again at 16:29:01Z. A `--network host` container got `HTTP/1.1 200 OK` for `http://127.0.0.1:18080/healthz` at 16:29:19Z. The shell that ran the host read has no listener on port 18080 in its own network namespace (no such socket in `/proc/net/tcp`), so that read does not show whether the publish is up. M4 at 16:28:31Z: 2 login URL lines. The reads at +60, +120 and +180 s did not run, because the stop rule fired at t0.
+Evidence: `docker compose up -d --wait` (project `plt16-check`, image `bbartolome/scriba:plt16-check` built from `unit/PLT-16` at `9f76fcc`) returned 0 at t0 = 2026-11-13T16:40:32Z. The mechanism reads were taken at t0 + 13 s (16:40:45Z), t0+60 (16:41:32Z), t0+120 (16:42:32Z) and t0+180 (16:43:32Z). At each read: M1 `restarts=0`, `started=2026-11-13T16:40:26.353034259Z`, `running=true`. M2 `tailscale ip -4` printed 0 bytes, and `tailscale serve status` printed `No serve config`. M3 scriba `healthy`, `/healthz` in `scriba` 200, and host `127.0.0.1:18080/healthz` 200. M4 printed 2 login URL lines at every read (counts only; the URL is not recorded). The host read used a `busybox` container run with `--network host` on the same Docker daemon, the approved substitute reader; the shell that runs these commands cannot reach port 18080 and was not used for it. An earlier run, recorded at commit `9f76fcc` with a host read of 000 from that shell, is void: the read could not reach the published port, so it does not count as a failure.
 
 ## Decision
 
