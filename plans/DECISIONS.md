@@ -1182,3 +1182,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Checked by the reviewer:** the wire guard matches `sseEnvelopeSchema` (T13), and the Shell has only `import type` from contracts; the production build is 325.48 kB with no CommonJS lines and no zod markers; the race guard does not contradict decision 10; the decision-16 cleanup works in a scratch probe (no tick and readyState 2 after `resetTestingModule`), though no unit test covers it; the tests use only the public signals and the stubbed wire.
 - **Not verified by the reviewer:** the dev-stack one-stream check (not run, to avoid clashing with other dev servers); real browser drops, readyState changes, `visibilitychange` and `pageshow`.
 - **Next:** the code agent applies the correction on `unit/SHL-03` and reports. The code rejection count for SHL-03 is 1.
+
+## 2026-11-13 — SHL-03 — Opus code re-review of `unit/SHL-03` after the correction (head ad7e8cb, on 402e9bc): APPROVED
+
+- **Result (Opus subagent, fresh context):** APPROVED. The correction (commit `ad7e8cb`) changes exactly two files: `sse-client.ts` (one line, `this.failures += 1;` just before `connect('reconnecting')`, with a comment) and `sse-client.spec.ts` (T9 made stricter in place; still 12 tests). Both are in plan section 2.
+- **Fix (reviewer):** correct. With the increment removed, T9 fails ("expected 2000 to be 3000"); with it restored, all 12 pass. Each recovery adds exactly one failure, and an open resets the count to 0, so nothing is counted twice. Streams that never open wait 1, 2, 4, 8, 16, 30, 30 and 30 s; after an open, a close waits 1 s, and the next stream that never opens waits 2 s.
+- **Criteria (reviewer):** 1 passes (T1 to T3; the sse-client run gives 12 tests). 2 passes (T4 to T7; decision 11 holds: the first open does not tick). 3 passes (T8 schedule and cap at 1, 3, 7, 15, 31, 61 and 91 s; T9 with the fix; T10). 4 passes (T11 and T12). The decision-10 guard is unchanged.
+- **Gates:** web 18 tests pass; lint, tsc for both configs and prettier pass; the production build is 325.50 kB with 0 CommonJS lines and no `scriba-contracts` in the browser bundle.
+- **Protected paths:** unchanged from the merge base 3345bfe.
+- **Next:** the main batch is assembled (SHL-02, SHL-03, SHL-04 in ID order).
