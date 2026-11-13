@@ -32,3 +32,18 @@ export const PROVIDER_ERROR_CODE_VALUES = [
 export const providerErrorCodeSchema = z.enum(PROVIDER_ERROR_CODE_VALUES);
 
 export type ProviderErrorCode = z.infer<typeof providerErrorCodeSchema>;
+
+// HTTP status for each provider error code, from the Navigator's option A (plans/DECISIONS.md 1bef5ff).
+// No PROVIDER code is 401: the Shell sends every HTTP 401 to /setup.
+export const PROVIDER_ERROR_STATUS = {
+  PROVIDER_UNREACHABLE: 502,
+  PROVIDER_UNAUTHORIZED: 502,
+  PROVIDER_MODEL_NOT_FOUND: 502,
+  PROVIDER_TIMEOUT: 504,
+  PROVIDER_RATE_LIMITED: 503,
+  PROVIDER_BAD_RESPONSE: 502,
+  PROVIDER_ABORTED: 409,
+  PROVIDER_NOT_CONFIGURED: 409,
+  PROVIDER_DEFAULT_IN_USE: 409,
+  PROVIDER_NOT_FOUND: 404,
+} as const;

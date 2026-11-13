@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PROVIDER_PRESET_IDS } from './defaults.js';
 
 // Stored config of an openai-compatible provider. `id` is a slug, stable after creation.
 // `keyRef` is an opaque reference into the secrets file, absent for keyless providers.
@@ -46,10 +47,21 @@ export const providerListSchema = z.object({
   providers: z.array(providerReadSchema),
 });
 
-// Body of POST /api/providers. `presetId` picks the id base. It is not stored.
-export const providerCreateSchema = openaiCompatibleInputSchema.extend({
-  presetId: z.string().min(1).optional(),
-});
+// Body of POST /api/providers. The id base is `presetId` when given, else the slug of `label`.
+// Neither is stored. A body must carry at least one of them. The label needs an ASCII letter or digit,
+// so its slug is never empty.
+export const providerCreateSchema = openaiCompatibleInputSchema
+  .extend({
+    presetId: z.enum(PROVIDER_PRESET_IDS).optional(),
+    label: z
+      .string()
+      .min(1)
+      .regex(/[A-Za-z0-9]/)
+      .optional(),
+  })
+  .refine((body) => body.presetId !== undefined || body.label !== undefined, {
+    message: 'A create body needs a presetId or a label',
+  });
 
 // Body of POST /api/providers/:id/update: any subset of the input fields.
 export const providerUpdateSchema = openaiCompatibleInputSchema.partial();

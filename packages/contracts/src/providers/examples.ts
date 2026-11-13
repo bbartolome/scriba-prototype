@@ -73,6 +73,17 @@ export const PROVIDERS_EXAMPLES = {
     timeout: 120000,
     retries: 2,
   } satisfies ProviderCreate,
+  createFromLabel: {
+    label: 'My Local Llama',
+    kind: 'openai-compatible',
+    baseURL: 'http://localhost:9000/v1',
+    model: '',
+    temperature: 0.7,
+    contextSize: 64000,
+    maxTokens: 4096,
+    timeout: 120000,
+    retries: 2,
+  } satisfies ProviderCreate,
   updateModel: { model: 'llama3.1' } satisfies ProviderUpdate,
   providerList: {
     providers: [

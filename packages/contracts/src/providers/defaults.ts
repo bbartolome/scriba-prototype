@@ -22,6 +22,14 @@ export const presetListSchema = z.object({
   presets: z.array(presetSchema),
 });
 
+// The ids of the four presets, in unit order. A create body's presetId is one of these.
+export const PROVIDER_PRESET_IDS = [
+  'ollama',
+  'lm-studio',
+  'openai',
+  'openrouter',
+] as const;
+
 // The four presets, in unit order. Ollama is first.
 export const PROVIDER_PRESETS: Preset[] = [
   {
