@@ -30,7 +30,7 @@ Install with one pasted command, no clone/build/YAML (story 1); fail fast on mis
   6. `docker compose up -d`.
   7. Wait for healthy, with a timeout and a pointer to `docker compose logs` on failure.
   8. Print the setup URL from `<library>/.scriba/setup-url` (written by Setup & auth); until it exists, print the loopback URL.
-  9. Print a hint: Ollama with `OLLAMA_CONTEXT_LENGTH` ≥ 64000, plus the Linux host-binding note from ST-3.
+  9. Print a hint: Ollama with `OLLAMA_CONTEXT_LENGTH` ≥ 64000, plus the Linux host-binding note from ST-3, which is the text of `/opt/installer/installer-hint.txt` in the image (source `deploy/installer-hint.txt`, written by PLT-16).
 - **Tests:** Vitest drives the emitted script in a temp `HOME` with a stub `docker` on `PATH` that records its calls and serves the `tar` extraction.
 
 ## Acceptance criteria
