@@ -138,6 +138,8 @@ export async function* streamChat(
       ) {
         throw error.failure.error;
       }
+      // The failed attempt's timer and abort wiring end before the backoff, so no stale timer runs during it.
+      scope.close();
       await sleep(
         retryWaitMs(attempt, error.failure.retryAfterMs),
         request.signal,
@@ -171,6 +173,7 @@ export async function listModels(
       if (!mayRetry(error.failure, attempt, target.config.retries, false)) {
         throw error.failure.error;
       }
+      scope.close();
       await sleep(retryWaitMs(attempt, error.failure.retryAfterMs), signal);
     } finally {
       scope.close();
@@ -303,6 +306,7 @@ async function* runStreamAttempt(
       scope.arm();
     }
   } catch (raw) {
+    scope.disarm();
     throw new AttemptFailure(classifyFailure(raw, scope.state()));
   }
   // The SDK returns silently on an abort or a timeout, so those are checked before the stream counts as ended (S9, S11).
