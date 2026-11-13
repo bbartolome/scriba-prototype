@@ -17,6 +17,6 @@ unblocks: [SAU-06, SAU-08]
 - Writes are field-level merges into the `setupAuth` section only.
 
 ## Acceptance criteria
-- [ ] A fresh library's status is incomplete with `access: done` for an authenticated caller and other steps `pending`.
-- [ ] After Continue it is `complete`, and `settings.yaml` differs only in the `setupAuth` section.
-- [ ] Status GET is side-effect free.
+- [x] A fresh library's status is incomplete with `access: done` for an authenticated caller and other steps `pending`.
+- [x] After Continue it is `complete`, and `settings.yaml` differs only in the `setupAuth` section.
+- [x] Status GET is side-effect free.

@@ -1,6 +1,6 @@
 ---
 id: SAU-05
-status: planned
+status: done
 ---
 # SAU-05 plan — status endpoint and Continue
 
@@ -72,9 +72,9 @@ Run every command from `/Users/bbartolome/workspace/scriba-prototype`. Record `n
     - M2: Continue writes the default section instead of the merged one. Expected: AC 2 fails (the planted `preferences` and `allowlist` are lost).
     - M3: Continue sets `access` to `skipped` or leaves it `pending`. Expected: AC 2 fails (`steps.access` is not `done`).
     - M4: Continue does not set `complete`. Expected: AC 2 fails.
-    - M5: the status reports `access: 'pending'` for every caller. Expected: AC 1 fails.
+    - M5: the status reports `access: 'pending'` for every caller. Expected: AC 1 and AC 2 fail (the GET and the Continue body share the builder, and AC 2 compares them).
     - M6: the status and Continue skip the cookie check. Expected: the extra `it` fails (200 without a cookie).
-    - M7: the status puts `actual` into `compose`, or omits `compose`. Expected: AC 1 fails (its `toEqual`).
+    - M7: the status puts `actual` into `compose`. Expected: AC 1 and AC 2 fail (their `toEqual`s). Omitting `compose` (M7b) does not compile (TS2741), so `tsc` catches it before the tests run.
     - M8: Continue computes the merged section and returns its body, but does not call `write` (the "Continue skips the write" mutation). Expected: AC 2 fails (the status read after the POST shows `complete: false`, and `settings.yaml` has no `skipped` step).
 11. **Optional manual check (not a criterion).** With port 8080 free, after the build: `SCRIBA_BOOKS_DIR=$(mktemp -d) SCRIBA_PACKS_DIR=/tmp/scriba-p SCRIBA_EXAMPLES_DIR=/tmp/scriba-e SCRIBA_LOG_LEVEL=info timeout 5 node apps/api/dist/main.js &` then `curl -s -i -H 'Host: 127.0.0.1:8080' http://127.0.0.1:8080/api/setup-auth/status`: expected `401` and `{"error":{"code":"AUTH_REQUIRED",…}}`.
 12. **Status.** `git status --short -- ':!plans' ':!units'`: expected only the section 2 paths. Do not commit; the driver commits.
@@ -101,7 +101,7 @@ Test helpers, all inside `setup-auth-status.test.ts`:
 - Expected, persisted: the parsed `after` has `setupAuth.steps.access` equal to `'done'`, the other four step keys equal to `'skipped'`, and `setupAuth.complete` equal to `true`.
 - Expected, scope: `Object.keys(afterDoc)` is `toEqual` `Object.keys(beforeDoc)` (`beforeDoc` is `before` parsed with `yaml`, and `afterDoc` is `after` parsed the same way), so the top-level keys match in number and order; every key other than `setupAuth` is `toEqual` in both; `setupAuth.preferences` and `setupAuth.allowlist` are `toEqual` in both; every line before the line that starts with `setupAuth:` is identical as text. The `.scriba` folder holds no `settings.yaml.bak-*` entry (`backupEntries` from `settings.kit.ts`).
 - Then a second `POST` continue with the same headers: status 200 and `settings.yaml` bytes equal `after`.
-- Mutations covered: M2, M3, M4, M8.
+- Mutations covered: M2, M3, M4, M5, M7, M8.
 
 **Criterion 3** (unit line 22): "Status GET is side-effect free."
 - Test: `setup-auth-status.test.ts`, one `it`. Fresh library, `createTestApp`, `sessionCookie`. Take `snapshot(library)` as `before`. Issue three `GET /api/setup-auth/status` with the cookie.
