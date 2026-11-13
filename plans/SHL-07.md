@@ -1,6 +1,6 @@
 ---
 id: SHL-07
-status: planned
+status: done
 ---
 
 # SHL-07 plan — test doubles: fake API client, fake event source, provider helper and feature route-test template

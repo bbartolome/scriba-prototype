@@ -1,6 +1,6 @@
 ---
 id: SHL-06
-status: planned
+status: done
 ---
 
 # SHL-06 plan — Connection indicator and "server unreachable" banner

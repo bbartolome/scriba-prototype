@@ -1,6 +1,6 @@
 ---
 id: SHL-05
-status: planned
+status: done
 ---
 
 # SHL-05 plan — device class, breakpoint gate and nav

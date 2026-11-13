@@ -22,7 +22,7 @@ Phones get thumb nav with phone-suited views only (2, 4); tablets/desktop get a 
 - Default mapping guidance: chat, review, reading and light edits `phone`; canvas `tablet`; long-form editing is a layout switch inside `phone`-class pages.
 
 ## Acceptance criteria (driving `matchMedia` / `BreakpointObserver`)
-- [ ] A `tablet`-min feature is hidden from the phone nav; opening its URL on a phone viewport shows the "larger screen" page.
-- [ ] Resizing an open view below its class keeps it open and shows a notice.
-- [ ] Phone shows the bottom nav, tablet the rail, desktop the side nav.
-- [ ] `deviceClassGuard('tablet')` on a child route blocks phones and allows tablets.
+- [x] A `tablet`-min feature is hidden from the phone nav; opening its URL on a phone viewport shows the "larger screen" page.
+- [x] Resizing an open view below its class keeps it open and shows a notice.
+- [x] Phone shows the bottom nav, tablet the rail, desktop the side nav.
+- [x] `deviceClassGuard('tablet')` on a child route blocks phones and allows tablets.

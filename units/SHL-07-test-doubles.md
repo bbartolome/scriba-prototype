@@ -18,5 +18,5 @@ unblocks: [SHL-08, SHL-09, "every feature module's UI tests"]
 - A **template feature route test** (a dummy feature registered through the real pattern) that feature modules copy.
 
 ## Acceptance criteria
-- [ ] The dummy feature's route test runs under Vitest using only the fakes, asserting a rendered value from a fake response and a live update from a fake envelope.
-- [ ] The fakes reject responses that don't match the passed schema (same behaviour as the real client).
+- [x] The dummy feature's route test runs under Vitest using only the fakes, asserting a rendered value from a fake response and a live update from a fake envelope.
+- [x] The fakes reject responses that don't match the passed schema (same behaviour as the real client).

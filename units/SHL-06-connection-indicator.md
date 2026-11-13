@@ -16,5 +16,5 @@ unblocks: [SHL-09]
 - When `/healthz` can't be reached (during recreate checks or an API network failure), a plain **"server unreachable"** banner via the notices service, cleared on recovery — never a blank page.
 
 ## Acceptance criteria
-- [ ] Stopping the API shows the reconnecting indicator, then the "server unreachable" banner; restarting clears both and fires a reconcile tick.
-- [ ] Component tests drive the states through the stubbed EventSource.
+- [x] Stopping the API shows the reconnecting indicator, then the "server unreachable" banner; restarting clears both and fires a reconcile tick.
+- [x] Component tests drive the states through the stubbed EventSource.
