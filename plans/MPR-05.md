@@ -1,6 +1,6 @@
 ---
 id: MPR-05
-status: planned
+status: done
 ---
 # MPR-05 plan — model resolution (app default, provider model, auto), the resolve function, and the model-list proxy
 

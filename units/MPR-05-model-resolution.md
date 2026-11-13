@@ -20,7 +20,7 @@ Pick from the server's list (3); see which model a run uses and where it came fr
 - **Model list:** proxies the provider's `GET /v1/models`, returns sorted ids; never changes state; failures return a coded error (the UI falls back to free text).
 
 ## Acceptance criteria
-- [ ] With an empty model, resolution picks the first listed model as `auto` and `settings.yaml` is unchanged.
-- [ ] An explicit provider model wins over `auto`; the app default's model wins over the provider's.
-- [ ] An empty Ollama model list yields `PROVIDER_NOT_CONFIGURED` with the pull hint.
-- [ ] A chat through the client, where the target is produced by resolving a project id, uses the resolved model (mock sees it in the body).
+- [x] With an empty model, resolution picks the first listed model as `auto` and `settings.yaml` is unchanged.
+- [x] An explicit provider model wins over `auto`; the app default's model wins over the provider's.
+- [x] An empty Ollama model list yields `PROVIDER_NOT_CONFIGURED` with the pull hint.
+- [x] A chat through the client, where the target is produced by resolving a project id, uses the resolved model (mock sees it in the body).
