@@ -1,6 +1,6 @@
 ---
 id: MPR-01
-status: planned
+status: done
 ---
 # MPR-01 plan — providers contract slice (closes Model providers phase:contract)
 

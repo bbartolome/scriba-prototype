@@ -51,7 +51,7 @@ Merging this **closes Model providers `phase:contract`**. Zod + TS, shapes and c
 - **Route constants** under `/api/providers/`.
 
 ## Acceptance criteria
-- [ ] The slice builds and is importable from both `apps/api` and `apps/web`.
-- [ ] Zod rejects an unknown `kind`, a non-URL `baseURL`, and a negative timeout/retries.
-- [ ] No response type can carry a raw key; a key appears only in the write-only key request and the connection-test request (a type-level test enumerates response schemas).
-- [ ] The four presets and the defaults are exported constants; the seeded-section example validates.
+- [x] The slice builds and is importable from both `apps/api` and `apps/web`.
+- [x] Zod rejects an unknown `kind`, a non-URL `baseURL`, and a negative timeout/retries.
+- [x] No response type can carry a raw key; a key appears only in the write-only key request and the connection-test request (a type-level test enumerates response schemas).
+- [x] The four presets and the defaults are exported constants; the seeded-section example validates.
