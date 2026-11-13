@@ -22,7 +22,7 @@ Keys only in the secrets file (16), readable only by the app user (17), never in
 - **Log redaction:** operational logs (stdout) redact the `Authorization` header and any key-shaped value (known keys and common key patterns, e.g. `sk-…`). Error messages produced by this module never include keys.
 
 ## Acceptance criteria
-- [ ] A put creates the file 0600 in a 0700 directory; loosened modes are tightened on restart with a warning.
-- [ ] Put/delete are atomic (no partial file after a simulated crash between write and rename).
-- [ ] `hint` returns only the last four characters.
-- [ ] A logged request carrying `Authorization: Bearer <key>` shows a redacted value on stdout.
+- [x] A put creates the file 0600 in a 0700 directory; loosened modes are tightened on restart with a warning.
+- [x] Put/delete are atomic (no partial file after a simulated crash between write and rename).
+- [x] `hint` returns only the last four characters.
+- [x] A logged request carrying `Authorization: Bearer <key>` shows a redacted value on stdout.

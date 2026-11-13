@@ -1,6 +1,6 @@
 ---
 id: MPR-02
-status: planned
+status: done
 ---
 # MPR-02 plan — module skeleton, provider registry in settings.yaml, first-start Ollama seeding
 

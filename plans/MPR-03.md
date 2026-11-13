@@ -1,6 +1,6 @@
 ---
 id: MPR-03
-status: planned
+status: done
 ---
 # MPR-03 plan — secrets file helper and stdout redaction
 

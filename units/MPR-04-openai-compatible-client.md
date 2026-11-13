@@ -26,10 +26,10 @@ The Agent loop gets one streaming call with text deltas and assembled tool calls
 - **Mock OpenAI scenarios** added to `e2e/fixtures/mock-openai/scenarios/` (one file each): models non-empty / empty / failing; streamed text; streamed tool call with split arguments; malformed tool call; 401 without the expected key; 503-then-200; persistent 503; 429 with `Retry-After`; stall; long stream for abort.
 
 ## Acceptance criteria
-- [ ] A streamed chat yields text deltas, then a tool call whose split arguments arrive assembled as one raw string, then a finish event.
-- [ ] A malformed tool call is passed through as its raw string (no client parse error).
-- [ ] 503-then-200 succeeds within `retries` (mock sees two attempts); persistent 503 beyond `retries` fails with the matching coded error; 401 fails immediately with `PROVIDER_UNAUTHORIZED` and one attempt.
-- [ ] 429 with `Retry-After` waits at least that long before the retry.
-- [ ] A stalled response fails with `PROVIDER_TIMEOUT` after `timeout`; a slow stream with gaps under `timeout` completes.
-- [ ] Abort mid-stream ends with `PROVIDER_ABORTED` and the mock sees the connection close.
-- [ ] The mock sees the key only in `Authorization`; with `OPENAI_API_KEY`/`OPENAI_BASE_URL` set in the env, they are not used.
+- [x] A streamed chat yields text deltas, then a tool call whose split arguments arrive assembled as one raw string, then a finish event.
+- [x] A malformed tool call is passed through as its raw string (no client parse error).
+- [x] 503-then-200 succeeds within `retries` (mock sees two attempts); persistent 503 beyond `retries` fails with the matching coded error; 401 fails immediately with `PROVIDER_UNAUTHORIZED` and one attempt.
+- [x] 429 with `Retry-After` waits at least that long before the retry.
+- [x] A stalled response fails with `PROVIDER_TIMEOUT` after `timeout`; a slow stream with gaps under `timeout` completes.
+- [x] Abort mid-stream ends with `PROVIDER_ABORTED` and the mock sees the connection close.
+- [x] The mock sees the key only in `Authorization`; with `OPENAI_API_KEY`/`OPENAI_BASE_URL` set in the env, they are not used.

@@ -1,6 +1,6 @@
 ---
 id: MPR-04
-status: planned
+status: done
 ---
 # MPR-04 plan — openai-compatible streaming client (tool-call assembly, collect helper, abort, coded errors, transport retries, timeout)
 

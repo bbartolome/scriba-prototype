@@ -23,7 +23,7 @@ Ollama works with no configuration (stories 1–2); several providers at once (1
 - Registry service (in-process): list, get, create (id = preset id when given, else a slug of the create body's label, normalized to the id rule, with a suffix if taken), update, delete, set app default; all writes through Platform's atomic section write.
 
 ## Acceptance criteria
-- [ ] On a fresh library, startup writes a `providers` section with `ollama` at `http://host.docker.internal:11434/v1`, no key, app default `ollama`; a second startup changes nothing.
-- [ ] An existing section with an empty `list` is untouched at startup.
-- [ ] A newer section `schemaVersion` is refused at startup per Platform's migration rules.
-- [ ] Creating two providers from the same preset yields distinct stable ids.
+- [x] On a fresh library, startup writes a `providers` section with `ollama` at `http://host.docker.internal:11434/v1`, no key, app default `ollama`; a second startup changes nothing.
+- [x] An existing section with an empty `list` is untouched at startup.
+- [x] A newer section `schemaVersion` is refused at startup per Platform's migration rules.
+- [x] Creating two providers from the same preset yields distinct stable ids.
