@@ -1,9 +1,18 @@
 import { Module } from '@nestjs/common';
 import { PlatformModule, SettingsService } from '../platform/platform.module';
 import { ProvidersRegistry } from './providers.registry';
+import { ModelResolver } from './providers.resolution';
 import { PROVIDERS_SECTION_DEF } from './providers.section';
 import { ProvidersSeeder } from './providers.seeding';
 import { SecretsStore } from './secrets/secrets-store';
+
+// Modules outside providers import these from this entry file only.
+export {
+  ModelResolver,
+  isOllamaProvider,
+  type ResolutionInput,
+  type ResolvedModel,
+} from './providers.resolution';
 
 const PROVIDERS_SECTION_REGISTRATION = 'PROVIDERS_SECTION_REGISTRATION';
 
@@ -22,7 +31,8 @@ const PROVIDERS_SECTION_REGISTRATION = 'PROVIDERS_SECTION_REGISTRATION';
     ProvidersRegistry,
     ProvidersSeeder,
     SecretsStore,
+    ModelResolver,
   ],
-  exports: [ProvidersRegistry, SecretsStore],
+  exports: [ProvidersRegistry, SecretsStore, ModelResolver],
 })
 export class ProvidersModule {}
