@@ -1,6 +1,6 @@
 ---
 id: MPR-07
-status: planned
+status: done
 ---
 # MPR-07 plan — Staged connection test with author-facing hints
 

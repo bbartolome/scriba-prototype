@@ -21,5 +21,5 @@ Find a wrong URL, key or model now (5), know which step failed (6), with the unr
 - Hints per failure: unreachable Ollama → "is Ollama running on the host, listening on all interfaces?" (mention `OLLAMA_HOST=0.0.0.0` on Linux); outside Docker → try `http://localhost:11434/v1`; unauthorized → key rejected or out of credit; model not found → pick from the list; empty Ollama list → `ollama pull <model>` on the host.
 
 ## Acceptance criteria
-- [ ] Against mock scenarios: unreachable fails at `reach` with the Ollama hint; 401 fails at `list` with the key hint; unknown model fails at `chat`; success returns `ok`, `latencyMs` and `modelCount`.
-- [ ] A draft config with a test-only key leaves `settings.yaml` and the secrets file unchanged.
+- [x] Against mock scenarios: unreachable fails at `reach` with the Ollama hint; 401 fails at `list` with the key hint; unknown model fails at `chat`; success returns `ok`, `latencyMs` and `modelCount`.
+- [x] A draft config with a test-only key leaves `settings.yaml` and the secrets file unchanged.
