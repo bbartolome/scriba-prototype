@@ -1226,3 +1226,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Other finding (Navigator; open point 2 of the plan):** a failed API call does not drive the banner, which departs from SHL-02 plan line 134 and unit line 16.
 - **Shared files (reviewer):** SHL-07 OK; SHL-05 OK except the stale `app.spec.ts` row (item 2).
 - **Next:** the Navigator decides item 1 (where detection lives) and the open point 2 departure; then revision 2 from the same Haiku subagent. The rejection count for SHL-06 is 1. The `status` stays `draft`.
+
+## 2026-11-13 — SHL-05 — icon rendering: self-hosted `@fontsource/material-icons` (Navigator decision; session 57d851d74d62450ca9f7cab2d9b775ec)
+
+- **Decision (Navigator, option a):** nav icons are rendered with the self-hosted, pinned `@fontsource/material-icons` package (`mat-icon` with `ShellNav.icon` as the ligature name), as `plans/SHL-05.md` decision 13 proposes. This follows the PLT-03 decision.
+- **Reason:** the PLT-03 entries (lines 282 and 287) decided to remove the external Google font links because the build inlined them and failed offline, and every page load sent requests to Google. A self-hosted, pinned, bundled font makes no external request and is inlined from the local `node_modules`; only the one-time npm install needs the network. The entry's "the page uses no Material Symbols icon" is a note on the state at the time, not a "no icon font" policy, so no amendment to PLT-03 is needed.
+- **Correction to the draft:** `plans/SHL-05.md` decision 13 cites "SHL-05 unit line 21 ('Material icon name')", but `units/SHL-05-breakpoint-gate-nav.md` line 21 has no icon wording. The icon requirement comes from `modules/shell.md` line 69 (route data includes the icon) and SHL-01 decision 10 (`ShellNav.icon`). The citation is to be fixed; the decision stands.
+- **Consequence:** SHL-09 unit line 18 ("label and icon") is satisfied through `mat-icon`. If the package cannot be fetched at implementation time, the SHL-05 plan's step 2 stops and the coordinator decides; labels-only is not chosen silently.
