@@ -1924,3 +1924,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Reason.** The SDK's signal combination returns the iterator silently when the caller's signal aborts, even before the first chunk (`core/streaming.js` 499 to 514; the signal is combined after the headers, `client.js` 1878 to 1891). Without the check, a user Stop while the model is still thinking would be reported as BAD_RESPONSE.
 - **Accepted gap.** The window between the headers and the first chunk is not reproducible with the mock (it writes the head and the first chunk together, `server.mjs` 408 to 422). It is named as a mock gap (MPR-04 open point 8).
 - **Driver's checks:** the SDK copy (openai 7.55.0) `core/streaming.js` 136 to 141 and 499 to 514; `client.js` 1878 to 1891.
+
+## 2026-11-13 — MPR-04 — coordinator decisions on the Opus code review of unit/MPR-04 (NOT APPROVED; the defects are fixed in the code, not the plan)
+
+- **An empty key is no key.** `target.key` of `''` is treated as absent: a keyless provider uses the placeholder, and a keyRef without a key gives PROVIDER_NOT_CONFIGURED. Before, `''` reached the SDK constructor and escaped as an uncoded error (`openai-compatible-client.ts` lines 185 to 208). A test in D2 asserts it.
+- **listModels validates the raw body.** A 200 reply that is not a model list (for example an HTML page from a wrong URL) is PROVIDER_BAD_RESPONSE, not an empty list. The SDK's page sets `data` to `[]` for any body, so the check reads the raw body (`client.get`) and requires `data` to be an array of objects with a string `id`. One test is added to the models file (D8b): a local server answers `text/html` with 200, and the client returns PROVIDER_BAD_RESPONSE. This adds one test to the 25 (the plan's section 4 count becomes 26).
+- **Timer disarmed before a retry sleep.** The timer is disarmed (or the scope closed) before the backoff sleep, so a retry does not run under a stale timer.
+- **Two tests tightened.** Criterion 6 asserts a single `events.next()` after the abort. D10 counts the events drained before the rejection and asserts at most one.
+- **Commits.** The plan's step 15 names one commit; the code has four, one per part (the per-part rule). Accepted: the branch keeps four commits.
+- **Driver's checks:** the Opus review's file and line citations (the empty-key path, the listModels guard at line 328, `core/pagination.js` 79 to 91); the SDK pagination lines read by the reviewer.
