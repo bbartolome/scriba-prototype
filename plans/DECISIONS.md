@@ -1906,3 +1906,8 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Errors.** Both undici timeout causes (`UND_ERR_HEADERS_TIMEOUT`, `UND_ERR_BODY_TIMEOUT`) and the SDK's `APIConnectionTimeoutError` map to PROVIDER_TIMEOUT. An SDK connection error that is not a timeout maps to PROVIDER_UNREACHABLE, as before.
 - **Rejected.** Keep 600 000 and record the cap (option a): the plan would then describe a limit that the runtime never gives. The 300 000 value makes the stated limit and the runtime agree.
 - **Driver's checks:** the undici copy at 8.12.4, `lib/dispatcher/client.js` 318 and 319 (both 300 000 ms); the openai 7.55.0 copy (`client.js` 1824 is the 600 000 default; `APIConnectionTimeoutError` in `core/error.js` 78 and 88); Node 26.13.0 bundles undici 8.12.2.
+
+## 2026-11-13 — MPR-02 — the plan's base updated to c49e944 and set to planned (coordinator check of a base-only change)
+
+- **Why.** The last Opus review (NOT APPROVED) found only a stale base: `main` had moved to c49e944 (the append at DECISIONS line 1902). The planner changed the base in lines 7, 70, 72 and 176, and added that the plan holds at any later `main` that only appends to plans/DECISIONS.md.
+- **Check (coordinator, by git, not a further Opus review).** `git diff --stat 76ce5fc c49e944` lists only plans/DECISIONS.md (+8). The cited lines (DEC 1876, 1884, 1895) do not move. The plan's status is set to `planned` on this basis.
