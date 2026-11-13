@@ -1898,3 +1898,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Hook order (MPR-02 open point 2): a stop rule, not a decision.** The seeder must run after Platform's `onApplicationBootstrap`. The plan checks this against `@nestjs/core` 12.4.2 after `npm ci` (step 4), and stops if it differs.
 - **Freed ids (open point 5, MPR-02) are not decided here.** The options (never reuse an id; a retired-id list) are for the MPR-06 and MPR-12 planners.
 - **Driver's checks:** the Opus review of MPR-02 (NOT APPROVED, text items), which asked for these two decisions to be recorded (the entry "coordinator decisions on the drafts" did not record them).
+
+## 2026-11-13 — MPR-04 — coordinator decision on timeout 0, superseding DECISIONS line 1889 (entry "coordinator decisions on the drafts", f2260eb)
+
+- **Supersedes line 1889.** Line 1889 says that a timeout of 0 runs no client timer and that the SDK's default bounds a silent wait. That is withdrawn. Its premise is wrong for chat streams: the SDK's timer is cleared once the headers arrive, and the built-in fetch (undici) caps a silent wait at 300 s.
+- **Decision.** A `config.timeout` of 0 means a limit of **300 000 ms** (the client's own timer uses it, and the SDK receives the same value). A value above 300 000 is still enforced by the client's own timer, but undici ends a silent wait at 300 s first. The plan states that cap.
+- **Errors.** Both undici timeout causes (`UND_ERR_HEADERS_TIMEOUT`, `UND_ERR_BODY_TIMEOUT`) and the SDK's `APIConnectionTimeoutError` map to PROVIDER_TIMEOUT. An SDK connection error that is not a timeout maps to PROVIDER_UNREACHABLE, as before.
+- **Rejected.** Keep 600 000 and record the cap (option a): the plan would then describe a limit that the runtime never gives. The 300 000 value makes the stated limit and the runtime agree.
+- **Driver's checks:** the undici copy at 8.12.4, `lib/dispatcher/client.js` 318 and 319 (both 300 000 ms); the openai 7.55.0 copy (`client.js` 1824 is the 600 000 default; `APIConnectionTimeoutError` in `core/error.js` 78 and 88); Node 26.13.0 bundles undici 8.12.2.
