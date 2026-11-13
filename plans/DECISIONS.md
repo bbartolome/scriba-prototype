@@ -1040,3 +1040,18 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Builds:** the contracts build and the `contracts-boot` build exit 0 (decision 22 step 11A rerun). The production build exits 0 with Initial total 321.86 kB and no `scriba-contracts` in the bundle. The root `build`, `test` and `lint` exit 0.
 - **Not verified by the reviewer:** the step 15 fresh clone itself (the reviewer used a scratch worktree with `npm ci`); the e2e journey (not a criterion). Decision 9 has no feature to apply it to in SHL-01; it is checked only through the probe.
 - **Next:** the batch steps (prompt.md steps 6 to 8) for `batch/current`. The rejection count for SHL-01 code is 0.
+
+## 2026-11-13 — PLT-16 — Smoke run on `unit/PLT-16` (plan steps 0 to 10 and 12a; the run stopped at step 12a, LocalAPI `NeedsLogin`)
+
+- **Branch:** `unit/PLT-16` at `c75948c` (the runbook, the hint text and the ADR draft, on top of `0dd5234`). The worktree is `/tmp/plt16-wt`.
+- **Step 5 (image):** clone of `c75948c` is clean; `docker build` exits 0; image `bbartolome/scriba:plt16-check`.
+- **Step 6 (stack):** `INST=/Users/bbartolome/workspace/.plt16-inst.cu9B`, `LIB=/Users/bbartolome/workspace/.plt16-books.EoBU`; `up=0`.
+- **Step 7 (preconditions):** host `/healthz` on port 18080 returns 200; the upstream inside `scriba` returns 200; the served `serve.json` is `same`; `TS_SERVE_CONFIG: /config/serve/serve.json`; LocalAPI status `200 NeedsLogin`. The login URL was printed by the `tailscale` logs and is not recorded here.
+- **Step 8 (ST-2 local approximation, criterion 3a):** 10 echoes; each lag 1 ms; gaps 1000 to 1005 ms; `POST` 202. The published-path peer, decoded: local `172.22.0.2:8080` (the `scriba` eth0), remote `172.22.0.1:59486` (the Docker gateway). Not loopback, not in `100.64.0.0/10`, so there is no SAU-18 trigger.
+- **Step 9 (ST-3 Mac leg, criterion 4a):** `/etc/hosts` has `192.168.65.254 host.docker.internal`; `fetch` from `scriba` returns 200.
+- **Steps 2 and 3:** `prettier --check .` passes; the text checks pass (see the differences below).
+- **Step 10 (unit checks):** the tailnet tests (4 files, 4 tests, criterion 2a) pass; `npm run lint` exits 0.
+- **Step 12a:** `NeedsLogin`, read once. The run stopped here: steps 12b to 12f, 13 (this entry is the record) and 15 are not run.
+- **Differences from the plan:** (1) the worktree `/tmp/plt16-wt` was created by the coordinator before the run, so step 1's `git worktree add` was skipped; (2) the hint text has `OLLAMA_HOST=0.0.0.0` on two lines (lines 2 and 3), so the step 3 grep prints two lines, not one; (3) a fresh worktree needs `npm run build -w @bbartolome/scriba-contracts` before the API test (TS2307 otherwise), so step 10 must build contracts first; (4) the runbook and ADR prose was written from the plan's content, and the ADR is a draft with every result `pending`.
+- **Criteria state after this run:** 5 ticked (step 3 passed: 5a). 1 unticked (1a and 1b pass; 1c pending N1; the reboot part deferred N2). 2 unticked (2a and 2b pass; 2c deferred N5; 2d pending N1). 3 unticked (3a passes; 3b pending N1). 4 unticked (4a and 4c pass; 4b deferred N3).
+- **Open for the coordinator:** the ADR's `Shipped variant` stays `pending`, because ST-1's HTTPS check did not run. Compose ships variant A. SAU-21 reads `pending` until the login is approved (N1); the coordinator decides how SAU-21 is handled.
