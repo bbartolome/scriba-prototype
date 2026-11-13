@@ -2225,3 +2225,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Result.** An Opus reviewer with no earlier context returned APPROVED for `plans/PLT-16.md` (the option (a) rewrite, status `planned`, on top of `cd8eba7`). The five criteria each have named checks (criterion 2 has 2a to 2e); every recorded result matches the branch ADR at `9bb78fa`; the NeedsLogin deviation is stated as one the coordinator weighs; no criterion is ticked, and criteria 1 and 5 are left to the coordinator (line 1965 for criterion 1).
 - **Count.** Rejections of the rewrite: 10 (all factual or consistency corrections; no Navigator call beyond the one recorded above).
 - **Next.** The orchestrator commits `plans/PLT-16.md`. The unit's code is on `unit/PLT-16` (variant B, 9bb78fa); the next step for that batch is the batch collection and checks, subject to the coordinator's decisions on criteria 1 and 5.
+
+## 2026-11-13 — MPR-07 — Opus code review of unit/MPR-07 (e6d1da2, 877d424): NOT APPROVED (log mismatches only)
+
+- **Result.** The code review found the code correct against the plan: C1 and C2 assert the criteria's behaviour; E1 to E8 match the plan; exactly the five listed files changed; the stage comes from the list call's code (no probe); H6 is the only BAD_RESPONSE hint; no key appears in any response, log or fixture. The test counts hold (129 tests in 51 files; baseline 119 in 50); lint exits 0; the red run failed on the missing routes. Two evidence items were not backed by a log.
+  1. The stop-rule 2 baseline (29.06 s for `invariant-get-head.test.ts`) had no log. Correction: the baseline is `/tmp/mpr06-invariant-after.txt` (29.01 s). That run was on the same `apps/`, `packages/` and `e2e/` trees as the MPR-07 base `6632cfe` (`git diff 6632cfe main` is empty for those paths). The MPR-07 run is `/tmp/mpr07-getHead.txt` (30.15 s). The difference is +1.14 s, inside the +2.4 s limit; no code change is needed.
+  2. The Node and npm versions required by plan lines 108 and 127 had no log. Correction: `/tmp/mpr07-versions.txt` records Node v26.13.0 and npm 11.20.0.
+- **Count.** Rejections of MPR-07's code: 1, log only (no code change).
+- **Next.** A focused Opus re-check of the two log items; the code is unchanged since the first review.
