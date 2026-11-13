@@ -1964,3 +1964,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Earlier entries.** The entries above that cite N2 or the reboot check are records, so they are not edited.
 - **Ticks.** This entry ticks no criterion. Whether criterion 1 is ticked is the coordinator's decision.
 - **Not committed.** The changes are in the working tree of `main` and in `/tmp/wt-PLT-16` on `unit/PLT-16`.
+
+## 2026-11-13 — PLT-16 — Opus review of the revised plan (commit dc0f9e5): NOT APPROVED (rejection 1 of this revision)
+
+- **Result.** An Opus reviewer with no earlier context returned NOT APPROVED for `plans/PLT-16.md` at `dc0f9e5`, with the unit `units/PLT-16-smoke-st1-st3.md` and the branch commit `57c5208` on `unit/PLT-16` as inputs.
+- **Problems, to the PLT-16 subagent.**
+  1. The plan's RUNBOOK row (section 3, file table) says "Other lines unchanged". Commit `57c5208` also removes the reboot from RUNBOOK line 21, deletes step 6 (the reboot step) and renumbers the refusal and peer steps to 6 and 7. Correction: list these edits in the row and cite line 1960 of this file.
+  2. Section 3 C9, step 12c, brings in revision 5's sentence "The reboot part is deferred (N2) and is not run." Correction: drop that sentence, since N2 no longer applies.
+  3. Section 3 step 13 and section 4 say that criterion 1 "needs only 1c-HTTPS and 1c-restart". That reads as a rule that lets the implementer tick the box, and it omits 1a and 1b. Correction: "criterion 1 is ticked only after 1a, 1b, 1c-HTTPS and 1c-restart pass, and only by the coordinator (line 1965 of this file)". Make the same change in both places.
+  4. The plan says the published-path peer addresses "stay pending" and that 2b is not repeated. The ADR's published-path line (`docs/adr/0001-tailscale-serve-mechanism.md`, line 31 on `unit/PLT-16`) still reads "Published path: pending", although unit lines 20 and 21 put the peer addresses in `docs/adr/`. Correction: write the 2b result (remote `172.22.0.1`, the Docker gateway; line 1050 of this file) into that ADR line.
+  5. Section 5 cites SAU-21 "unit line 17" as the source of the shipped variant. Line 17 is the socket smoke test. Correction: cite SAU-21 line 7 ("ST-1 outcome") and line 18 ("Align with whichever Serve variant ST-1 shipped").
+  6. Section 7 says "PLT-17 has no login, serve or compose-version text". PLT-17 line 29 writes `SCRIBA_COMPOSE_VERSION` into `.env`. Correction: cite PLT-17 line 29 for the compose-version need in section 5, and remove "compose-version" from the section 7 sentence.
+  7. The entry "Not committed" on line 1966 of this file is no longer true: `dc0f9e5` (main) and `57c5208` (`unit/PLT-16`) hold the changes. This file is append-only, so this entry records both commits and the line 1966 entry is not edited.
+- **Checked and consistent (Opus).** The five criteria of the unit are covered. The removal of 1c-reboot and the N2 changes agree with unit line 21 and lines 1960 to 1966 of this file. The PLT-17 lines 7, 21 and 33, SAU-21 lines 18 and 26, SAU-18 and PLT-08 line 21 hold. The RUNBOOK and ADR line numbers on the branch hold.
+- **Next.** The PLT-16 subagent fixes problems 1 to 6 (the plan on `main`, the ADR and RUNBOOK on `unit/PLT-16`). Then Opus reviews again. Plan status stays `planned`.
