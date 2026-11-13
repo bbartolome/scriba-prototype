@@ -1978,3 +1978,16 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   7. The entry "Not committed" on line 1966 of this file is no longer true: `dc0f9e5` (main) and `57c5208` (`unit/PLT-16`) hold the changes. This file is append-only, so this entry records both commits and the line 1966 entry is not edited.
 - **Checked and consistent (Opus).** The five criteria of the unit are covered. The removal of 1c-reboot and the N2 changes agree with unit line 21 and lines 1960 to 1966 of this file. The PLT-17 lines 7, 21 and 33, SAU-21 lines 18 and 26, SAU-18 and PLT-08 line 21 hold. The RUNBOOK and ADR line numbers on the branch hold.
 - **Next.** The PLT-16 subagent fixes problems 1 to 6 (the plan on `main`, the ADR and RUNBOOK on `unit/PLT-16`). Then Opus reviews again. Plan status stays `planned`.
+
+## 2026-11-13 — PLT-16 — Opus re-review of the revised plan (commit df06dc0): NOT APPROVED (rejection 2 of this revision)
+
+- **Result.** A second Opus reviewer, with no earlier context, returned NOT APPROVED for `plans/PLT-16.md` at `df06dc0`. It confirmed that problems 1 to 6 of the entry above are fixed. Problem 7 is a record, not a plan item, and is handled by the entry above.
+- **Problems, to the PLT-16 subagent.**
+  1. The plan's ADR row (line 111) says "the published-path line (line 31)". At `c75948c` that line is line 29; line 31 is correct only at `9bb78fa`. Correction: write "line 29 at `c75948c` (line 31 at `9bb78fa`)".
+  2. The ADR row does not list the ADR edits of `57c5208`: the status line (line 3) loses the N2 reboot clause; Attempt B `Result:` (line 21) loses "; reboot deferred under N2"; `Evidence:` (line 23) loses "1c-reboot (N2)". Correction: list these and cite line 1960.
+  3. Stale status text. The branch ADR (`5eb7e21`, `96d03f7`, carried into `9bb78fa`) records a post-approval run: 1c-HTTPS passed at t1 - t0 = 37 s, 1c-restart passed, 2d and 3b passed; `Result: passed`; `Shipped variant: B`. The plan still says these are pending: line 7 (N1 deferrals), line 220 ("the shipped variant is `pending`"), line 236 ("N1 (one login approval; pending)") and line 263 (7a, which reads the ADR's `pending` state). Correction: add a status sentence to line 7 saying that C9 (steps 12a to 12f) ran on `unit/PLT-16` and the results are recorded in the ADR (as the ADR records them, not re-verified here); update lines 220, 236 and 263 to match; mark the 7a reading as "at `c75948c`".
+  4. No DECISIONS entry records that run. Revision 5 step 13 is still owed. The plan must say so.
+  5. The RUNBOOK checklist row (`deploy/RUNBOOK.md` line 91 on `unit/PLT-16`) still says "HTTPS pending (login approval)", which contradicts ADR line 27. Correction: the RUNBOOK row says that line 91 is updated to match ADR line 27 after C9.
+- **Checked and consistent (Opus).** All five criteria are covered. The downstream citations hold (PLT-17 lines 7, 21, 29 and 33; SAU-21 lines 7, 17, 18 and 26; PLT-08 line 21; SAU-20 line 15; PLT-15 plan line 335). The RUNBOOK lines 21, 23, 25, 33, 85 and 91 and DECISIONS lines 1050, 1960 and 1965 hold.
+- **Count.** Rejections of this revision: 2 (the first is the entry above). At 3, the disagreement goes to the Navigator.
+- **Next.** The PLT-16 subagent applies problems 1 to 5. Then Opus reviews again. Plan status stays `planned`.
