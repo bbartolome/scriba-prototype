@@ -201,6 +201,8 @@ export class SseClient {
       this.recoveryFailed();
       return;
     }
+    // Counted as failed until the new stream opens; handleOpen resets the count.
+    this.failures += 1;
     this.connect('reconnecting');
   }
 

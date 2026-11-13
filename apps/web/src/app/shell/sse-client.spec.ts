@@ -272,6 +272,13 @@ describe('SseClient', () => {
       expect(sources).toHaveLength(2);
       expect(sources[1].createdAt).toBe(1000);
       expect(client.connectionState()).toBe('reconnecting');
+
+      // The second stream never opens, so the recovery counts as failed: the next wait is 2 s.
+      sources[1].emitError(2);
+      await vi.advanceTimersByTimeAsync(2000);
+
+      expect(sources).toHaveLength(3);
+      expect(sources[2].createdAt).toBe(3000);
     });
 
     it('routes a 401 from the status probe to /setup and keeps retrying', async () => {
