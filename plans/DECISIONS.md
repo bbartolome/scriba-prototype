@@ -1493,3 +1493,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Architecture (reviewer):** the split into one guard and one middleware is justified despite unit line 18's "single global guard", because a guard runs only for a matched handler; record it in DECISIONS as the reading of line 18.
 - **Not verified by the reviewer:** nothing was built or run (`node_modules/@nestjs` is absent).
 - **Next:** the Navigator decides items 1 and 2 (with the SAU-03 and SAU-05 dependency question); then revision 2. The rejection count for SAU-04 is 1. The `status` stays `draft`.
+
+## 2026-11-13 — SAU-04 — Revision 2 addition to `plans/SAU-04.md`: malformed `SCRIBA_DEV_ORIGINS` refused at boot (decision 7)
+
+- **Addition the unit does not ask for:** `units/SAU-04-global-guard.md` does not require a check on `SCRIBA_DEV_ORIGINS`. Revision 2 of the plan keeps one. Each entry of `SCRIBA_DEV_ORIGINS` must be an `http:` or `https:` origin with an explicit port and no path, user or query. A bad entry makes `RequestPolicy.onApplicationBootstrap` throw a `BootError` (`Invalid SCRIBA_DEV_ORIGINS "<raw>": ...`).
+- **Reason:** an unchecked entry would silently never match a Host or Origin, so the dev stack would refuse the browser with no message. The refusal is at boot, so it fails fast and the same way as the settings refusal.
+- **Test:** the extra `it` of `apps/api/test/setup-auth-guard.test.ts` spawns `dist/main.js` (as `env-boot.test.ts` and `settings-refusal.test.ts` do) with `SCRIBA_DEV_ORIGINS=localhost:4200` and `SCRIBA_DEV_ORIGINS=http://localhost`. Expected for each: exit code 1, empty stdout, and a stderr line naming `SCRIBA_DEV_ORIGINS`.
+- **Status:** an addition, not a unit requirement. The coordinator may drop it at implementation review. The plan's mutation M10 removes the check to confirm the test fails.
