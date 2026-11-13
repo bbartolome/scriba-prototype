@@ -19,7 +19,7 @@ Under `/api/providers/…`, behind Setup & auth's guard; bodies validated with `
 - No SSE events.
 
 ## Acceptance criteria
-- [ ] A key set through the API is in the secrets file (0600 in 0700), `settings.yaml` holds only its `keyRef`, and no GET response, stdout line or error body contains the key; reads show `keySet: true` and the last four characters.
-- [ ] Clear key removes the secret entry and `keyRef`.
-- [ ] Deleting the app-default provider returns 409; after changing the default it succeeds and its secret is gone.
-- [ ] Every GET is side-effect free.
+- [x] A key set through the API is in the secrets file (0600 in 0700), `settings.yaml` holds only its `keyRef`, and no GET response, stdout line or error body contains the key; reads show `keySet: true` and the last four characters.
+- [x] Clear key removes the secret entry and `keyRef`.
+- [x] Deleting the app-default provider returns 409; after changing the default it succeeds and its secret is gone.
+- [x] Every GET is side-effect free.

@@ -1,6 +1,6 @@
 ---
 id: MPR-06
-status: planned
+status: done
 ---
 # MPR-06 plan — HTTP API: providers CRUD, write-only keys, app default, model list and effective model
 
