@@ -2046,3 +2046,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   3. Lines 130 and 216: the imports of `providers-resolution.test.ts` are cited as "lines 1 to 25". The import block runs from line 1 to line 28, and `makeLibrary` is imported on line 28. Correction: "lines 1 to 28".
 - **Count.** Rejections of MPR-06: 4.
 - **Next.** The orchestrator applies the three corrections (done in the plan file, then re-reviewed).
+
+## 2026-11-13 — MPR-06 — Opus fifth review of the plan (revision 3): APPROVED
+
+- **Result.** A fifth Opus reviewer, with no earlier context, returned APPROVED for `plans/MPR-06.md` (revision 3, base `c664d25`, with the corrections of rejections 3 and 4). The plan covers criteria 1 to 4 with one named test each, agrees with MPR-05, MPR-07, MPR-08, MPR-09 and MPR-12 and with `modules/providers.md`, follows the settled decisions, and keeps open point 1 (the warning for an override naming a deleted provider and reused ids) as an open coordinator decision.
+- **Count.** Rejections of MPR-06 before this approval: 4 (no Navigator call; each was a factual correction, not a disagreement).
+- **Next.** The orchestrator sets `status: planned` and commits `plans/MPR-06.md`. The code stage is the next iteration (step 3: no plan and code in one iteration). The open point 1 stays with the coordinator; the code follows the plan's current first-free-id rule.
