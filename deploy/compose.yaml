@@ -13,7 +13,17 @@ services:
       TS_HOSTNAME: scriba
       TS_STATE_DIR: /var/lib/tailscale
       TS_SOCKET: /var/run/tailscale/tailscaled.sock
-      TS_SERVE_CONFIG: /config/serve/serve.json
+      TS_BOOT_TIMEOUT: 8760h
+    command:
+      - sh
+      - -c
+      - |
+        (
+          until [ -n "$$(tailscale ip -4 2>/dev/null)" ]; do sleep 2; done
+          tailscale serve reset
+          tailscale serve --bg --https=443 http://127.0.0.1:8080 || echo "serve step failed, exit $$?" >&2
+        ) &
+        exec /usr/local/bin/containerboot
     cap_add:
       - NET_ADMIN
     devices:
@@ -25,7 +35,6 @@ services:
     volumes:
       - tailscale-state:/var/lib/tailscale
       - tailscale-socket:/var/run/tailscale
-      - ./serve:/config/serve:ro
 
   scriba:
     image: bbartolome/scriba:${SCRIBA_IMAGE_TAG:-latest}
