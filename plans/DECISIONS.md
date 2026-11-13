@@ -1063,3 +1063,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **What this means for the plan:** ST-1 (unit line 21) says "start compose with no auth key, app healthy on loopback; log in later via the auth URL". Under the shipped compose, a later login cannot reach Serve. The served app is unreachable after any restart of the sidecar, and a person cannot approve a URL that is gone within a minute. The N1 approval step is therefore not achievable as the plan describes it.
 - **Steps 7 to 9 stay valid:** they ran in the first window (steps 7 and 8 between 04:59:01 and 05:00:01 UTC; step 8 at 04:59:27 to 04:59:38). Step 9's exact time is not logged.
 - **Status:** the batch merge of PLT-16 waits for the Navigator's decision on this finding. Criteria 1 to 4 stay unticked. The stack is kept for the Navigator's check.
+
+## 2026-11-13 — PLT-16 — Opus code review of `unit/PLT-16` (head c75948c, base 0dd5234): APPROVED
+
+- **Result (Opus subagent, fresh context):** APPROVED. The branch adds exactly the three planned files (`deploy/RUNBOOK.md`, `deploy/installer-hint.txt`, `docs/adr/0001-tailscale-serve-mechanism.md`); nothing else changed.
+- **Criteria:** 5 ticked (5a: `grep -n 'ST-4' deploy/RUNBOOK.md | grep -i deferred` prints one line, at line 86). 1 unticked (1a and 1b pass; 1c-HTTPS and 1c-restart pending N1; 1c-reboot deferred N2). 2 unticked (2a and 2b pass; 2c deferred N5; 2d pending N1). 3 unticked (3a passes; 3b pending N1). 4 unticked (4a and 4c pass; 4b deferred N3). This is the state the plan's tick rules give.
+- **Record:** 248f39d matches the code run (the INST and LIB paths, the echo figures, the peer 172.22.0.2 to 172.22.0.1, the `host.docker.internal` fetch, NeedsLogin).
+- **Notes to fix (not blocking):** (a) the runbook's ST-1 step 2 says the command prints `200 NeedsLogin`, but the script prints `NeedsLogin` with empty DNS and IP fields; (b) the runbook's step 8 awk lacks the plan's filter for loopback local addresses, so a healthcheck row could be misread as the SAU-18 trigger; (c) the ADR's published-path peer line still says `pending`, although the run measured it; (d) the hint grep count in step 3 is two lines (the plan's own text), not one; (e) a fresh worktree needs the contracts build before the API test (see the run record).
+- **Not verified by the reviewer:** anything on the tailnet; the time of the step 9 fetch; the Linux leg.
+- **Next:** the Navigator decides on the late-login finding (8b3dec6) before the batch goes to `main`.
