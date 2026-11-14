@@ -2677,3 +2677,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   3. Log (minor): there is no tsc log in /tmp; the reviewer re-ran `tsc --noEmit -p apps/web/tsconfig.spec.json` and `-p apps/web/tsconfig.app.json` (both exit 0). Record them.
 - **Count.** Rejections of SHL-08's code: 1. The bundle size (503.93 kB) remains with the Navigator; it is not a code defect here.
 - **Next.** The SHL-08 subagent applies items 1 and 2 on `unit/SHL-08` (red first) and records item 3, then the reviewer reviews again.
+
+## 2026-11-14 — SHL-08 — the Navigator's decision on the bundle stop rule (option a): the initial bundle may be 503.93 kB as a warning
+
+- **Decision (the Navigator, session e441ef9487974df3be73d324870f7d76, `decide`, 2026-11-14).** Option (a): the initial bundle of 503.93 kB is accepted as a warning. The step-10 stop rule of `plans/SHL-08.md` changes from "if `I1` is 500 kB or more, stop" to "the build exits 0 and the 1 MB error budget holds"; the third warning, "bundle initial exceeded maximum budget", is an expected warning and is listed in step 10's acceptance text.
+- **Reason.** The 500 kB figure is a warning in `apps/web/angular.json`, not an error; the 1 MB error budget holds with about 500 kB of margin; the +7.90 kB is small and is explained by the setup-auth dynamic import. Restructuring eager or landing code to recover 3.93 kB is disproportionate, with UX risk for a warning-level threshold.
+- **What does not change.** `apps/web/angular.json` is not changed (DECISIONS line 1087: warning 500 kB, error 1 MB; no `allowedCommonJsDependencies` outside `contracts-boot`). This entry changes the plan's stricter stop rule, not the build configuration.
+- **Sequence.** The amended step 10 goes to Opus for approval (a changed plan needs approval before later steps run); the unit then resumes at step 11 (record `I0` 496.03 kB, `I1` 503.93 kB, `W0`, `W1`, and the git status).
