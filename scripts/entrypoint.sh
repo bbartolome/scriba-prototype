@@ -139,10 +139,15 @@ if [ "$INTERACTIVE" = yes ]; then
     printf 'Enter a whole number from 1 to 65535.\n' >&2
   done
 fi
-INSTALL_DIR=$(pwd)
-case "$INSTALL_DIR/" in
-  "$LIBRARY/"*) fail "This folder ($INSTALL_DIR) is the library or inside it. Run the one-liner in a folder outside $LIBRARY. No library or .env was written." ;;
-esac
+# Physical paths on both sides, so a symlink (or a HOME that is a link) cannot hide the library.
+# A library that does not exist yet cannot hold this folder, so there is nothing to compare.
+INSTALL_DIR=$(pwd -P)
+if [ -d "$LIBRARY" ]; then
+  LIBRARY_PHYS=$(cd -P "$LIBRARY" && pwd -P)
+  case "$INSTALL_DIR/" in
+    "$LIBRARY_PHYS/"*) fail "This folder ($INSTALL_DIR) is the library or inside it. Run the one-liner in a folder outside $LIBRARY. No library or .env was written." ;;
+  esac
+fi
 
 # S5. The compose version stamped into .env: a positive whole number only.
 COMPOSE_FILE_VERSION=$(cat compose-version </dev/null)
