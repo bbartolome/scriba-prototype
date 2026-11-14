@@ -3815,3 +3815,13 @@ Items the reviewer found (revision 14 must fix each):
 Notes (not defects): all seven revision-12 items are fixed and were checked; index.ts (six lines after prettier, one conflict at 5f57f47) and the citations (README 69, 81, 133, 134; TRG-01 lines 95, 240, 306, 314; dom-range.ts a99f430 and bff0ceb) hold; the af470ff step-0 counts give case G and branch (b). Open from the revision-12 notes: (B) is ambiguous about a card key with 0 bytes in an initial output; sample-chat.ts imports ../index on the branch, but main.ts does not reach it, so step 7's conclusion holds.
 
 Result: NOT APPROVED. Rejections of the SHL-10 plan since the approval of revision 9: 4 (revisions 10 to 13). The items are errors of fact and of citation; one Opus subagent writes revision 14.
+
+## 2026-11-14 — TRG-01 — Opus plan review of revision 8: NOT APPROVED
+
+Item the reviewer found (revision 9 must fix it):
+
+1. Section 3, preamble (plan line 165). The rule "step 0 uses `git merge-base main HEAD` in place of `HEAD`, and a step that is already done is skipped" begins "In that case", so it covers only the third set-up case (the branch exists and no worktree has it). In the first case a worktree entry for unit/TRG-01 already exists, the branch can hold the unit's own commits (prompt.md line 80: the subagent continues from them), and step 0 would compare 02eadc0 with HEAD. Its stop condition lists `packages/contracts/src/tool-registry`, and the unit's commits change the `export {};` line of its index.ts, so step 0 would stop, and step 1's baseline would run on the red commits. Correction: make the rule apply however the worktree was set up. For example: "Whenever the branch has commits of its own (`git log --oneline main..HEAD` prints lines), in any of the three cases, step 0 uses `git merge-base main HEAD` in place of `HEAD` in the stop condition and the numstat, and a step that is already done is skipped." When the branch has no commits of its own, `git merge-base main HEAD` equals HEAD, so the substitution is safe to apply every time.
+
+Notes (not defects): the commit list, the step 0 stop condition (exits 1 at 74723cd, not cited, so the rule does not stop) and numstat (nine lines), the citations, the plan-form bullet, the export counts (88 exports, 89 names), the routes and blocked_by/unblocks inverses all hold. main moved to 9dfffe9, which changes only plans/SAU-06.md. Step 11's `git diff --stat main --` is more robust as `$(git merge-base main HEAD)`.
+
+Result: NOT APPROVED. The item is an error of method; one Opus subagent writes revision 9 (prompt.md step 5).
