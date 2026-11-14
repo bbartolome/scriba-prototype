@@ -179,6 +179,20 @@ function storageText(): string {
   ].join('\n');
 }
 
+/**
+ * The four key checks of C1 (d): no element's text, no input or textarea value, no browser storage
+ * entry and not the URL holds the key. Called after Save, while Replace shows, and after the reload.
+ */
+function expectNoKeyInPage(fixture: ComponentFixture<unknown>): void {
+  const page = root(fixture);
+  expect(page.textContent).not.toContain(OPENROUTER_KEY);
+  for (const element of page.querySelectorAll('input, textarea')) {
+    expect((element as HTMLInputElement).value).not.toContain(OPENROUTER_KEY);
+  }
+  expect(storageText()).not.toContain(OPENROUTER_KEY);
+  expect(location.href).not.toContain(OPENROUTER_KEY);
+}
+
 describe('providers panel', () => {
   describe('C1 add from a preset with a key', () => {
     it('C1 adding OpenRouter from its preset with a key shows it masked, and a reload never shows the key', async () => {
@@ -224,6 +238,7 @@ describe('providers panel', () => {
       await click(fixture, buttonIn(formOf(fixture), 'Save'));
 
       // (b) After Save: the masked key, and the form is in edit mode.
+      expectNoKeyInPage(fixture);
       expect(root(fixture).textContent).toContain('Key set');
       expect(root(fixture).textContent).toContain(`${MASK}abcd`);
       expect(formHeading(fixture)).toBe('Edit openrouter');
@@ -259,7 +274,7 @@ describe('providers panel', () => {
       // Replace shows the input, which holds no key; a second Replace hides it and sends nothing.
       await click(fixture, buttonIn(root(fixture), 'Replace'));
       expect(control(fixture, 'key').value).toBe('');
-      expect(root(fixture).textContent).not.toContain(OPENROUTER_KEY);
+      expectNoKeyInPage(fixture);
       await click(fixture, buttonIn(root(fixture), 'Replace'));
       expect(doubles.api.requests).toHaveLength(6);
 
@@ -271,15 +286,7 @@ describe('providers panel', () => {
       const reloaded = await mount();
 
       // (d) Nothing the page or the browser holds has the key.
-      const page = root(reloaded);
-      expect(page.textContent).not.toContain(OPENROUTER_KEY);
-      for (const element of page.querySelectorAll('input, textarea')) {
-        expect((element as HTMLInputElement).value).not.toContain(
-          OPENROUTER_KEY,
-        );
-      }
-      expect(storageText()).not.toContain(OPENROUTER_KEY);
-      expect(location.href).not.toContain(OPENROUTER_KEY);
+      expectNoKeyInPage(reloaded);
 
       // (e) The row shows the key state with no form open, and the list was read twice.
       expect(row(reloaded, 'openrouter').textContent).toContain('Key set');
@@ -323,6 +330,14 @@ describe('providers panel', () => {
       ]);
       expect(select.value).toBe('llama3.1');
       expect(formOf(fixture).querySelector('input[name="model"]')).toBeNull();
+      // The list loaded, so the form shows no explanation of a free-text model.
+      for (const explanation of [
+        'Save the provider to load its model list. Until then, type the model name.',
+        'The provider listed no models. Type the model name instead.',
+        'The model list could not be loaded. Type the model name instead.',
+      ]) {
+        expect(formOf(fixture).textContent).not.toContain(explanation);
+      }
 
       doubles.api.respond(
         'POST',

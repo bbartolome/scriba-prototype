@@ -121,21 +121,31 @@ describe('providers panel in a host page', () => {
     const router = TestBed.inject(Router);
     const navigateByUrl = vi.spyOn(router, 'navigateByUrl');
     const navigate = vi.spyOn(router, 'navigate');
+    // Checked after every action: still on /host, no navigation call, and no settings link.
+    const stillOnHost = (): void => {
+      expect(router.url).toBe('/host');
+      expect(navigateByUrl).not.toHaveBeenCalled();
+      expect(navigate).not.toHaveBeenCalled();
+      expectNoSettingsLink(scope);
+    };
     harness.detectChanges();
-    expectNoSettingsLink(scope);
+    stillOnHost();
 
     // Add a custom provider.
     const created = readView(MY_LOCAL_LLAMA);
     doubles.api.respond('POST', '/api/providers', created);
     serveModels(doubles.api, 'my-local-llama', []);
     await click(fixture, buttonIn(scope, 'Custom URL'));
+    stillOnHost();
     const name = scope.querySelector<HTMLInputElement>('[name="label"]');
     const baseURL = scope.querySelector<HTMLInputElement>('[name="baseURL"]');
     if (!name || !baseURL) throw new Error('No custom URL fields.');
     await setValue(fixture, name, 'My Local Llama');
+    stillOnHost();
     await setValue(fixture, baseURL, 'http://localhost:9000/v1');
+    stillOnHost();
     await click(fixture, buttonIn(scope, 'Save'));
-    expectNoSettingsLink(scope);
+    stillOnHost();
     expect(rowIds(scope)).toEqual(['ollama', 'my-local-llama']);
 
     // Make the custom provider the app default, then the Ollama provider again.
@@ -147,11 +157,12 @@ describe('providers panel in a host page', () => {
     );
     if (!select) throw new Error('No app default select.');
     await setValue(fixture, select, 'my-local-llama');
+    stillOnHost();
     doubles.api.respond('POST', '/api/providers/app-default', {
       appDefault: { providerId: 'ollama', model: '' },
     });
     await setValue(fixture, select, 'ollama');
-    expectNoSettingsLink(scope);
+    stillOnHost();
 
     // Delete the custom provider.
     doubles.api.respond('POST', '/api/providers/my-local-llama/delete', null);
@@ -164,8 +175,9 @@ describe('providers panel in a host page', () => {
     );
     if (!customRow) throw new Error('No row for my-local-llama.');
     await click(fixture, buttonIn(customRow, 'Delete'));
+    stillOnHost();
     await click(fixture, buttonIn(scope, 'Confirm delete'));
-    expectNoSettingsLink(scope);
+    stillOnHost();
 
     expect(rowIds(scope)).toEqual(['ollama']);
     expect(
@@ -174,9 +186,6 @@ describe('providers panel in a host page', () => {
           request.method === 'POST' && request.path === '/api/providers',
       ),
     ).toHaveLength(1);
-    expect(router.url).toBe('/host');
-    expect(navigateByUrl).not.toHaveBeenCalled();
-    expect(navigate).not.toHaveBeenCalled();
     expect(
       doubles.api.requests.every((request) =>
         request.path.startsWith('/api/providers'),
