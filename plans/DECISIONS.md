@@ -3299,3 +3299,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the three open problems is a decision: a control's wording for case L, a citation and a statement about the awaits. The Navigator's rule (DECISIONS line 3102) stands. No Navigator question is open on this plan.
 - **Action.** A new Opus subagent writes the plan again from the draft (revision 6, `86c9ee4`) and the list above, as revision 7. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — MPR-09 — Opus review of the plan (revision 6): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, three items and one non-blocking note. Every acceptance criterion is mapped to a test and none is weakened; the contract, API, Shell, zod 4.6.7 and DECISIONS facts that were checked match.
+  1. The header and section 8 are stale. The header gives HEAD as `dd4e0ea`; main is `c0c7863` (the draft commit). Section 8 cites `plans/SHL-12.md` at revision 5 (`b4f2b53`), whose lines moved at revision 6 (`952411a`): the file tables are at lines 93 to 105 and the `shell/index.ts` row of "Shared files" at line 113. Cite SHL-12 at `952411a` with its revision-6 lines, and restate each citation that the plan took from revision 5 (the reviewer lists them against the revision-5 line numbers).
+  2. Control M16 (line 203) expects the wrong failure. D7 does not say that the alert message and the `Saved.` status are separate fields. Say in D7 that they are separate and that a Save clears both when it starts. Change M16's expected failure to "E6 (the D6 message still shows after the retry, next to `Saved.`)".
+  3. The URL fixture at lines 78, 172 and 253 starts with a U+00A0, which looks like a space. A plain space is accepted by `new URL()` (checked on Node 26.13.0), so the fixture would not test the trim-before-parse rule. Write the character as the escape ` ` in D3, 4b and 7a, and say that a plain space is accepted by `new URL()`.
+  - Non-blocking note: C4b's steps do not register the `POST /api/providers` reply for the custom add; name it, as E1 implies.
+- **Rejections of the MPR-09 plan: 5** (revisions 1, 3, 4, 5 and 6). The rule of prompt.md step 5 applies.
+
+## 2026-11-14 — MPR-09 — five rejections: examination of the open problems (rule of prompt.md step 5)
+
+- **Examination.** None of the three open problems is a decision: stale citations, a control's expected failure with a field-level wording fix, and an invisible character in a fixture. No Navigator question is open on this plan.
+- **Action.** A new Opus subagent writes the plan again from the draft (revision 6, `c0c7863`) and the list above, as revision 7. The new draft is committed, then a new Opus subagent reviews it.
