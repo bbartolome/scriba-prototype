@@ -3864,3 +3864,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Everything else in the comment and the criteria was confirmed: the AGL-01 slice (ee7fde5) is an ancestor of af470ff; events.ts defines the four tool-call events; plans/AGL-01.md D3 to D7 are lines 39 to 43. The reviewer also notes that plan line 76's "export {};" and "not on main" text sits in the branch's own copy of the plan (revision 7), not in revision 14, and changes no step the code depends on.
 - Criteria 1 to 3 pass (T1 to T9).
 - Code rejections of SHL-10: 2 (the first, and this one).
+
+## 2026-11-14 — SHL-10 — Opus code review (third, after 1352f76): APPROVED (before the rebase-time swap)
+
+- Patch id of the approved branch (`git diff af470ff unit/SHL-10 -- . ':!plans' ':!units' | git patch-id --stable`): bb8e880cecd59cd9955aa8ee3626f92427a75c79.
+- The fixes are right: the sample's comment cites modules/shell.md by section and quote ("It never consumes `/agent-loop`"), which holds at af470ff (line 43) and at main (line 44); the rest of the comment is true.
+- Criteria 1 to 3 pass (T1 to T9; 101 of 101 web tests).
+- This approval is for the branch as it stands. The rebase-time swap of plan step R changes the card, so it is reviewed again (step R3) after the swap.
