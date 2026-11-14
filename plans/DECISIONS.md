@@ -3563,3 +3563,14 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - NAVIGATOR (not decided here): open point 1, a hand-edited invalid stored section: (a) 400 PLATFORM_VALIDATION_FAILED on read, the plan's default; (b) 500 PLATFORM_INTERNAL as Setup & auth does (setup-status.service.ts lines 64 to 71); (c) a check at boot; (d) a new error code. Open point 3, clearing searchEndpoint, is not blocking.
 - The default (a) stands until the Navigator decides. Status set to planned (commit on main). No unit branch exists yet.
 - Rejections of the AGL-06 plan: 2 (revisions 1 and 2).
+
+## 2026-11-14 — SHL-13 — Opus review of the plan (revision 2): NOT APPROVED
+
+- (1) Decision 6 does not define "outnumbers". Counting every LF ties on "alpha\r\nbeta\r\n", so the editor uses LF, and criterion-2 test 1 writes "alpha\rX\nbeta\r\n" (F12 row 9), not the expected text; fixture 4 and M2's expected failures are then wrong. Correction: count as apps/web/src/app/shared/editor/markdown-document.ts lines 13 to 24 do: CRLF is the number of "\r\n" pairs, LF is the number of "\n" with no "\r" before it (the matches of /\r?\n/g); use "\r\n" only when CRLF is greater than LF. A plan defect, not a Navigator decision; unit line 19 needs this reading too.
+- (2) The header and F3 are out of date: this is revision 2, written after the review at lines 3489 to 3494 (commit 4c146dd); the BOM step of SHL-11 is line 125 (not 105), and its index.ts row is line 77.
+- (3) Step 3 starts in the main checkout on unit/SHL-13. It must run in the unit's own worktree (prompt.md line 80; the plan cites line 78).
+- (4) Decision 10 cites unit line 24 for read-only (it is line 25); decision 3's "unit lines 19 and 22" are lines of the SHL-14 unit: say so.
+- (5) The outputs test has no fixture: its loaded text and its result under M1 to M4 are not stated. Give the text as a literal and the result under each control; for M4, say whether the saved text after a save is the sent text or documentText(state).
+- Checked and passed: no non-ASCII bytes; the M1 to M4 lists match @codemirror/state 6.7.6 (dist lines 106, 179, 608, 2698, 2761 and 2779); project-store-copies.spec.ts (81 lines; describe at line 58, existing it closes at line 80); PST-10 line 18; SHL-14 line 25; the base 12d8a15; febde9e removed dom-range.ts; the PST-06 BOM requirement; agreement with SHL-12 (state 6.7.6, view 6.43.15, one line each in shell/index.ts).
+- NAVIGATOR: open points 1, 3, 6 and 7. The definition of "outnumbers" is not one of them.
+- Rejections of the SHL-13 plan: 2 (revisions 1 and 2).
