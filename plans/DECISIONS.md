@@ -3001,3 +3001,14 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   4. Line 8 says the revision-2 HEAD is `b75a1ab`, but the plan was committed as `9e43497` on `5796d8d`. The claim holds at HEAD: `git diff --quiet 22040f6 HEAD -- ':!plans'` exits 0. Name the right commit.
   5. (For TRG-01, not AGL-01.) `plans/TRG-01.md` line 181 still says AGL-01's `output` "must be" structurally equal to `toolOutputSchema`. That contradicts AGL-01's D5 (line 41) and TRG-01's own section-5 row (line 133), which says open point 7 is answered. TRG-01's next revision cites AGL-01's D5.
 - **Rejections of the AGL-01 plan: 2** (revision 1 and revision 2, both recorded here and above).
+
+## 2026-11-14 — PST-02 — Opus review of the plan (revision 2): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, six items. The fixes of revision 1 hold: the kit imports only the entry file, E1 no longer tests a private helper, the worktree order is correct, and E2 asserts what only the registration causes.
+  1. `plans/PST-02.md` line 163: the fixture says `L/alias -> book (for E2)`. The alias is used by E1 (line 135); E2 is the settings test. Change it to "(for E1)".
+  2. Line 128: `createTestApp({ modules: [PathSafetyKitModule] })` has no `libraryDir`. Without it, `createTestApp` makes its own temp library (`apps/api/test/create-test-app.ts` lines 68 to 70), so `libraryRoot` is not `L` and every row returns 404. Write `createTestApp({ libraryDir: L, modules: [PathSafetyKitModule] })`, and say that the test removes `L` and `O`, because `createTestApp` removes only a library it created (line 72).
+  3. Line 135 (E1): the request `.scriba/x` through `alias` is refused by the lexical check of step 2 (line 53) before step 3 resolves the root, so it proves nothing about the aliased root. Send `link-to-scriba/pending/a.json` through `alias` instead; that request reaches step 6 (`relative(rootReal, …)`, line 57) and fails if step 6 used the unresolved root.
+  4. Lines 230 and 256 cite `plans/SAU-06.md` lines 85 and 103. Revision 3 (`fc8b468`) moved `apps/api/**` to line 87 and the diff-check acceptance to line 105; the content is unchanged. Cite lines 87 and 105.
+  5. Line 90 says `providers-resolution.kit.ts` lines 1 to 3 import `providers.module`. Line 3 also imports `ModelResolver` from the internal `providers.resolution`, so the earlier kit is not an entry-only example. Cite line 2 only, or say that the earlier kit imports an internal file and this kit does not.
+  6. Line 173 says the "extra" rows test P7 and P9, but line 171 does not mark the P7 and P9 rows as "extra". Mark them "extra", or drop P7 and P9 from line 173.
+- **Rejections of the PST-02 plan: 2** (revision 1 and revision 2, both recorded here and above).
