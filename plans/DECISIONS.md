@@ -3272,3 +3272,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the four open problems is a decision: a control's data, a row's content, a message rule and a citation. No Navigator question is open on this plan.
 - **Action.** A new Opus subagent writes the plan again from the draft (revision 5, `9d14541`) and the list above, as revision 6. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — PLT-19 — Opus review of the plan (revision 6): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, four factual items. The rulings of the Navigator are followed; the rejection items of earlier reviews are answered; no criterion is weakened.
+  1. MU14 (`plans/PLT-19.md` line 528) copies only `docs/RELEASING.md` into the mutant folder. W11 (line 504) checks that the linked `../deploy/RUNBOOK.md` exists, but it does not say what that path is resolved against. If the test resolves it against `RELEASING_PATH`, it looks for `$M/../deploy/RUNBOOK.md`, which does not exist, so W11 fails twice in MU14 (the missing runbook and the removed footer), and MU14 does not show the `BREAKING CHANGE:` rule failing alone. State in W11 and MU14 that the runbook is always read at the repository path `deploy/RUNBOOK.md` (section 8, line 633 implies this), never relative to `RELEASING_PATH`.
+  2. Step 2 (line 387) expects every test to fail at the red stage, but 4.6 lists W7 as two rows (lines 499 and 500). A "W7 triggers" test written at the red stage reads only `ci.yml`, which complies (`ci.yml` lines 2 to 6), so it passes, and the stop rule (line 383) halts the implementer. Make W7 one `node:test` test, or have step 2 name W7 (triggers) as the one test expected to pass at the red stage.
+  3. Step 0 (line 385) can open a worktree on an existing `unit/PLT-19` branch, but it gives no point to resume from (`prompt.md` line 78: the subagent continues from its commits). If the red commit is there, step 2 has nothing to commit; if the feat commit is there, "every test fails" is false; either way the run stops. If the newest PLT-19 commit is the red commit, resume at step 3; if it is the feat commit, resume at step 8; otherwise start at step 1.
+  4. Line 421 says the Navigator rejected both "no concurrency group" and "a per-commit group". The ruling (`plans/DECISIONS.md` line 3207) rejects only option (b), the per-commit group. Write "Option (b), a per-commit group, was rejected by the Navigator; no group at all has the same flaw", which D10 (line 92) already says.
+- **Rejections of the PLT-19 plan: 4** (revisions 1, 3, 5 and 6). The rule of prompt.md step 5 applies: the open problems are errors of fact and wording, so an Opus subagent writes the plan again (revision 7).
+
+## 2026-11-14 — PLT-19 — four rejections: examination of the open problems (rule of prompt.md step 5)
+
+- **Examination.** None of the four open problems is a decision: a path rule for a mutant, a test-count rule for the red stage, a resume rule and a citation to a ruling. The Navigator's rulings stand. No Navigator question is open on this plan.
+- **Action.** A new Opus subagent writes the plan again from the draft (revision 6, `68d6179`) and the list above, as revision 7. The new draft is committed, then a new Opus subagent reviews it.
