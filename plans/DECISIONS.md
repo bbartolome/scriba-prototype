@@ -3038,3 +3038,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 ## 2026-11-14 — PST-02 — correction to the entry above
 
 - **Correction.** The draft that the Opus rewrite starts from is `plans/PST-02.md` revision 4, committed as `8ad0cac` ("draft plan (revision 4)"). The earlier reference to `6e375dd` in the entry above is wrong: `6e375dd` is the commit that records the revision-3 review, and the plan there is revision 3.
+
+## 2026-11-14 — SHL-12 — Opus review of the plan (revision 2): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, five items. The six items of the previous review are fixed: N2 passes the raw strings and drops the facet; the CR-mark check is correct; the D1 pair 2 lines share no first letter; the plan has no raw BOM byte; each criterion has a control; the registry facts (merge 6.12.3, state 6.7.6, view 6.43.15) and their licences match `npm view`.
+  1. Stale text. F1 (`plans/SHL-12.md` line 204) says HEAD is `22040f6`, but line 8 says `fc8b468`. HEAD is `627415b`, and only `plans/` has changed since `fc8b468`. Line 247 says "No SHL-12 entry exists in DECISIONS.md", but lines 10 and 209 cite the entry at line 2957. State the same base at lines 8 and 204, and make line 247 name the review entry.
+  2. The DECISIONS citations are one line early. The registry facts are at line 2959, not 2958 (plan lines 18, 229, 236 and 238). Review item 1 is at line 2960, not 2959 (lines 24 and 231). The six items are at lines 2960 to 2965, not 2959 to 2964 (line 209).
+  3. F21 (line 224) cites old SAU-06 line numbers. SAU-06 revision 3 (`fc8b468`) moved them. The boundaries-skip fact is now at `plans/SAU-06.md` line 240, and the barrel tree-shaking note (A8) at line 262. Lines 236 and 258 now hold the notice-banners fact and the e2e item A4. Cite lines 240 and 262.
+  4. Control expectations. N4 (line 110) leaves out the tabs-to-spaces row, which also fails because `'\titem\n'` and `'    item\n'` both trim to `item`. N1 (line 107) says "D3 fails", but D3b passes because "No changes" is decided by comparing the strings. N4 names the tabs-to-spaces row; N1 says "D3a fails; D3b passes".
+  5. Line 187 says "the other files that name SHL-12 do so only in `parallel_with`". That is false: `units/SHL-09-core-gate.md` line 9 (`unblocks`) and `units/README.md` lines 63 and 81 also name SHL-12. Say so.
+- **Rejections of the SHL-12 plan: 2** (revisions 1 and 2).
