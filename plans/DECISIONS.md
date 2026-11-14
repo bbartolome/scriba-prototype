@@ -3466,3 +3466,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Effects.** No criterion-1 test changes. Controls M5 and M8 keep their "shown" expectations. The notes go to CEX-02, CEX-04, PST-08, PST-10 and SHL-15 only (no criterion text changes): if an API-side rule is later planned and differs, the Shell's copy follows it by a later change.
 - **Correction for CEX-04.** A subagent's read of CEX-04 inverted the prose-first case. `plans/SHL-11.md` line 24 is authoritative: under option A the Shell shows a prose-first block and a block that opens with a blank line, and Pandoc's stripping (CEX-04 lines 25 and 35) need not match.
 - **Still open.** Open decision 3 (jsdom as the local procedure for "nothing executes"). The renderer fact (`MARKED_OPTIONS` at component level) must still be proven in a jsdom spec before the plan is final.
+
+## 2026-11-14 — TRG-01 — revision 5 draft and corrections of the unit effects (orchestrator)
+
+- Plan revision 5 (`67adb30`) answers the seven items of the revision 4 review above. It names the TRG-01 unit file in step 0 and checks it by count.
+- Items 3, 4, 5 and 7 correct the effects of the Navigator's decisions; the decisions stand. Applied in `bb76e4a`: TRG-01 line 30 (`error?` inside the braces; "unreadable" reworded); TRG-02 line 21 (Ajv checks inputs against `valueType`, it does not choose the control); TRG-03 line 22 (control derived as in TRG-02); TRG-13 line 16 (validity is `valid`); GRR-11 line 19 (palette lists `enabled && valid`).
+- Item 6 (an invalid user copy of a built-in has no route to its source) is a decision for the Navigator. It is open point 8 of the plan, and is not settled here.
+- The downstream units changed in `bb76e4a` have no plan, no branch and are not selected in this iteration.
