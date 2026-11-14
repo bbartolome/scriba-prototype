@@ -3060,3 +3060,18 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Decision (the Navigator, session 2ddb4a6c49c64ada9360fb078f09cf2e, step 1, answered).** Option B: the sample naturally accumulates four drafts (three skeleton drafts from PST-11, plus AGL-19's grounding draft), so the milestone gate states four chapters. CEX-08's range becomes 2 to 4 drafts, and CEX-20's "three chapters" becomes "four chapters" (the done-when and demo step 1). `modules/compile-export.md` line 62 follows CEX-20. PST-11 stays at three skeleton drafts.
 - **Reason.** Option A would cut PST-11 from three drafts to two and amend CEX-08's "add the third" conditional, which is more invasive. Option C removes AGL-19's core criterion (a grounding draft with all three verdicts). Option B changes only the count, and no done-when criterion is weakened: the export and opens-cleanly requirement and the minimum of three chapters are unchanged.
 - **Settled-unit change.** Authorised by the Navigator (`prompt.md` lines 150 to 153). The unit and module files change in one commit with PST-11's plan, which needs a revision: its open point 2 and the "Agrees" lines for CEX-08, CEX-09 and CEX-20 change to the four-chapter count.
+
+## 2026-11-14 — SHL-12 — Opus review of the plan (revision 3): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, five items. The eleven items of the earlier reviews are fixed, the DECISIONS line numbers cited in revision 3 point at the right text, F21 is right, N4 is right, and the registry versions match `npm view`.
+  1. Line 73 cites `plans/SAU-06.md` lines 89 and 90 for "leaves `apps/web/package.json` and the lock alone". At revision 4 (`a0af09e`), line 89 is `apps/api/**` and line 90 is `shell/**`; the package entries are at lines 91 and 92. Cite lines 91 and 92.
+  2. Lines 8 and 204 are stale. The plan is committed as `97408e7` on `a04bb65`, and `git diff --name-only fc8b468 97408e7 -- ':!plans'` lists three files: `modules/compile-export.md`, `units/CEX-08-nonfiction-sample-order.md` and `units/CEX-20-milestone-gate.md` (the PST-11 Navigator decision). Name these three, say this plan reads none of them, and add `modules/` to F1's list of changes since `355f86e`.
+  3. N1's expectation (line 107) is incomplete. With both sides built from `base`, E4 (the marked lines never update) and E5 (no line is marked) also fail. E3 still passes. Add them to N1.
+  4. Lines 10 and 247 say the Opus reviews are the only DECISIONS entries that name SHL-12. That is false: lines 2894, 2906, 2921, 2924, 2974 and 3021 also name it, in other units' reviews. Write "the only entries about SHL-12".
+  5. The shared-files row for `shell/index.ts` (line 72) says SAU-06 and MPR-09 "import from this file but need no edit". Once the export line is added, importing the barrel loads `diff-view.ts` and with it `@codemirror/*`, so any unit merged after SHL-12 must run `npm ci` before its tests (DECISIONS line 2974; `plans/SHL-11.md` line 84). Say this in the row.
+- **Rejections of the SHL-12 plan: 3** (revisions 1, 2 and 3).
+
+## 2026-11-14 — SHL-12 — three rejections: examination of the open problems (rule of prompt.md step 5)
+
+- **Examination.** None of the five open problems is a decision. All are errors of fact or wording: three line citations, a stale base sentence, an incomplete control expectation, and a missing shared-file consequence. No Navigator question is open on this plan.
+- **Action (prompt.md step 5, errors of fact).** A new Opus subagent writes the plan again from the draft (revision 3, `97408e7`) and the list above, as revision 4. The new draft is committed, then a new Opus subagent reviews it.
