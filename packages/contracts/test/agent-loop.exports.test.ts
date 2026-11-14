@@ -177,11 +177,14 @@ describe('agent-loop subpath exports', () => {
     expect(untyped).toEqual([]);
 
     // (4) The sources declare no function and no arrow function, comments removed.
-    const sourceText = listFiles(SOURCE_DIR)
-      .filter((file) => file.endsWith('.ts') && !file.endsWith('.d.ts'))
-      .map((file) =>
+    const sourceFiles = fs
+      .readdirSync(SOURCE_DIR)
+      .filter((name) => name.endsWith('.ts'));
+    expect(sourceFiles.length).toBeGreaterThan(0);
+    const sourceText = sourceFiles
+      .map((name) =>
         fs
-          .readFileSync(file, 'utf8')
+          .readFileSync(path.join(SOURCE_DIR, name), 'utf8')
           .replace(/\/\*[\s\S]*?\*\//g, '')
           .replace(/\/\/.*$/gm, ''),
       )
