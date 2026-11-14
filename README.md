@@ -46,7 +46,7 @@ For a quick update, run `docker compose pull && docker compose up -d` in the ins
 
 ### Stop and start
 
-A stopped stack is started again with `docker compose restart` in the install folder. Docker restarts the containers by itself after a crash (`restart: unless-stopped`).
+A stopped stack is started again with `docker compose restart` in the install folder. If the app stops answering after the `tailscale` container restarts on its own, the stack is not restarted by Docker, so run `docker compose restart` in the install folder.
 
 ### Roll back
 
