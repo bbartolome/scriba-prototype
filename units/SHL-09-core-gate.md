@@ -14,11 +14,11 @@ unblocks: [SHL-10, SHL-11, SHL-12, SHL-13, SHL-17, SHL-18, "Agent loop chat pane
 Merging this **closes Frontend shell `phase:core`**.
 
 ## Acceptance criteria (the `phase:core` checklist)
-- [ ] `npm run dev` serves the Shell; proxy, `/healthz` and unbuffered `/events` verified.
-- [ ] A dummy feature registered with one route-table entry is lazy-loaded (its own chunk), shown in the nav with its label and icon, and absent from the initial bundle (checked on the build stats).
-- [ ] Breakpoint gate, nav forms, API client, SSE demux, reconcile ticks, landing redirect, project-route reconciliation and theming criteria (SHL-02…SHL-08) all pass on `main`.
-- [ ] The feature route-test template runs under Vitest.
-- [ ] Platform's Playwright e2e still passes: its first step loads the Shell.
+- [x] `npm run dev` serves the Shell; proxy, `/healthz` and unbuffered `/events` verified.
+- [x] A dummy feature registered with one route-table entry is lazy-loaded (its own chunk), shown in the nav with its label and icon, and absent from the initial bundle (checked on the build stats).
+- [x] Breakpoint gate, nav forms, API client, SSE demux, reconcile ticks, landing redirect, project-route reconciliation and theming criteria (SHL-02…SHL-08) all pass on `main`.
+- [x] The feature route-test template runs under Vitest.
+- [x] Platform's Playwright e2e still passes: its first step loads the Shell.
 
 **M1 "done when":** *the author types "summarize my outline" and gets a correct answer with visible tool calls.* The Shell is the substrate; the Agent loop's chat route and the tool-call card (SHL-10) complete it.
 

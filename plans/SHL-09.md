@@ -1,6 +1,6 @@
 ---
 id: SHL-09
-status: planned
+status: done
 ---
 
 # SHL-09 plan — core gate: dummy lazy feature, dev stack, e2e and demo
@@ -284,3 +284,11 @@ The unit's `unblocks` list (front matter line 9) has eighteen names. They are ex
 - Net passed count `B + 1` (step 4). Changed files: `app.routes.ts` and `modules/shell.md` (the route row and the line 88 amendment); new files: the two files under `shell/core-gate/` and the top-level spec.
 - No shared Shell file, fake, e2e step or contract changes (section 2d).
 - Five open points remain: the Navigator's on the demo wording (open points 1 and 2), the coordinator's (open point 3), the Navigator's overrule (open point 4), and the Project store owner's (open point 5, PST-04). Open points 6, 7 and 8 are resolved by the Navigator's decisions of 2026-11-14 (decisions 3 and 18; open point 8 by DECISIONS commit `497ae35`). Demo step 2 runs on `main` as set out in section 3, step 9.
+
+## 9. Results of the code stage (2026-11-14, batch head `355f86e` on `main`)
+
+- **Code.** Commit `76e4efb` on `unit/SHL-09` (rebased onto `main` `07f54b5` as `355f86e`), fast-forwarded into `main`. Five files: `apps/web/src/app/app.routes.ts` (one route entry, `loadChildren`), `apps/web/src/app/shell/core-gate/core-gate.ts` and `core-gate.routes.ts`, `apps/web/src/app/core-gate.spec.ts` (C2), and `modules/shell.md` line 89 (option A text, DECISIONS commit `497ae35`).
+- **Automated checks on the batch head.** `npm test` exit 0 (contracts 175, api 141, web 86 in 20 files, e2e 1, scripts 12 plus node tests). `npm run lint` exit 0. `npm run build` exit 0. The build's initial total is 505.56 kB against 504.21 kB before; the warnings are the same three as at baseline.
+- **Criteria.** Criterion 1: D1 to D3 (dev stack, `/healthz` on 4200 and 8080, unbuffered `/events`). Criterion 2: C2 (rendered nav item and page on a phone) and C2' (the routes module alone in a lazy chunk, 443 bytes, not in `index.html`). Criterion 3: the named tests, all passing in the 86/86 run; B-OS run as a browser check (see the DECISIONS entry of this date). Criterion 4: T1 and T2. Criterion 5: the e2e's "app loads" step.
+- **Not run.** Demo steps 1 to 6 by a person in a browser (step 9). B-OS was run by Playwright with emulated `prefers-color-scheme`, not by a person.
+- **Opus code review (on `1f16a0f` base, same code):** APPROVED. Notes recorded in the DECISIONS entry of this date.
