@@ -18,9 +18,16 @@ import {
 import { Observable, Subject, of, throwError, take, mergeMap } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { APP_ROUTES } from '../../app.routes';
-import { parseResponse, type ApiPath, type ResponseSchema } from '../../shell/api-client';
+import {
+  parseResponse,
+  type ApiPath,
+  type ResponseSchema,
+} from '../../shell/api-client';
 import { ApiError, CLIENT_ERROR_CODES } from '../../shell/api-error';
-import { restoreMatchMedia, stubMatchMedia } from '../../shell/testing/match-media';
+import {
+  restoreMatchMedia,
+  stubMatchMedia,
+} from '../../shell/testing/match-media';
 import {
   createShellTestDoubles,
   FakeApiClient,
@@ -299,16 +306,18 @@ describe('setup page extra tests', () => {
     doubles.api.fail(
       'GET',
       IDENTITY_ROUTE,
-      new ApiError(403, 'AUTH_HOST_REJECTED', 'The Host header is not allowed.'),
+      new ApiError(
+        403,
+        'AUTH_HOST_REJECTED',
+        'The Host header is not allowed.',
+      ),
     );
 
     const harness = await renderSetup(doubles.providers);
 
     await settle(harness, (root) => {
       const alert = root.querySelector('[role="alert"]');
-      expect(alert?.textContent.trim()).toBe(
-        'The Host header is not allowed.',
-      );
+      expect(alert?.textContent.trim()).toBe('The Host header is not allowed.');
       expect(paragraphs(root)).not.toContain(IDENTITY_MISSING_TEXT);
       expect(paragraphs(root)).not.toContain(NOT_ALLOWED_TEXT);
       expect(buttonTexts(root)).toEqual([]);
@@ -323,8 +332,7 @@ describe('setup page extra tests', () => {
     expect(entries).toHaveLength(1);
     const entry = entries[0];
     const data = entry?.data as
-      | { scope?: unknown; minDeviceClass?: unknown; nav?: unknown }
-      | undefined;
+      { scope?: unknown; minDeviceClass?: unknown; nav?: unknown } | undefined;
     expect(data?.scope).toBe('app');
     expect(data?.minDeviceClass).toBe('phone');
     expect(data?.nav).toBeUndefined();

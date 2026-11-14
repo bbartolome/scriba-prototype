@@ -145,9 +145,9 @@ test('C2 the setup page renders at 390 by 844: the notice, the identity with Con
       },
     });
     await page.goto('/setup');
-    await expect(
-      page.locator('app-setup-page').getByRole('alert'),
-    ).toHaveText('The server could not read the identity.');
+    await expect(page.locator('app-setup-page').getByRole('alert')).toHaveText(
+      'The server could not read the identity.',
+    );
     await expect(continueButton(page)).toHaveCount(0);
     await expectPhoneLayout(page);
   });
@@ -173,9 +173,9 @@ test('C2 the setup page renders at 390 by 844: the notice, the identity with Con
 
     await continueButton(page).click();
 
-    await expect(
-      page.locator('app-setup-page').getByRole('alert'),
-    ).toHaveText('The server could not finish setup.');
+    await expect(page.locator('app-setup-page').getByRole('alert')).toHaveText(
+      'The server could not finish setup.',
+    );
     expect(continueCalls).toBe(1);
     await expect(
       page.getByText('Signed in from this computer (loopback).', {
