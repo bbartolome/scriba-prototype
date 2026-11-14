@@ -2536,3 +2536,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Open for the Navigator.** Open point 1 (the dynamic import of `/project-store`, which extends the setup-auth rule of DECISIONS line 1084) still needs the Navigator's decision before the code stage.
 - **Count.** Rejections of SHL-08: 2. All five are factual or consistency corrections.
 - **Next.** The SHL-08 subagent applies items 1 to 5 to `plans/SHL-08.md` (untracked). Then Opus reviews again; the Navigator is asked about open point 1.
+
+## 2026-11-14 — PLT-17 — Opus ninth review of the plan (revision 8, with its corrections): APPROVED
+
+- **Result.** An Opus reviewer with no earlier context returned APPROVED for `plans/PLT-17.md` after eight rejections. The five criteria each have a named test (C1 to C5 in `apps/api/test`) with the seam the unit names; the untestable parts have stated stand-ins (the Navigator decides O3); the install one-liner's variables reach the inner bash under `setsid -w`, the install folder keeps its mode (checked: 700 under umask 077, and the temp-folder plus `mv` method), and the U4 guard matches DECISIONS line 803; the stdout and stderr routing follows D20 and D9 (the silent probe, the terminal probe with `2>/dev/null`, and the stubbed pull path); the open points O1 to O4 name an owner and the options.
+- **Count.** Rejections of PLT-17 before this approval: 8 (all factual, routing or consistency corrections; no Navigator call beyond O3, which stays with the Navigator).
+- **Next.** The orchestrator sets `status: planned` and commits `plans/PLT-17.md`. The code stage is the next iteration, in a worktree on `unit/PLT-17` cut from main.
