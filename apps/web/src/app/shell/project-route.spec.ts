@@ -19,6 +19,7 @@ const projectList = {
   projects: [
     { id: 'a', title: 'Alpha', active: true, status: 'ok' },
     { id: 'b', title: 'Beta', active: false, status: 'ok' },
+    { id: 'c', title: 'Gamma', active: false, status: 'ok' },
   ],
 };
 
@@ -196,6 +197,35 @@ describe('project route', () => {
 
     clickButton(harness, 'Go to the active project');
     await vi.waitFor(() => expect(router.url).toBe('/projects/a/review'));
+  });
+
+  it('a switch page reused for another project id switches to that id on Switch', async () => {
+    const doubles = createShellTestDoubles();
+    seed(doubles, 'a');
+    renderWith(doubles);
+    const router = TestBed.inject(Router);
+    const harness = await RouterTestingHarness.create(
+      '/projects/b/switch?to=%2Fchat',
+    );
+    await vi.waitFor(() =>
+      expect(textOf(harness)).toContain('Switch to Beta?'),
+    );
+
+    await router.navigateByUrl('/projects/c/review');
+    await vi.waitFor(() =>
+      expect(textOf(harness)).toContain('Switch to Gamma?'),
+    );
+
+    doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'c' });
+    doubles.api.respond('POST', ACTIVE_PROJECT_ROUTE, { active: 'c' });
+    clickButton(harness, 'Switch');
+    await vi.waitFor(() => expect(router.url).toBe('/projects/c/review'));
+
+    expect(doubles.api.requests).toContainEqual({
+      method: 'POST',
+      path: ACTIVE_PROJECT_ROUTE,
+      body: { projectId: 'c' },
+    });
   });
 
   it('a valid to keeps its path and query on Go from the switch page', async () => {
