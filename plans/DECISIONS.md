@@ -2991,3 +2991,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 ## 2026-11-14 — SHL-11 — correction to item 5 of the Opus review (revision 1)
 
 - **Correction.** Item 5 of the SHL-11 review said F14's `angular.json` lines are 36 and 37 and 41 and 42. That is wrong. The budgets are at `apps/web/angular.json` lines 35 and 36 (`maximumWarning`, `maximumError` for `initial`) and 40 and 41 (for `anyComponentStyle`); the `type` lines are 34 and 39. The plan (revision 2) cites those lines, with the evidence, and the driver checked them directly.
+
+## 2026-11-14 — AGL-01 — Opus review of the plan (revision 2): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, five items. The fixes of revision 1 items 3, 4, 5 and 7 hold, E1 catches M3, E4 matches D13, and no criterion is weakened. D5 (`output` as `z.unknown().optional()`) is valid, and the no-import statement is correct: AGL-01's `blocked_by` (line 7) does not name TRG-01, and AGL-01 is M1 while TRG-01 is M2.
+  1. The M6 signal is wrong (`plans/AGL-01.md` line 95). E1 imports `groundingVerdictSchema` by name (line 114), and `packages/contracts/tsconfig.json` line 3 includes `test/`, so renaming it breaks `tsc --noEmit -p tsconfig.json`. The build stops there (`package.json` line 48), vitest never runs, and C1b's name list never fails. Revision 1 made the same mistake with M4. Correction: say that M6 is caught by `tsc` on E1's import, as M4 is described; or replace it with a mutation that C1b catches at vitest time, such as deleting one `export type` that no test or source file names (C1b part 3).
+  2. M2 (line 95) says E1's "tuple and `.options` checks" fail. `.options` is compared with the exported tuple (line 114), and M2 changes that tuple too, so that check still passes. Only the check against the literal list fails. Correction: write "E1's literal tuple check".
+  3. Stop rule (a) of step 4 (line 88) adds a test line to a file that step 3 already committed. Step 10 (line 94) expects `git status --short` to list only source paths, so the procedure breaks if the rule fires. Correction: let step 10 list and commit the changed test file too.
+  4. Line 8 says the revision-2 HEAD is `b75a1ab`, but the plan was committed as `9e43497` on `5796d8d`. The claim holds at HEAD: `git diff --quiet 22040f6 HEAD -- ':!plans'` exits 0. Name the right commit.
+  5. (For TRG-01, not AGL-01.) `plans/TRG-01.md` line 181 still says AGL-01's `output` "must be" structurally equal to `toolOutputSchema`. That contradicts AGL-01's D5 (line 41) and TRG-01's own section-5 row (line 133), which says open point 7 is answered. TRG-01's next revision cites AGL-01's D5.
+- **Rejections of the AGL-01 plan: 2** (revision 1 and revision 2, both recorded here and above).
