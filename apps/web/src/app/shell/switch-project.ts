@@ -1,6 +1,7 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
+import { catchError, EMPTY, map, switchMap, tap } from 'rxjs';
 import { projectTarget } from './project-scope';
 import {
   ACTIVE_PROJECT_PATH,
@@ -36,56 +37,77 @@ export class SwitchProjectPage {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
-  // Read once, when the page opens: the id of the URL, and the path to return to (`to`).
-  private readonly projectId =
-    this.route.snapshot.paramMap.get('projectId') ?? '';
-  private readonly to = this.route.snapshot.queryParamMap.get('to') ?? '';
-
-  protected readonly title = signal(this.projectId);
+  protected readonly title = signal('');
   protected readonly active = signal<string | null | undefined>(undefined);
   protected readonly error = signal<string | undefined>(undefined);
 
   constructor() {
-    this.api
-      .get(PROJECTS_PATH, projectListCopy)
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: (list) =>
-          this.title.set(
-            list.projects.find((entry) => entry.id === this.projectId)?.title ??
-              this.projectId,
+    // The router reuses this page when the URL changes within its route, so the title and the
+    // active id are loaded again on each change of the id. The two reads are separate streams:
+    // one failing does not stop the other.
+    this.route.paramMap
+      .pipe(
+        map((params) => params.get('projectId') ?? ''),
+        tap((projectId) => {
+          this.title.set(projectId);
+          this.error.set(undefined);
+        }),
+        switchMap((projectId) =>
+          this.api.get(PROJECTS_PATH, projectListCopy).pipe(
+            map(
+              (list) =>
+                list.projects.find((entry) => entry.id === projectId)?.title ??
+                projectId,
+            ),
+            catchError((error: unknown) => {
+              this.error.set(messageOf(error));
+              return EMPTY;
+            }),
           ),
-        error: (error: unknown) => this.error.set(messageOf(error)),
-      });
-    this.api
-      .get(ACTIVE_PROJECT_PATH, activeProjectCopy)
-      .pipe(takeUntilDestroyed())
-      .subscribe({
-        next: ({ active }) => this.active.set(active),
-        error: (error: unknown) => this.error.set(messageOf(error)),
-      });
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe((title) => this.title.set(title));
+    this.route.paramMap
+      .pipe(
+        switchMap(() =>
+          this.api.get(ACTIVE_PROJECT_PATH, activeProjectCopy).pipe(
+            catchError((error: unknown) => {
+              this.error.set(messageOf(error));
+              return EMPTY;
+            }),
+          ),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe(({ active }) => this.active.set(active));
   }
 
   protected switchTo(): void {
+    const { projectId, to } = this.current();
     this.api
-      .post(
-        ACTIVE_PROJECT_PATH,
-        { projectId: this.projectId },
-        activeProjectCopy,
-      )
+      .post(ACTIVE_PROJECT_PATH, { projectId }, activeProjectCopy)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => this.open(this.projectId),
+        next: () => this.open(projectId, to),
         error: (error: unknown) => this.error.set(messageOf(error)),
       });
   }
 
   protected goTo(activeId: string): void {
-    this.open(activeId);
+    this.open(activeId, this.current().to);
   }
 
-  private open(projectId: string): void {
-    void this.router.navigateByUrl(projectTarget(projectId, this.to), {
+  /** The id and the `to` of the URL as they are when a button is clicked. */
+  private current(): { projectId: string; to: string } {
+    return {
+      projectId: this.route.snapshot.paramMap.get('projectId') ?? '',
+      to: this.route.snapshot.queryParamMap.get('to') ?? '',
+    };
+  }
+
+  private open(projectId: string, to: string): void {
+    void this.router.navigateByUrl(projectTarget(projectId, to), {
       replaceUrl: true,
     });
   }
