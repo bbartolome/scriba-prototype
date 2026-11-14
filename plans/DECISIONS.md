@@ -3856,3 +3856,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Note, not blocking: Angular turns the markdown-text block's text into " {{ output.text }} ", with a space at each end, so under white-space: pre-wrap the leading space shows; T3's toContain does not catch it. Step R replaces the block at the step-6 rebase and it never reaches main, so no fix now.
 - All criteria pass through their tests (T1 to T9), the six paths are right, the BS1 check passes, and lint, tsc, prettier, the build and the web suite (101 of 101) pass.
 - Code rejections of SHL-10: 1.
+
+## 2026-11-14 — SHL-10 — Opus code review (second, after the comment fix 6f7215f): NOT APPROVED
+
+- Patch id at this review: e28a6948adb6e71ae52c1ec588d273cb2e3bd656.
+- Item 1: apps/web/src/app/shell/testing/sample-chat.ts line 14 cites "modules/shell.md line 43". That is true at af470ff and at 6f7215f, but on main (after the step-6 rebase brings in c33a58c, which added the SHL-20 line at modules/shell.md line 33) the rule "It never consumes /agent-loop" is at line 44. No single line number is right before and after the rebase. Correction: drop the line number and cite by section and quote, for example: (modules/shell.md, Cross-cutting decisions: "It never consumes /agent-loop"). Commit with SHL-10 in the message (case L). The patch id changes, so a new review is needed.
+- Everything else in the comment and the criteria was confirmed: the AGL-01 slice (ee7fde5) is an ancestor of af470ff; events.ts defines the four tool-call events; plans/AGL-01.md D3 to D7 are lines 39 to 43. The reviewer also notes that plan line 76's "export {};" and "not on main" text sits in the branch's own copy of the plan (revision 7), not in revision 14, and changes no step the code depends on.
+- Criteria 1 to 3 pass (T1 to T9).
+- Code rejections of SHL-10: 2 (the first, and this one).
