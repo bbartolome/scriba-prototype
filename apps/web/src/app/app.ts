@@ -5,6 +5,7 @@ import { AppNav } from './shell/app-nav';
 import { ConnectionStatus } from './shell/connection-status';
 import { DeviceClassService } from './shell/device-class';
 import { NoticeBanners } from './shell/notice-banners';
+import { ProjectSwitchFollow } from './shell/project-switch-follow';
 import { ThemeService } from './shell/theme';
 import { ThemeToggle } from './shell/theme-toggle';
 
@@ -26,4 +27,6 @@ export class App {
   private readonly theme = inject(ThemeService);
   // Starts the device-class service at load, and drives the layout class.
   protected readonly devices = inject(DeviceClassService);
+  // Starts the follower of project-switched events, so project tabs move with the server.
+  private readonly projectSwitch = inject(ProjectSwitchFollow);
 }

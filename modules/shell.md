@@ -40,7 +40,7 @@ SHL-01 composition root, route table + registration pattern, dev proxy, not-foun
 ### Cross-cutting decisions
 - Angular 22, standalone components, signals-first and zoneless. Angular Material + CDK (layout, `BreakpointObserver`).
 - Feature UIs live in `apps/web/src/app/features/<m>/`, each owned by its module. The Shell's own code lives outside `features/`. Platform's boundaries lint rule (PLT-09) applies.
-- The Shell consumes only `/platform`, the setup-status route + schema from `/setup-auth`, and the active-project/activate/`project-switched` and file-API read/write shapes from `/project-store`. It never consumes `/agent-loop`, `/graph-runner` or `/compile-export`; shared components take Shell-local inputs.
+- The Shell consumes only `/platform`, the setup-status route + schema from `/setup-auth`, and the active-project/activate/`project-switched` and file-API read/write shapes from `/project-store`, and the project list (the switch page's title). It never consumes `/agent-loop`, `/graph-runner` or `/compile-export`; shared components take Shell-local inputs.
 - Reads are `GET`, commands `POST` (Platform's method convention); no other verbs.
 - In production NestJS serves the built bundle on the same origin (`@nestjs/serve-static`), so cookies and `EventSource` need no CORS.
 
@@ -59,6 +59,7 @@ SHL-01 composition root, route table + registration pattern, dev proxy, not-foun
 | `/projects/:projectId/graphs` | Graph runner (graph list, latest run status) | project | phone | yes |
 | `/projects/:projectId/graphs/:graphId` | Graph runner (canvas; child route of the same entry) | project | tablet (child-level gate) | no |
 | `/projects/:projectId/manuscript` | Compile & export | project | phone | yes |
+| `/projects/:projectId/switch` (`switch` is a reserved child name under `projects/:projectId/`) | Shell (SHL-08) | project | phone | no |
 
 Pages with richer layouts on larger screens (files editing, the Tools editor) declare `phone` and switch layout on the device-class signal. The canvas child route is gated with the exported `deviceClassGuard('tablet')` (`canMatch`).
 
