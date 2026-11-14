@@ -5,8 +5,8 @@
 export type ToolCallStatus = 'pending' | 'running' | 'done' | 'error';
 
 /**
- * A tool call's output. Markdown is shown as Markdown source text; JSON is shown as a key/value
- * tree.
+ * A tool call's output. Markdown is rendered by the Shell's Markdown preview (app-markdown-preview,
+ * with raw HTML shown as text); JSON is shown as a key/value tree.
  */
 export type ToolCallOutput =
   | {
