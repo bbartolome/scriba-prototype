@@ -3767,3 +3767,14 @@ Result: NOT APPROVED. Rejections of the SHL-10 plan since the approval of revisi
 - Not applied in this run. The file is the approved plan's text (the reviewer checked it byte for byte), so the change is a plan revision with a new Opus review, and it also changes test W10. The SHAs cannot be checked offline; this session has no remote and no network access to GitHub.
 - Exposure: none until a push. The workflow has never run.
 - Before any push: revise PLT-19 (or a new unit) to pin the three actions by SHA, update W10, and have Opus review the change.
+
+## 2026-11-14 — TRG-01 — Opus plan review of revision 7: NOT APPROVED
+
+Items the reviewer found (revision 8 must fix each):
+
+1. Method (plan section 3) does not match code mode in prompt.md lines 80 and 81. Section 3 runs from the main checkout and creates the branch with `git switch -c unit/TRG-01` (step 2), and step 8 says "in the same checkout". In code mode the unit runs in its own worktree. Correction: run every step in the unit's worktree (`/Users/bbartolome/workspace/scriba-prototype-wt/TRG-01`, as `plans/AGL-06.md` line 54 and `plans/SHL-13.md` line 92 do): if a worktree entry for `unit/TRG-01` exists, use it; otherwise run `git -C /Users/bbartolome/workspace/scriba-prototype worktree add <path> -b unit/TRG-01 main`; if only the branch exists, the same command without `-b`. Run `npm ci` before step 1; delete `git switch -c`; in step 8 say "the worktree". Keep step 12's clone (it works from the shared repository).
+2. The "Plan form" bullet in section 1a (about line 73) is false: it says the facts are checked at one hash, but section 7a checks them at `02eadc0`, carries others from `a04bb65`, and has scratch runs at `c0c7863` and `a30bda5`; and it says the body keeps no per-revision labels, but the body has them (7a line 254 "Revision 7, checked at", lines 284 and 297, section 5 line 233, section 6 point 8, section 8 line 316). Correction: describe what the plan does (facts checked at `02eadc0`; older facts carried from `a04bb65` by the commands of 7a; revision labels only in the correction tables and 7a), or delete the bullet.
+
+Notes (not defects): the unit lines, README lines 64, 65 and 127 to 134, the module lines, every downstream line cited, the DECISIONS lines, the contracts sources and the 27-commit list were checked and are correct; blocked_by and unblocks are exact inverses; 4a holds 55 + 20 + 13 = 88. Step 0 is fine at `f058259`. Step 11's `git diff --stat main --` compares against the current tip of main; `main...HEAD` is more robust.
+
+Result: NOT APPROVED. The items are errors of method and of fact, so one Opus subagent writes revision 8 (prompt.md step 5). Rejections of the TRG-01 plan so far: 7 (revisions 1, 2, 4, 5, 6, 7 and the approval never came).
