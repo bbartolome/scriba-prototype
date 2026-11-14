@@ -33,7 +33,7 @@ Merging this **closes Tool registry `phase:contract`**. Changes afterwards only 
 - `tools` settings-section shape `{schemaVersion: 1, enabled: Record<string, boolean>}`.
 
 ## Acceptance criteria
-- [ ] The slice builds and is importable from NestJS and Angular with no other subpath than `/project-store` and `/platform`.
-- [ ] Zod tests accept a cold-open-shaped fixture envelope and reject a wrong output kind, a bad name and a missing `prompt`.
-- [ ] The output enum has exactly five values; the port-type enum exactly three.
-- [ ] Genre packs, Agent loop and Graph runner can reference every type they consume (a compile-only test imports them).
+- [x] The slice builds and is importable from NestJS and Angular with no other subpath than `/project-store` and `/platform`.
+- [x] Zod tests accept a cold-open-shaped fixture envelope and reject a wrong output kind, a bad name and a missing `prompt`.
+- [x] The output enum has exactly five values; the port-type enum exactly three.
+- [x] Genre packs, Agent loop and Graph runner can reference every type they consume (a compile-only test imports them).

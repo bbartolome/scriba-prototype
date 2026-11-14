@@ -1,6 +1,6 @@
 ---
 id: TRG-01
-status: planned
+status: done
 ---
 # TRG-01 plan — tool-registry contract slice (closes Tool registry phase:contract)
 
