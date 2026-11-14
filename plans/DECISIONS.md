@@ -3165,3 +3165,16 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   9. Citations: S8 (line 22) cites DECISIONS line 728, which review 1 rejected as a precedent; cite 2605 and 2775. S14 (line 28) says `modules/platform.md` line 30 states "PLT-14 and PLT-15 are closed", and it does not.
   10. [NAVIGATOR] D10 (lines 44 and 370) calls itself "a shortfall against criterion 1" for a push whose pending run is cancelled, yet the tick rule still ticks criterion 1. Only the Navigator can accept that; a recorded ruling is needed before criterion 1 is ticked.
 - **Rejections of the PLT-19 plan: 2** (revisions 1 and 3).
+
+## 2026-11-14 — SHL-12 — Opus review of the plan (revision 4): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, three items. The registry facts, the test count of 43, N1 to N6 and Z0, the citations, the sixteen earlier items and the shared-file rows were checked and are correct; no criterion is weakened.
+  1. The plan does not handle a branch that already exists. `prompt.md` line 78 says that if `unit/<ID>` exists, the subagent continues from its commits. Decision 16 (`plans/SHL-12.md` line 80) and steps 0 and 3 (lines 123, 124 and 135) assume a new branch. On a resumed `unit/SHL-12`, `npm ci` installs CodeMirror from the branch's own lockfile; step 0 then decides that a unit that adds CodeMirror reached `main` first, and step 3 ("create `diff-view.ts`, empty template") overwrites the component that was already committed. `prompt.md` line 82 asks for a commit after each complete part, and line 7 says uncommitted work is lost; here the first commit comes only at step 5 (line 141). Correction: in decision 16 and step 0, if `git log --oneline main..HEAD` is not empty, resume at the first step whose result is not committed; run the CodeMirror check against `main` (`git show main:package-lock.json | grep -c codemirror`); commit `apps/web/package.json` and `package-lock.json` after step 2 with `SHL-12` in the message; change step 5 to commit the remaining four paths.
+  2. Line 169 says "D1, D3a and E4 do not assert the layout themselves". E4 (line 212) asserts it: one editor (unified) or two (side by side). That is why N3 fails E4's phone row (line 146). Correction: "D1 and D3a do not assert the layout; E4 asserts the editor count of the layout its size gives".
+  3. E3 (line 211) names no fixture pair. N5 (line 148) fails E3's unified row only if the pair has a changed chunk, because the accept and reject buttons appear only on a chunk. Correction: E3 renders a changed pair, for example D1 pair 3.
+- **Rejections of the SHL-12 plan: 4** (revisions 1 to 4). The rule of prompt.md step 5 applies again: the open problems are errors of fact, so an Opus subagent writes the plan again (revision 5).
+
+## 2026-11-14 — SHL-12 — four rejections: examination of the open problems (rule of prompt.md step 5)
+
+- **Examination.** None of the three open problems is a decision: a resume rule for an existing branch, a wording fix, and a fixture name. No Navigator question is open on this plan.
+- **Action.** A new Opus subagent writes the plan again from the draft (revision 4, `329079a`) and the list above, as revision 5. The new draft is committed, then a new Opus subagent reviews it.
