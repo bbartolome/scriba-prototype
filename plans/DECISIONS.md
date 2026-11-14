@@ -3075,3 +3075,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the five open problems is a decision. All are errors of fact or wording: three line citations, a stale base sentence, an incomplete control expectation, and a missing shared-file consequence. No Navigator question is open on this plan.
 - **Action (prompt.md step 5, errors of fact).** A new Opus subagent writes the plan again from the draft (revision 3, `97408e7`) and the list above, as revision 4. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — SAU-06 — Opus review of the plan (revision 4): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, four items. C1 has six tests, one render each, and the count B plus 10 is right; the four Navigator decisions (lines 2869 to 2872) are obeyed; the anchored grep matches only `apps/web/src/contracts-boot.ts`, and M8 fails through the paragraphs and the document-level check, since no ancestor clips overflow.
+  1. Revision 3's item 3 is only partly fixed. Line 107 says "The other paths are files this plan neither reads nor changes." That is false for `apps/api/src/app.module.ts`: section 7a (line 229) cites its lines 31 and 39 to 41, and PST-02 adds an import and a `COMPOSED_MODULES` entry there (`plans/PST-02.md` line 255), which moves those lines. Name this file and say the cited lines move but their content does not.
+  2. Stale batch citations, from plans revised before `a0af09e`: `plans/SHL-10.md` line 237 is now 241 (lines 215 and 278 cite it); `plans/MPR-09.md` lines 204 and 210 are now 206 and 212, and its `app.routes.ts` row is line 212; `plans/SHL-11.md` line 84 is now 85 (the contracts build, line 221); the explicit `app.routes.ts` check in SHL-11 is at line 117, and line 116 is the status check.
+  3. Criterion 2 ("all of it", unit line 21) is weakened. C2 never renders the tailnet identity line, "Signed in over the tailnet as <login>.", at 390 by 844. Of the page's texts, only that one varies with user data, and only `code` gets `overflow-wrap`. Revision 1 was corrected on the same grounds for the explanations. In state 3, also fulfil the identity with 200 `{via: 'tailnet', login: 'ada@example.com'}`; then require that paragraph, "You're in." and Continue to be in the viewport, and run the host and document checks.
+  4. Since `a04bb65`, step 0's diff lists `modules/compile-export.md` (the PST-11 Navigator decision). Add it to the accepted paths as a file this plan does not read.
+- **Rejections of the SAU-06 plan: 3** (revisions 2, 3 and 4).
+
+## 2026-11-14 — SAU-06 — three rejections: examination of the open problems (rule of prompt.md step 5)
+
+- **Examination.** None of the four open problems is a decision. The criterion is not changed; the plan's C2 does not yet cover a text the criterion already covers. The rest are citations and one path list. No Navigator question is open on this plan.
+- **Action (prompt.md step 5, errors of fact).** A new Opus subagent writes the plan again from the draft (revision 4, commit `a0af09e`) and the list above, as revision 5. The new draft is committed, then a new Opus subagent reviews it.
