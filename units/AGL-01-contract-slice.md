@@ -34,6 +34,6 @@ Merging this **closes Agent loop `phase:contract`**. Zod schemas and inferred TS
 - **Route constants**, **error codes** (`AGENT_RUN_ACTIVE`, `AGENT_NO_PROVIDER`, `AGENT_NO_ACTIVE_PROJECT`, `AGENT_RUN_NOT_FOUND`), the **run-end reason enum** and the **reserved built-in tool names**.
 
 ## Acceptance criteria
-- [ ] Every shape above is exported as a Zod schema with an inferred type; no runtime logic.
-- [ ] Each event schema parses one valid and rejects one invalid example in contract tests.
-- [ ] The Shell, Project store and Compile & export can import the slice from its subpath.
+- [x] Every shape above is exported as a Zod schema with an inferred type; no runtime logic.
+- [x] Each event schema parses one valid and rejects one invalid example in contract tests.
+- [x] The Shell, Project store and Compile & export can import the slice from its subpath.
