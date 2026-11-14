@@ -3705,3 +3705,32 @@ Notes: SHL-20's front matter, shape and phase are correct; its one criterion can
 - Tests: `npm test -w @bbartolome/scriba-web` passed in the reviewer's run; the orchestrator's lint, test and build on the branch passed before this review (build 0, lint 0).
 - Open point (not blocking): whether CodeMirror stays out of the chunks of features that import other barrel exports (decision 12, check M2b) is shown only by the bundle check after the merge, not by these tests.
 - Code rejections of SHL-12: 1 (the first review of this branch's code, which was approved; the second review is the rebase re-review).
+
+## 2026-11-14 — SHL-10 — Opus plan review of revision 10: NOT APPROVED
+
+Items the reviewer found (recorded by the orchestrator, since the review was delivered to the orchestrator and not written here earlier):
+
+1. Line 12 says the Markdown-swap decision (about lines 3100 to 3104) is "the only Navigator decision on this unit". The open point 7 decision (about lines 3617 to 3622) is a second one. Remove "the only Navigator decision". F4 must list every SHL-10 line of this file: 3339 to 3343, 3509 to 3512, 3514 to 3519, 3587 to 3595, 3617 to 3622, and the other entries that name SHL-10.
+2. F24 (about line 273) says plans/SHL-11.md is at revision 7 (a98a4fc) and that git diff a98a4fc HEAD -- plans/SHL-11.md is empty. SHL-11 is at revision 8 (d7b50de; last commit 6148f60; status planned at that time). State F24 at revision 8.
+3. Line 226 says "lines 66" for SHL-11's two edits; the edits are at lines 85 and 86. Line 10 says the revision-8 span runs from c0c7863 to 9e1208d; that span is revision 7 (a44391c).
+4. F7 (about line 256) says the only barrel importer is shell/route-data.spec.ts line 2. Three more files import '../../shell' at HEAD: providers-copies.ts line 9 (type import), providers-panel.ts line 9 (ApiError), providers-store.ts line 10 (API_CLIENT). Line 10 must not say nothing under apps/web changed. Add that A6 and decision 13 hold because app.routes.ts routes no providers feature.
+5. The batch list of section 8 (about line 303) names AGL-01, PST-02, PST-11 and MPR-09 as done and leaves out AGL-06 (done) and PST-03 (planned). The package row cites plans/SHL-13.md line 77 for "never merged by hand"; that text is line 82.
+6. Step 7 (B) counts any module key in the top-level inputs as a real bundle reason and check (i) reads only the top-level inputs. esbuild lists tree-shaken modules in the top-level inputs. Correct check (i) to read the inputs of every entry of outputs, lazy chunks included: none of the three card paths may appear there with bytesInOutput greater than 0; shell/app-nav.ts must appear in the main output's inputs. Keep check (ii). Change A11 to match.
+- Notes: N1 and N2 quote this.deviceClass() === 'phone', but the committed card (09565fb) has this.devices.deviceClass() === 'phone'. A16 names only SHL-12; SHL-13's markdown-editor.ts also loads @codemirror/* through the barrel. The citations of modules/shell.md from line 37 move by one after c33a58c.
+
+Result: NOT APPROVED. Rejections of the SHL-10 plan since the approval of revision 9: 1 (revision 10).
+
+## 2026-11-14 — SHL-10 — Opus plan review of revision 11: NOT APPROVED
+
+Items the reviewer found (revision 11 answered the revision-10 items; these are the new ones):
+
+1. Line 13 names both Navigator decisions; F4 lists every SHL-10 line (the last at 3645 at 608de13 or 2ac99ac; re-grep before citing).
+2. F24 (about line 274) is at revision 8 (d7b50de, 6148f60); the check is right.
+3. Step 7 check (i): the reviewer finds the plan's af470ff note wrong. `git grep` at af470ff finds apps/web/src/app/shell/route-data.spec.ts line 2 (a type import of './index' in a spec), which tsconfig.app.json excludes. Say that no file of the app build imports the barrel there, and that the only import is that type import in a spec.
+4. A11 (about line 295) says step 7's check (i) on the real metafile tests the tree-shaking claim. It does not: on the code-time base af470ff no built file loads the barrel or the card, so no step produces a card that is loaded and unused. Tag the claim UNVERIFIED under the plan's tag rule (line 15), or record a probe (esbuild 0.28.2, a split build and a barrel that re-exports an unused class: the class's file is a top-level input and is in no output's inputs; the barrel is in a chunk's inputs with bytesInOutput 0).
+5. A8 (about line 292) says SHL-11's plan is a draft with no code on main. At e5b2b61 the plan was planned (since 6148f60); since bc5ea41 it is done and its code is on main. State the status at e5b2b61, and keep the greps of step 1b and step R2.
+6. The new front-matter line `revision: 11` moves every later line down by one, so four citations miss: "R4.2's answer (line 33)" (now 34), corrections (c) and (d) citing "Line 12" (now 13), and "the base (line 10)" (now 11). Remove the front-matter line (line 9 already gives the revision) or renumber the four citations.
+7. Line 9 lists rejected revisions as 1, 3, 4, 5, 6 and 8; revision 10 was rejected too, and the count since the approval of revision 9 is 2 (revisions 8 and 10 are not both since then: revision 8 is before the revision-9 approval, so the count since approval is 2 with revisions 10 and 11). Add revision 10 and its DECISIONS lines to line 9 and to F4.
+- Notes: check (ii) refuses any card key in an initial output, even one with bytesInOutput 0; applying the bytes rule of check (i) to (ii) would be consistent. This case cannot happen on af470ff. Main moved to 608de13 (SHL-12 and PST-03 merged): step R1 and A16 cover that. SHL-11 is on main, so SHL-10's step R makes the Markdown swap.
+
+Result: NOT APPROVED. Rejections of the SHL-10 plan since the approval of revision 9: 2 (revisions 10 and 11). The next rejection triggers the examination of prompt.md step 5.
