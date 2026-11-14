@@ -3833,3 +3833,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - SHL-20 and its inverse rules agree (SHL-09 unblocks names SHL-20; SAU-06 blocked_by names SHL-20; README line 84; modules/shell.md line 33; modules/setup-auth.md lines 18 and 35).
 - Notes, not defects: the revision-10 paragraph's list of files that name PLT-19 is incomplete (`.releaserc.json` is also in the header and section 0); modules/shell.md's "After SHL-09" Parallelism line does not list SHL-20.
 - Status set to planned (commit on main). SAU-06 is not available for the code stage until SHL-20 is done; SHL-20 has no plan and is not picked up in this run.
+
+## 2026-11-14 — SHL-10 — Opus plan review of revision 14: APPROVED
+
+- Checked at 6150655 and at main (8f7c3db, which changes only plans), with the commits of the branch: F18 (at af470ff the grep prints nothing; at e5b2b61 it prints the six MPR-09 lines, all from 452ea88), F1 (revision 7 wording), the code-time statements (af470ff has none of the three files; the card's aria-expanded count is 1 at 09565fb, 0 at 327567f, so step 0 finds case G and step 1b gives branch (b); A16 is first tested at step R2 (i)), the index.ts statements (six lines after prettier; one merge conflict), step 7 (A), (B) and check (i), decision 4 and N1, N2, N4 against 09565fb, and F4.
+- Notes, not defects: step 7 (B) is unclear about a card key with 0 bytes in an initial output's inputs (check (ii) refuses it; the top-level clause excuses it); this cannot happen on af470ff. Once SAU-06's setup-page.ts (which imports '../../shell') is on main, a routed feature reaches the barrel; BS1 runs only at code time, so the claims stay pinned to af470ff.
+- Status set to planned (commit on main). The code stage resumes on unit/SHL-10 (327567f, 09565fb) in a later iteration, as decision 17 and step 0 say.
