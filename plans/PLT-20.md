@@ -1,6 +1,6 @@
 ---
 id: PLT-20
-status: planned
+status: done
 ---
 # PLT-20 plan — examples/ check, M1 layer (project.yaml, entity base, excluded folders, samples.yaml)
 

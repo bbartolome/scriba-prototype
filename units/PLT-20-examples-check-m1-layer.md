@@ -27,9 +27,9 @@ CI validates the sample projects in `examples/` against the current contracts so
 - Must pass on an `examples/` folder that holds only the nonfiction skeleton (or nothing yet).
 
 ## Acceptance criteria
-- [ ] Every `project.yaml` under `examples/` parses with the Project store schema; every entity's front matter parses with the entity base.
-- [ ] A sample containing `.scriba/`, `logs/`, `snapshots/` or `drafts/.versions/` fails the check.
-- [ ] A `samples.yaml` entry with no folder (or a folder with no entry) fails the check.
-- [ ] A unit test that reads `examples/` fails lint.
-- [ ] A deliberately broken sample file (fixture) fails with the file path and the schema issue.
-- [ ] The check passes on the nonfiction skeleton.
+- [x] Every `project.yaml` under `examples/` parses with the Project store schema; every entity's front matter parses with the entity base.
+- [x] A sample containing `.scriba/`, `logs/`, `snapshots/` or `drafts/.versions/` fails the check.
+- [x] A `samples.yaml` entry with no folder (or a folder with no entry) fails the check.
+- [x] A unit test that reads `examples/` fails lint.
+- [x] A deliberately broken sample file (fixture) fails with the file path and the schema issue.
+- [x] The check passes on the nonfiction skeleton.
