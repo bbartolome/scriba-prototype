@@ -3429,3 +3429,23 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Condition.** The renderer fact (that `ngx-markdown` exports `MARKED_OPTIONS` and `MarkedRenderer`, and that a component-level provider takes effect) is unverified in the Navigator's record. The plan must prove it with a jsdom spec before it is final: raw `img`, `a`, `div` and a comment render as literal text, with no such element in the DOM and no request for the image.
 - **Effects.** SHL-10's card renders Markdown through this preview, so its output escapes raw HTML too; if the card ever gets its own Markdown component, it must carry the same provider. CEX-02's word-count rule is unchanged (it already strips HTML comments before counting); a draft's HTML comment appears as literal text in the preview, which is acceptable. SHL-19's accessibility check is unaffected.
 - **Still open.** Open decisions 2 (the front-matter rule) and 3 (jsdom as the local procedure).
+
+## 2026-11-14 — TRG-01 — Opus review of the plan (revision 4): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, seven items. The criteria are kept, and the export total of 87 is right under the plan's own rule (85 plus the constant and the schema for `valueType`).
+  1. The plan does not account for its edit of the TRG-01 unit (`units/TRG-01-contract-slice.md` lines 26 and 30, commit `ea65447`). Step 0 excludes only the six downstream files, so it stops. Correction: name the unit file in the first table, step 0 and section 8, and check it by count.
+  2. The export total is 87, and the plan's note at line 183 is right. The "86" in the decision entry above is a slip (recorded in the correction below).
+  3. [Corrects the Navigator's effect] TRG-13's validity is the summary's `valid` field (unit line 30), not `output` being null. A file that parses and fails lint has a non-null `output` and `valid` false. Correction: validity is `valid`; an entry with `output` null has `valid` false and shows its `error`.
+  4. [Corrects the Navigator's effect] `valueType` does not choose the control. The control is derived on the server (TRG-02 line 21), and the web app never parses JSON Schema (TRG-02 line 23). `valueType` is the type of the value the control sends (an integer field sends an integer; a number field, a number), so the value round-trips and passes Ajv without coercion (TRG-02 line 31). TRG-02 line 21's "Ajv schema uses valueType to pick" is backwards: Ajv checks `inputs`, and `valueType` is the type it checks.
+  5. [Corrects the Navigator's premise] Under option A, `enabled` is false only for a file that cannot be parsed or is refused. A tool that fails lint keeps the author's switch (TRG-09 line 20). The offering rule is `enabled` and `valid` (TRG-06 lines 22 and 25), so the palette (GRR-11 line 19) lists `enabled && valid`, and each name appears once.
+  6. [Navigator] A defect: for an invalid user copy of a built-in, `GET /tools/:name` returns the built-in (the "effective spec"), and `/builtin` returns the built-in too, so no route reaches the copy's source, which the editor needs (TRG-14). The smallest rule, with no contract change, is that `GET /tools/:name` returns the user file whenever one exists, valid or not, and `/builtin` returns the built-in. The alternative is a thirteenth route, `/tools/:name/user`, which is an expand and can come later. The Navigator must choose.
+  7. Smaller slips: the decision entries say "five unit files" where six are named; the TRG-01 unit's line 30 puts `error?` outside the summary braces, and "unreadable" should read "a file that cannot be parsed or is refused".
+- **Rejections of the TRG-01 plan: 3** (revisions 1, 2 and 4). Items 1 to 5 and 7 are errors of fact and wording, and correct the effects of the decisions without changing them; item 6 is a decision and goes to the Navigator.
+
+## 2026-11-14 — TRG-01 — corrections to the decision entries above (orchestrator)
+
+- The export total is 87, not 86 (the plan's rule: a tuple and its `z.enum` schema, plus the constant and schema of `valueType`).
+- The TRG-13 effect "validity from `output` null" is wrong. Validity is the summary's `valid`.
+- The TRG-03 effect "control chosen from `valueType`" is wrong. `valueType` types the value; the control stays derived (TRG-02 line 21).
+- The premise "an invalid tool is disabled" (for GRR-11) is wrong under option A. The palette lists `enabled && valid`.
+- "Five unit files" should read six downstream files, and the TRG-01 unit file is edited too.
