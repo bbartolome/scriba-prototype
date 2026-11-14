@@ -2384,3 +2384,14 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Verified as correct (Opus).** `deploy/serve/` is gone from main; the PLT-18 conflict (unit line 41 against no healthcheck on tailscale) is real; D3 settles the pin rule; D1 (the root `npm test` runs `scripts/*.test.mjs`; Vitest runs `apps/api/test`); the PLT-16 closure entry; the SAU-02 (138) and SAU-03 (143) citations; the Dockerfile, compose and entrypoint lines; O1 to O4 each name an owner.
 - **Count.** Rejections of PLT-17: 1.
 - **Next.** The PLT-17 subagent applies items 1 to 8 to `plans/PLT-17.md` (untracked). Then Opus reviews again.
+
+## 2026-11-14 — PLT-20 — Opus review of the plan (revision 2): NOT APPROVED (rejection 2)
+
+- **Result.** The second Opus review returned NOT APPROVED. Rejection 1's five items are fixed (C5 matches zod 4.6.7; the blockers; the CI order; the zod versions; open points 1 and 2; D16 and the merge notes). Five items remain.
+  1. D2 (line 28): "`--root` replaces it for the examples folder only" contradicts D13 (line 39, "under the root"), C4 (line 113: the offending test files are inside the temp tree) and section 4 (line 98). Read literally, the test-file scan stays on the repository, so C4(a) and C4(a2) exit 0 and fail. Correction: `--root` replaces the root for everything the check reads (`examples/` and the D13 scan); only the contracts loader (D3) keeps `scriptRoot`.
+  2. D13 rule R2 (line 41) misses the usual way API tests build paths: `resolve(__dirname, '..', '..', '..', 'examples', 'nonfiction')` (compare `apps/api/test/compose-version.test.ts` line 11 and `app-state.test.ts` line 15); `import.meta.dirname` and `process.cwd()` are the same gap. Correction: add `dirname` and `cwd` to R2's word list; none of the six quoted-`examples` lines on main contains either word, so the rule still flags zero lines on main; add that form to C4(a).
+  3. D13 reason (line 43): "Two lines use `examples` as a variable name" is four lines in two tests (`env-boot.test.ts` lines 12 and 17; `setup-auth-guard.test.ts` lines 565 and 570; section 7 line 193 lists all four). Correction: "Four lines in two tests".
+  4. Section 8 (line 203): "the author's macOS" is wrong. The implementer's shell is Linux (Ubuntu 24.04, aarch64, under linuxkit); `os.tmpdir()` is ext4 `/tmp`; only the checkout is a virtiofs mount from the Mac. Correction: the assumption is local Linux aarch64 against CI Linux x64.
+  5. Steps 0 and 10 (lines 77 and 87): `git status --short` must print nothing, and step 10 expects only the section 2 paths; other units' plans are untracked during parallel work. Correction: use `git status --short -- ':!plans'`, as `plans/PLT-13.md` step 0 (line 73) does.
+- **Count.** Rejections of PLT-20: 2. All five are factual or consistency corrections.
+- **Next.** The PLT-20 subagent applies items 1 to 5 to `plans/PLT-20.md` (untracked). Then Opus reviews again.
