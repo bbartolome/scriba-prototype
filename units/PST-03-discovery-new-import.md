@@ -24,8 +24,8 @@ Find every project automatically (story 1), ignore dot-folders (2), offer folder
 - Setup & auth's `/setup` flow calls these same endpoints.
 
 ## Acceptance criteria
-- [ ] Discovery lists exactly the non-dot immediate subfolders with `project.yaml`, marks the others `importable`, ignores `.scriba/` and other dot-folders, and doesn't follow an outward top-level symlink.
-- [ ] Invalid and too-new `project.yaml` list as `invalid` (with the issue) and `too-new`.
-- [ ] New creates the layout without `structure/` or `snapshots/` and with a `.gitignore` containing `.scriba/`; a second New with the same folder fails `PROJECT_EXISTS`.
-- [ ] Import leaves every other file byte-identical (hash the tree before/after), appends `.scriba/` to an existing `.gitignore` once, and reports exact issues for an invalid `project.yaml`.
-- [ ] The list GET is side-effect free.
+- [x] Discovery lists exactly the non-dot immediate subfolders with `project.yaml`, marks the others `importable`, ignores `.scriba/` and other dot-folders, and doesn't follow an outward top-level symlink.
+- [x] Invalid and too-new `project.yaml` list as `invalid` (with the issue) and `too-new`.
+- [x] New creates the layout without `structure/` or `snapshots/` and with a `.gitignore` containing `.scriba/`; a second New with the same folder fails `PROJECT_EXISTS`.
+- [x] Import leaves every other file byte-identical (hash the tree before/after), appends `.scriba/` to an existing `.gitignore` once, and reports exact issues for an invalid `project.yaml`.
+- [x] The list GET is side-effect free.
