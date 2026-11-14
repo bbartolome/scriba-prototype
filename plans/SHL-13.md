@@ -1,6 +1,6 @@
 ---
 id: SHL-13
-status: draft
+status: planned
 ---
 
 # SHL-13 plan - CodeMirror 6 Markdown editor wrapper, lossless load and save
