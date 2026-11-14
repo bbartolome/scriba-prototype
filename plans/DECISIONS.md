@@ -3825,3 +3825,11 @@ Item the reviewer found (revision 9 must fix it):
 Notes (not defects): the commit list, the step 0 stop condition (exits 1 at 74723cd, not cited, so the rule does not stop) and numstat (nine lines), the citations, the plan-form bullet, the export counts (88 exports, 89 names), the routes and blocked_by/unblocks inverses all hold. main moved to 9dfffe9, which changes only plans/SAU-06.md. Step 11's `git diff --stat main --` is more robust as `$(git merge-base main HEAD)`.
 
 Result: NOT APPROVED. The item is an error of method; one Opus subagent writes revision 9 (prompt.md step 5).
+
+## 2026-11-14 — SAU-06 — Opus plan review of revision 10: APPROVED
+
+- Checked at 74723cd, and again at 9dfffe9 (main), by a fresh reviewer: all revision-9 items are answered (line 316 is correct, `git ls-files` shows `.gitkeep` and the twelve providers files, and there is no `setup-auth/`); the Resume paragraph matches `00d91b9` (load() at lines 88 to 104; the try at 90 to 95; api.get outside it at 97 to 103).
+- Step 0 works: c0c7863 is the merge base and an ancestor of main; `git merge-tree --write-tree main unit/SAU-06` exits 0, so the rebase will not conflict. C1 has six tests; C2 is one e2e at 390 by 844, and its check (iv) waits for SHL-20 (Navigator option (b), decision 1a-18).
+- SHL-20 and its inverse rules agree (SHL-09 unblocks names SHL-20; SAU-06 blocked_by names SHL-20; README line 84; modules/shell.md line 33; modules/setup-auth.md lines 18 and 35).
+- Notes, not defects: the revision-10 paragraph's list of files that name PLT-19 is incomplete (`.releaserc.json` is also in the header and section 0); modules/shell.md's "After SHL-09" Parallelism line does not list SHL-20.
+- Status set to planned (commit on main). SAU-06 is not available for the code stage until SHL-20 is done; SHL-20 has no plan and is not picked up in this run.
