@@ -3245,3 +3245,16 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the two open problems is a decision: a resume case and a wording contradiction. The Navigator's rule (DECISIONS line 3102) stands. No Navigator question is open on this plan.
 - **Action.** A new Opus subagent writes the plan again from the draft (revision 5, `a59444e`) and the list above, as revision 6. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — SHL-12 — Opus review of the plan (revision 5): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, three factual items. The nineteen items of the earlier reviews and the four overrides are answered; the resume rule, the commit split and the CodeMirror check against `main` are correct; the controls N1 to N6 and Z0, the count of 43 and the pairs for E1 to E3 are right; the cited plans match; the registry facts match `npm view`; no criterion is weakened.
+  1. `plans/SHL-12.md` line 116 says "SAU-06 and MPR-09 cite earlier revisions". That is false for SAU-06: at `d75835a` its line 259 names SHL-12 at `329079a`, and every SHL-12 line it cites (its lines 259, 260, 266, 309, 322, 327 and 329) is a revision-4 line. The mapping also leaves out three citations: SHL-10 line 296 (revision-4 line 269, which is F25 and is now line 280), SHL-10 line 291 (line 106) and SAU-06 line 260 (lines 72 and 125). Write "SHL-10 and SAU-06 cite revision 4 (`329079a`); MPR-09 line 223 cites an earlier one (line 18)"; add F25 (269 to 280) and the three missing citations.
+  2. Line 151 (step 5) says "on a resumed branch, a failure here is reported, not fixed". Read literally, this also covers the resume case at line 129, where only commit 1 exists and steps 3 and 4 are written in this session, so the implementer would stop instead of finishing step 4. Write "when commit 2 existed at step 0, a failure here is reported"; otherwise the implementer goes back to step 4, as on a new branch.
+  3. Lines 56, 133 and 140: a branch that exists with no commits of its own counts as "new", but its base can be behind `main` (an earlier session stopped before commit 1). If SHL-13 then reached `main` with CodeMirror, the rule "leave out any package that `main`'s `apps/web/package.json` lists" leaves the branch without a package that `diff-view.ts` imports. Leave out the packages that the branch's own `apps/web/package.json` lists (equal to `main`'s on a branch made from `main`), and report any version difference with `main` for the driver's rebase, as line 133 already does for a resumed branch.
+- **Rejections of the SHL-12 plan: 5** (revisions 1 to 5). The rule of prompt.md step 5 applies: the open problems are errors of fact, so an Opus subagent writes the plan again (revision 6).
+
+## 2026-11-14 — SHL-12 — five rejections: examination of the open problems (rule of prompt.md step 5)
+
+- **Examination.** None of the three open problems is a decision: a citation set, a step-5 wording and a package rule for a stale branch. No Navigator question is open on this plan.
+- **Action.** A new Opus subagent writes the plan again from the draft (revision 5, `b4f2b53`) and the list above, as revision 6. The new draft is committed, then a new Opus subagent reviews it.
