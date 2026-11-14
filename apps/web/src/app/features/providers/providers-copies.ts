@@ -77,12 +77,19 @@ export function contractUrl(value: unknown): string | undefined {
 
 /** A finite number (`z.number()` refuses NaN and the infinities). */
 export function finiteNumber(value: unknown): number | undefined {
-  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : undefined;
 }
 
 /** A safe integer of at least `min` (`.int()` takes only safe integers). */
-export function integerAtLeast(value: unknown, min: number): number | undefined {
-  return typeof value === 'number' && Number.isSafeInteger(value) && value >= min
+export function integerAtLeast(
+  value: unknown,
+  min: number,
+): number | undefined {
+  return typeof value === 'number' &&
+    Number.isSafeInteger(value) &&
+    value >= min
     ? value
     : undefined;
 }
@@ -151,7 +158,11 @@ function readProvider(value: unknown): ProviderRead | undefined {
     read.keyRef = keyRef;
   }
   if (keyHint !== undefined) {
-    if (typeof keyHint !== 'string' || keyHint.length < 1 || keyHint.length > 4) {
+    if (
+      typeof keyHint !== 'string' ||
+      keyHint.length < 1 ||
+      keyHint.length > 4
+    ) {
       return undefined;
     }
     read.keyHint = keyHint;
@@ -192,7 +203,11 @@ function readAppDefault(value: unknown): AppDefault | undefined {
     return undefined;
   }
   const { providerId, model } = choice;
-  if (typeof providerId !== 'string' || providerId === '' || typeof model !== 'string') {
+  if (
+    typeof providerId !== 'string' ||
+    providerId === '' ||
+    typeof model !== 'string'
+  ) {
     return undefined;
   }
   return { appDefault: { providerId, model } };
@@ -238,7 +253,8 @@ export const providerListCopy: ResponseSchema<ProviderList> = guard((data) => {
 });
 
 /** One provider read view (`providerReadSchema`). */
-export const providerReadCopy: ResponseSchema<ProviderRead> = guard(readProvider);
+export const providerReadCopy: ResponseSchema<ProviderRead> =
+  guard(readProvider);
 
 /** Response of `GET /api/providers/presets` (`presetListSchema`). */
 export const presetListCopy: ResponseSchema<PresetList> = guard((data) => {

@@ -169,7 +169,10 @@ describe('providers panel in a host page', () => {
 
     expect(rowIds(scope)).toEqual(['ollama']);
     expect(
-      doubles.api.requests.filter((request) => request.method === 'POST' && request.path === '/api/providers'),
+      doubles.api.requests.filter(
+        (request) =>
+          request.method === 'POST' && request.path === '/api/providers',
+      ),
     ).toHaveLength(1);
     expect(router.url).toBe('/host');
     expect(navigateByUrl).not.toHaveBeenCalled();

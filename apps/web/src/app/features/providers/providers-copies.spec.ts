@@ -82,7 +82,9 @@ describe('providers copies', () => {
     expect(providerPath(PROVIDER_DELETE_PATH, 'a b')).toBe(
       '/api/providers/a%20b/delete',
     );
-    expect(providerPath(MODELS_PATH, 'a b')).toBe('/api/providers/a%20b/models');
+    expect(providerPath(MODELS_PATH, 'a b')).toBe(
+      '/api/providers/a%20b/models',
+    );
   });
 
   it('P2 each guard agrees with its contract schema on accepted and refused fixtures', () => {
@@ -108,7 +110,7 @@ describe('providers copies', () => {
           { ...readBase, baseURL: 'ftp://example.test' },
           { ...readBase, baseURL: '  https://example.test/v1  ' },
           { ...readBase, baseURL: 'https://exa\nmple.test/v1' },
-          { ...readBase, baseURL: ' https://example.test/v1' },
+          { ...readBase, baseURL: '\u00a0https://example.test/v1' },
           { ...readBase, maxTokens: 2 ** 53 - 1 },
           { ...readBase, key: 'sk-extra-field' },
         ],
@@ -157,7 +159,10 @@ describe('providers copies', () => {
         name: 'appDefaultCopy',
         copy: appDefaultCopy,
         schema: appDefaultSchema,
-        accepted: [PROVIDERS_EXAMPLES.appDefault, PROVIDERS_EXAMPLES.appDefaultUnset],
+        accepted: [
+          PROVIDERS_EXAMPLES.appDefault,
+          PROVIDERS_EXAMPLES.appDefaultUnset,
+        ],
         refused: [{}, { appDefault: { providerId: '', model: '' } }],
       },
       {

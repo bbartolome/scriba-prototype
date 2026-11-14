@@ -25,7 +25,7 @@ import {
 @Component({ imports: [ProvidersPanel], template: '<app-providers-panel />' })
 class PanelHost {}
 
-const MASK = '••••';
+const MASK = '\u2022\u2022\u2022\u2022';
 const OPENROUTER_KEY = 'sk-or-v1-secret-abcd';
 const OLLAMA: ProviderConfig = PROVIDERS_EXAMPLES.ollamaProvider;
 const OLLAMA_READ = PROVIDERS_EXAMPLES.ollamaRead;
@@ -94,9 +94,8 @@ async function setValue(
 }
 
 function formOf(fixture: ComponentFixture<unknown>): HTMLFormElement {
-  const form = root(fixture).querySelector<HTMLFormElement>(
-    'form.provider-form',
-  );
+  const form =
+    root(fixture).querySelector<HTMLFormElement>('form.provider-form');
   if (!form) throw new Error('No provider form is open.');
   return form;
 }
@@ -114,7 +113,9 @@ function control(
 }
 
 /** The app default select, which sits outside the provider form. */
-function appDefaultSelect(fixture: ComponentFixture<unknown>): HTMLSelectElement {
+function appDefaultSelect(
+  fixture: ComponentFixture<unknown>,
+): HTMLSelectElement {
   const select = root(fixture).querySelector<HTMLSelectElement>(
     'select[name="appDefault"]',
   );
@@ -131,7 +132,9 @@ function rowOf(
     ...root(fixture).querySelectorAll<HTMLElement>(
       'ul[aria-label="Providers"] > li',
     ),
-  ].find((item) => item.querySelector('.provider-id')?.textContent.trim() === id);
+  ].find(
+    (item) => item.querySelector('.provider-id')?.textContent.trim() === id,
+  );
 }
 
 function row(fixture: ComponentFixture<unknown>, id: string): HTMLElement {
@@ -152,8 +155,8 @@ function formHeading(fixture: ComponentFixture<unknown>): string {
 }
 
 function alertTexts(fixture: ComponentFixture<unknown>): string[] {
-  return [...root(fixture).querySelectorAll('[role="alert"]')].map(
-    (element) => element.textContent.trim(),
+  return [...root(fixture).querySelectorAll('[role="alert"]')].map((element) =>
+    element.textContent.trim(),
   );
 }
 
@@ -174,14 +177,6 @@ function storageText(): string {
     ...Object.keys(sessionStorage),
     ...Object.values(sessionStorage),
   ].join('\n');
-}
-
-/** Fails the test when a rendered link points at the settings route or a routerLink is present. */
-function expectNoSettingsLink(fixture: ComponentFixture<unknown>): void {
-  for (const link of root(fixture).querySelectorAll('a[href]')) {
-    expect(link.getAttribute('href') ?? '').not.toContain('/settings');
-  }
-  expect(root(fixture).querySelector('[routerlink]')).toBeNull();
 }
 
 describe('providers panel', () => {
@@ -213,9 +208,7 @@ describe('providers panel', () => {
       expect((control(fixture, 'timeout') as HTMLInputElement).value).toBe(
         '120000',
       );
-      expect((control(fixture, 'retries') as HTMLInputElement).value).toBe(
-        '2',
-      );
+      expect((control(fixture, 'retries') as HTMLInputElement).value).toBe('2');
       expect((control(fixture, 'key') as HTMLInputElement).type).toBe(
         'password',
       );
@@ -291,11 +284,7 @@ describe('providers panel', () => {
       // (e) The row shows the key state with no form open, and the list was read twice.
       expect(row(reloaded, 'openrouter').textContent).toContain('Key set');
       expect(row(reloaded, 'openrouter').textContent).toContain(`${MASK}abcd`);
-      expect(
-        doubles.api.requests.filter(
-          (request) => request.path === '/api/providers',
-        ),
-      ).toHaveLength(2);
+      expect(requestsTo(doubles, 'GET', '/api/providers')).toHaveLength(2);
 
       // The reload adds three reads and no model list, and the key was sent once.
       expect(doubles.api.requests.slice(6)).toEqual([
@@ -343,7 +332,11 @@ describe('providers panel', () => {
       await setValue(fixture, select, 'qwen2.5');
       await click(fixture, buttonIn(formOf(fixture), 'Save'));
 
-      const update = requestsTo(doubles, 'POST', '/api/providers/ollama/update');
+      const update = requestsTo(
+        doubles,
+        'POST',
+        '/api/providers/ollama/update',
+      );
       expect(update).toHaveLength(1);
       expect(update[0]?.body).toMatchObject({ model: 'qwen2.5' });
       expect(
@@ -351,7 +344,9 @@ describe('providers panel', () => {
           .filter((request) => request.path === '/api/providers/ollama/models')
           .map((request) => request.method),
       ).toEqual(['GET', 'GET']);
-      expect(doubles.api.requests.slice(-2).map((request) => request.path)).toEqual([
+      expect(
+        doubles.api.requests.slice(-2).map((request) => request.path),
+      ).toEqual([
         '/api/providers/ollama/update',
         '/api/providers/ollama/models',
       ]);
@@ -367,7 +362,11 @@ describe('providers panel', () => {
       doubles.api.fail(
         'GET',
         '/api/providers/ollama/models',
-        new ApiError(502, 'PROVIDER_UNREACHABLE', 'Could not reach the provider.'),
+        new ApiError(
+          502,
+          'PROVIDER_UNREACHABLE',
+          'Could not reach the provider.',
+        ),
       );
       const fixture = await render(doubles);
       doubles.api.respond(
@@ -384,12 +383,18 @@ describe('providers panel', () => {
       expect(root(fixture).textContent).toContain(
         'The model list could not be loaded. Type the model name instead.',
       );
-      expect(root(fixture).textContent).toContain('Could not reach the provider.');
+      expect(root(fixture).textContent).toContain(
+        'Could not reach the provider.',
+      );
 
       await setValue(fixture, control(fixture, 'model'), 'my-model');
       await click(fixture, buttonIn(formOf(fixture), 'Save'));
 
-      const update = requestsTo(doubles, 'POST', '/api/providers/ollama/update');
+      const update = requestsTo(
+        doubles,
+        'POST',
+        '/api/providers/ollama/update',
+      );
       expect(update[0]?.body).toMatchObject({ model: 'my-model' });
     });
   });
@@ -416,13 +421,15 @@ describe('providers panel', () => {
       await click(fixture, buttonIn(row(fixture, 'ollama'), 'Delete'));
       await click(fixture, buttonIn(root(fixture), 'Confirm delete'));
 
-      expect(requestsTo(doubles, 'POST', '/api/providers/ollama/delete')).toHaveLength(1);
+      expect(
+        requestsTo(doubles, 'POST', '/api/providers/ollama/delete'),
+      ).toHaveLength(1);
       expect(alertTexts(fixture)).toEqual(['Pick another default first.']);
       expect(row(fixture, 'ollama').textContent).toContain('Default');
       expect(row(fixture, 'openrouter')).toBeDefined();
-      expect(requestsTo(doubles, 'POST', '/api/providers/openrouter/delete')).toEqual(
-        [],
-      );
+      expect(
+        requestsTo(doubles, 'POST', '/api/providers/openrouter/delete'),
+      ).toEqual([]);
     });
   });
 
@@ -470,7 +477,9 @@ describe('providers panel', () => {
         },
       });
       expect(
-        doubles.api.requests.some((request) => request.path.endsWith('/key/set')),
+        doubles.api.requests.some((request) =>
+          request.path.endsWith('/key/set'),
+        ),
       ).toBe(false);
       expect(rowOf(fixture, 'my-local-llama')).toBeDefined();
       expect(
@@ -492,13 +501,20 @@ describe('providers panel', () => {
       doubles.api.respond(
         'POST',
         '/api/providers/ollama/update',
-        readView({ ...OLLAMA, temperature: 0.2, maxTokens: 2048, model: 'gemma3' }),
+        readView({
+          ...OLLAMA,
+          temperature: 0.2,
+          maxTokens: 2048,
+          model: 'gemma3',
+        }),
       );
       await setValue(fixture, control(fixture, 'temperature'), '0.2');
       await setValue(fixture, control(fixture, 'maxTokens'), '2048');
       await click(fixture, buttonIn(formOf(fixture), 'Save'));
 
-      expect(requestsTo(doubles, 'POST', '/api/providers/ollama/update')[0]?.body).toEqual({
+      expect(
+        requestsTo(doubles, 'POST', '/api/providers/ollama/update')[0]?.body,
+      ).toEqual({
         baseURL: OLLAMA.baseURL,
         model: '',
         temperature: 0.2,
@@ -602,7 +618,9 @@ describe('providers panel', () => {
       );
       await click(fixture, buttonIn(root(fixture), 'Remove'));
 
-      expect(requestsTo(doubles, 'POST', '/api/providers/key/clear')[0]?.body).toEqual({
+      expect(
+        requestsTo(doubles, 'POST', '/api/providers/key/clear')[0]?.body,
+      ).toEqual({
         providerId: 'openrouter',
       });
       expect(row(fixture, 'openrouter').textContent).toContain('No key set');
@@ -625,10 +643,9 @@ describe('providers panel', () => {
 
       // (a) The options, the selected default and the badge.
       const select = appDefaultSelect(fixture);
-      expect(Array.from(select.options, (option) => option.textContent.trim())).toEqual([
-        'ollama',
-        'openrouter · openai/gpt-4o-mini',
-      ]);
+      expect(
+        Array.from(select.options, (option) => option.textContent.trim()),
+      ).toEqual(['ollama', 'openrouter \u00b7 openai/gpt-4o-mini']);
       expect(select.value).toBe('ollama');
       expect(row(fixture, 'ollama').textContent).toContain('Default');
 
@@ -637,7 +654,9 @@ describe('providers panel', () => {
       });
       await setValue(fixture, select, 'openrouter');
 
-      expect(requestsTo(doubles, 'POST', '/api/providers/app-default')[0]?.body).toEqual({
+      expect(
+        requestsTo(doubles, 'POST', '/api/providers/app-default')[0]?.body,
+      ).toEqual({
         providerId: 'openrouter',
         model: '',
       });
@@ -645,7 +664,11 @@ describe('providers panel', () => {
       expect(row(fixture, 'ollama').textContent).not.toContain('Default');
 
       // (b) A reloaded panel with no default: the No default option is selected and disabled.
-      doubles.api.respond('GET', '/api/providers/app-default', PROVIDERS_EXAMPLES.appDefaultUnset);
+      doubles.api.respond(
+        'GET',
+        '/api/providers/app-default',
+        PROVIDERS_EXAMPLES.appDefaultUnset,
+      );
       fixture.destroy();
       const reloaded = await mount();
       const unset = appDefaultSelect(reloaded);
@@ -662,7 +685,9 @@ describe('providers panel', () => {
         appDefault: { providerId: 'openrouter', model: '' },
       });
       await setValue(reloaded, unset, 'openrouter');
-      expect(requestsTo(doubles, 'POST', '/api/providers/app-default')[1]?.body).toEqual({
+      expect(
+        requestsTo(doubles, 'POST', '/api/providers/app-default')[1]?.body,
+      ).toEqual({
         providerId: 'openrouter',
         model: '',
       });
@@ -745,9 +770,7 @@ describe('providers panel', () => {
         providerId: 'openrouter',
         key: OPENROUTER_KEY,
       });
-      expect(
-        requestsTo(doubles, 'POST', '/api/providers'),
-      ).toHaveLength(1);
+      expect(requestsTo(doubles, 'POST', '/api/providers')).toHaveLength(1);
       expect(row(fixture, 'openrouter').textContent).toContain(`${MASK}abcd`);
       expect(alertTexts(fixture)).toEqual([]);
       expect(
@@ -755,7 +778,9 @@ describe('providers panel', () => {
           (element) => element.textContent.trim(),
         ),
       ).toEqual(['Saved.']);
-      expect((control(fixture, 'key') as HTMLInputElement).value).toBe('');
+      // The key is set, so no key input is shown, and the typed key is not on the page.
+      expect(formOf(fixture).querySelector('input[name="key"]')).toBeNull();
+      expect(root(fixture).textContent).not.toContain(OPENROUTER_KEY);
     });
 
     it('E7 empty, unsaved and missing model lists', async () => {
@@ -831,7 +856,11 @@ describe('providers panel', () => {
       doubles.api.fail(
         'POST',
         '/api/providers/openrouter/delete',
-        new ApiError(404, 'PROVIDER_NOT_FOUND', 'Provider "openrouter" was not found.'),
+        new ApiError(
+          404,
+          'PROVIDER_NOT_FOUND',
+          'Provider "openrouter" was not found.',
+        ),
       );
       await click(fixture, buttonIn(row(fixture, 'openrouter'), 'Delete'));
       await click(fixture, buttonIn(root(fixture), 'Confirm delete'));
@@ -839,8 +868,9 @@ describe('providers panel', () => {
       expect(alertTexts(fixture)).toEqual([
         'That provider no longer exists. The list was reloaded.',
       ]);
-      expect(requestsTo(doubles, 'GET', '/api/providers')).toHaveLength(listsBefore + 1);
+      expect(requestsTo(doubles, 'GET', '/api/providers')).toHaveLength(
+        listsBefore + 1,
+      );
     });
   });
-
 });
