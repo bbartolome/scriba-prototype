@@ -9,3 +9,4 @@ export type { BannerNotice } from './notices';
 export { ThemeToggle } from './theme-toggle';
 export { DeviceClassService, deviceClassGuard } from './device-class';
 export { ActiveProjectSignal } from './project-scope';
+export { MarkdownPreview } from './markdown-preview';
