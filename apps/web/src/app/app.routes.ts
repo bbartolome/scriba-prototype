@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
+import { activeProjectGuard } from './shell/active-project-guard';
 import { withDeviceGate } from './shell/device-class';
-import { LandingPage } from './shell/landing';
 import { NotFoundPage } from './shell/not-found';
 
 /**
@@ -14,9 +14,23 @@ export const PROJECT_ROUTES: Routes = [];
  * each owned path uses `pathMatch: 'full'` unless it has a child route.
  */
 export const APP_ROUTES: Routes = withDeviceGate([
-  { path: '', pathMatch: 'full', component: LandingPage },
+  {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () =>
+      import('./shell/landing').then((feature) => feature.LandingPage),
+  },
+  {
+    path: 'projects/:projectId/switch',
+    pathMatch: 'full',
+    loadComponent: () =>
+      import('./shell/switch-project').then(
+        (feature) => feature.SwitchProjectPage,
+      ),
+  },
   {
     path: 'projects/:projectId',
+    canActivate: [activeProjectGuard],
     children: [...PROJECT_ROUTES, { path: '**', component: NotFoundPage }],
   },
   { path: '**', component: NotFoundPage },

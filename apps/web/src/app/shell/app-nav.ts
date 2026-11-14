@@ -2,7 +2,6 @@ import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIcon } from '@angular/material/icon';
 import {
-  type ActivatedRouteSnapshot,
   NavigationEnd,
   type Route,
   Router,
@@ -12,6 +11,7 @@ import {
 } from '@angular/router';
 import { filter } from 'rxjs';
 import { DeviceClassService, isAtLeast } from './device-class';
+import { projectIdOf } from './project-scope';
 import type { DeviceClass, ShellRouteData } from './route-data';
 
 /** The path of the project-scoped entries. Their children are the project items. */
@@ -70,19 +70,6 @@ function navItems(routes: Routes, projectId: string | undefined): NavItem[] {
     }
   }
   return items;
-}
-
-/** The project id of the current URL, if it has one. */
-function projectIdOf(snapshot: ActivatedRouteSnapshot): string | undefined {
-  for (
-    let node: ActivatedRouteSnapshot | null = snapshot;
-    node;
-    node = node.firstChild
-  ) {
-    const id = node.params['projectId'];
-    if (typeof id === 'string') return id;
-  }
-  return undefined;
 }
 
 /**
