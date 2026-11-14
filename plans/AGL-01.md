@@ -1,6 +1,6 @@
 ---
 id: AGL-01
-status: draft
+status: planned
 ---
 
 # AGL-01 plan — agent-loop contract slice (closes Agent loop phase:contract)
