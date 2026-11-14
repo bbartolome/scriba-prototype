@@ -84,6 +84,26 @@ describe('project switch follower', () => {
     expect(router.url).toBe('/settings');
   });
 
+  it('a project-switched event moves a switch page with an invalid to to the bare id', async () => {
+    const doubles = createShellTestDoubles();
+    doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'a' });
+    const fixture = await render(doubles);
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/projects/b/switch?to=x');
+    await fixture.whenStable();
+
+    doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'c' });
+    doubles.events.push({
+      module: 'project-store',
+      type: 'project-switched',
+      data: { from: 'a', to: 'c' },
+    });
+    await fixture.whenStable();
+
+    expect(router.url).toBe('/projects/c');
+  });
+
   it('E5 the hand-written guard agrees with the contract', () => {
     const cases: Array<[unknown, boolean]> = [
       [{ from: null, to: 'b' }, true],
