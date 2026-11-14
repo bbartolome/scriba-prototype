@@ -42,7 +42,7 @@ clean_library() {
     '~'|'~/'*) p="$HOME${p#\~}" ;;
   esac
   case "$p" in
-    *\"*|*\$*|*\`*|*$'\n'*) return 1 ;;
+    *\"*|*\$*|*\`*|*\\*|*$'\n'*) return 1 ;;
     /*) ;;
     *) return 1 ;;
   esac
@@ -126,7 +126,7 @@ if [ "$INTERACTIVE" = yes ]; then
       LIBRARY=$CLEAN_LIBRARY
       break
     fi
-    printf 'Enter an absolute path with no quotes, dollar signs or backticks.\n' >&2
+    printf 'Enter an absolute path with no quotes, dollar signs, backticks or backslashes.\n' >&2
   done
   while :; do
     printf 'Web port [%s]: ' "$DEFAULT_PORT" >&2
