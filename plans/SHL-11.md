@@ -1,6 +1,6 @@
 ---
 id: SHL-11
-status: planned
+status: done
 ---
 # SHL-11 plan — Markdown preview: front matter hidden, sanitised
 

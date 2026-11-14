@@ -20,5 +20,5 @@ Reading panes render cleanly without raw front matter (30) and never run scripts
 - Input: Markdown string; no file I/O.
 
 ## Acceptance criteria
-- [ ] A draft with front matter renders without the front-matter block.
-- [ ] Fixtures with `<script>`, `onerror` attributes and `javascript:` links: nothing executes or renders as active HTML.
+- [x] A draft with front matter renders without the front-matter block.
+- [x] Fixtures with `<script>`, `onerror` attributes and `javascript:` links: nothing executes or renders as active HTML.
