@@ -14,7 +14,7 @@ unblocks: [CEX-09, CEX-20]
 ## Decisions
 - Add the `order` field to `examples/nonfiction/project.yaml` in an order that **differs from alphabetical**, with mixed statuses (e.g. `final`, `revised`, `draft`), preserving existing comments and keys.
 - Add export settings with an author name and a dedication. The bibliography comes from the sample's Source entities (default `all` for nonfiction).
-- The sample stays small (2–3 drafts of a few hundred words). The milestone's "done when" needs **three chapters**: if the skeleton ships fewer than three drafts, add the third (original text, consistent with `sources/outline.md`). No front or back matter file; no `snapshots/`.
+- The sample stays small (2–4 drafts of a few hundred words). The milestone's "done when" needs **four chapters** (the three skeleton drafts plus AGL-19's grounding draft): if the skeleton ships fewer than three drafts, add the third (original text, consistent with `sources/outline.md`). The Navigator's decision of 2026-11-14 (`plans/DECISIONS.md`) sets this count. No front or back matter file; no `snapshots/`.
 - Keep any file paths used by the mock OpenAI scenarios unchanged.
 
 ## Acceptance criteria

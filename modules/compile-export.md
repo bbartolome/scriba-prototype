@@ -59,7 +59,7 @@ CEX-01 contract slice + project.yaml order/export narrowing  ══> phase:contr
 - Primary seam: the module in Platform's `create-test-app` with Setup & auth's guard, a temp library per test, fixture projects built in the test (drafts, `project.yaml` variants, story graphs including a branch, a same-file edge and a cycle, a grounding-result artefact, entities with broken references, a style profile with banned phrases). The mock OpenAI server runs only to prove no model calls. Unit tests never read `examples/`.
 - Pandoc-dependent tests use real Pandoc 3.13 and Typst; locally they skip with a message when a binary is missing; CI sets a flag that turns the skip into a failure. DOCX and EPUB are checked structurally (XML, styles, spine, nav, metadata), never by byte goldens; PDF by header and engine; Markdown against a golden.
 - UI seam: the manuscript route with Angular's Vitest runner against the Shell's fakes.
-- Manual: the "done when" (three-chapter sample opened in Word and an EPUB reader) and the Typst spike review.
+- Manual: the "done when" (four-chapter sample opened in Word and an EPUB reader) and the Typst spike review.
 
 ### Out of scope
 - Reordering scenes inside a file, per-scene breaks (a file is one unit).

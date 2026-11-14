@@ -19,10 +19,10 @@ Merging this **closes Compile & export `phase:manuscript-snapshots`** (the M5 mi
 ## Acceptance criteria (the phase checklist)
 - [ ] CEX-16…CEX-19 criteria pass on `main`.
 - [ ] The e2e passes with the manuscript step.
-- [ ] **Done when:** a three-chapter sample exports and opens cleanly in Word and an EPUB reader (manual, recorded in the PR).
+- [ ] **Done when:** a four-chapter sample exports and opens cleanly in Word and an EPUB reader (manual, recorded in the PR).
 
 ## Demo (under 5 min)
-1. Start a new project from the nonfiction sample and open **Manuscript**: three chapters in the sample's `project.yaml` order (not alphabetical), with statuses and word counts.
+1. Start a new project from the nonfiction sample and open **Manuscript**: four chapters in the sample's `project.yaml` order (not alphabetical), with statuses and word counts.
 2. Drag chapter 3 above chapter 2; open `project.yaml` on the host and see the order updated. Set chapter 2 to `final`.
 3. Type `TK` into chapter 1, return and run **Preflight**: the placeholder error with a link to the line, and the unsupported-claims finding from the grounding-claims draft.
 4. Click **Snapshot**, label it `before-cut`.
