@@ -2298,3 +2298,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   4. The base (lines 7, 187 and 223) says `efc0674`; main is now `593aaee` (it only appends to `plans/DECISIONS.md`, so no cited line changes). Correction: state the current base.
 - **Count.** Rejections of PST-01: 4. All four are factual or consistency corrections; none disagrees with a settled decision.
 - **Next.** The PST-01 subagent applies items 1 to 4 to `plans/PST-01.md` (untracked). Then Opus reviews again.
+
+## 2026-11-14 — PST-01 — Opus review of the plan (revision 4): NOT APPROVED (rejection 5)
+
+- **Result.** The fifth Opus review of `plans/PST-01.md` returned NOT APPROVED. Rejection 4's four items are fixed (the file reference, the inferred types, the rebuild route's status as the plan's choice, the active-project exception, the base). Everything else the reviewer checked holds. Three items remain.
+  1. D16 (line 96) cites "unit lines 50 and 76", but `units/PST-01-contract-slice.md` has 58 lines. The `projects` section shape `{schemaVersion: 1, active}` comes from unit line 50 and `modules/project-store.md` line 76 (line 19 of the plan already cites module line 76). Correction: "unit line 50; module line 76".
+  2. The plan's header (line 7) says "Revision 2, status draft", and the "(revision 2)" fact headings (lines 187 and 222 to 224) use the same label. DECISIONS calls the version that read `efc0674` "revision 3" (the entry dated 2026-11-14 for revision 3) and the next review "revision 3 with its corrections"; this draft follows both. Correction: give the plan the number DECISIONS uses (revision 4) and relabel the fact headings to match.
+  3. Line 118 (the `project-store-consumer.cjs` row) says the consumer "parses one valid and one invalid sample for C4"; C4 (line 148) parses two valid inputs and one invalid one (`{title: 'Sample'}`). Correction: "parses two valid inputs (a project.yaml and an entity front matter) and one invalid project.yaml".
+- **Count.** Rejections of PST-01: 5. All three are factual or consistency corrections; none disagrees with a settled decision.
+- **Next.** The PST-01 subagent applies items 1 to 3 to `plans/PST-01.md` (untracked). Then Opus reviews again.
