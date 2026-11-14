@@ -1,0 +1,204 @@
+name: publish
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - README.md
+      - LICENSE
+      - .gitignore
+      - docs/**
+      - modules/**
+      - plans/**
+      - units/**
+  workflow_dispatch:
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+permissions:
+  contents: read
+env:
+  REGISTRY_IMAGE: docker.io/bbartolome/scriba
+  SEMANTIC_RELEASE_VERSION: 25.0.9
+jobs:
+  plan:
+    name: Plan the release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    outputs:
+      release: ${{ steps.plan.outputs.release }}
+      version: ${{ steps.plan.outputs.version }}
+      pin: ${{ steps.plan.outputs.pin }}
+      short: ${{ steps.plan.outputs.short }}
+      built_at: ${{ steps.plan.outputs.built_at }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Dry-run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SCRIBA_PLAN_OUT: ${{ runner.temp }}/next-version
+        run: |
+          rm -f "$SCRIBA_PLAN_OUT"
+          npx --yes "semantic-release@$SEMANTIC_RELEASE_VERSION" --dry-run
+      - name: Write the plan
+        id: plan
+        run: bash scripts/publish-plan.sh "$RUNNER_TEMP/next-version" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.platform }}
+    needs: plan
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+            node_arch: x64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            node_arch: arm64
+    steps:
+      - uses: actions/checkout@v7
+      - name: Prepare
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          echo "PLATFORM_PAIR=${PLATFORM//\//-}" >> "$GITHUB_ENV"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            VERSION=${{ needs.plan.outputs.version }}
+            REVISION=${{ needs.plan.outputs.short }}
+            BUILT_AT=${{ needs.plan.outputs.built_at }}
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          provenance: false
+          cache-from: type=gha,scope=${{ env.PLATFORM_PAIR }}
+          cache-to: type=gha,mode=max,scope=${{ env.PLATFORM_PAIR }}
+      - name: Export the digest
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p /tmp/digests
+          touch "/tmp/digests/${DIGEST#sha256:}"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  smoke:
+    name: Smoke ${{ matrix.platform }}
+    needs: [plan, build]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+            node_arch: x64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            node_arch: arm64
+    steps:
+      - uses: actions/checkout@v7
+      - name: Prepare
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          echo "PLATFORM_PAIR=${PLATFORM//\//-}" >> "$GITHUB_ENV"
+      - uses: actions/download-artifact@v7
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Resolve the image
+        run: |
+          set -euo pipefail
+          digest=$(ls /tmp/digests)
+          echo "SMOKE_IMAGE=$REGISTRY_IMAGE@sha256:$digest" >> "$GITHUB_ENV"
+      - name: Image smoke checks
+        env:
+          EXPECTED_VERSION: ${{ needs.plan.outputs.version }}
+          EXPECTED_PIN: ${{ needs.plan.outputs.pin }}
+          EXPECTED_ARCH: ${{ matrix.node_arch }}
+        run: bash scripts/smoke-image.sh "$SMOKE_IMAGE"
+
+  merge:
+    name: Merge the manifest list
+    needs: [plan, smoke]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Check the manifest, then create the tags
+        env:
+          SHORT: ${{ needs.plan.outputs.short }}
+          RELEASE: ${{ needs.plan.outputs.release }}
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: bash scripts/publish-merge.sh /tmp/digests
+
+  release:
+    name: Tag and release
+    needs: [plan, merge]
+    if: github.ref == 'refs/heads/main' && needs.plan.outputs.release == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SCRIBA_EXPECT_VERSION: ${{ needs.plan.outputs.version }}
+        run: npx --yes "semantic-release@$SEMANTIC_RELEASE_VERSION"
+      - name: Check the tag and the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          set -euo pipefail
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v$VERSION" --jq .object.sha) || { echo "semantic-release did not create tag v$VERSION; main may have moved during the run" >&2; exit 1; }
+          [ "$sha" = "$GITHUB_SHA" ] || { echo "tag v$VERSION points at $sha, not at $GITHUB_SHA" >&2; exit 1; }
+          gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null

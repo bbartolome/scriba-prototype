@@ -1,5 +1,13 @@
 import { spawnSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -31,7 +39,9 @@ export function makeStubDocker(dir, rules = []) {
     const errFile = join(dir, `rule-${i}.err`);
     writeFileSync(outFile, rule.stdout ?? '');
     writeFileSync(errFile, rule.stderr ?? '');
-    return `  ${rule.match}) cat '${outFile}'; cat '${errFile}' >&2; exit ${rule.exit ?? 0};;`;
+    // A space in a case pattern must be escaped, or the shell splits the pattern into words.
+    const pattern = rule.match.replace(/ /g, '\\ ');
+    return `  ${pattern}) cat '${outFile}'; cat '${errFile}' >&2; exit ${rule.exit ?? 0};;`;
   });
   const script = [
     '#!/bin/sh',
@@ -51,7 +61,9 @@ export function makeStubDocker(dir, rules = []) {
 // The calls the stub recorded, one string per call, in order. No file means no call.
 export function readCalls(dir) {
   const log = join(dir, 'calls.log');
-  return existsSync(log) ? readFileSync(log, 'utf8').split('\n').filter(Boolean) : [];
+  return existsSync(log)
+    ? readFileSync(log, 'utf8').split('\n').filter(Boolean)
+    : [];
 }
 
 // Runs `bash <script> ...args` with stubDir first on PATH. env values of undefined remove the
@@ -62,7 +74,10 @@ export function runScript(script, args, env, stubDir) {
     if (value === undefined) delete merged[key];
     else merged[key] = value;
   }
-  const result = spawnSync('bash', [script, ...args], { env: merged, encoding: 'utf8' });
+  const result = spawnSync('bash', [script, ...args], {
+    env: merged,
+    encoding: 'utf8',
+  });
   return {
     status: result.status,
     stdout: result.stdout ?? '',
