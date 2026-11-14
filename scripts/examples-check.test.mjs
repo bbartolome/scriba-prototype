@@ -392,3 +392,32 @@ test('E6: the check passes on an examples/ folder that holds only .gitkeep, and 
     assert.equal(result.status, 0, result.stderr);
   });
 });
+
+test('run guard: index.mjs runs when started through a symbolic link; a missing --root folder exits 2 with a stderr line, not silence', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'examples-check-link-'));
+  try {
+    const link = join(dir, 'index-link.mjs');
+    symlinkSync(CLI, link);
+
+    const missing = spawnSync(
+      process.execPath,
+      [link, '--root', join(dir, 'missing')],
+      { encoding: 'utf8' },
+    );
+    assert.equal(missing.status, 2, missing.stderr);
+    assert.ok(
+      hasLine(missing, 'examples check: not a folder: '),
+      missing.stderr,
+    );
+
+    withTree(VALID, (root) => {
+      const passed = spawnSync(process.execPath, [link, '--root', root], {
+        encoding: 'utf8',
+      });
+      assert.equal(passed.status, 0, passed.stderr);
+      assert.match(passed.stdout, /examples check passed/);
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
