@@ -3742,3 +3742,12 @@ Result: NOT APPROVED. Rejections of the SHL-10 plan since the approval of revisi
 - Criteria 1 to 3 are each met through the rendered host (`markdown-editor.spec.ts`). The Navigator's decisions are followed: no save-mode input, no bare-CR guard, the findFromDOM and dispatch seam.
 - package.json: commands 6.11.1, lang-markdown 6.5.2 and language 6.13.1 added; merge 6.12.3, state 6.7.6 and view 6.43.15 kept from main. The lock has only additions. index.ts gains one line, `export { MarkdownEditor }`.
 - Code rejections of SHL-13: 1 (the first review, approved; the second is the rebase re-review).
+
+## 2026-11-14 — PLT-19 — Opus code review (second, after the fixes cefef64): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/PLT-19 -- . ':!plans' ':!units' | git patch-id --stable`, with main at 608de13): 6eca8151b3ba9850aa201c03ac4a1cf252801812. The first review (NOT APPROVED, patch id 2c0a4a56) found two problems, both fixed in cefef64: the smoke script's run_check discarded the healthz docker logs (fixed; K10 asserts the stderr), and docs/RELEASING.md did not link the runbook (fixed; W11 passes).
+- Criterion 5 is met (W1, W2, W7, W8 and W10 pass; mutants MU2, MU2b, MU2c, MU2d, MU5 and MU7 fail as section 4.7 says).
+- Criteria 1, 2 and 4 need their local procedures S-P2, S-P1 and S-P3 to run and pass (O1). They are run again on the final branch after the rebase; their ticks follow that run.
+- Criterion 3 is not ticked (Navigator decision O1).
+- Non-blocking notes from the reviewer, recorded for the plan's next owner: (a) the healthz check prints the docker logs only when polling times out, not when the final exec fails or the body is wrong; (b) the "writes nothing" checks in G1 and G4 look in a temp folder that verifyRelease never uses, so they cannot fail.
+- Code rejections of PLT-19: 2 (the first review, and this review's approval follows the fixes).
