@@ -3233,3 +3233,15 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the four open problems is a decision: a mutation setup, a row wording, a W12 link and a regular expression. The Navigator's rulings stand. No Navigator question is open on this plan.
 - **Action.** A new Opus subagent writes the plan again from the draft (revision 5, `dd2c9ab`) and the list above, as revision 6. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — SHL-10 — Opus review of the plan (revision 5): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, two factual items. Step R records `R0` after the rebase and expects it after the swap; it makes the same two edits as `plans/SHL-11.md` (lines 65, 66 and 127 to 133), so the card is the same in either order; every card render, `setInput` and click is followed by `detectChanges()` and `await whenStable()`; T3's branch (a) adds only `provideMarkdown` with `SANITIZE`; `B + 15` matches (4+1+1+1+2+2+1+1+2); N1 to N4 fail exactly the tests they name; the SHL-11 citations and the section-8 map are right; no criterion is weakened.
+  1. The resume rule (`plans/SHL-10.md` line 142, step 0; decision 17, line 102) covers three cases for the newest SHL-10 commit (the red commit, the green commit, the step-6 lint fix) and leaves out one the process can reach: a session stops after step R's swap commit (line 174), or after a fix commit under `prompt.md` step 6 item 4 (line 112), and before the new Opus code review. The patch id has changed, so the approval no longer holds, and `prompt.md` step 3 (lines 56 and 57) sends the unit back to code mode on that branch, where step 0 has no rule. Add a rule for any other newest SHL-10 commit (the step-R swap, an item-4 fix, or a fix from a code review): run step 1b to record the branch (after a swap it finds branch (a)), measure `B` as line 142 describes, and resume at step 5. `B + 15` still holds, because T3 changes in place.
+  2. Line 142 says "do not rewrite a committed file", but in the red-commit case the implementer resumes at step 3, which replaces the committed stub `tool-call-card.ts` (line 148). That is a literal contradiction. Use decision 17's narrower wording (line 102): never overwrite a committed file with a stub or with an earlier step's version; step 3 replaces the committed stub as planned.
+- **Rejections of the SHL-10 plan: 4** (revisions 1, 3, 4 and 5). The rule of prompt.md step 5 applies: the open problems are errors of fact, so an Opus subagent writes the plan again (revision 6).
+
+## 2026-11-14 — SHL-10 — four rejections: examination of the open problems (rule of prompt.md step 5)
+
+- **Examination.** None of the two open problems is a decision: a resume case and a wording contradiction. The Navigator's rule (DECISIONS line 3102) stands. No Navigator question is open on this plan.
+- **Action.** A new Opus subagent writes the plan again from the draft (revision 5, `a59444e`) and the list above, as revision 6. The new draft is committed, then a new Opus subagent reviews it.
