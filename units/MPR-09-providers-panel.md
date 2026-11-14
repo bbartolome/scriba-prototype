@@ -20,7 +20,7 @@ Presets (10), any OpenAI-compatible URL (11), several providers (12), paste a ke
 - Built with Angular Material and the Shell's API client; usable at phone width for checking and switching the default.
 
 ## Acceptance criteria (Vitest + Shell fake API)
-- [ ] Adding OpenRouter from its preset, pasting a key and saving shows the key masked; reloading never shows the full key (no response contains it).
-- [ ] The model picker lists models; when the list fails it switches to free text with an explanation.
-- [ ] Deleting the app-default provider shows the refusal message.
-- [ ] The panel renders inside a host page with no dependency on the settings route.
+- [x] Adding OpenRouter from its preset, pasting a key and saving shows the key masked; reloading never shows the full key (no response contains it).
+- [x] The model picker lists models; when the list fails it switches to free text with an explanation.
+- [x] Deleting the app-default provider shows the refusal message.
+- [x] The panel renders inside a host page with no dependency on the settings route.

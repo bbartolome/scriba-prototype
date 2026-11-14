@@ -1,6 +1,6 @@
 ---
 id: MPR-09
-status: planned
+status: done
 ---
 
 # MPR-09 plan — exported providers panel: list, add from preset, edit form, model picker, write-only key field, app default
