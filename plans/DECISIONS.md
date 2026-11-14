@@ -3258,3 +3258,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the three open problems is a decision: a citation set, a step-5 wording and a package rule for a stale branch. No Navigator question is open on this plan.
 - **Action.** A new Opus subagent writes the plan again from the draft (revision 5, `b4f2b53`) and the list above, as revision 6. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — MPR-09 — Opus review of the plan (revision 5): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, four items. The guards match zod 4.6.7 on every P2 fixture; P1 checks all three `:id` templates and `NOT_FOUND_CODE`; the copies import no zod; the count is 16 with one `it` per E test, and the file count is 12; M1 to M7 and M9 to M15 hit the tests they name; the citations to DECISIONS, the contract and the web code match; no criterion is weakened.
+  1. Control M8 (`plans/MPR-09.md` line 189) may not fail E5. E5 (line 155) gives no model for `openrouter`; if the spec uses `PROVIDERS_EXAMPLES`, that model is `''` (`packages/contracts/src/providers/examples.ts` lines 42 and 91), so the mutant also sends `model: ''` and E5 still passes. Give `openrouter` a non-empty model in E5 (for example `openai/gpt-4o-mini`), so the mutant's body differs.
+  2. The plan never says what a list row shows. C1(e) (line 142) expects `••••abcd` after the reload, when no form is open; E4(b) and E6 (lines 154 and 156) check the key text on the row. D8 (line 87) shows the key state only in `KeyField`, which takes the form's control (line 107), and D2, D5 and D11 (lines 63, 79 and 90) say nothing about key state on a row. In D2 or D5, list what each row shows: the id, the model, the key state with D8's texts ("Key set", `••••` plus the hint, "No key set"), the Default badge, Edit and Delete.
+  3. The retry-save rule is consistent (D6, D7, D8, E6 and M13 agree on the requests), but no decision says when the key-save message goes away, and E6 (line 156) checks that "the D6 message is gone" after the retry. Add to D7 that each Save clears the form's earlier messages when it starts.
+  4. Stale citation: section 8 (lines 281 and 288) cites `plans/SHL-10.md` lines 112 to 122 and line 122 for the `shell/index.ts` row; SHL-10 has not changed since `a59444e`, and there line 122 is a table header; the row is line 124. Cite lines 112 to 124 and line 124. (HEAD is now `68d6179`, which came after this revision's check; that is not an error.)
+- **Rejections of the MPR-09 plan: 4** (revisions 1, 3, 4 and 5). The rule of prompt.md step 5 applies: the open problems are errors of fact and wording, so an Opus subagent writes the plan again (revision 6).
+
+## 2026-11-14 — MPR-09 — four rejections: examination of the open problems (rule of prompt.md step 5)
+
+- **Examination.** None of the four open problems is a decision: a control's data, a row's content, a message rule and a citation. No Navigator question is open on this plan.
+- **Action.** A new Opus subagent writes the plan again from the draft (revision 5, `9d14541`) and the list above, as revision 6. The new draft is committed, then a new Opus subagent reviews it.
