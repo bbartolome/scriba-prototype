@@ -21,6 +21,6 @@ Each tool call in chat as a card with name, inputs, live status and output/error
 - Uses SHL-11's preview for Markdown output if available; otherwise plain text until SHL-11 lands (no blocking).
 
 ## Acceptance criteria
-- [ ] Renders each status with tool name, arguments, output or error, and source paths.
-- [ ] Collapsed by default on a phone viewport and expands on tap; expanded by default on tablet/desktop.
-- [ ] A sample chat route built with the fake event source can render a run's tool calls using only the card's documented inputs.
+- [x] Renders each status with tool name, arguments, output or error, and source paths.
+- [x] Collapsed by default on a phone viewport and expands on tap; expanded by default on tablet/desktop.
+- [x] A sample chat route built with the fake event source can render a run's tool calls using only the card's documented inputs.
