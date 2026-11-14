@@ -3778,3 +3778,13 @@ Items the reviewer found (revision 8 must fix each):
 Notes (not defects): the unit lines, README lines 64, 65 and 127 to 134, the module lines, every downstream line cited, the DECISIONS lines, the contracts sources and the 27-commit list were checked and are correct; blocked_by and unblocks are exact inverses; 4a holds 55 + 20 + 13 = 88. Step 0 is fine at `f058259`. Step 11's `git diff --stat main --` compares against the current tip of main; `main...HEAD` is more robust.
 
 Result: NOT APPROVED. The items are errors of method and of fact, so one Opus subagent writes revision 8 (prompt.md step 5). Rejections of the TRG-01 plan so far: 7 (revisions 1, 2, 4, 5, 6, 7 and the approval never came).
+
+## 2026-11-14 — SAU-06 — Opus plan review of revision 9: NOT APPROVED
+
+Items the reviewer found:
+
+1. Section 7a, "Web" (plan line 313) says `apps/web/src/app/features/` holds only `.gitkeep` (`git ls-files`). That is false at `f058259` and at `287ea7d`: `git ls-files apps/web/src/app/features` lists 13 files, `.gitkeep` plus the twelve `features/providers/` files from MPR-09 (`452ea88`, merged after `af470ff`). The plan contradicts itself (lines 10 and 273 name those files). The line was carried over from revision 7, when it was still true. Correction: replace line 313 with "`apps/web/src/app/features/` holds `.gitkeep` and MPR-09's `providers/` (12 files); there is no `setup-auth/` on `main` (`git ls-files`, at `f058259`)". Re-read the other present-tense facts of section 7a at the named HEAD before the next commit.
+
+Notes (not defects): all five revision-8 items are fixed (rebase plus `--is-ancestor`, app.module.ts lines 35 and 43 to 45, the SHL-20 Scope with app.css and the toolbar binding, the role and data-state wording with spec lines 138 to 251, modules/setup-auth.md line 35); step 0 runs correctly at `287ea7d`; C1 and C2 each have a test, and C2 waits for SHL-20. The Resume paragraph names only setup-contract.ts; the wip setup-page.ts (`00d91b9`, lines 97 to 103) still calls `api.get` outside its `try`, against decision 1b-9, and no test catches it: naming that file too would save a code-review round. Line 152 says PST-03 added files only; PST-03 also edits project-store.module.ts (no effect on the glob). `main` has moved to `d7718e4`; SHL-10's cited line numbers move, so the code stage re-reads them.
+
+Result: NOT APPROVED. Rejections of the SAU-06 plan since the approval of revision 5: 4 (revisions 6, 7, 8 and 9). The items are errors of fact, so one Opus subagent writes revision 10 (prompt.md step 5).
