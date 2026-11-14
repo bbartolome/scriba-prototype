@@ -3879,3 +3879,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Everything else passes: the swap matches step R2 (iii) and (vi), section 2b-bis and decision 6; T1 to T9 pass; the barrel keeps all 14 main lines and adds six; prettier is clean; 204 of 204 web tests pass.
 - Note, not blocking: the swap commit's message differs from the one step R2 (vi) gives; it carries SHL-10, and the patch id ignores messages.
 - Code rejections of SHL-10 since the approval before the swap: 1.
+
+## 2026-11-14 — SHL-10 — Opus code review (after the view TSDoc fix 062b183; plan step R3): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SHL-10 -- . ':!plans' ':!units' | git patch-id --stable`, on the merge base a662edf): 004d5ad55dc72542d60e8097706302ae22f7dcc9. The rebase must not change it.
+- The rebase-time swap (494b682) matches plan step R2 (iii) and (vi) and SHL-11's section 2b-bis; the view TSDoc (062b183, lines 8 and 9) now describes the preview. Criteria 1 (T1 to T3), 2 (T4 to T6) and 3 (T7) pass, with T8 and T9 beyond them. The barrel keeps all 14 lines from main and adds six.
+- Code rejections of SHL-10 in this stage: 4 (the first, the second, the post-swap review and the TSDoc review), and the approval before the swap stands as a record.
