@@ -173,4 +173,28 @@ describe('project route', () => {
     clickButton(harness, 'Go to the active project');
     await vi.waitFor(() => expect(router.url).toBe('/projects/a/review?run=3'));
   });
+
+  it('a switch page reused for another URL of the route reads the new to on Go', async () => {
+    const doubles = createShellTestDoubles();
+    seed(doubles, 'a');
+    renderWith(doubles);
+    const router = TestBed.inject(Router);
+    const harness = await RouterTestingHarness.create(
+      '/projects/b/switch?to=%2Fchat',
+    );
+    await vi.waitFor(() => {
+      expect(textOf(harness)).toContain('Switch to Beta?');
+      expect(hasButton(harness, 'Go to the active project')).toBe(true);
+    });
+
+    await router.navigateByUrl('/projects/b/review');
+    await vi.waitFor(() =>
+      expect(router.parseUrl(router.url).queryParamMap.get('to')).toBe(
+        '/review',
+      ),
+    );
+
+    clickButton(harness, 'Go to the active project');
+    await vi.waitFor(() => expect(router.url).toBe('/projects/a/review'));
+  });
 });
