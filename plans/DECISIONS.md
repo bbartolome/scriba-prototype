@@ -2429,3 +2429,15 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   5. C3(a) (line 112): "stderr names `fiction`" also passes on a line that names `nonfiction`. Correction: assert a stderr line that names `examples/samples.yaml` and matches the id as a whole word, `/\bfiction\b/`.
 - **Count.** Rejections of PLT-20: 4. Item 1 corrects the plan to a settled decision (the worktree convention); the rest are factual or consistency corrections.
 - **Next.** The PLT-20 subagent applies items 1 to 5 to `plans/PLT-20.md` (untracked). Then Opus reviews again.
+
+## 2026-11-14 — PLT-17 — Opus review of the plan (revision 3): NOT APPROVED (rejection 3)
+
+- **Result.** The third Opus review returned NOT APPROVED. The stand-in order, the literal ref, the temp-folder `mv` method (checked: 0700 stays 0700), the `./` entry in C1, the one-liner's behaviour when Docker is missing or the daemon is down, A5, A4, the compose lines and the citations hold. Six items remain.
+  1. U4 (lines 149 and 162): U4 has no guard, and its teardown removes `~/Books/.scriba` whether or not the run created it; U4 uses the fixed project name `scriba`, so an existing `scriba` stack is taken over by `up -d` and deleted with its volumes by `down -v`. Correction: before U4, stop if `docker compose ls -a` shows a `scriba` row or `docker volume ls -q --filter name=scriba_` prints anything; record whether `~/Books` and `~/Books/.scriba` exist before the run, and remove each only if the run created it. This is the guard DECISIONS line 803 requires for PLT-15 (a disagreement with a settled decision; it is applied).
+  2. S-2 part (b) (line 160): "removes the tags only" is wrong; no other tag points to the image S-1 builds, so `docker image rm` of its two tags deletes the image. Correction: "deletes the S-1 image; the other `bbartolome/scriba` tags stay".
+  3. C1 (line 136) with D14 (line 55): "this fails if the archive is extracted into the install folder" holds only under umask 022. Under umask 077 GNU tar leaves a 0700 folder at 0700 even with the `./` entry (checked). Correction: D14 sets umask 077 only in a subshell around the `.secret` write; the harness starts bash with umask 022.
+  4. S-3 (line 161): `$T` is never set. Correction: `T=$(mktemp -d)` first.
+  5. D8 and D9 (lines 49 and 50): `docker info`, and `docker image inspect` when it succeeds, print to stdout, which contradicts D20 and D9's statement that the installer's stdout carries only its progress lines. Correction: send the stdout of both to /dev/null.
+  6. C4 (line 139) says "bash on a saved file", but the harness (line 70) writes the script to bash's stdin. Correction: name one method in both places.
+- **Count.** Rejections of PLT-17: 3. Item 1 applies a settled decision (DECISIONS line 803); the rest are factual corrections.
+- **Next.** The PLT-17 subagent applies items 1 to 6 to `plans/PLT-17.md` (untracked). Then Opus reviews again.
