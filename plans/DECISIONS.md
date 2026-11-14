@@ -3219,3 +3219,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the three open problems is a decision: two citations and one behaviour detail that the plan may settle (the retry save), plus a wording point about `z.url()`. No Navigator question is open on this plan.
 - **Action.** A new Opus subagent writes the plan again from the draft (revision 4, `16775f4`) and the list above, as revision 5. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — PLT-19 — Opus review of the plan (revision 5): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, four factual items. The items of revision 3 are fixed: W12 with MU11 to MU13, the S-P2 (a, b, d) row, the S-P1 (B) row, M4 and S-P1 (A) under criterion 4, the no-Docker path in step 0, W7 (`ci.yml` complies), the MU3 `if:` form, W11 and MU14, the S8 citations and S14; the Navigator's rulings (O1 to O3 and the D10 acceptance) are followed; no criterion is weakened.
+  1. MU2b and MU2c (`plans/PLT-19.md` lines 464 and 465) say "the same temp folder". After MU2 (line 463), that folder's `publish.yml` still has `tags: ['v*']`, so W7 fails for MU2's reason, and the new W7 rules (a push with no branch filter in `ci.yml`, a `release` trigger) are never shown to fail on their own. This contradicts step 10 (line 346), which says each mutant is its own `mktemp -d` copy. For each of MU2b and MU2c, make a fresh copy of `.github/workflows/` with only that mutation, and point `WORKFLOWS_DIR` at it (for MU2c, `PUBLISH_WORKFLOW_PATH` as well).
+  2. The M4 row for criterion 4 (line 416) expects "exit 1, no create call". `publish-merge.sh` always makes the `imagetools create --dry-run` call first (line 80), so a test written from this row fails on correct code, and it contradicts the M4 row at line 401. Say "no create call without `--dry-run`".
+  3. W12 (vi) (line 490) checks the artifact names but not the digest's source. The "Export the digest" step reads `${{ steps.build.outputs.digest }}` (line 199) from the step with `id: build` (line 184), and both `Prepare` steps write `PLATFORM_PAIR` (lines 173 to 177 and 227 to 231). A wrong step id makes the digest empty, `touch` only updates `/tmp/digests`, and the upload fails on every push (criterion 1), while every test still passes. Add both links to W12 (vi), with a mutation (for example `steps.buildx.outputs.digest`).
+  4. D6 (line 40) says `publish-plan.sh` uses "the same regular expressions as `scripts/build-image.sh` lines 9 to 11". That file's semver pattern (line 9) allows `+build`, and section 2 (line 76) rightly does not, because `scripts/entrypoint.sh` line 9 does not accept it. Say "the same REVISION and BUILT_AT patterns; the semver pattern without `+build`".
+- **Rejections of the PLT-19 plan: 3** (revisions 1, 3 and 5). The rule of prompt.md step 5 applies: the open problems are errors of fact, so an Opus subagent writes the plan again (revision 6).
+
+## 2026-11-14 — PLT-19 — three rejections: examination of the open problems (rule of prompt.md step 5)
+
+- **Examination.** None of the four open problems is a decision: a mutation setup, a row wording, a W12 link and a regular expression. The Navigator's rulings stand. No Navigator question is open on this plan.
+- **Action.** A new Opus subagent writes the plan again from the draft (revision 5, `dd2c9ab`) and the list above, as revision 6. The new draft is committed, then a new Opus subagent reviews it.
