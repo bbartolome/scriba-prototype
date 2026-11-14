@@ -2691,3 +2691,8 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   1. Line 8 says "Revision 6, status `draft`", but revision 6 is the text the ninth review approved; this text is different and goes back to approval. Correction: "Revision 7 (step 10's stop rule, decision 12, A7, A9, open point 2 and step 11 amended by the Navigator's decision of 2026-11-14 on the bundle stop rule), status `draft`, back to Opus approval."
   2. Step 10 (line 125) still requires the `contracts-boot` build (the PLT-11 check), which the decision's sequence line (DECISIONS entry "the Navigator's decision on the bundle stop rule", the sequence) does not mention, and which was never run. Correction: add one line under step 10: "The code stage resumes with step 10's `contracts-boot` build, then step 11."
 - **Count.** Rejections of the amendment: 1. Both items are factual or sequencing corrections.
+
+## 2026-11-14 — SHL-08 — Opus approval of the step-10 amendment (the bundle stop rule): APPROVED
+
+- **Result.** An Opus reviewer returned APPROVED for the amended plan: the revision label (revision 7, with the amendment named), the step-10 order (the `contracts-boot` build, then step 11), the stop rule as the Navigator decided (the build exits 0 and the 1 MB error budget holds; the warning count 2, or 3 when `I1` is 500 kB or more), A7 reworded as an assumption, line 38 aligned; no criterion or other decision changed.
+- **Next.** The plan returns to `planned`. The code stage resumes at step 10 (the production build and the `contracts-boot` build), then step 11 (the record), on `unit/SHL-08`; the Opus code re-review of the corrections is running.
