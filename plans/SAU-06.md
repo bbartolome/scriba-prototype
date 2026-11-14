@@ -1,6 +1,6 @@
 ---
 id: SAU-06
-status: draft
+status: planned
 ---
 
 # SAU-06 plan — minimal /setup page and the sign-in notice
