@@ -3412,3 +3412,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Reason.** TRG-13 (line 16) groups the list by origin with validity per entry, so every entry, valid or not, belongs in the one `tools` array; TRG-06 (line 22) shows an invalid user copy in the list with a warning beside the built-in. Option B's separate `refused` array would take invalid entries out of the array that TRG-13 groups, and would make the Tools page and the palette merge two arrays.
 - **Effects.** TRG-06: the catalog returns the nullable fields for an unreadable or refused file. TRG-09: `GET .../tools/:name` returns `spec` and `views` null for an invalid tool; its line 18 needs a note. TRG-13: validity is derived from `output` being null. TRG-14: the editor opens an unreadable file from its `source` and its lint, with `spec` and `views` null. TRG-08, TRG-12, GRR-01, GRR-03 and GRR-11 are unchanged (GRR-11's palette lists enabled tools only, and an invalid tool is disabled).
 - **Next.** The TRG-01 plan (revision 4) and the five unit files named above are changed to match, in one commit, and the plan goes to Opus review again.
+
+## 2026-11-14 — PLT-19 — Opus review of the plan (revision 8): APPROVED
+
+- **Result (Opus subagent, fresh context).** APPROVED. The plan is `plans/PLT-19.md` revision 8 (`cfc3eb8`). The four revision-7 items are answered: the S-P2 remote is `file://` (the release-notes generator calls `new URL()` on a plain path, which throws at `index.js:35:48`); S-P1 runs in a container shell through mode N (the registry joins this shell's network namespace), which the reviewer confirmed read-only; FEAT is committed at the end of step 9; the resume rules check each commit's full message. Rule R8-c (every S-P2 dry run exits 0) is in place.
+- **Notes for the code stage (none blocks approval):**
+  1. S-P1's mode detection uses `docker inspect --format '{{.Id}}' "$(hostname)"`, which can match an image or a volume as well as a container. Use `docker inspect --type container` so a host whose hostname matches another object is not put in mode N.
+  2. S-P2 removes `$S` at the end, not on its stop paths. Remove `$S` on every stop as well, as S-P1 does, and run `mkdir -p` before the copy into `work/scripts/`.
+  3. Cleanup leaves some Docker state behind (the S-P3 build cache in the default builder, and any base images S-P1 pulls). That is harmless; the plan says so.
+- **Status.** Set to `planned` in a separate commit. The code stage starts in a later iteration; its Docker steps write only to temporary folders and remove them.
