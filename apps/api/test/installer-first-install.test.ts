@@ -194,7 +194,11 @@ it('a TS_AUTHKEY with characters outside letters, digits, _ and - exits 1 and wr
     expect(run.stderr).toContain('TS_AUTHKEY');
     expect(snapshot(sandbox.home)).toEqual(homeBefore);
     expect(snapshot(sandbox.install)).toEqual(installBefore);
-    expect(readLog(sandbox)).toEqual([]);
+    // Only the read-only Docker probes may run; no pull, extraction or start.
+    const writes = readLog(sandbox).filter((line) =>
+      /^(pull |run |compose up)/.test(line),
+    );
+    expect(writes).toEqual([]);
   } finally {
     disposeSandbox(sandbox);
   }
