@@ -1,6 +1,6 @@
 ---
 id: PLT-17
-status: planned
+status: done
 ---
 # PLT-17 plan — dispenser and first install
 
@@ -160,6 +160,10 @@ Stand-ins (run on this machine; results recorded here after the run):
 - **S-2 (C1, teardown), in two parts.** Part (a) runs after S-3 and before U4, because U4 needs port 8080 and the S-1 stack publishes it: `cd "$H/install" && COMPOSE_PROJECT_NAME=plt17-check docker compose down -v`, exit 0. The guards of step 2 for `plt17-check` read zero again. Part (b) runs last, after U4: `docker image rm bbartolome/scriba:latest bbartolome/scriba:0.1.0` removes only the tags this run created (step 1's stop guarantees that both were absent before the build; if step 1 stopped, part (b) does not run), and the other `bbartolome/scriba` tags stay; then `rm -rf "$H"` (the files belong to UID 1000, this user). Part (b) comes last because S-3 and U4 need the tags: U4 runs in a Mac terminal on the same Docker Desktop daemon (one daemon, 4.2). `tailscale/tailscale:v1.104.4` stays, because it is used by other runs.
 - **S-3 (C3).** `T=$(mktemp -d)` first. Then `docker run --rm -e SETUP=true bbartolome/scriba:latest > "$T/out.sh"`, then `bash -n "$T/out.sh"` exits 0 and the first line is `#!/usr/bin/env bash`. Then `rm -rf "$T"`.
 - **Manual (U4).** The author runs the one-liner once in a Mac terminal, answers the prompts, and checks `.env`. It needs the `0.1.0` and `latest` tags from S-1 on the same daemon (the one-liner has no tag, so Docker uses `latest`, as S-2 says), and port 8080 free. Before the run, the U4 guard of section 4.2 must pass, and the author records `ls -ld` of the install folder and whether it, `~/Books` and `~/Books/.scriba` exist; after the run, the install folder's mode is the same (D9). Its own teardown, once the checks are done: `docker compose down -v` in its install folder (project `scriba`), then `rm -rf` each of `~/Books/.scriba`, `~/Books` and the install folder, each only if the run created it. Recorded, not a criterion.
+- **S-1 result (2026-11-14, HEAD 12d0f62).** Step 1: `inspect` of `0.1.0` and `latest` exit 1 each (absent); `docker build` exit 0; `docker tag` exit 0. Step 2 guards read 0. Step 4 (first run) exit 0, `Scriba is healthy. Open this link to finish setup:`; `.env` shows `SCRIBA_LIBRARY="$H/Books"`, UID and GID 1000, port 8080, tag 0.1.0, compose version 2; no `.secret`; `Books/.scriba` mode 700, `setup-url` mode 600, and the printed URL equals `setup-url`; `compose ls -a` shows no `scriba` row; `curl .../healthz` prints 200. Step 5 (second run) exit 1, `A .env already exists in ... This is not a first install, so nothing was changed.`; the file state before and after is identical. Home: `/Users/bbartolome/workspace/.plt17-home.Gs8A`.
+- **S-3 result (2026-11-14).** `docker run --rm -e SETUP=true bbartolome/scriba:latest` exit 0; `bash -n` exit 0; first line `#!/usr/bin/env bash`; `rm -rf "$T"` exit 0.
+- **S-2 part (a) result (2026-11-14).** `docker compose down -v` exit 0 (removed the `plt17-check` containers, network and two volumes); after it the `plt17-check` rows, `plt17-check_` volumes and 8080 publishers read 0, and port 8080 is closed.
+- **S-2(b) and U4: not run.** U4 is the author's Mac terminal run; S-2 part (b) follows it. The tags `bbartolome/scriba:0.1.0` and `:latest` stay in place for U4, and the home folder above stays until part (b).
 
 ## 5. Downstream agreement
 

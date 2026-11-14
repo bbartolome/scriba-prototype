@@ -34,8 +34,8 @@ Install with one pasted command, no clone/build/YAML (story 1); fail fast on mis
 - **Tests:** Vitest drives the emitted script in a temp `HOME` with a stub `docker` on `PATH` that records its calls and serves the `tar` extraction.
 
 ## Acceptance criteria
-- [ ] On a clean machine (stubbed), the one-liner checks Docker and Compose v2, creates `~/Books/.scriba/`, writes `.env` (host UID/GID), the compose file and an optional `.secret` (0600), starts the stack, waits for healthy and prints the setup URL; falls back to the loopback URL if `setup-url` isn't there yet.
-- [ ] With no TTY, first install uses defaults without prompting.
-- [ ] Nothing but the script goes to the dispenser's stdout (`bash -n` passes on it).
-- [ ] A missing Docker or Compose v2 aborts before anything is written.
-- [ ] A health timeout exits non-zero and points to `docker compose logs`.
+- [x] On a clean machine (stubbed), the one-liner checks Docker and Compose v2, creates `~/Books/.scriba/`, writes `.env` (host UID/GID), the compose file and an optional `.secret` (0600), starts the stack, waits for healthy and prints the setup URL; falls back to the loopback URL if `setup-url` isn't there yet.
+- [x] With no TTY, first install uses defaults without prompting.
+- [x] Nothing but the script goes to the dispenser's stdout (`bash -n` passes on it).
+- [x] A missing Docker or Compose v2 aborts before anything is written.
+- [x] A health timeout exits non-zero and points to `docker compose logs`.
