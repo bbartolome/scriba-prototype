@@ -2870,3 +2870,14 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Open point 2, a tailnet caller's 401: (a).** Any 401 shows the loopback notice, as the unit's criterion says. The tailnet explanations cover the `AUTH_TAILNET_*` codes that SAU-18 will produce. Reason: the literal criterion; (b) adds a text the unit does not name, and (c) changes SAU-03's route.
 - **Open point 5, which tailnet codes get an explanation: (a).** `AUTH_TAILNET_IDENTITY_MISSING` and `AUTH_TAILNET_NOT_ALLOWED`, one text and one test each. Reason: the unit's "identity and allowlist failures".
 - **Open point 4, the placement of the phone e2e: (a).** A new spec file, `e2e/specs/setup-phone.e2e.ts`, with one test at 390 by 844. Reason: PLT-13's "one e2e test" governs the journey spec's structure; the criterion "Phone viewport renders all of it" needs a real viewport, which only an e2e gives.
+
+## 2026-11-14 — PST-11 — Opus review of the plan (revision 1): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, six items. The plan is not sent to code until they are fixed.
+  1. [blocking] Criterion 2's check passes when the criterion is false. Check (iii) only tests that each draft heading appears somewhere in the outline; check (iv) only tests that the named files exist. Correction: each `### Chapter N: Title` must have a `Draft:` line naming a file whose first line is `# Chapter N: Title`, or say `not started` with no draft carrying that heading; each draft is named once; expect six `ok` lines; the red step shows `test -f` exiting 1.
+  2. [NAVIGATOR] The M5 chapter count. Three skeleton drafts plus AGL-19's draft make four chapters at M5, which contradicts CEX-20 ("three chapters") and CEX-08 ("2 to 3 drafts"). Open point 2 of the plan is for the Navigator. Until it is settled, section 5 must not say "Agrees" for CEX-08, CEX-09 or CEX-20.
+  3. The procedure runs in the main checkout with `git switch -c` and has no `npm ci`. The code stage must work in its own worktree on `unit/PST-11`, with `npm ci` before step 1 (`prompt.md` lines 78 to 79; `plans/PLT-20.md` line 75).
+  4. The plan's base is stale: HEAD is `c061b08`, not `22040f6`, and the batch's nine other plans now exist (F1, F13). Correct both statements.
+  5. Line 112: "the step selects the card by that title" has no source (PST-09 line 26 does not say how). Write "if the step selects the card by its title".
+  6. Committing no test file, with the criteria tested by recorded shell commands, is allowed: `units/README.md` line 133 and `modules/project-store.md` line 58 forbid unit tests that read `examples/`, and no criterion names a test file. Make that option a decision of the plan (D11 and open point 1), and remove "the Navigator decides" and the matching assumption in 7b.
+- **Rejections of the PST-11 plan: 1.**
