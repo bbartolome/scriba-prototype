@@ -3896,3 +3896,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Judgement (a), on the size change: the plan's claim applies to the default build only; `contracts-boot` imports all ten subpaths at runtime, so its total must grow by the slice's size (637.01 kB is main.js plus styles.css; no slice string appears in dist/scriba-web). Acceptable; the record gives the default build's total against step 1 (505.85 kB, unchanged).
 - Judgements (b) and (c) are consistent with the plan, except item 2.
 - Code rejections of TRG-01: 1 (this one).
+
+## 2026-11-14 — TRG-01 — Opus code review (second, after the fixes 80a957e): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/TRG-01 -- . ':!plans' ':!units' | git patch-id --stable`, base 6b1183f): 1ff62fd5ce649c34b801ce408fb5f006c1d58c20. The rebase must not change it.
+- The four fixes hold: E2 refusals and round trips; resolvedEntitySchema.type is z.string().min(1) (D5 kept: ENTITY_KIND_PATTERN is used only by the entity-type kind); the routes comment; the C4 blocks use the names of their rows.
+- Criteria C1 to C4 pass through their tests (vitest tool-registry: 3 files, 13 tests; C1's apps legs are the method's steps 9 and 10, run by the implementer: root build, test and lint pass; the contracts-boot build passes with 637.01 kB, and the default build's initial total is unchanged at 505.85 kB).
+- Judgement recorded: the contracts-boot size change is the slice's size, since contracts-boot imports all ten subpaths at runtime.
+- Notes, not blocking: the comment on ENTITY_KIND_PATTERN (constants.ts line 10) still says "the type of an entity"; it could say "the entity-type kind (D5)".
+- Code rejections of TRG-01: 2 (the first, and the fix review, approved).
