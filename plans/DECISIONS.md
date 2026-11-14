@@ -3546,3 +3546,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - Checked and passed: C1 to C4 are met by the code, apart from the gaps in item 2; only the 12 files of plan section 2 change; the key is sent only in the key/set body (providers-store.ts line 154); the guards drop unknown fields (providers-copies.ts lines 142 to 170); the conventions of the repository are followed.
 - Not verified by the reviewer (not run): the reported test, control and build runs; the server half of C1 (test/providers-api.test.ts lines 239 to 241, read only).
 - Code rejections of MPR-09: 1. The unit branch is corrected by its Haiku subagent (prompt.md step 6 item 4), with the same plan.
+
+## 2026-11-14 — PST-03 — Opus review of the plan (revision 3): APPROVED
+
+- Revision 2 items 1 to 4 are fixed and match the repository: C1 expects nested as importable and no inner entry, and the test is named "does not recurse"; the header and F25 give the right commits (revision 1 8cae904, revision 2 b8a3b80 with parent a3d507d); S9 cites unit line 21 and module lines 62 and 69; S10 cites errors.ts lines 6 and 59, and marks lines 25 and 78 as not used.
+- Each of the five criteria (unit lines 27 to 31) has one test (C1 to C5), with E1 to E3. The decisions cite their sources. PST-04, PST-05, PST-09 and PST-12 agree; none needs a change.
+- Notes, not defects: F7 (line 205) omits errors.ts lines 6 and 59; fixture line 154 has no row for L/nested/ (its status is implied by the C1 row); section 9 says "by this revision" where revision 2 closed the points.
+- NAVIGATOR: none. Open points 3, 4 and 5 are the plan's own choices (prompt.md line 253). Open points 6 and 9 are carried to later plans (PST-02's P3 settles the realPath write rule for point 9).
+- Status set to planned (commit on main). The code stage starts in a later iteration: the unit branch unit/PST-03 does not exist yet.
