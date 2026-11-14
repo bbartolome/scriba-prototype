@@ -3656,3 +3656,35 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - The barrel export and decision 12 remain as the approved plan writes them. The Navigator has not settled those open points of this unit.
 - Commit 31d9e90 replaces a raw BOM left in the spec by e54835a. The final tree is clean.
 - Code rejections of SHL-12: 0.
+
+## 2026-11-14 — PST-03 — Opus code review (first): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/PST-03 -- . ':!plans' ':!units' | git patch-id --stable`, on the base 2a50a60): b828f9fb5b293c4dd4e23dd72aa362aa414066e4. The rebase must not change it.
+- C1 to C5 and E1 to E3 are tested through HTTP and the files on disk (`project-store-discovery`, `project-store-new`, `project-store-import` tests: 8 of 8 passed, reviewer run).
+- Two differences from the plan, accepted: (1) `reserveProjectFolder` returns false on EEXIST and does not throw; `ProjectsService.create` maps it to 409 `PROJECT_EXISTS`. (2) On a fresh folder `appendGitignoreLine` writes `.scriba/` plus LF, the bytes of plan P10d.
+- Note for PST-05 (its plan must carry it): `reserveProjectFolder` throws only `PROJECT_PATH_INVALID` (on ENAMETOOLONG). Its caller must map `false` to `PROJECT_EXISTS` and do its own rollback. `PROJECT_MESSAGES` is private to the module, so the start-from-sample method lives in `ProjectsService`, or the map must be exported.
+- Commit subjects: the red commit is `feat(PST-03)`, not `test(PST-03)` (prompt.md commit rule). Not a defect.
+- Not blocking, untested and outside the criteria: under P2 a top-level link to the library root would list as importable.
+- Code rejections of PST-03: 0.
+
+## 2026-11-14 — TRG-01 — Opus plan review of revision 6: NOT APPROVED
+
+Items the reviewer found (each must be fixed in the next revision):
+
+1. Step 0 stops at the plan's own commit. Commit c33a58c added the SHL-20 row at `units/README.md` line 84, which moves every README line the plan cites from line 126 on down by one. The correct citations are README lines 127 (HTTP), 128 (errors), 129 (events), 131 (expand-contract) and 134 (testing); lines 64 and 65 are unchanged. The wrong numbers are at plan lines 50, 58, 63 and 253 (section 7a). Re-check the 7a facts at the new HEAD and name that hash.
+2. The commit list and the batch list are stale. The header (line 7) and section 7a must list the commits after `6cdce0c` that touch no unit file of this plan: the AGL-06 commits 8a58dce, 59c5d44 and e7d166d, and c33a58c and 65e1409 themselves. Section 8 (about line 300) lists AGL-06 as not on main; AGL-06 is merged (`plans/AGL-06.md` status done). Plan lines 277 and 288 cite `plans/SAU-06.md` lines 110 and 133; at revision 8 (c33a58c) those are lines 117 and 142.
+3. The plan describes the two unit edits two ways: "one clause each" (lines 7, 15, 308 and 7a line 285) and "one more sentence in each" (line 225). The real edit is a clause in TRG-09 line 18 and a sentence in TRG-14 line 16. Say that in every place.
+
+Result: NOT APPROVED. Rejections of the TRG-01 plan since revision 5: 1 (revision 6). Errors of fact: the next revision is written by one Opus subagent (prompt.md step 5, the three-rejections rule applies).
+
+## 2026-11-14 — SAU-06 — Opus plan review of revision 8: NOT APPROVED
+
+Items the reviewer found:
+
+1. Blocking. C2 runs on a tree without SHL-20's fix. The Resume paragraph (plan section 3, about line 130) keeps working on `unit/SAU-06`, whose base is c0c7863 (`git merge-base main unit/SAU-06`), and says "No commit is rewritten". Step 0 reads only `main:plans/SHL-20.md`, and step 6 runs the e2e on the branch, so check (iv) in state 1 fails whatever SHL-20 does. Correction: after the SHL-20 check in step 0, run `git rebase main` on `unit/SAU-06` (prompt.md line 5 allows it); remove "No commit is rewritten"; add a check that `main` is an ancestor of HEAD (`git merge-base --is-ancestor main HEAD`); take step 1's baseline on the new base. `git diff --stat c0c7863 main -- apps/web/src/app/app.routes.ts e2e/specs apps/web/src/app/features/setup-auth` prints nothing, so no conflict is expected.
+2. Stale base. AGL-06 code (59c5d44) is on main before c33a58c. `apps/api/src/app.module.ts` now has the SPA-fallback comment at line 35 and `ServeStaticModule.forRoot` with its exclusions at lines 43 to 45; the plan says 33 and 41 to 43 (lines 10, 146, 263, 344) and 31 and 39 to 41 (line 288). Line 10 says `git diff --stat 2a50a60 HEAD -- ':!plans'` prints nothing, and the `af470ff..HEAD` diff over apps/api prints nothing; both now list AGL-06's files. Step 0's diff now also prints `apps/api/src/modules/agent-loop/**` and the revision-8 `modules/shell.md` and `modules/setup-auth.md`, which step 0 does not accept. Correction: check the facts again at the HEAD where the plan is committed; cite app.module.ts lines 35 and 43 to 45; add AGL-06 to the batch lists of sections 7a and 8 (including the app.module.ts row); accept the two module files in step 0.
+3. SHL-20 Scope leaves out the styles. The toolbar's styles are in `apps/web/src/app/app.css` (`app.ts` line 22, `styleUrl: './app.css'`; `.spacer` at app.css lines 7 to 9). The Decisions say "The change is in the toolbar's own styles", but `app.html` is only a template. `data-device` is on `.layout` (`app.html` line 6), which comes after `<mat-toolbar>`, not around it, so a toolbar rule needs `:has()` in app.css or a binding of its own in app.html. Correction: add `apps/web/src/app/app.css` to SHL-20's Scope, and to the SHL-20 file lists in plan sections 5 (line 245) and 8 (line 348).
+4. SHL-20 Decisions: "Its texts, `role="status"` and `data-state` ... (`connection-status.spec.ts` asserts them)". The spec asserts the texts and `data-state` only; a grep for "role" in it finds nothing. Name only the texts and `data-state` as asserted, and cite `connection-status.ts` lines 24 and 29 for the role. Plan line 299 cites spec lines "138 to 226"; the assertions run to line 251. Cite 138 to 251.
+5. `modules/setup-auth.md` line 35 (Parallelism) still says "SAU-06 once Shell `phase:core` lands", while line 18 names SHL-20. Add SHL-20 to line 35, and list the edit in the "Documents changed" paragraph of section 8.
+
+Notes: SHL-20's front matter, shape and phase are correct; its one criterion can be tested with Playwright at 390 by 844. This is the third rejection since revision 5 was approved, so prompt.md lines 114 to 116 (the examination of the open problems) apply. The items are errors of fact, so one Opus subagent writes the plan again (revision 9).
