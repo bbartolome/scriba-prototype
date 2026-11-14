@@ -3646,3 +3646,13 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - Commit subjects: the red commit is `feat(SHL-11)` (prompt.md commit rule), not `test(SHL-11)`. Not a defect.
 - Open point 1 (MarkdownService and MARKED_OPTIONS, decision 15) and open point 4 (jsdom as the procedure) are implemented as the plan writes them. The Navigator has not settled open points 1, 2 and 4 of this unit; they are recorded as open in the plan.
 - Code rejections of SHL-11: 0.
+
+## 2026-11-14 — SHL-12 — Opus code review (first): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SHL-12 -- . ':!plans' ':!units' | git patch-id --stable`): 0414a70d7097e3ed1602d226e352c56821992201. The rebase must not change it.
+- Criteria 1 to 3 are tested in `diff-view.spec.ts` (43 tests in the branch's suite; the reviewer ran the web suite, 129 of 129 passed, with the base's 86 plus the plan's 43).
+- Dependencies: @codemirror/merge 6.12.3, @codemirror/state 6.7.6 and @codemirror/view 6.43.15, exact; the lockfile change only adds lines.
+- Not verified by the reviewer: that a feature which imports the barrel keeps CodeMirror out of its chunk. The plan's bundle check (M2b, or the build) after the rebase proves it, because MPR-09's providers-store.ts imports the barrel on current main.
+- The barrel export and decision 12 remain as the approved plan writes them. The Navigator has not settled those open points of this unit.
+- Commit 31d9e90 replaces a raw BOM left in the spec by e54835a. The final tree is clean.
+- Code rejections of SHL-12: 0.
