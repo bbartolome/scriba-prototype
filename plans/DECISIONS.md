@@ -3734,3 +3734,11 @@ Items the reviewer found (revision 11 answered the revision-10 items; these are 
 - Notes: check (ii) refuses any card key in an initial output, even one with bytesInOutput 0; applying the bytes rule of check (i) to (ii) would be consistent. This case cannot happen on af470ff. Main moved to 608de13 (SHL-12 and PST-03 merged): step R1 and A16 cover that. SHL-11 is on main, so SHL-10's step R makes the Markdown swap.
 
 Result: NOT APPROVED. Rejections of the SHL-10 plan since the approval of revision 9: 2 (revisions 10 and 11). The next rejection triggers the examination of prompt.md step 5.
+
+## 2026-11-14 — SHL-13 — Opus code review (second, after the rebase onto 608de13): APPROVED
+
+- The earlier approval (patch id 79f2072) no longer holds: the rebase merged the package files and the barrel with SHL-12's and SHL-11's lines. The patch id is now 56e61f9cb5f613e17c2cbd56103e3c33dbbbc9c5 (`git diff main...unit/SHL-13 -- . ':!plans' ':!units' | git patch-id --stable`, with main at 608de13).
+- The reviewer re-ran the web suite on the branch: 26 files, 189 of 189 passed; the 18 MarkdownEditor tests and the E7 copies test passed.
+- Criteria 1 to 3 are each met through the rendered host (`markdown-editor.spec.ts`). The Navigator's decisions are followed: no save-mode input, no bare-CR guard, the findFromDOM and dispatch seam.
+- package.json: commands 6.11.1, lang-markdown 6.5.2 and language 6.13.1 added; merge 6.12.3, state 6.7.6 and view 6.43.15 kept from main. The lock has only additions. index.ts gains one line, `export { MarkdownEditor }`.
+- Code rejections of SHL-13: 1 (the first review, approved; the second is the rebase re-review).
