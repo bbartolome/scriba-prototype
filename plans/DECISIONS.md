@@ -3637,3 +3637,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - The six changed paths are the plan's section 2 list; the code matches decisions D1 to D7 of `plans/AGL-06.md`. Open point 1 is implemented as the Navigator's option (a).
 - Commit subjects: the plan named `test(AGL-06)` for commit 1; the commit is `feat(AGL-06)` (prompt.md commit rule). Not a defect.
 - Code rejections of AGL-06: 0.
+
+## 2026-11-14 — SHL-11 — Opus code review (first): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SHL-11 -- . ':!plans' ':!units' | git patch-id --stable`, on the branch base 2a50a60): d57538b959386a3fcad80db76a5b54e8bc8601e2. The rebase must not change it.
+- Criteria 1 and 2 are tested through a rendered host against the real app config, in `markdown-preview.spec.ts` (25 of 25 passed, run by the reviewer).
+- The step R card swap is not in the branch on purpose: SHL-10's card is not on main. The driver applies it at the rebase if SHL-10 has merged first.
+- Commit subjects: the red commit is `feat(SHL-11)` (prompt.md commit rule), not `test(SHL-11)`. Not a defect.
+- Open point 1 (MarkdownService and MARKED_OPTIONS, decision 15) and open point 4 (jsdom as the procedure) are implemented as the plan writes them. The Navigator has not settled open points 1, 2 and 4 of this unit; they are recorded as open in the plan.
+- Code rejections of SHL-11: 0.
