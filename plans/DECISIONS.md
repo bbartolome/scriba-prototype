@@ -2395,3 +2395,14 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   5. Steps 0 and 10 (lines 77 and 87): `git status --short` must print nothing, and step 10 expects only the section 2 paths; other units' plans are untracked during parallel work. Correction: use `git status --short -- ':!plans'`, as `plans/PLT-13.md` step 0 (line 73) does.
 - **Count.** Rejections of PLT-20: 2. All five are factual or consistency corrections.
 - **Next.** The PLT-20 subagent applies items 1 to 5 to `plans/PLT-20.md` (untracked). Then Opus reviews again.
+
+## 2026-11-14 — PLT-20 — Opus review of the plan (revision 3): NOT APPROVED (rejection 3)
+
+- **Result.** The third Opus review returned NOT APPROVED. Rejection 2's items are fixed; the criteria, the blockers, `--root` and `scriptRoot`, the rules R1 and R2 (zero matches on the 83 tracked test files), C5, the LAYERS merge note and the platform assumption hold. Five items remain.
+  1. Lines 7, 155 and 171: "`b9e7481` is HEAD on `main`" is out of date. HEAD is `028ef8d`, which line 197 already cites; it differs from `b9e7481` only in `plans/DECISIONS.md`. Correction: base `b9e7481`, and HEAD `028ef8d` differs only in `plans/DECISIONS.md`.
+  2. Lines 84 and 85: step 7 expects `npm run lint` to exit 0 with the Prettier line, but the four new files are formatted only in step 8, so `prettier --check .` can fail at step 7. Correction: run the step 8 format before step 7's lint, or expect the Prettier failure until step 8.
+  3. Line 93 (the stop rule "Step 6 or 9 reports an issue on any existing test file"): step 9 (`npm test`, `npm run build`) never runs the check on the repository; the tests run it only on temp trees. The repository runs are steps 6, 7 and 12. Correction: "Step 6, 7 or 12".
+  4. Lines 77 and 83: if PST-11 has merged by then, step 0 says both "re-run section 7's sample facts" and "stop if any of this differs", and step 6 still expects `0 sample(s)`. PST-11 is blocked only by PST-01 (done), so it can merge first. Correction: on a PST-11 merge, continue after re-checking the facts, and expect `1 sample(s)` at steps 6 and 7.
+  5. Line 89 (step 12): "the order of `ci.yml` … except that install and lint run first" is wrong; `ci.yml` lines 24 to 31 also run Install and Lint first. Correction: the clone runs `ci.yml`'s Install, Lint, Test and Build in order, without the PR-title and E2E steps; the contracts build runs inside lint.
+- **Count.** Rejections of PLT-20: 3. All five are factual or consistency corrections.
+- **Next.** The PLT-20 subagent applies items 1 to 5 to `plans/PLT-20.md` (untracked). Then Opus reviews again.
