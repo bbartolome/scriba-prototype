@@ -3697,3 +3697,11 @@ Notes: SHL-20's front matter, shape and phase are correct; its one criterion can
 - The rendered browser check (plan step 10) was not run: the dev stack was not up. It is recorded as not run, not as a criterion.
 - Commit subjects match the plan's steps 2 and 5. Not a defect.
 - Code rejections of SHL-13: 0.
+
+## 2026-11-14 — SHL-12 — Opus code review (second, after the rebase onto bc5ea41): APPROVED
+
+- The earlier approval (patch id 0414a70d) no longer holds: the rebase onto SHL-11 resolved a conflict in `apps/web/src/app/shell/index.ts`, which changed the context lines of the diff. The new patch id is 3d75ac00134a6fedadfee3907ea7ab374a1c0af2 (`git diff main...unit/SHL-12 -- . ':!plans' ':!units' | git patch-id --stable`, with main at bc5ea41). The merge base is bc5ea41.
+- The reviewer checked the whole diff again: the three criteria are each met through the rendered `DiffView` (`diff-view.spec.ts`, 43 tests); the barrel conflict resolution adds exactly one line, `export { DiffView } from './diff-view';`, after the MarkdownPreview line; the code matches decisions 1 to 12 of `plans/SHL-12.md`.
+- Tests: `npm test -w @bbartolome/scriba-web` passed in the reviewer's run; the orchestrator's lint, test and build on the branch passed before this review (build 0, lint 0).
+- Open point (not blocking): whether CodeMirror stays out of the chunks of features that import other barrel exports (decision 12, check M2b) is shown only by the bundle check after the merge, not by these tests.
+- Code rejections of SHL-12: 1 (the first review of this branch's code, which was approved; the second review is the rebase re-review).
