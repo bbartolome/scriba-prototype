@@ -75,6 +75,13 @@ test('W1 triggers are push to main and workflow_dispatch, with the paths-ignore 
     'W1: on has exactly push and workflow_dispatch',
   );
   assert.deepEqual(on.push.branches, ['main'], 'W1: push.branches is main');
+  assert.ok(
+    !('tags' in on.push) && !('tags-ignore' in on.push),
+    'W1: push has no tags or tags-ignore key',
+  );
+  for (const bad of ['release', 'workflow_run', 'workflow_call']) {
+    assert.ok(!(bad in on), `W1: there is no ${bad} trigger`);
+  }
   const ignored = [
     'README.md',
     'LICENSE',
