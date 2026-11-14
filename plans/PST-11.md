@@ -1,6 +1,6 @@
 ---
 id: PST-11
-status: planned
+status: done
 ---
 
 # PST-11 plan — examples/ nonfiction skeleton and samples.yaml

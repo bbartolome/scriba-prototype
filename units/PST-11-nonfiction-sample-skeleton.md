@@ -26,6 +26,6 @@ Pure content; parallel with all API work. The Project store owns `examples/`, `e
 - Later additions by others: `entities/` (Genre packs, M2), grounding-claims draft (Agent loop, M3), recipe (Graph runner, M4), `order` (Compile & export, M5).
 
 ## Acceptance criteria
-- [ ] `project.yaml` validates against the PST-01 schema; Platform's examples check (PLT-20, once landed) passes.
-- [ ] `sources/outline.md` exists and outlines the book's chapters, consistent with the drafts.
-- [ ] No excluded folders are present.
+- [x] `project.yaml` validates against the PST-01 schema; Platform's examples check (PLT-20, once landed) passes.
+- [x] `sources/outline.md` exists and outlines the book's chapters, consistent with the drafts.
+- [x] No excluded folders are present.
