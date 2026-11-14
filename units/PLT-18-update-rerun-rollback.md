@@ -30,9 +30,9 @@ Update by re-running the same command (story 14), with backups (story 15), keepi
 - README security note: the app controls tailscaled through the shared socket (accepted for a single owner).
 
 ## Acceptance criteria
-- [ ] On re-run with `.env` present, nothing prompts. `.env` and the compose file are backed up with a timestamp. Existing `.env` values are kept, new keys added, `SCRIBA_COMPOSE_VERSION` updated, `compose.override.yaml` untouched.
-- [ ] Running the re-run twice in a row changes nothing beyond new backups.
-- [ ] Setting `SCRIBA_IMAGE_TAG` to an older tag and running `up -d` rolls back; documented with the backup restore.
+- [x] On re-run with `.env` present, nothing prompts. `.env` and the compose file are backed up with a timestamp. Existing `.env` values are kept, new keys added, `SCRIBA_COMPOSE_VERSION` updated, `compose.override.yaml` untouched.
+- [x] Running the re-run twice in a row changes nothing beyond new backups.
+- [x] Setting `SCRIBA_IMAGE_TAG` to an older tag and running `up -d` rolls back; documented with the backup restore.
 
 ## Demo (under 5 minutes)
 1. In an empty folder, `docker run --rm -e SETUP=true bbartolome/scriba | bash`, accept defaults, watch it print the setup URL.
