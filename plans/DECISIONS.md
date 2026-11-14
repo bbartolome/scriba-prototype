@@ -3871,3 +3871,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - The fixes are right: the sample's comment cites modules/shell.md by section and quote ("It never consumes `/agent-loop`"), which holds at af470ff (line 43) and at main (line 44); the rest of the comment is true.
 - Criteria 1 to 3 pass (T1 to T9; 101 of 101 web tests).
 - This approval is for the branch as it stands. The rebase-time swap of plan step R changes the card, so it is reviewed again (step R3) after the swap.
+
+## 2026-11-14 — SHL-10 — Opus code review (after the rebase-time swap, 494b682; plan step R3): NOT APPROVED
+
+- Patch id at this review (`git diff main...unit/SHL-10 -- . ':!plans' ':!units' | git patch-id --stable`): 7364c719c445ba4ff00f9d22ace35ef0e08ef813.
+- Item 1: apps/web/src/app/shell/tool-call-view.ts lines 7 to 10 say "Markdown is shown as Markdown source text". After the swap the card renders Markdown output through app-markdown-preview (T3 asserts no literal ** and bold inside strong). The TSDoc is part of the card's documented inputs (criterion 3; decision 2) and is read by AGL-07. Correction: rewrite that comment to say that Markdown output is rendered by the Shell's Markdown preview (app-markdown-preview, with raw HTML shown as text) and that JSON is shown as a key/value tree. Keep the field comments on `text` ("The Markdown source text"). Commit it on unit/SHL-10 with SHL-10 in the message. This is a fix after a NOT APPROVED review (case L), so the patch id changes and a new review is needed.
+- Everything else passes: the swap matches step R2 (iii) and (vi), section 2b-bis and decision 6; T1 to T9 pass; the barrel keeps all 14 main lines and adds six; prettier is clean; 204 of 204 web tests pass.
+- Note, not blocking: the swap commit's message differs from the one step R2 (vi) gives; it carries SHL-10, and the patch id ignores messages.
+- Code rejections of SHL-10 since the approval before the swap: 1.
