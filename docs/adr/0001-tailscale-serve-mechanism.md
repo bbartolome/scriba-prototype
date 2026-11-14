@@ -1,6 +1,6 @@
 # ADR 0001: Tailscale Serve mechanism
 
-Status: draft. Attempt A failed. Attempt B (variant B, the CLI loop) passed the mechanism retest and the post-approval HTTPS, restart, streaming and Serve-path peer checks. ST-1's refusal checks (criterion 2) are not complete: the name half is deferred under N5, and no refusal is recorded. Criterion 2 stays unticked.
+Status: draft. Attempt A failed. Attempt B (variant B, the CLI loop) passed the mechanism retest and the post-approval HTTPS, restart, streaming and Serve-path peer checks. ST-1's refusal checks (criterion 2) are not complete: the name half is deferred under N5, the refusal check (2e) was run on 2026-11-14 from a second tailnet device, and both plain-HTTP URLs failed to connect (reported by the operator; the printed output was not captured). Criterion 2 stays unticked because 2c is deferred under N5.
 
 ## Context
 

@@ -2328,3 +2328,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Count.** Rejections of PST-01 before this approval: 7 (all factual or label corrections; no Navigator call).
 - **Decisions the plan records for the coordinator.** Open point 1 (`genrePack` required, as unit lines 18 and 20 say) stays a driver decision; the PLT-20 hand-off (`sources/` front matter) and the PST-08 mismatch are recorded in section 5.
 - **Next.** The orchestrator sets `status: planned` and commits `plans/PST-01.md`. The code stage is the next iteration.
+
+## 2026-11-14 — PLT-16 — the refusal check 2e is recorded (reported by the operator)
+
+- **Result.** The operator ran check 2e from a second device on the tailnet (not the server): `curl -sS -m 5 -o /dev/null -w '%{http_code}\n' http://scriba/healthz` and the same against `http://<100.x>:8080/healthz`. Both failed to connect ("Failed to connect"; the operator reported that it was not a DNS failure). The source is the operator's report in conversation on 2026-11-14; the printed output was not captured, so this is recorded as reported, not as a log.
+- **Decision (the orchestrator).** 2e is recorded as passed, on that report. It is a result of the run the Navigator required (the Navigator's decision of this date, option (b)), and it is recorded in `docs/adr/0001-tailscale-serve-mechanism.md` (line 3) and in `deploy/RUNBOOK.md` (checklist row 92).
+- **Criterion 2.** It stays unticked: the plan ticks criterion 2 only when 2a to 2e all pass (section 4), and 2c is deferred under N5. This entry ticks no criterion.
+- **Unit status.** PLT-16 stays `planned`. Whether the unit closes with 2c (N5) and 4b (N3) recorded as deferred is a question for the Navigator, asked next.
