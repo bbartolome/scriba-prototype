@@ -14,7 +14,11 @@ import { SSE_CLIENT } from './tokens';
 })
 class TabletView {}
 
+@Component({ template: '<p>start probe</p>' })
+class StartProbe {}
+
 const probes = withDeviceGate([
+  { path: '', pathMatch: 'full', component: StartProbe },
   {
     path: 'tablet-view',
     data: {
@@ -141,6 +145,6 @@ describe('device class notice', () => {
     await fixture.whenStable();
 
     expect(notices(fixture)).toHaveLength(0);
-    expect(rootOf(fixture).textContent).toContain('Scriba is running.');
+    expect(rootOf(fixture).textContent).toContain('start probe');
   });
 });

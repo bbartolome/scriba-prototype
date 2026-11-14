@@ -18,6 +18,15 @@ import { restoreMatchMedia, stubMatchMedia } from './testing/match-media';
 @Component({ template: '<p>probe tablet view</p>' })
 class TabletView {}
 
+@Component({ template: '<p>start probe</p>' })
+class StartProbe {}
+
+const startRoute: Route = {
+  path: '',
+  pathMatch: 'full',
+  component: StartProbe,
+};
+
 @Component({ template: '<p>probe phone view</p>' })
 class PhoneView {}
 
@@ -102,12 +111,12 @@ function pathOf(): string {
 
 describe('device gate', () => {
   it('G1 keeps the URL on a phone and shows the page there; back returns to the start page', async () => {
-    useRoutes(withDeviceGate([tabletLeaf]));
+    useRoutes([startRoute, ...withDeviceGate([tabletLeaf])]);
     const router = TestBed.inject(Router);
     // Under the test harness the router listens to popstate only after this call.
     router.setUpLocationChangeListener();
     const harness = await RouterTestingHarness.create('/');
-    expect(textOf(harness)).toContain('Scriba is running.');
+    expect(textOf(harness)).toContain('start probe');
 
     await router.navigateByUrl('/tablet-view');
     await harness.fixture.whenStable();
@@ -125,7 +134,7 @@ describe('device gate', () => {
     await harness.fixture.whenStable();
     harness.fixture.detectChanges();
     expect(pathOf()).toBe('');
-    expect(textOf(harness)).toContain('Scriba is running.');
+    expect(textOf(harness)).toContain('start probe');
     expect(textOf(harness)).not.toContain('needs a larger screen');
   });
 
