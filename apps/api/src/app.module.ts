@@ -11,12 +11,14 @@ import {
 } from './modules/platform/platform.module';
 import { SetupAuthModule } from './modules/setup-auth/setup-auth.module';
 import { ProvidersModule } from './modules/providers/providers.module';
+import { ProjectStoreModule } from './modules/project-store/project-store.module';
 
 // The composition root. Each feature module adds one import here.
 export const COMPOSED_MODULES: Type<unknown>[] = [
   PlatformModule,
   SetupAuthModule,
   ProvidersModule,
+  ProjectStoreModule,
 ];
 
 export interface RootModuleOptions {

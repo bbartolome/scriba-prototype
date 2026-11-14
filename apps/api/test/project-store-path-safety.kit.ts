@@ -226,7 +226,7 @@ export async function postResolve(
 }
 
 // A test-only route. It is not in COMPOSED_MODULES, so the composed app and the invariant sweeps never see it.
-// It returns only relativePath, isRoot and exists; realPath never reaches a response.
+// It returns only relativePath, isRoot and exists, so the resolved location never reaches a response.
 @Controller('api/project-store-test')
 class PathSafetyKitController {
   constructor(private readonly store: ProjectStoreService) {}
