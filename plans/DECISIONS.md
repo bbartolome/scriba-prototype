@@ -2783,3 +2783,17 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   2. Non-blocking (line 8 and F1, line 212): the base hash goes stale with each record. Replace it with: base `main`; the code is identical to `437769c`; later commits change only `plans/DECISIONS.md`.
   3. Non-blocking (decision 4, line 22): R1 also has an api-module policy (`eslint.config.mjs` lines 51 to 59); write "R1 applies to web features only" and the range as "45 to 68".
 - **Count.** Rejections of SHL-09: 3 (rejection 1 at `35359ea`, rejection 2 at `3df4319`, this one). Under `prompt.md` the third goes to the Navigator (OP8). The plan is not to be edited for OP8 until the Navigator answers.
+
+## 2026-11-14 — PLT-18 — Opus review of the plan (text labelled "Revision 2", before the Navigator's P1 and P10 decisions): NOT APPROVED (rejection 3, to the Navigator for P3)
+
+- **Result.** The review returned NOT APPROVED. Items 1 to 6 of rejection 2 are fixed (the `latest` tag, the terminal and port 18081, P10 and P3 as open points, E1 and E6, the revision and HEAD, F23). Items 7 to 14 remain:
+  7. Blocker (steps 4 and 7, lines 162 and 165): the probes go to `127.0.0.1:18081`, which refuses from this shell, a container. Correction: probe `http://host.docker.internal:18081/healthz` (PLT-17 S-1 step 4 and PLT-15 line 73 use the same host).
+  8. Verified by reading the code, not run: the prompts read `/dev/tty` and the answers piped into `script` reach it. Not a blocker.
+  9. `umask 022` and `$H` are correct as written. Not a blocker.
+  10. Citations (lines 27 and 49): "unit 24" is `units/PLT-17-dispenser-first-install.md` line 24; the PLT-18 unit's line 24 says something else. Correction: cite the PLT-17 unit.
+  11. Citation (line 60): the RUNBOOK copy is at entry line 108 (the move), not 105 (the existence check).
+  12. Gaps in the stand-in: (a) step 4's stop rule does not check `SCRIBA_PORT=18081`, so a fallback to 8080 would clash with PLT-17's U4; (b) the update's pull contacts Docker Hub, and a registry tag `bbartolome/scriba:0.1.1` would replace the local build. Correction: record the image ID of `0.1.1` after step 2 and stop if it has changed after steps 5 and 6; (c) `H` does not persist between shell calls. Correction: print it in step 3 and set it again in each later shell.
+  13. P3 (crash-restart note, stale namespace): `restart: true` is already at `deploy/compose.yaml` lines 44 to 47, so option (iii) is "check whether the existing rule covers a restart by Docker's restart policy". Options (ii) and (iii) would change `deploy/compose.yaml`, which section 2b lists as must-not-change, so they move to section 2. The first item of P3 needs an alternative as well as its default.
+  14. Label: the text calls itself "Revision 2", but `plans/DECISIONS.md` already uses "revision 2" for rejected text. Correction: "Revision 3".
+- **Superseded in part.** The Navigator decided P1 as (b) and P10 as (b) (entry "2026-11-14 — PLT-18 — the Navigator's decisions on P1 … and P10 …", commit `6fd6556`). Those change the default in P1, the C1 and C3 named tests and their steps, and the tick rule. Revision 3 takes them as well as items 7 to 14, and then goes to Opus.
+- **Count.** Rejections of PLT-18: 3. Under `prompt.md` the third goes to the Navigator. P3 is the open question for the Navigator; P1 and P10 are already decided by it.
