@@ -12,3 +12,9 @@ export { ActiveProjectSignal } from './project-scope';
 export { MarkdownPreview } from './markdown-preview';
 export { DiffView } from './diff-view';
 export { MarkdownEditor } from './markdown-editor';
+export { ToolCallCard } from './tool-call-card';
+export type {
+  ToolCallOutput,
+  ToolCallStatus,
+  ToolCallView,
+} from './tool-call-view';
