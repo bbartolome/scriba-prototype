@@ -20,6 +20,6 @@ A file opened and saved without changes stays byte-identical — front matter, e
 - Saving mechanics are SHL-14; layout is SHL-15. This unit exposes a "current content" output and a minimal manual save used by the round-trip test.
 
 ## Acceptance criteria
-- [ ] **Round trip:** load then save with no edits sends a file-API write whose content is **byte-identical** to the loaded content, over fixtures: YAML front matter, `_emphasis_` and `*emphasis*`, CRLF endings, mixed endings, no trailing newline, a leading BOM, trailing whitespace. Kept as a regression test.
-- [ ] A targeted edit changes only the edited range; all other bytes match.
-- [ ] Read-only mode prevents edits.
+- [x] **Round trip:** load then save with no edits sends a file-API write whose content is **byte-identical** to the loaded content, over fixtures: YAML front matter, `_emphasis_` and `*emphasis*`, CRLF endings, mixed endings, no trailing newline, a leading BOM, trailing whitespace. Kept as a regression test.
+- [x] A targeted edit changes only the edited range; all other bytes match.
+- [x] Read-only mode prevents edits.
