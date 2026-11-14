@@ -2,6 +2,7 @@
 // imports this file.
 
 const MASK = '\u2022\u2022\u2022\u2022';
+const MIDDLE_DOT = '\u00b7';
 
 /** The masked key: four bullets and the hint. Used only when a hint exists. */
 export function maskedKey(hint: string): string {
@@ -19,9 +20,13 @@ export const TEXTS = {
   addHeading: 'Add a provider',
   customUrl: 'Custom URL',
   addCustom: 'Add a custom provider',
+  addPresetHeading: (label: string): string => `Add ${label}`,
+  editHeading: (id: string): string => `Edit ${id}`,
   appDefaultLabel: 'App default',
   noDefault: 'No default',
   defaultBadge: 'Default',
+  providerOption: (id: string, model: string): string =>
+    `${id} ${MIDDLE_DOT} ${model}`,
   edit: 'Edit',
   deleteButton: 'Delete',
   confirmDelete: 'Confirm delete',

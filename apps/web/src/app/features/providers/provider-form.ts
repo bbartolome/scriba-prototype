@@ -12,7 +12,10 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
-import type { Preset } from '@bbartolome/scriba-contracts/providers';
+import type {
+  Preset,
+  ProviderConfigInput,
+} from '@bbartolome/scriba-contracts/providers';
 import { KeyField } from './key-field';
 import { ModelListState, ModelPicker } from './model-picker';
 import {
@@ -248,10 +251,10 @@ export class ProviderForm implements OnInit {
   protected readonly heading = computed(() => {
     const id = this.providerId();
     if (id !== undefined) {
-      return `Edit ${id}`;
+      return TEXTS.editHeading(id);
     }
     const preset = this.preset();
-    return preset ? `Add ${preset.label}` : TEXTS.addCustom;
+    return preset ? TEXTS.addPresetHeading(preset.label) : TEXTS.addCustom;
   });
 
   /** Add mode with no preset: the form needs a name (sent as `label`). */
@@ -275,9 +278,11 @@ export class ProviderForm implements OnInit {
   protected readonly keySet = computed(() => this.saved()?.keySet ?? false);
   protected readonly keyHint = computed(() => this.saved()?.keyHint);
   protected readonly model = computed(() => this.values().model);
+  /** The typed key, as the key control holds it. It is sent only in a key/set body (D8). */
+  protected readonly typedKey = computed(() => this.values().key);
 
-  /** The config as the contract accepts it, or undefined while a field is invalid (D13). */
-  protected readonly draft = computed<ProviderFields | undefined>(() => {
+  /** The seven editable fields, or undefined while a field is invalid (D13). The update and create bodies use them. */
+  private readonly fields = computed<ProviderFields | undefined>(() => {
     const values = this.values();
     const baseURL = contractUrl(values.baseURL);
     const temperature = finiteNumber(values.temperature);
@@ -304,6 +309,14 @@ export class ProviderForm implements OnInit {
       timeout,
       retries,
     };
+  });
+
+  /** The config as the contract's connection-test draft takes it (kind included), or undefined while a field is invalid (D13). */
+  protected readonly draft = computed<ProviderConfigInput | undefined>(() => {
+    const fields = this.fields();
+    return fields === undefined
+      ? undefined
+      : { kind: 'openai-compatible', ...fields };
   });
 
   /** The message for each invalid field. Empty when the form is valid. */
@@ -388,8 +401,8 @@ export class ProviderForm implements OnInit {
 
   /** Save: the create or the update, then the key step if a key was typed (D6, D7). */
   protected save(): void {
-    const draft = this.draft();
-    if (draft === undefined || !this.canSave()) {
+    const fields = this.fields();
+    if (fields === undefined || !this.canSave()) {
       return;
     }
     const key = this.form.controls.key.value;
@@ -399,9 +412,9 @@ export class ProviderForm implements OnInit {
     if (id === undefined) {
       const preset = this.preset();
       const body: CreateBody = preset
-        ? { ...draft, kind: 'openai-compatible', presetId: preset.id }
+        ? { ...fields, kind: 'openai-compatible', presetId: preset.id }
         : {
-            ...draft,
+            ...fields,
             kind: 'openai-compatible',
             label: this.form.controls.label.value,
           };
@@ -414,7 +427,7 @@ export class ProviderForm implements OnInit {
           this.alert.set(failureMessage(error, TEXTS.genericFailure)),
       });
     } else {
-      this.store.update(id, draft).subscribe({
+      this.store.update(id, fields).subscribe({
         next: () => this.afterSave(id, key),
         error: (error: unknown) =>
           this.alert.set(failureMessage(error, TEXTS.genericFailure)),

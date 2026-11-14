@@ -207,7 +207,7 @@ export class ProvidersPanel {
   protected optionLabel(provider: ProviderRead): string {
     return provider.model === ''
       ? provider.id
-      : `${provider.id} \u00b7 ${provider.model}`;
+      : TEXTS.providerOption(provider.id, provider.model);
   }
 
   protected add(preset: Preset): void {
