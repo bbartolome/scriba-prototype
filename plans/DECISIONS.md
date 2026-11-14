@@ -3138,3 +3138,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the four open problems is a decision: a test count after a rebase, an await in a test, citations and a rule number. No Navigator question is open on this plan.
 - **Action (prompt.md step 5, errors of fact).** A new Opus subagent writes the plan again from the draft (revision 4, `fcde985`) and the list above, as revision 5. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — PST-02 — Opus review of the plan (revision 5, the Opus rewrite): APPROVED
+
+- **Result (Opus subagent, fresh context).** APPROVED for revision 5 (committed as `ecceecb`). The kit imports only the module's entry file and calls only the injected service, and never returns `realPath`; the case table is a function of the fixture, and every row is labelled criterion, control or extra; the test boots pass `libraryDir`; E2(a) really fails before the implementation; `@HttpCode(200)` is needed; the twelve items of the earlier reviews are answered; no criterion is weakened; the step order runs as written.
+- **Non-blocking notes, recorded for the code stage.** (1) F18 (`plans/PST-02.md` line 341), used by E2 (line 191), cites the outcome pattern at `apps/api/test/providers-secrets-file.test.ts` lines 210 to 219; it is at lines 211 to 220. (2) Section 4 (line 183): the boot must happen inside the `try`, with the cleanup order `try { app = await createTestApp({ libraryDir: fixture.library, modules: [PathSafetyKitModule] }); await run(...) } finally { try { await app?.close() } finally { fixture.remove() } }`, so that `L` and `O` are removed even when the boot or `close()` throws.
+- **Rejections of the PST-02 plan: 3** (revisions 1, 2 and 3); revision 5 is the Opus rewrite made after the three-rejection examination, and it is approved. Status set to `planned`.
