@@ -9,8 +9,9 @@ import {
   type ToolCallView,
 } from '../index';
 
-// Illustrative. The shapes below follow the agent-loop events of AGL-01 (D3 to D7); the contract
-// slice is not on main yet, so the sample hand-writes them and reads `data` as unknown.
+// Illustrative. The shapes below follow the AGL-01 events (decisions D3 to D7 of plans/AGL-01.md
+// and events.ts in the agent-loop contract). They are hand-written, and `data` is read as unknown,
+// because the Shell never imports /agent-loop (modules/shell.md line 43).
 
 // Stands in for the Project store's entity resolution: an entity id to a project-relative path.
 // No request is made; an id that is not in the table is shown as it is.
