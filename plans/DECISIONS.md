@@ -3034,3 +3034,7 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Count.** The PST-02 plan has three rejections: revision 1 (four items), revision 2 (six items) and revision 3 (two items), all recorded above.
 - **Examination.** None of the open problems is a decision. All are errors of fact or of agreement in the text: the test-boot options, the E1 request, the status code of the kit route (201 against 200), and the P6 "extra" markings. No criterion is in dispute, and no Navigator question is open on this plan.
 - **Action (prompt.md step 5, errors of fact).** A new Opus subagent writes the plan again from the draft (revision 4, `git show 6e375dd:plans/PST-02.md` is the same file as the commit after `docs(PST-02): draft plan (revision 4)`) and the list of rejections above. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — PST-02 — correction to the entry above
+
+- **Correction.** The draft that the Opus rewrite starts from is `plans/PST-02.md` revision 4, committed as `8ad0cac` ("draft plan (revision 4)"). The earlier reference to `6e375dd` in the entry above is wrong: `6e375dd` is the commit that records the revision-3 review, and the plan there is revision 3.
