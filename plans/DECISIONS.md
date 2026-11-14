@@ -3554,3 +3554,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - Notes, not defects: F7 (line 205) omits errors.ts lines 6 and 59; fixture line 154 has no row for L/nested/ (its status is implied by the C1 row); section 9 says "by this revision" where revision 2 closed the points.
 - NAVIGATOR: none. Open points 3, 4 and 5 are the plan's own choices (prompt.md line 253). Open points 6 and 9 are carried to later plans (PST-02's P3 settles the realPath write rule for point 9).
 - Status set to planned (commit on main). The code stage starts in a later iteration: the unit branch unit/PST-03 does not exist yet.
+
+## 2026-11-14 — AGL-06 — Opus review of the plan (revision 3): APPROVED
+
+- Criteria AC1 and AC2 (unit lines 20 and 21) each have one test, matching the code: settings.migrate.ts lines 82 to 88 and 91 to 116; settings.service.ts lines 58 to 95; settings.ts lines 16 to 34; the filter at lines 52 to 60. The merge in D4 compiles and keeps unknown keys. The six revision-1 items and the four revision-2 items are corrected.
+- Notes, not blocking: C13 counts 8 at HEAD, not 7 (the extra line is in the PST-03 entry, line 3538). Step 11's "empty dir" must be a new directory outside the repository and its worktrees (for example mktemp -d), so that eslint and prettier at step 6 do not pick it up.
+- Judgement call accepted: step 11 keeps npm ci and npm run build (not tests) and drops its test and lint runs; they belong to step 6 (prompt.md line 126). The fresh clone follows the precedent of plans/AGL-01.md line 96 and plans/MPR-07.md line 126.
+- NAVIGATOR (not decided here): open point 1, a hand-edited invalid stored section: (a) 400 PLATFORM_VALIDATION_FAILED on read, the plan's default; (b) 500 PLATFORM_INTERNAL as Setup & auth does (setup-status.service.ts lines 64 to 71); (c) a check at boot; (d) a new error code. Open point 3, clearing searchEndpoint, is not blocking.
+- The default (a) stands until the Navigator decides. Status set to planned (commit on main). No unit branch exists yet.
+- Rejections of the AGL-06 plan: 2 (revisions 1 and 2).
