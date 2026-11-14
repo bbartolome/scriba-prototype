@@ -3473,3 +3473,40 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - Items 3, 4, 5 and 7 correct the effects of the Navigator's decisions; the decisions stand. Applied in `bb76e4a`: TRG-01 line 30 (`error?` inside the braces; "unreadable" reworded); TRG-02 line 21 (Ajv checks inputs against `valueType`, it does not choose the control); TRG-03 line 22 (control derived as in TRG-02); TRG-13 line 16 (validity is `valid`); GRR-11 line 19 (palette lists `enabled && valid`).
 - Item 6 (an invalid user copy of a built-in has no route to its source) is a decision for the Navigator. It is open point 8 of the plan, and is not settled here.
 - The downstream units changed in `bb76e4a` have no plan, no branch and are not selected in this iteration.
+
+## 2026-11-14 — AGL-06 — Opus review of the plan (revision 1): NOT APPROVED
+
+- Six items. (1) The merge in D4 does not compile: `read('agent')` returns `SettingsSection` (settings.service.ts lines 58 to 62), so the spread gives TS2698. Correction: `update()` starts from `current()` (parsed by `agentSettingsSchema`, a looseObject); merge, parse, write; remove the stop rule; reword D5 and M4. (2) The procedure is not the code-mode procedure of prompt.md lines 80 and 81: work in the worktree on `unit/AGL-06`, run `npm ci` first, continue from existing commits. (3) M1 fails at step (3), not at step (5). (4) Open point 1 misses the 500 option that Setup & auth uses (setup-status.service.ts lines 64 to 71); NAVIGATOR. (5) Open points 2 and 5 are settled: minimum 1 (unit line 16, contract settings.ts line 18); unknown body keys stripped (settings.ts lines 25 to 34). (6) Open point 3: DECISIONS line 3375 (AGL-01 defaults stand); NAVIGATOR, not blocking.
+- Checked and passed: contract, settings hook, pipe and filter, precedents, downstream lines (AGL-03, AGL-08, AGL-21: no change needed). No unit change.
+- Rejections of the AGL-06 plan: 1.
+
+## 2026-11-14 — PST-03 — Opus review of the plan (revision 1): NOT APPROVED
+
+- Seven items. (1) The list-membership "conflict" is a citation error: the text is criterion line 27 (PST-12 line 22), not unit line 20; no unit change. (2) genrePack is required (project.ts line 23); the default is DEFAULT_GENRE_PACK (constants.ts lines 25 to 26); close open point 2. (3) PST-05 line 20 asks for a comment-preserving edit that PST-05 can do itself with `yaml` (apps/api/package.json line 19); option (b) breaks module line 39; close open point 8. (4) SAU-07 is done (plans/SAU-07.md line 3) and its sweep enumerates `app.routes()` (invariant-sweep.ts line 433); the invariant requirement belongs to PST-12; rewrite the SAU-07 row; close open point 13. (5) The 64-character limit adds a rule that PROJECT_FOLDER_NAME_PATTERN does not have (constants.ts line 14): cap only the derived slug and map ENAMETOOLONG to PROJECT_PATH_INVALID (path-safety.ts lines 167 to 169); open points 3 to 5 are plan choices. (6) The E3 fixture needs a top-level schemaVersion (settings.migrate.ts lines 60 to 66). (7) Citations: PST-04 line 30 for the codes; F20 line 62.
+- No unit change; no Navigator decision.
+- Rejections of the PST-03 plan: 1.
+
+## 2026-11-14 — SHL-13 — Opus review of the plan (revision 1): NOT APPROVED
+
+- Six items. (1) Raw BOM bytes at plan lines 46, 106 and 144; write `\u{FEFF}` and `/^\u{FEFF}/u`. (2) The expected results of the controls are wrong: `Text.toString` joins with "\n" (@codemirror/state dist lines 106 and 179 to 190); M2 fails fixtures 3, 4, 7 and both criterion-2 tests; M4 fails fixtures 1 to 5, 8 to 10 and 12; M1 fails both criterion-2 tests; name every failing test. (3) project-store-copies.spec.ts has 81 lines; add the new `it` inside the `describe`, after line 80. (4) The SHL-15 row ("readOnly for phones") is unsupported; cite PST-10 line 18 or drop it. (5) SHL-14 line 25 needs an in-flight save to coalesce, but decision 10 disables Save during a save; reconcile in the SHL-14 row. (6) Stale facts: the base, section 2c, unit/SHL-12 commit febde9e (dom-range.ts removed), and decision 6's "dominant" as the plan's reading.
+- Downstream requirement (PST-06): its plan must state and test the BOM rule (PST-06 line 20 is silent).
+- NAVIGATOR: open points 1, 3, 6 and 7.
+- Rejections of the SHL-13 plan: 1.
+
+## 2026-11-14 — SAU-06 — Opus review of the plan (revision 7): NOT APPROVED
+
+- (1) Open point 5 blocks: check (iv) of C2 fails at HEAD (417 px against 390 px; plan lines 88, 159, 244, 306). NAVIGATOR chooses: (a) drop check (iv), which weakens C2 and needs the Navigator (prompt.md lines 151 and 252); or (b) a Shell toolbar fix, with a new Shell unit in SAU-06's blocked_by. (2) The landing.ts catch is at lines 58 to 60, not 59 to 61. (3) Line 8 cites 11e1d38 for revision 6; it is aae087c. (4) Line 10's diff claim omits eight unit files (TRG-01, TRG-02, TRG-03, TRG-06, TRG-09, TRG-13, TRG-14, GRR-11); R6.3 and section 8 cite plans/TRG-01.md line 275, which exists only from 67adb30.
+- Checked and passed: criteria and tests, the no-cookie path, the Navigator decisions obeyed. NAVIGATOR (not blocking): open point 2.
+- Rejections since the approval of revision 5: 2 (revisions 6 and 7). The next rejection triggers the examination of prompt.md step 5.
+
+## 2026-11-14 — TRG-01 — Opus review of the plan (revision 5): NOT APPROVED
+
+- (1) Step 0 stops at HEAD: bb76e4a changed units/GRR-11 line 19 and step 0 does not exclude it. Add GRR-11 to the exclusions and the numstat check (1 added, 1 deleted); delete "the orchestrator updates step 0"; 7a line 234 names ea65447 and bb76e4a. (2) The plan describes the unit text before bb76e4a (plan lines 13 to 14, 30 to 34, 83, 201 to 220, 294, 7a lines 267 to 272). At HEAD the five lines are corrected (DECISIONS line 3473); re-read them and cite bb76e4a. (3) Errors of fact: "camelCase input keys" is genre-packs.md line 44 (plan line 205); 7a line 253 says AGL-01 is planned, it is done; 7a line 265 and section 8 line 286 list the old batch.
+- Checked and passed: the four criteria and tests, the export total 87, the zod behaviours, the citations, the inverse rule.
+- NAVIGATOR: open point 8 (an invalid user copy of a built-in: option (i) GET /tools/:name returns the user file; option (ii) a 13th route /tools/:name/user); open point 4 (one status per code, 404, 409, 422 or 502, none at 401; as for MPR-01, DECISIONS lines 1763 to 1765).
+- Rejections of the TRG-01 plan: 4 (revisions 1, 2, 4 and 5). At three rejections prompt.md step 5 applies: a decision goes to the Navigator; errors of fact go to a fresh Opus subagent that writes the plan again.
+
+## 2026-11-14 — SHL-10 — code stage stopped at step 7 (BS1)
+
+- Commits 327567f and 09565fb on `unit/SHL-10`; the web tests pass (101). BS1 fails (exit 1): the metafile key of the card is `angular:styles/component:css;...;shell/tool-call-card.ts`, because the build emits a CSS output for each component and index.html links only `styles-*.css`. Assumption A11 is wrong for component styles. The criterion text is unchanged.
+- Action: the plan is revised to status draft (in progress); the code continues only after an Opus approval of the revised plan.
