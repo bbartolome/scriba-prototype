@@ -2352,3 +2352,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   4. Plan gap, recorded as a hand-off (no code change). `project.ts` lines 10 and 66: `projectIdSchema` accepts `..` and `sampleId` accepts `../../etc`. D5 permits this, and D13 puts path rules in PST-02, whose path check works inside the project root, and `projectId` chooses that root. Hand-off (the orchestrator's decision, recorded here): PST-03, PST-04 and start-from-sample look up `projectId` and `sampleId` only in the discovered lists, never by joining them to a path. The alternative (amending D5 to refuse `/`, `\`, NUL and a leading dot) is not taken, because it changes a settled decision.
 - **Count.** Rejections of PST-01's code: 1.
 - **Next.** The PST-01 code subagent applies items 1 and 3 on `unit/PST-01`, with the tests, and re-runs the tests, lint and build. Then Opus reviews again.
+
+## 2026-11-14 — PST-01 — Opus re-review of the code (unit/PST-01 after the corrections): APPROVED
+
+- **Result.** An Opus reviewer with no earlier context returned APPROVED for the corrected code (commits b7f2f00, c2b70da, 71a27c3 on top of e4ddb91, 1ed7b9f, d002050). The resolve query accepts `{ids:'ann'}` (parsed to `['ann']`) and `{ids:['ann','bob']}`, and refuses `{}`; the E2 test refuses an unknown type. The red commit for the single-id test fails for the missing behaviour. The logs show 175 contracts tests in 10 files passing, lint and build exit 0, and the root test exit 0.
+- **Count.** Rejections of PST-01's code before this approval: 1 (the single-id defect and two smaller items, all fixed).
+- **Next.** Collect `unit/PST-01` onto `main` through a batch of one: rebase, batch checks, the criteria ticks (C1 to C4, all passed), `status: done`, and the fast-forward.
