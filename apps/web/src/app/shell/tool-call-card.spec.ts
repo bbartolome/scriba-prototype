@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, SecurityContext } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router, type Routes } from '@angular/router';
+import { provideMarkdown, SANITIZE } from 'ngx-markdown';
 import { afterEach, describe, expect, it } from 'vitest';
 import { restoreMatchMedia, stubMatchMedia } from './testing/match-media';
 import { ToolCallCard } from './tool-call-card';
@@ -116,7 +117,14 @@ async function settle<T>(fixture: ComponentFixture<T>): Promise<void> {
 async function render(
   view: ToolCallView,
 ): Promise<ComponentFixture<ToolCallCard>> {
-  TestBed.configureTestingModule({ providers: [provideRouter(CARD_ROUTES)] });
+  TestBed.configureTestingModule({
+    providers: [
+      provideRouter(CARD_ROUTES),
+      provideMarkdown({
+        sanitize: { provide: SANITIZE, useValue: SecurityContext.HTML },
+      }),
+    ],
+  });
   const fixture = TestBed.createComponent(ToolCallCard);
   fixture.componentRef.setInput('call', view);
   await settle(fixture);
@@ -236,8 +244,8 @@ describe('tool-call card', () => {
       output: { kind: 'markdown', text: '**bold** text' },
     });
     const output = required(region(fixture, 'Output'));
-    expect(output.textContent).toContain('**bold** text');
-    expect(output.querySelector('strong')).toBeNull();
+    expect(output.textContent).not.toContain('**');
+    expect(required(output.querySelector('strong')).textContent).toBe('bold');
   });
 
   it('T4 on a phone the card is collapsed, shows a one-line summary, expands on tap and collapses again', async () => {

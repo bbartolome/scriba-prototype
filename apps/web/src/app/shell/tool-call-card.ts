@@ -9,6 +9,7 @@ import {
 import { MatIcon } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { DeviceClassService } from './device-class';
+import { MarkdownPreview } from './markdown-preview';
 import { ActiveProjectSignal } from './project-scope';
 import type { ToolCallStatus, ToolCallView } from './tool-call-view';
 
@@ -76,7 +77,7 @@ function treeOf(value: unknown): readonly TreeRow[] {
  * maps its events onto a `ToolCallView`.
  */
 @Component({
-  imports: [MatIcon, NgTemplateOutlet, RouterLink],
+  imports: [MarkdownPreview, MatIcon, NgTemplateOutlet, RouterLink],
   selector: 'app-tool-call-card',
   styles: `
     :host {
@@ -190,9 +191,7 @@ function treeOf(value: unknown): readonly TreeRow[] {
             <section class="output" aria-label="Output">
               <h3>Output</h3>
               @if (output.kind === 'markdown') {
-                <div class="markdown-text" style="white-space: pre-wrap">
-                  {{ output.text }}
-                </div>
+                <app-markdown-preview [content]="output.text" />
               } @else {
                 <ng-container
                   [ngTemplateOutlet]="tree"
