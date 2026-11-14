@@ -3751,3 +3751,12 @@ Result: NOT APPROVED. Rejections of the SHL-10 plan since the approval of revisi
 - Criterion 3 is not ticked (Navigator decision O1).
 - Non-blocking notes from the reviewer, recorded for the plan's next owner: (a) the healthz check prints the docker logs only when polling times out, not when the final exec fails or the body is wrong; (b) the "writes nothing" checks in G1 and G4 look in a temp folder that verifyRelease never uses, so they cannot fail.
 - Code rejections of PLT-19: 2 (the first review, and this review's approval follows the fixes).
+
+## 2026-11-14 — PLT-19 — the local procedures S-P2, S-P1 and S-P3 on the final branch: all passed
+
+- Run on unit/PLT-19 at 321b579 (the fix commit after the rebase onto main), by a run-only subagent; no repository file changed. Results against the plan's expected values:
+  - S-P2, scratch file:// remote: (a) to (g) passed, including the 1.0.0 first release, the 1.1.0 feature release, the `feat!:` footer case giving 2.0.0 and the guard exit 1 with 9.9.9 and no tag created.
+  - S-P1, mode N (registry in the shell's network namespace): (A) to (D) passed: the single-digest and two-digest merges, and the failing merge with one digest.
+  - S-P3: arm64 (VERSION 1.2.3) all checks pass; amd64 (emulated) all checks pass; dev arm64 (0.0.0-dev) passes; the 9.9.9 guards fail as expected.
+- Ticks (O1): criteria 1, 2, 4 and 5 ticked. Criterion 3 stays unticked, as the Navigator's O1 decision records; the unit is complete without it.
+- The unrun parts stay recorded as untested with their cause (O1): the Docker Hub push and pull, the GitHub release, the native amd64 run, the real Actions run and the pull by digest.
