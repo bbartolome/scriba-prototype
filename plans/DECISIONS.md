@@ -2458,3 +2458,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Note (not blocking, for O2 at line 184).** The proposal says how the key reaches bash. `TS_AUTHKEY=… docker run … | bash` sets the variable for `docker` only, so it is silently ignored. The working forms are `export TS_AUTHKEY=…` first, or `… | TS_AUTHKEY=… bash`.
 - **Count.** Rejections of PLT-17: 4.
 - **Next.** The PLT-17 subagent applies items 1 to 4 and the O2 note to `plans/PLT-17.md` (untracked). Then Opus reviews again.
+
+## 2026-11-14 — PLT-20 — Opus code review of unit/PLT-20 (0f4eee6, 6ecd3b3): NOT APPROVED
+
+- **Result.** The code review found the files, the counts, the red-then-green order (D19), the rules and the six differences (accepted: `ctx.stats`, the usage exit 2, the examples-is-a-file issue, the samples.yaml cross-check skipped on a symlink or a failed parse, the walk's skip predicate, and the direct-run guard) acceptable, and the real-repository check passing (0 samples, 83 test files scanned). Two code defects remain.
+  1. `scripts/examples-check/index.mjs` lines 78 to 83: the run guard compares `resolve(process.argv[1])` with `fileURLToPath(import.meta.url)`. Node gives the main module its real path but leaves `argv[1]` unresolved, so run through a symlinked path `main()` never runs and the process exits 0 with no output (reproduced: exit 0 against a symlink, exit 2 for the direct path). A lint gate must not pass without checking anything. Correction: `if (import.meta.main)` (Node 24.2 or later; `.nvmrc` is 26), or compare against `realpathSync(process.argv[1])`.
+  2. `scripts/examples-check/m1.mjs` line 173 (D8): `lexists(join(sample.dir, 'project.yaml'))` accepts a directory (reproduced: a sample whose `project.yaml` is a folder passes with exit 0). That breaks D8 and criterion 1. Correction: raise the issue unless `lstatOrNull(path)?.isFile()`; a symlink there is already reported under D12.
+- **Count.** Rejections of PLT-20's code: 1.
+- **Next.** The PLT-20 code subagent applies items 1 and 2 on `unit/PLT-20` (in `/tmp/wt-PLT-20`), with a test for each, and re-runs the checks. Then Opus reviews again.
