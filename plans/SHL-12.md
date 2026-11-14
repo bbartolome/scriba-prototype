@@ -1,0 +1,247 @@
+---
+id: SHL-12
+status: draft
+---
+
+# SHL-12 plan — read-only diff view on @codemirror/merge
+
+Unit: SHL-12 (module shell, phase:shared-components, M2; `units/SHL-12-readonly-diff.md`). Revision 1 (draft, for Opus). Base: `main` at `22040f6` (`git rev-parse --short HEAD`). `git status --short` printed nothing when this plan was written. The web code, `packages/`, `e2e/` and the lockfiles are the same as at `355f86e`, the SHL-09 batch head (`git diff --name-only 355f86e HEAD -- apps/web packages e2e package.json package-lock.json` prints nothing; F1). The driver creates `unit/SHL-12` from `main`. This plan writes no code and changes only `plans/SHL-12.md`.
+
+The one blocker, SHL-09, is done (F3). `grep -n 'SHL-12' plans/DECISIONS.md` prints nothing: the Navigator has recorded no decision about this unit. Section 1 therefore lists the unit's and the module's own decisions and the general DECISIONS entries that apply (F6). Section 6 lists eight open points, each with its owner; none blocks the code stage.
+
+Tags: `[FACT Fn]` means checked in this session, with the file and line in section 7a. `[ASSUMED An]` means a belief that section 7b lists and a step of section 3 tests or reads. `[DECISION]` means a choice made here, with its source. `@codemirror/*` is not installed on `main` (F12), so every statement about its API is ASSUMED until step 2 reads the installed package.
+
+## 1. Decisions this plan follows
+
+1. **Component, inputs and place.** `DiffView` is a standalone component, selector `app-diff-view`, in `apps/web/src/app/shell/diff-view.ts`, exported from `shell/index.ts`. Inputs: `path` (required string), `base` (required string), `proposed` (required string), `conflict` (boolean, default `false`) and `conflictMessage` (optional string). It has no outputs and knows nothing about pending changes: callers feed strings. A new file's `base` is `''`. Source: unit line 18; `modules/shell.md` lines 42 (the Shell's own code lives outside `features/`), 81 (the diff view is a Shell API) and 96 ("the diff view renders strings"); DECISIONS line 2746 (the Navigator's decision (A) on SHL-09: Shell-owned code goes under `shell/`); `shell/index.ts` line 1 ("the Shell's entry for features"). [FACT F2, F4, F6, F7] [DECISION]
+
+2. **Library and dependencies.** The view is built on `@codemirror/merge` only; no other diff library. The three packages `@codemirror/merge`, `@codemirror/state` and `@codemirror/view` are added to `apps/web/package.json` `dependencies` at exact versions (no `^` or `~`), as every other entry there is. `state` and `view` are listed because the component imports them directly, and two copies of either break CodeMirror at run time, so step 2 checks that each resolves to one version. The versions are resolved at the code stage and recorded; this plan names none. Source: unit line 19; `modules/shell.md` line 98 (CodeMirror 6 only); `apps/web/package.json` lines 12 to 31 (exact pins). [FACT F12] [ASSUMED A1] [DECISION]
+
+3. **Two layouts, one default by device class, a toggle that overrides.** Unified is an `EditorView` whose document is `proposed` with the `unifiedMergeView` extension and `original: base`. Side by side is a `MergeView` with `a` = base and `b` = proposed. The default follows `DeviceClassService.deviceClass()`: `phone` gives unified; `tablet` and `desktop` give side by side. A two-option `mat-button-toggle-group` (`aria-label="Diff layout"`, options "Unified" and "Side by side") sets an override signal; the layout is `override() ?? default`, so once the toggle is used the layout no longer follows a resize. The override is per instance and is not stored (open point 2). The shown option is always the effective layout. Source: unit lines 19 and 25; `plans/SHL-05.md` line 258 (the device-class signal is provided "for unified diffs on phones"); `device-class.ts` line 71. [FACT F8, F10, F21] [DECISION]
+
+4. **Read-only, with no controls.** The component never changes a document and shows no accept, reject or revert control: `mergeControls: false` on the unified extension, no revert controls on `MergeView`, `EditorState.readOnly` and `EditorView.editable.of(false)` on every editor. Accepting or rejecting is the caller's action outside the view. Source: unit title and line 21; SHL-16 unit lines 20 to 22 ("Read-only mode is unchanged"). [ASSUMED A2] [DECISION]
+
+5. **Exact text, so that every difference is visible.** Each document is built as `Text.of(text.split('\n'))`, and every editor carries `EditorState.lineSeparator.of('\n')` and `highlightSpecialChars()`. Then a `\r` is an ordinary character in its line, `doc.toString()` returns exactly the string fed in, and a carriage return or a BOM shows as a control mark. CodeMirror's default splits on `\r\n`, `\n` and `\r` and joins with `\n`, so an LF to CRLF change would give two identical documents and no change in the diff; that is the trap of criterion 3. Both layouts get the same extensions through one function. Source: unit lines 20 and 26; SHL-13 unit line 19 (a lossless editor sets the line-separator facet); SHL-16 unit line 21. [ASSUMED A3] [DECISION]
+
+6. **"No changes" is decided on the strings, not on the diff.** `identical = base() === proposed()`, a strict comparison with no trimming or normalising. When identical, the component shows the text "No changes", creates no editor and shows no toggle; the path stays. For any other pair the view must show at least one marked line. Source: unit lines 20 and 26. [DECISION]
+
+7. **Front matter is plain text.** The view neither hides nor special-cases it, so a front-matter-only change is an ordinary changed line near the top. SHL-11 hides front matter only in reading panes; the diff view must not reuse that. Source: unit line 20; SHL-11 unit line 19. [DECISION]
+
+8. **Conflict banner.** When `conflict()` is true, the component shows a banner (`role="status"`) with `conflictMessage()`, or the text "This change conflicts with the current file." when none is given. The diff is still shown. When `conflict()` is false no banner shows. Source: unit line 18. [DECISION]
+
+9. **Header and label.** A header shows the `path` (wrapping anywhere, so a long path does not scroll a phone) and the toggle. The whole view is a `section` with `aria-label="Changes to <path>"`. Source: unit line 18 (the path is an input); SHL-19 unit lines 17 and 21 (labels and an accessibility check cover the diff). [DECISION]
+
+10. **Designed for SHL-16.** One function builds the extensions of one side and takes the side's role; SHL-16 adds an `editable` input and an output without changing the inputs of section 1 decision 1. The SHL-12 spec uses only the inputs and the rendered DOM, so it keeps passing when SHL-16 extends the component. Source: unit line 21; SHL-16 unit lines 20 and 26. [FACT F20] [DECISION]
+
+11. **Theme, with no JavaScript sync.** The editors are styled through `EditorView.theme` with CSS `light-dark()` and Material system variables (`--mat-sys-*`), so they follow the page's `color-scheme`, which the three theme choices already set. The editor text takes `--mat-sys-on-surface`; the gutters get no light background. Insertions and deletions are not told apart by colour alone: inserted changed text is underlined and deleted changed text is struck through. The exact palette is fixed at the code stage and checked in the browser (M1) and by SHL-19. Source: `material-theme.scss` lines 12 and 25 to 31; `theme.ts` lines 31 to 35. [FACT F11] [ASSUMED A7] [DECISION]
+
+12. **Tree-shaking and the initial bundle.** `diff-view.ts` makes no CodeMirror call at module level: the theme and the extensions are built inside functions. Then a feature that imports another export from `shell/index.ts` does not pull CodeMirror into its chunk. Nothing reachable from `main.ts` imports the file (F7), so the initial bundle does not change. The build stop rule is the one of SHL-09: the build exits 0, the 1 MB error budget holds, and the warnings are the same three (two CommonJS, one initial total). Source: DECISIONS lines 1084 to 1089 and 2681 to 2685 (the budget stays; the 500 kB warning is accepted); DECISIONS lines 2834 to 2840 (the batch head: 505.56 kB and the same three warnings); `angular.json` lines 35 and 36. [FACT F14, F19] [ASSUMED A8, A9] [DECISION]
+
+13. **The seam is a rendered component.** No route renders the diff view on `main`, so the spec renders `DiffView` through a small host component under Angular's Vitest runner (jsdom), with `stubMatchMedia` for the device class. There is no API or SSE call, so no fake is needed. The consumers' route tests (TRG-14, PST-20, PST-21, AGL-14) cover it at route level. jsdom has no `Range.getClientRects`, which CodeMirror's measure pass is believed to call, so a small stub goes into `shell/testing/` (open point 6). Source: `modules/shell.md` lines 85 to 89 (testing principles); `units/README.md` line 133; `shell/testing/match-media.ts` lines 63 to 108. [FACT F9, F13] [ASSUMED A5, A6] [DECISION]
+
+14. **Red first, then controls.** The spec is written before the component's behaviour and fails; then five negative controls and the stub control (step 5). Source: `plans/SHL-09.md` decision 14 (line 42). [DECISION]
+
+15. **Ticks and records are the coordinator's.** The code stage does not edit `units/`, `modules/` or `plans/DECISIONS.md`. The coordinator ticks the criteria (unit lines 24 to 26) at closure. Source: `plans/SHL-09.md` decision 15 (line 44); DECISIONS line 2839. [DECISION]
+
+16. **Branch and commit.** The driver creates `unit/SHL-12` from `main`. The implementer does not commit, push, add a remote, rebase or switch branches. Source: `plans/SHL-09.md` decision 17 (line 48). [DECISION]
+
+## 2. Files to create or change
+
+### 2a. New files (3)
+
+| Path | Purpose | Decision |
+|---|---|---|
+| `apps/web/src/app/shell/diff-view.ts` | `DiffView`: the inputs, the toggle, the "No changes" state, the conflict banner, and the creation and disposal of the CodeMirror view (one alive at a time; destroyed when an input or the layout changes and when the component is destroyed). Inline `template` and `styles` (the component-style budget is 4 kB warning, 8 kB error: F14). Imports only `@angular/*`, `@codemirror/*` and `./device-class` | 1 to 12 |
+| `apps/web/src/app/shell/diff-view.spec.ts` | D1 to D3 (the criteria) and E1 to E5 (section 4), with a host component | 13 |
+| `apps/web/src/app/shell/testing/dom-range.ts` | `stubRangeRects()` and `restoreRangeRects()`: set `Range.prototype.getClientRects` and `getBoundingClientRect` to return empty results, and restore them. The spec calls them in `beforeEach` and `afterEach`, as it calls `stubMatchMedia` and `restoreMatchMedia`. Step 5 control Z0 confirms it is needed; if it is not, the file and its calls are deleted | 13 |
+
+### 2b. Changed files (3)
+
+| Path | Change | Decision |
+|---|---|---|
+| `apps/web/package.json` | Add three lines to `dependencies`: `"@codemirror/merge"`, `"@codemirror/state"` and `"@codemirror/view"`, each at an exact version. The list is alphabetical (lines 12 to 23), so they go after `@angular/router` and before `@fontsource/material-icons`; `npm install` writes them in that order. Nothing else changes | 2 |
+| `package-lock.json` | Rewritten by `npm install` (step 2). Expected: only added entries (the three packages and their dependencies). `.prettierignore` skips this file | 2 |
+| `apps/web/src/app/shell/index.ts` | Append `export { DiffView } from './diff-view';` after line 11 (the last line, `export { ActiveProjectSignal } from './project-scope';`). Keep every existing line, including the comment on line 1 | 1 |
+
+## Shared files
+
+Files this plan changes that a unit planned in the same batch (SAU-06, AGL-01, PLT-19, PST-02, PST-11, SHL-10, SHL-11, MPR-09, TRG-01) may also change. The orchestrator reconciles them.
+
+| File | Change made here | Possible overlap |
+|---|---|---|
+| `apps/web/src/app/shell/index.ts` | One appended line: `export { DiffView } from './diff-view';` | SHL-10 (tool-call card) and SHL-11 (Markdown preview) will each append an export for their component, as SHL-02 to SHL-05 did (`plans/SHL-05.md` line 70). All appends go after line 11; keep every line, reorder none. Line 1 is not touched here. SAU-06 and MPR-09 import from this file but need no edit |
+| `apps/web/package.json` | Three lines in `dependencies` (`@codemirror/merge`, `@codemirror/state`, `@codemirror/view`, exact) | SHL-11 (if it adds a package), any unit that adds a web dependency. A unit that adds an API or contracts dependency edits another `package.json`, not this one |
+| `package-lock.json` | Added entries for the three packages and their dependencies | Every unit in the batch that runs `npm install` rewrites this root file (a dependency in `apps/api`, `packages/contracts` or `apps/web`). On a conflict, take the merged `package.json` files and regenerate the lockfile with `npm install`; do not merge it by hand |
+| `apps/web/src/app/shell/testing/` | One new file, `dom-range.ts` (a name no other unit plans) | SHL-10 and SHL-11 may add helpers here; the names differ. SHL-13 (not in this batch) will want `dom-range.ts` for its editor tests |
+| `apps/web/src/app/app.routes.ts` | Not changed by the committed code. Step 9 edits it temporarily for the probe route and restores it (`cmp` clean) | Any unit that adds a route (SAU-06, MPR-09). The temporary edit exists only on the implementer's tree and is never committed |
+
+### 2c. Files that must not change
+
+`apps/web/angular.json`; `eslint.config.mjs`; `apps/web/tsconfig.json`, `tsconfig.app.json`, `tsconfig.spec.json`; `apps/web/proxy.conf.mjs`; the root `package.json`; `apps/web/src/app/app.routes.ts`, `app.config.ts`, `app.ts`, `app.html`, `app.css`, and every existing spec outside the new one; every existing file under `apps/web/src/app/shell/` (the three files of 2a and the `index.ts` line of 2b are the only changes there; `shell/testing/` keeps its existing files); `apps/web/src/app/features/.gitkeep`; everything under `e2e/`, `apps/api/`, `packages/`, `scripts/`, `deploy/` and `docs/`; `modules/`; `units/`; `plans/DECISIONS.md`; `plans/SHL-0*.md`. The e2e is not extended: its phone-viewport check is SHL-19's. Step 6 checks the list.
+
+## 3. Method
+
+Run from the repo root on `unit/SHL-12` (or on `main` if the driver has not created the branch). Do not commit, push or switch branches. Record `node -v` and `npm -v`.
+
+0. **Preconditions (no file change).**
+   - `git status --short -- ':!plans'` prints nothing.
+   - `node -v` prints `v26.x`. `test -d node_modules/@angular/core` succeeds. `test -d node_modules/@codemirror` fails (it is absent, F12).
+   - `npm run build -w @bbartolome/scriba-contracts` exits 0 (`packages/contracts/dist` is absent at writing, F22; some web specs import the contracts at run time).
+1. **Baseline (no file change).**
+   - `npm test -w @bbartolome/scriba-web` exits 0. Record the passed count `B` (86 in 20 files at the SHL-09 batch head, `plans/SHL-09.md` line 291).
+   - `npm run build -w @bbartolome/scriba-web` exits 0. Record `Initial total` as `I0` (505.56 kB at the SHL-09 batch head, DECISIONS line 2836) and the warnings `W0` (two CommonJS warnings and the initial-total warning).
+2. **Dependencies and the library's real API (needs the registry; stop if it is unreachable).**
+   - `npm view @codemirror/merge version`, `npm view @codemirror/state version` and `npm view @codemirror/view version` give the newest versions. Install them at exact versions: `npm install -w @bbartolome/scriba-web --save-exact @codemirror/merge@<v> @codemirror/state@<v> @codemirror/view@<v>`. Record the three versions and the node and npm versions.
+   - `npm ls @codemirror/state @codemirror/view` shows one version of each, with no duplicate. If there are two, pin `state` and `view` to the version that `@codemirror/merge` declares and reinstall.
+   - `git diff --numstat package-lock.json` shows added lines and no removed line (record any removed line and why). `grep -n codemirror apps/web/package.json` prints three lines with exact versions.
+   - Read `node_modules/@codemirror/merge/dist/index.d.ts` and the CSS class names in `dist/index.js`. Record: the exports `MergeView` and `unifiedMergeView`; that `unifiedMergeView` takes `original` as a `Text` and has a `mergeControls` option (A2); that `MergeView` takes `a`, `b`, `parent` and shows no revert control unless asked; and the class names the spec will read (A4): the container of the split view, the two editors, a changed line, the removed text in the unified view, a changed-text span, and the control-character mark of `highlightSpecialChars`. Stop and go to the Navigator if the installed `unifiedMergeView` has no way to hide its accept and reject buttons.
+3. **Skeleton, then red (files: `shell/diff-view.ts` skeleton, `shell/index.ts`, `shell/diff-view.spec.ts`).**
+   - Create `diff-view.ts` with the five inputs and an empty template, and append the barrel line. The skeleton makes the spec compile.
+   - Write `diff-view.spec.ts` with D1 to D3 and E1 to E5 (section 4), the host component, `stubMatchMedia(390, 844)` and `restoreMatchMedia()` in `beforeEach` and `afterEach`, and `stubRangeRects()` and `restoreRangeRects()` with `dom-range.ts`.
+   - `npm test -w @bbartolome/scriba-web` exits 1. Every failure is in `diff-view.spec.ts`; the other tests pass (`B` of them).
+4. **Write the component (section 2a) and format.** Build it to decisions 1 to 12. Then `npx prettier --write` on the paths of 2a and the changed `package.json` and `index.ts`.
+5. **Green, then controls.**
+   - `npm test -w @bbartolome/scriba-web` exits 0. The passed count is `B + N`, where `N` is the number of `it` cases in `diff-view.spec.ts` (each `it.each` row counts). Record `N`. No unhandled error is printed.
+   - Each control: `cp` the file to `/tmp/shl12-<name>.ts`, edit, run `npm test -w @bbartolome/scriba-web`, restore with `cp`, then `cmp` prints nothing.
+   - **Z0 (the stub).** In the spec, comment out the `stubRangeRects()` call. Expected: an error about `getClientRects` or `getBoundingClientRect`, or a failing test, which confirms A5. If the suite passes with no error, A5 is false: delete `dom-range.ts` and its calls, and record it.
+   - **N1.** Build both sides from `base` (the proposed side reads `base()`). Expected: D1 and D3 fail; D2, E1 and E2 pass.
+   - **N2.** Remove `EditorState.lineSeparator.of('\n')` (the default split). Expected: D3 fails at its LF to CRLF and CRLF to LF pairs, and E5 may fail; D1 and D2 pass.
+   - **N3.** Make the layout always `'split'`. Expected: D2 fails at the phone case; D1 and D3 pass.
+   - **N4.** Compute `identical` as `base().trim() === proposed().trim()`. Expected: D3 fails at the trailing-whitespace, indentation and final-newline pairs.
+   - **N5.** Remove `mergeControls: false`. Expected: E3 fails in the unified layout. (Skipped, and recorded, if the option has another name.)
+6. **Static checks (no file change).**
+   - `git status --short -uall -- ':!plans'` prints six lines: `??` for `diff-view.ts`, `diff-view.spec.ts` and `testing/dom-range.ts` (the last absent if Z0 deleted it), and ` M` for `apps/web/package.json`, `package-lock.json` and `shell/index.ts`.
+   - `git diff --quiet -- apps/web/angular.json eslint.config.mjs apps/web/tsconfig.json apps/web/tsconfig.app.json apps/web/tsconfig.spec.json package.json apps/web/src/app/app.routes.ts apps/web/src/app/app.config.ts apps/web/src/app/app.ts e2e apps/api packages scripts modules units plans/DECISIONS.md` exits 0.
+   - `git diff -U0 apps/web/package.json` shows exactly the three added lines. `git diff -U0 apps/web/src/app/shell/index.ts` shows exactly one added line.
+   - `grep -n "from '" apps/web/src/app/shell/diff-view.ts` lists only `@angular/`, `@codemirror/` and `./device-class` imports.
+   - Read `diff-view.ts` by eye: every statement at column 0 is an import, a type, a string or number constant, a function or the class. No `EditorView.theme(...)`, `EditorState.*` or other CodeMirror call runs at module level (decision 12; M2b checks it in a build).
+7. **Lint, types and format (no file change).** `npm run lint -w @bbartolome/scriba-web` exits 0. `npx tsc --noEmit -p apps/web/tsconfig.spec.json` and `npx tsc --noEmit -p apps/web/tsconfig.app.json` each exit 0 (the app config includes `src/**/*.ts`, F15, so the component is type-checked although nothing imports it). `npx prettier --check` on the paths of 2a and 2b exits 0.
+8. **Production build.** `npm run build -w @bbartolome/scriba-web` exits 0 (stop rule, decision 12). Record `I1` and `W1`. Expected: `I1` equals `I0` (nothing reachable from `main.ts` imports the component) and `W1` equals `W0`. A different `I1` is reported, not accepted silently.
+9. **Browser check and bundle measure (manual; recorded; not a criterion).** Create a probe, never committed: `apps/web/src/app/shell/diff-probe.ts` (a component that renders `DiffView` for three fixture pairs: a Markdown edit, an LF to CRLF pair and an identical pair) and a temporary lazy route `diff-probe` in `app.routes.ts` (copy the file to `/tmp` first). Delete the probe file and restore `app.routes.ts` afterwards (`cmp` prints nothing; `git status` is back to the step-6 list).
+   - **M1.** Run `npm run dev`, take the setup cookie from `.scriba-dev/.scriba/setup-url` (as SHL-09 step 9 does), open `/diff-probe`, and look at it in headless Chromium at 390 by 844 and at 1280 by 800, with `data-theme` light and dark. Expected: unified on the phone and two columns on the desktop; the toggle switches both ways; inserted and deleted text readable in both themes, with underline and strike-through; the carriage returns show as marks in the CRLF pair; gutters have no pale strip in dark mode; no horizontal page scroll at 390 px. Record the findings and save screenshots in `/tmp`; they are not committed.
+   - **M2.** `npm run build -w @bbartolome/scriba-web -- --stats-json`, then read `browser-stats.json` (run a script in `/tmp`): the probe's lazy chunk lists `@codemirror/merge` inputs, and `index.html` references no chunk that holds them. Record the chunk size.
+   - **M2b.** Add a second temporary probe file, `apps/web/src/app/shell/diff-probe-b.ts`, and a second lazy route, whose component imports `NoticesService` from `./index` (the barrel) and does not use `DiffView`. Expect that route's chunk to hold no `@codemirror` input (decision 12, A8). If it does, move the module-level call out of `diff-view.ts`, or report it. Delete the file and restore `app.routes.ts` as for the first probe.
+10. **Full runs (no file change).** `npm test -w @bbartolome/scriba-web` exits 0 with count `B + N`. `npm run lint` at the root exits 0. The root `npm test` runs once; a failing test that this unit does not touch is recorded as found on `main` and is not fixed here.
+11. **Record (no file change).** Report the three versions, `B`, `N`, `I0`, `I1`, `W0`, `W1`, the class names of step 2, the result of each control, the findings of M1 and M2, and `git status --short -uall`. Do not commit.
+
+## 4. Acceptance criteria tests
+
+All three criteria are tested in `apps/web/src/app/shell/diff-view.spec.ts`, at one seam: the rendered `DiffView` in a host component, under Angular's Vitest runner with `stubMatchMedia` for the device class (decision 13; `modules/shell.md` lines 85 to 89). The host binds signals to the inputs, as a consumer does. The tests read what a reader sees: the marked lines, the removed text, the toggle's selected option and the "No changes" text. The class names behind "marked" are those read in step 2 (A4); the meaning of each assertion is fixed here. Every fixture below is written with escapes (`'\r\n'`, `'﻿'`), so no raw carriage return enters the source file.
+
+A helper in the spec reads the view: `addedLines(root)` is the text of the lines the view marks on the proposed side; `removedLines(root)` is the text of the lines it marks on the base side (the left editor in side by side; the removed block in unified); `changedWords(root)` is the text of the inline changed spans. Each of D1 and D3a runs in both layouts. The layout is chosen by the stubbed device size (390 by 844 gives unified, 1280 by 800 gives side by side), not by the toggle, so these tests do not depend on D2's toggle.
+
+**Criterion 1** (unit line 24): "Shows insertions, deletions and changed lines for fixture pairs."
+
+- **D1 shows insertions, deletions and changed lines for fixture pairs, in both layouts** (`it.each` over five pairs and two layouts). Pairs, each as `base` to `proposed`:
+  1. Insertion: `'One\nTwo\n'` to `'One\nTwo\nThree\n'`. Expected: `addedLines` is `['Three']`; `removedLines` is empty; "One" and "Two" are not marked.
+  2. Deletion: `'One\nTwo\nThree\n'` to `'One\nThree\n'`. Expected: `removedLines` is `['Two']`; `addedLines` is empty; "One" and "Three" are not marked.
+  3. Changed line: `'The cat sat on the mat.\n'` to `'The dog sat on the mat.\n'`. Expected: `removedLines` is the base line; `addedLines` is the proposed line; `changedWords` holds "cat" on the base side and "dog" on the proposed side.
+  4. A new file: `''` to `'Chapter one\n'`. Expected: "Chapter one" is in `addedLines`.
+  5. An emptied file: `'Chapter one\n'` to `''`. Expected: "Chapter one" is in `removedLines`.
+  In every case the text "No changes" is absent. The unmarked lines in pairs 1 to 3 are what stops a view that marks everything from passing. Controls N1 (both sides from `base`) and the Z0 stub control act here.
+- **Command.** `npm test -w @bbartolome/scriba-web`.
+
+**Criterion 2** (unit line 25): "Unified on phones, side by side on tablet/desktop; the toggle overrides."
+
+- **D2 shows unified on a phone and side by side on a tablet and a desktop, and the toggle overrides in both directions** (`it.each` over three sizes, plus a resize test). Sizes are the nav specs' own: 390 by 844 (phone), 820 by 1180 (tablet) and 1280 by 800 (desktop) (`app-nav.spec.ts` lines 68 to 72; F9). Steps for each size: call the stub's resize to the size before creating the host, render with a changed pair, and read the layout. Expected on the phone: the selected radio of the "Diff layout" group is "Unified"; exactly one editor is in the view and the split container is absent. Expected on the tablet and the desktop: "Side by side" is selected; the split container is present with two editors. Then click the other option: the layout switches (phone to two editors, tablet and desktop to one), the selected radio follows, and the old editors are gone (one view alive: no stale editor in the DOM). The radios are found as in `theme.spec.ts` (`[role="radio"]` by text, `aria-checked`; F10).
+  - **Resize.** Start on a phone, resize to the desktop and wait one macrotask for the CDK's debounce (as `app-nav.spec.ts` does; F9): with no override the layout becomes side by side. Click "Unified", resize to the phone and back to the desktop: the layout stays unified (the override holds).
+  Control N3 (always split) fails the phone case.
+- **Command.** `npm test -w @bbartolome/scriba-web`.
+
+**Criterion 3** (unit line 26): "Whitespace-only, LF→CRLF-only and front-matter-only changes are visible; identical inputs show 'no changes'."
+
+- **D3a shows a difference that is only whitespace, a line ending or front matter as a change, in both layouts** (`it.each` over the pairs and two layouts). Each pair differs in nothing else. Expected for each: at least one line is marked on the proposed side or the base side (`addedLines` or `removedLines` is not empty), the text "No changes" is absent, and the toggle is shown. Pairs:
+  - trailing space added: `'Hello world\n'` to `'Hello world \n'`;
+  - indentation added: `'item\n'` to `'  item\n'`;
+  - tabs to spaces: `'\titem\n'` to `'    item\n'`;
+  - final newline added: `'Last line'` to `'Last line\n'`;
+  - **LF to CRLF only:** `'One\nTwo\n'` to `'One\r\nTwo\r\n'`; and the reverse, CRLF to LF;
+  - front matter value changed: `'---\ntitle: One\n---\nBody\n'` to `'---\ntitle: Two\n---\nBody\n'`, where the body line "Body" is not marked;
+  - front matter added: `'Body\n'` to `'---\ntitle: One\n---\nBody\n'`;
+  - front matter removed: the reverse of the last pair.
+  For the LF to CRLF pairs, the view also shows the control-character mark for a carriage return (the span `highlightSpecialChars` renders; A4). Controls N2 (CodeMirror's default split: two identical documents, no marked line) and N4 (trimmed comparison) act here.
+- **D3b shows "No changes" for identical inputs** (`it.each` over three pairs: `'One\nTwo\n'` twice; `'One\r\nTwo\r\n'` twice; `''` twice). Expected: the text "No changes" is visible; no editor is in the view; no toggle is shown; the path is still shown.
+- **Command.** `npm test -w @bbartolome/scriba-web`.
+
+**Extra tests (they check decisions 1, 4, 5, 8 and 9; none replaces or weakens a criterion).**
+
+- **E1 conflict banner.** `conflict` false: no banner. `conflict` true with no message: the banner shows "This change conflicts with the current file." `conflict` true with a message: that message shows. In all three the diff is still rendered.
+- **E2 label and path.** The element labelled "Changes to <path>" exists, and the path text is visible in the header. Changing the `path` input changes both.
+- **E3 read-only.** In both layouts every content element of the view has `contenteditable="false"`, and the view holds no button other than the two toggle radios (no accept, reject or revert control).
+- **E4 an input change re-renders.** Setting a new `proposed` on the host updates the marked lines, and the number of editors in the view stays one (unified) or two (side by side).
+- **E5 BOM.** `'Text\n'` to `'﻿Text\n'`: a line is marked and the BOM shows as a control mark.
+
+## 5. Agreement with downstream units
+
+| Unit | What it needs from SHL-12 | Provided by this plan |
+|---|---|---|
+| SHL-16 editable merge view (`blocked_by` names SHL-12; unit lines 20 to 22 and 26) | The same component, extended with an `editable` input that makes the proposed side editable and an output with the edited text; read-only mode unchanged; "its tests still pass"; lossless line separators | Yes. Decision 10: one function builds one side's extensions, and the inputs of decision 1 stay. The documents are byte-exact (decision 5), so `doc.toString()` of an edited document keeps every `\r` and BOM that was not edited. The spec uses only inputs and rendered DOM, so it stays valid. SHL-13's unit line 19 says "detect the separator and set the facet to it"; this plan sets the facet to `\n` and keeps `\r` as a character, which is byte-exact for any mix of endings. SHL-16 can keep either; open point 5 |
+| SHL-19 polish gate (`blocked_by`; unit lines 17 and 21) | Labels, focus order, contrast in both themes and an axe check over the diff | Partly, by design: `aria-label` on the section and on the toggle; Material's toggle is keyboard-operable; colours follow `color-scheme` with a non-colour cue (decision 11). M1 looks at contrast. SHL-19 owns the axe run |
+| PST-20 review queue UI (`blocked_by`; unit lines 17, 20 and 24) | A read-only diff of `path`, `base` and `proposed`, unified on narrow screens; a conflict indication; the accept action outside the diff; "the queue ships with the read-only diff if the merge view isn't ready" | Yes. Decisions 1, 3 and 8 (`conflict` and `conflictMessage`; the view has no accept control, so accept and reject stay in the queue). A route test that renders the real view under jsdom needs the Range stub (open point 6) |
+| PST-21 version history UI (`blocked_by`; unit lines 15, 19 and 20) | A diff of a version against the current draft, at phone width, read-only | Yes: the caller passes the two texts and chooses which is `base`. Unified on a phone (decision 3) |
+| AGL-14 diff previews (`blocked_by`; unit lines 15, 19 and 20) | `diffPreview {path, base, proposed}` maps onto the inputs; the view is embeddable in a tool-call card; unified on a phone | Yes. The three fields are the three required inputs; the component has no routing or page dependency; it builds its CodeMirror view only when it is rendered, so a collapsed card that does not render it costs nothing. The card (SHL-10, in this batch) has no diff input in its view model (SHL-10 unit line 18), so AGL-14 projects or embeds `DiffView` itself; no SHL-10 change is needed from this unit |
+| TRG-14 YAML editor, Compare (`blocked_by`; unit lines 17 and 23) | A diff of the user copy against the built-in text | Yes: the caller passes the built-in text as `base` and the user copy as `proposed` (or the reverse); the view treats both as plain text, so YAML is shown as it is |
+| SHL-10, SHL-11 (parallel, in this batch) | Nothing from SHL-12; the shared file `shell/index.ts` | Section "Shared files": append only |
+| SHL-13 (parallel; not in this batch) | Nothing; it will add its own CodeMirror packages to the same `package.json` | `@codemirror/state` and `@codemirror/view` are pinned here at one version each; SHL-13 must use the same versions (open point 1) |
+
+The unit's `unblocks` list (front matter line 9) has six entries: SHL-16, SHL-19, PST-20, AGL-14, PST-21 and TRG-14. They are exactly the units whose `blocked_by` names SHL-12 (`grep -l 'SHL-12' units/SHL-16-*.md units/SHL-19-*.md units/PST-20-*.md units/PST-21-*.md units/AGL-14-*.md units/TRG-14-*.md` finds all six, and the other files that name SHL-12 do so only in `parallel_with`; F20). The README's inverse rule (line 64) holds, so no front matter changes. `parallel_with` (SHL-10, SHL-11, SHL-13, SHL-17, SHL-18) names none of the six, and `modules/shell.md` line 37 agrees.
+
+## 6. Open points
+
+1. **Versions of the CodeMirror packages. Owner: the coordinator.** The plan names no version (decision 2). The code stage installs the newest and records them. `@codemirror/state` and `@codemirror/view` are shared by SHL-13, SHL-16 and TRG-14; a second copy of either breaks CodeMirror, so they must all use the versions recorded here. Whoever merges second runs `npm ls @codemirror/state @codemirror/view` and keeps one version of each.
+2. **The toggle choice is not stored. Owner: the Navigator, if they want it kept.** The unit says "toggle override" and names no storage. The override lives in the component instance and resets when it is created again. Storing it per device (as `scriba.theme` is stored) would be additive.
+3. **Unchanged lines are not collapsed. Owner: the Navigator.** A long chapter shows every line. `@codemirror/merge` can collapse unchanged runs (`collapseUnchanged`). The unit does not ask for it, it adds behaviour and tests, and it can come later without changing the inputs.
+4. **A carriage return shows on every line of a CRLF file. Owner: the Navigator.** Under decision 5, a file that is CRLF on both sides shows a control mark at every line end. That is accurate but noisy. A refinement, to set the line separator to `\r\n` when both texts are uniformly CRLF, would hide the marks and still show a CRLF to LF change. Not done here.
+5. **Line-separator handling in SHL-13 and SHL-16. Owner: those units' plans (not in this batch).** SHL-16 says it uses "the same lossless line-separator handling as SHL-13". SHL-13 detects the file's separator and sets the facet to it; this unit sets it to `\n` so that `\r` stays visible and byte-exact. The two plans decide whether SHL-16 reuses SHL-13's or this one.
+6. **Consumers' jsdom tests need the Range stub. Owner: the plans of TRG-14, PST-20, PST-21 and AGL-14.** Their component or route tests render the real `DiffView` in jsdom, which (if A5 holds) throws without `stubRangeRects()`. They import it from `shell/testing/dom-range.ts`. The alternative, a global setup file, would change `angular.json`, which this unit does not touch.
+7. **Colour and contrast are checked by eye here. Owner: SHL-19.** The component sets the palette from Material variables and `light-dark()`, with underline and strike-through as non-colour cues (decision 11). jsdom does not compute CSS, so only M1 sees it; SHL-19's axe run is the check that counts. The same pass should check that a keyboard user can reach and scroll the diff text: the editors are `contenteditable="false"` (decision 4), and the page, not the editor, scrolls.
+8. **Where the layout follows the device class and not the container width. Owner: the Navigator, if it matters for AGL-14.** A side-by-side diff inside a narrow container on a tablet (a chat card, for example) may be cramped. The toggle is the answer for now. A container-width rule would be a separate decision.
+
+## 7. Facts checked and assumed
+
+### 7a. Facts checked (file and line)
+
+- **F1.** `git rev-parse --short HEAD` prints `22040f6`. `git status --short` prints nothing. `git diff --name-only 355f86e HEAD -- apps/web packages e2e package.json package-lock.json` prints nothing; the commits since `355f86e` change `apps/api/test/installer-*`, `scripts/entrypoint.sh`, `README.md`, `units/`, `plans/`. `node -v` prints `v26.13.0` (`.nvmrc` line 1 is `26`).
+- **F2.** `units/SHL-12-readonly-diff.md`: front matter lines 7 (`blocked_by: [SHL-09]`), 8 (`parallel_with`), 9 (`unblocks`, six entries); line 15 (why); lines 18 to 21 (the four decisions); lines 24 to 26 (the three criteria, all unticked).
+- **F3.** `plans/SHL-09.md` line 3 is `status: done`; DECISIONS line 2839 records its criteria 1 to 5 ticked.
+- **F4.** `modules/shell.md`: line 9 (consumers adopt a component when its unit merges; the Tool registry's Compare uses SHL-12), line 29 (SHL-16 needs SHL-12), line 37 (SHL-12 runs in parallel with SHL-10, 11, 13, 17, 18), line 42 (feature UIs under `features/`; the Shell's own code outside), line 81 (the read-only diff row: Tool registry Compare, Project store review, Agent loop write previews), lines 85 to 89 (testing principles; the seam is rendered routes against the fakes), line 96 (pending-change semantics are out of scope: "the diff view renders strings"), line 98 (CodeMirror 6 only), line 101 (a later remix comparison may reuse the side-by-side layout).
+- **F5.** `units/README.md`: line 59 (blocker notation), line 64 (`unblocks` is the exact inverse of `blocked_by`), line 81 (the `phase:shared-components` row), line 132 (decisions as ADRs), line 133 (testing rule: external behaviour only).
+- **F6.** `grep -n 'SHL-12' plans/DECISIONS.md` prints nothing. Applied entries: line 2746 (the Navigator's SHL-09 decision (A): the Shell's own code lives under `shell/`); lines 1084 to 1089 (no runtime zod in the Shell; `angular.json` budgets unchanged; "raising the budget is a one-way change"); lines 2681 to 2685 (the 500 kB initial-total warning is accepted; the 1 MB error budget holds); lines 2712 to 2716 (SHL-08 closed; 504.21 kB); lines 2834 to 2840 (SHL-09 closed; the build's initial total 505.56 kB at line 2836, with the same three warnings; the stop rule holds).
+- **F7.** `apps/web/src/app/shell/index.ts`: line 1 (the comment), lines 2 to 11 (the exports; line 11 is `export { ActiveProjectSignal } from './project-scope';`). `grep -rn "diff-view\|DiffView" apps/web/src` finds nothing. The only import of the barrel is `shell/route-data.spec.ts` line 2 (`import type ... from './index'`), so no production module imports it yet.
+- **F8.** `apps/web/src/app/shell/device-class.ts`: line 33 (`isAtLeast`), lines 56 to 71 (`DeviceClassService`, providedIn root; `deviceClass = toSignal(...)` at line 71), lines 99 to 103 (`phone` if `Handset`, `tablet` if `Tablet`, else `desktop`); it injects the router and `NoticesService` (lines 59 and 60), both root services.
+- **F9.** `shell/testing/match-media.ts`: line 67 (`stubMatchMedia(width, height)` returns `resize`), lines 88 to 96 (`resize`), line 99 (`restoreMatchMedia`). `shell/app-nav.spec.ts` lines 68 to 72 (`SIZES`: 390 by 844, 820 by 1180, 1280 by 800), the `settle` helper (a 10 ms wait for the CDK's debounce), and `render`'s `provideRouter`. `apps/web/src/app/core-gate.spec.ts` lines 1 to 22 (the `beforeEach`/`afterEach` pattern).
+- **F10.** `shell/theme.spec.ts` lines 19 to 23 (the `radio` helper finds `[role="radio"]` by text), line 41 (`aria-checked`). `node_modules/@angular/material/fesm2022/button-toggle.mjs` line 641 (a single-select toggle renders `role="radio"` and `aria-checked`). `shell/theme-toggle.ts` lines 12 to 29 (the `mat-button-toggle-group` pattern with an `aria-label`).
+- **F11.** `apps/web/src/material-theme.scss` line 12 (`color-scheme: light dark`), lines 25 to 31 (`data-theme` pins `light` or `dark`), lines 37 to 39 (body colours from `--mat-sys-*`). `shell/theme.ts` lines 31 to 35 (`data-theme` on `<html>`; the stylesheet maps it to `color-scheme`).
+- **F12.** `apps/web/package.json` lines 12 to 24 (`dependencies`, alphabetical, exact versions) and lines 25 to 31 (`devDependencies`, including `jsdom` 30.1.3 at line 29). `grep -c codemirror package-lock.json` prints 0. `ls node_modules/@codemirror` fails (no such directory); no `@lezer` either.
+- **F13.** `node_modules/jsdom/package.json` version 30.1.3. `grep -rn 'getClientRects\|getBoundingClientRect' node_modules/jsdom/lib/jsdom/living/range/` finds nothing, so `Range` has neither method; `Element-impl.js` has them (lines 310 and 323). `node_modules/vitest/dist/chunks/index.Bi0NXYPf.js` line 1395 (`pretendToBeVisual = true` is the default of the jsdom environment). `node_modules/@angular/build/src/builders/unit-test/runners/vitest/plugins.js` lines 62 and 63 (the environment falls back to jsdom). `apps/web/angular.json` line 76 (the `test` target is `@angular/build:unit-test`, with no browser option).
+- **F14.** `apps/web/angular.json` lines 33 to 42 (production budgets: initial 500 kB warning at line 35, 1 MB error at line 36; component styles 4 kB and 8 kB at lines 40 and 41), line 28 (`externalDependencies`).
+- **F15.** `apps/web/tsconfig.app.json` lines 8 and 9 (`include: src/**/*.ts`, `exclude: src/**/*.spec.ts`); `apps/web/tsconfig.json` (`isolatedModules`, `experimentalDecorators`, `noPropertyAccessFromIndexSignature`; the base has `strict`).
+- **F16.** `eslint.config.mjs` lines 27 to 41 (the boundaries elements cover only `src/modules/*` and `src/app/features/*`; entry files `*.routes.ts` and `*.module.ts`), line 45 (`boundaries/dependencies`). `shell/` is not an element.
+- **F17.** `.prettierignore` lists `/units/`, `/modules/`, `/plans/` and `/package-lock.json`. Root `package.json` `lint` runs `prettier --check .`.
+- **F18.** `apps/web/src/app/shell/testing/template-feature.spec.ts` lines 36 and 53 (the template tests T1 and T2) and `core-gate.spec.ts` show how a Shell spec renders under the Vitest runner with `TestBed`.
+- **F19.** `plans/SHL-09.md` section 9 (lines 288 to 294): the batch head `355f86e`, web tests 86 in 20 files (line 291), build 505.56 kB against 504.21 kB, the same three warnings.
+- **F20.** Downstream unit lines: `units/SHL-16-editable-merge-view.md` lines 7, 20 to 22, 26; `SHL-19-polish-gate.md` lines 7, 17, 21; `PST-20-review-queue-ui.md` lines 7, 17, 20, 24; `PST-21-version-history-ui.md` lines 7, 15, 19, 20; `AGL-14-diff-previews-review-link.md` lines 7, 15, 19, 20; `TRG-14-yaml-editor-actions.md` lines 7, 17, 23; `SHL-13-editor-wrapper-lossless.md` lines 19, 23; `SHL-11-markdown-preview.md` line 19; `SHL-10-tool-call-card.md` line 18. `modules/agent-loop.md` line 30 (AGL-14 uses SHL-12). `units/AGL-01-contract-slice.md` line 23 (`diffPreview?: {path, base, proposed}`).
+- **F21.** `plans/SHL-05.md` line 258 (the SHL-12 row: the device-class signal for unified diffs on phones) and line 70 (the `index.ts` append rule). `plans/SAU-06.md` line 234 (a local import of a non-element file is skipped by the boundaries lint) and line 258 (the barrel's tree-shaking is a build measurement).
+- **F22.** `ls packages/contracts/dist` fails at writing (absent), so step 0 builds the contracts package before the web specs, as the SHL-09 plan did (`plans/SHL-09.md` step 0).
+
+### 7b. Things assumed
+
+- **A1.** The registry carries `@codemirror/merge`, `@codemirror/state` and `@codemirror/view` at versions that install on Node 26 and npm 11.20 and dedupe to one copy of `state` and `view`. Nothing was fetched at the planning stage. Step 2 tests it.
+- **A2.** `@codemirror/merge` exports `MergeView` (options `a`, `b`, `parent`, no revert control unless asked, a `destroy()` method) and `unifiedMergeView` (`original` as a `Text`, a `mergeControls` option that turns off the accept and reject buttons). Step 2 reads the installed `index.d.ts`; N5 tests the option.
+- **A3.** `EditorState.lineSeparator.of('\n')` with documents built by `Text.of(text.split('\n'))` keeps `\r` as a character of its line, `doc.toString()` returns the input string, and the merge diff compares the two documents as text, so an LF to CRLF change is a change on every line. `highlightSpecialChars()` marks `\r` and the BOM. Controls N2 and D3a test it.
+- **A4.** The rendered DOM carries stable class names for: the split container, each editor (`cm-editor`), a changed line, a removed block in the unified view, an inline changed span and a control-character mark. Step 2 records the real names; the assertions keep the meaning given in section 4.
+- **A5.** CodeMirror's measure pass calls `Range.getClientRects` or `getBoundingClientRect`, which jsdom lacks (F13), so a render without the stub throws or logs an unhandled error. Control Z0 tests it; if it is false, the stub is deleted.
+- **A6.** With the stub, a `MergeView` and an `EditorView` with `unifiedMergeView` construct and render in jsdom, and all lines of a small fixture are in the DOM (no viewport clipping at zero height). If not, the code stage stops and goes to the Navigator, because the unit-test builder has no browser option (F13) and the criteria need a rendered test.
+- **A7.** An `EditorView.theme` with `light-dark()` colours overrides the merge package's light and dark base themes, and the editor's own default gutter background. M1 looks at it in both themes.
+- **A8.** An unused `export { DiffView }` in the barrel does not pull `@codemirror/*` into a feature chunk that imports another export, because the class is marked pure by the Angular build and the file has no module-level call. M2b measures it.
+- **A9.** The production initial total does not change: no module reachable from `main.ts` imports `diff-view.ts` (F7). Step 8 checks it.
+- **A10.** The CodeMirror packages are MIT-licensed and self-hostable, so adding them to a self-hosted app needs no further decision. Not checked here.
+- **A11.** Headless Chromium can be launched for M1 (Playwright from the `e2e` workspace, as SHL-09's browser checks did). If not, M1 is recorded as not run, and no criterion depends on it.
+
+## 8. Summary of the plan's commitments
+
+- Three criteria, three named tests: D1 (insertions, deletions and changed lines, five fixture pairs in two layouts), D2 (unified on a phone, side by side on a tablet and a desktop, the toggle overrides both ways, a resize keeps the override), D3a and D3b (whitespace-only, LF to CRLF-only and front-matter-only changes are marked; identical inputs show "No changes"). Extras E1 to E5 check the conflict banner, the label, read-only, an input change and a BOM.
+- One new standalone component, `DiffView` (`shell/diff-view.ts`), exported from `shell/index.ts`, with five inputs, no outputs, no accept or reject control, and no CodeMirror call at module level. The line-ending trap is closed by building the documents as `Text.of(text.split('\n'))` with the `\n` line-separator facet and `highlightSpecialChars()`, and by deciding "No changes" on string equality.
+- New files: `shell/diff-view.ts`, `shell/diff-view.spec.ts`, `shell/testing/dom-range.ts` (kept only if control Z0 shows it is needed). Changed files: `apps/web/package.json` (three exact pins), `package-lock.json`, `shell/index.ts` (one line).
+- Passed count `B + N`. The production build is unchanged (`I1` equals `I0`, three warnings).
+- No SHL-12 entry exists in DECISIONS.md. Eight open points: the package versions (coordinator), the toggle not stored, no collapse of unchanged lines, a CR mark on every CRLF line, the SHL-13 and SHL-16 line-separator reconciliation, the consumers' Range stub, contrast checked by eye until SHL-19, and the layout following the device class and not the container width.
