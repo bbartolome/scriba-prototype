@@ -19,7 +19,7 @@ Quick controls (8), required marks and defaults (9), messages next to fields (10
 - **Two layouts:**
   - **Form:** all fields.
   - **Node body:** port rows with handles (the **Graph runner supplies the handle template** and owns wiring) plus `params` fields.
-- Controls: `text`, `textarea`, `select`, `slider`, `number`, `toggle`, `entity-picker`, `style-picker` (the pickers are TRG-04; here they render a placeholder slot). The control is chosen from the field's `valueType`: `slider` for a bounded number, `number` for an unbounded one, `text` for a string, `toggle` for a boolean (the Navigator's decision of 2026-11-14 on TRG-01 open point 1, `plans/DECISIONS.md`).
+- Controls: `text`, `textarea`, `select`, `slider`, `number`, `toggle`, `entity-picker`, `style-picker` (the pickers are TRG-04; here they render a placeholder slot). The control is the one TRG-02 derives (`valueType` only types the value the control sends): `slider` for a bounded number, `number` for an unbounded one, `text` for a string, `toggle` for a boolean (the Navigator's decision of 2026-11-14 on TRG-01 open point 1, `plans/DECISIONS.md`).
 - Required marks, defaults prefilled; server-side `issues` shown inline next to their fields; emits the argument value and a submit event.
 
 ## Acceptance criteria (Vitest + Shell fakes)
