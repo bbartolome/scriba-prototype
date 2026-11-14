@@ -359,11 +359,11 @@ it("a re-run moves `SCRIBA_IMAGE_TAG` to the release's tag; the image `up -d` wo
     // The README's rollback section names the tag variable, the `up -d` step and the backup.
     const rollback = sectionOf(
       readFileSync(join(REPO_ROOT, 'README.md'), 'utf8'),
-      /roll ?back/i,
+      /^roll ?back$/i,
     );
     expect(rollback).toContain('SCRIBA_IMAGE_TAG');
     expect(rollback).toContain('up -d');
-    expect(rollback).toContain('.env.bak.');
+    expect(rollback).toContain('.env.bak.<stamp>');
   } finally {
     disposeSandbox(sandbox);
   }
@@ -430,7 +430,7 @@ it('extra E3: an install folder inside the library named by `.env` exits 1 befor
     const { run } = await rerun(sandbox, {}, inside);
 
     expect(run.code).toBe(1);
-    expect(run.stderr).toContain('library');
+    expect(run.stderr).toContain('inside it');
     expect(snapshot(sandbox.home)).toEqual(homeBefore);
   } finally {
     disposeSandbox(sandbox);
