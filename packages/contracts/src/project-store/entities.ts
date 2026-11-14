@@ -19,9 +19,12 @@ export const citationSchema = z
   .string()
   .regex(new RegExp(`^${CITATION_PATTERN.source}$`));
 
-// Query of GET .../entities/resolve: the `ids` query parameter repeats.
+// Query of GET .../entities/resolve: the `ids` query parameter repeats. A single id arrives as a plain string, so it is wrapped in an array.
 export const entityResolveQuerySchema = z.object({
-  ids: z.array(entityIdSchema),
+  ids: z.union([
+    entityIdSchema.transform((id) => [id]),
+    z.array(entityIdSchema),
+  ]),
 });
 
 // Response of GET .../entities/resolve. Each id is resolved to one entity or reported as an error.
