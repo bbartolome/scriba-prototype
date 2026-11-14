@@ -3322,3 +3322,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   2. Each CodeMirror content element has `role="textbox"` with no accessible name, which axe flags (`aria-input-field-name`). SHL-19 owns the accessibility pass; the reviewer suggests `EditorView.contentAttributes.of({'aria-label': ...})` per side. Advice for SHL-19, not a change to SHL-12.
   3. In control N1, E4 fails because nothing is marked, not because the marked lines fail to update. The expected result (fail) is right.
 - **Patch state.** The approval holds for revision 6 (`952411a`); the plan is set to `status: planned` in a separate commit.
+
+## 2026-11-14 — PST-11 — Opus review of the code: APPROVED
+
+- **Result (Opus subagent, fresh context).** APPROVED. Patch id `53b26dbdb4c8b94135f366edc9134a5aec8712b4` (branch `unit/PST-11`, commits `f8e2774` and `a3d0001`, merge-base `c0c7863`).
+- **Checks run by the reviewer (worktree, node v26.13.0).** `npm run lint:examples` passes (1 sample, 1 project.yaml, 4 entity files, 94 test files scanned); the schema parse, the `c2` ordering check and its negative control, the excluded-folder check and its negative control all match the criteria. `npm run lint` and `npm test` pass on the second full run; the first full run failed with timeouts under machine load from parallel worktrees, and the failing files pass when run alone.
+- **Non-blocking notes:** D12 asks for one commit and the branch has two (open point 5 allows the second); squash at merge if the one-commit rule matters. The new paragraph says "titles and years" of the 1897 and 1899 papers are confirmed, but the notes give only the years; a later edit must not treat the titles as sourced. One prose line in `drafts/born-to-it.md` calls the final paragraph "the rest of this chapter"; no criterion depends on it.
