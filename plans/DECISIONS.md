@@ -3313,3 +3313,12 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the three open problems is a decision: stale citations, a control's expected failure with a field-level wording fix, and an invisible character in a fixture. No Navigator question is open on this plan.
 - **Action.** A new Opus subagent writes the plan again from the draft (revision 6, `c0c7863`) and the list above, as revision 7. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — SHL-12 — Opus review of the plan (revision 6): APPROVED
+
+- **Result (Opus subagent, fresh context).** APPROVED. The plan is `plans/SHL-12.md` revision 6 (`952411a`); the reviewer checked the unit's criteria (each mapped to a test, none weakened), the downstream units, the cited repository lines, the five earlier reviews (22 items, each answered in section 0), the CodeMirror 6 source for the merge view, and the package registry facts.
+- **Non-blocking notes (no change to the plan):**
+  1. Two statements about MPR-09 (the "MPR-09 is now at revision 5" row and line 119, "citations of this plan by other plans") were true at `9d14541` and are stale at HEAD. No change is needed here; MPR-09's own revision carries the corrections to its citations.
+  2. Each CodeMirror content element has `role="textbox"` with no accessible name, which axe flags (`aria-input-field-name`). SHL-19 owns the accessibility pass; the reviewer suggests `EditorView.contentAttributes.of({'aria-label': ...})` per side. Advice for SHL-19, not a change to SHL-12.
+  3. In control N1, E4 fails because nothing is marked, not because the marked lines fail to update. The expected result (fail) is right.
+- **Patch state.** The approval holds for revision 6 (`952411a`); the plan is set to `status: planned` in a separate commit.
