@@ -3602,3 +3602,14 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - Note, not blocking: provider-form.ts line 423 switches the form to edit mode when the create succeeds, before the key step ends (D6 step 3 says after); the tests cannot see it, because the fake answers at once.
 - UNVERIFIED by the reviewer (read only): the test, build and lint runs. The orchestrator ran the root lint (exit 0), test (exit 0) and build (exit 0) on the branch before the rebase.
 - Code rejections of MPR-09: 1 (the first review); this approval follows it.
+
+## 2026-11-14 — SHL-13 — Opus review of the plan (revision 3): APPROVED
+
+- Criteria and tests: the three criteria map to 16 rendered tests (12 fixtures covering the seven kinds of unit line 23; two targeted-edit tests with literal expected text; the read-only test with its control), plus the outputs test, the read-error test and E7. Each decision cites a correct source.
+- The five revision-2 items are fixed: decision 6 counts as markdown-document.ts lines 13 to 24 do; the header, F3 and the SHL-11 lines (77 and 125) are corrected; step 3 runs in the unit's worktree (prompt.md line 80); decision 10 cites unit line 25; decision 3 says its lines are SHL-14's; the outputs test has a literal text and a stated result under M1 to M5.
+- The reviewer's probe (/tmp/shl13-r3/probe.mjs, outside the repository) gives every count the plan states (fixture 4: 3 CRLF against 2 bare LF) and the expected texts "alphaX\r\nbeta\r\n" and "alpha\r\nbeta\ngammaX\r\n"; M4 leaves the document dirty after Save (decision 11).
+- Downstream SHL-14, SHL-15 and SHL-19 agree; none needs a change.
+- Notes for the coordinator, not defects: F3 cites line 2894, which belongs to the SHL-10 revision-1 review (heading at line 2885); A8 says angular.json sets no build output path, but line 53 sets one for the contracts-boot configuration only; F16 still calls SHL-11 a draft (it is planned since 6148f60); A7 says only one file imports shell/index.ts, which is no longer true: providers-store.ts line 10 (MPR-09, merged) and setup-page.ts line 6 (SAU-06) import '../../shell'. The step 9 grep is a real test once they are on main.
+- NAVIGATOR (not decided here): open point 1, a bare CR left by an edit at the end of a CRLF line in a mixed file where LF lines outnumber CRLF (fixture 5, F12 row 15): guard it, and in which unit; open point 3, the two line models (SHL-12's LF-only split and SHL-13's dominant separator), which SHL-16's plan must reconcile; open point 6, the save-mode input of unit line 18, which the plan does not add; open point 7, criteria 2 and 3 edit through findFromDOM and dispatch, not by typing.
+- Status set to planned (commit on main). The code stage starts in a later iteration; the Navigator items must be settled first where they touch the tests.
+- Rejections of the SHL-13 plan: 2 (revisions 1 and 2).
