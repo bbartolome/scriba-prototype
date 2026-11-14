@@ -3629,3 +3629,11 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **SHL-13 open point 6: APPROVE the plan's decision 2.** SHL-13 adds no save-mode input. The wrapper has one manual save; saving mechanics and their modes are SHL-14's, so the save mode listed in `units/SHL-13-editor-wrapper-lossless.md` line 18 is added by SHL-14, not here.
 - **SHL-13 open point 7: APPROVE the edit seam.** Criteria 2 and 3 edit through `EditorView.findFromDOM` and `dispatch`, not through typing, because the wrapper has no edit input and jsdom typing is not reliable. The real keyboard path is checked by hand in step 10 and by SHL-19's e2e phone check. Reason: plan decision 17.
 - Status: SHL-13 stays `planned`. The code stage may start (this session's Navigator points on its tests are settled).
+
+## 2026-11-14 — AGL-06 — Opus code review (first): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/AGL-06 -- . ':!plans' ':!units' | git patch-id --stable`, computed on base 2a50a60): 8bf2245d0bcac7bd9b431f2bea242e16214be4af. The rebase onto the current main must not change it.
+- AC1 and AC2 of the unit (lines 20 and 21) are tested through the composed app with a real settings.yaml over HTTP, in `apps/api/test/agent-settings-api.test.ts`; the reviewer ran `npm test -w @bbartolome/scriba-api -- agent-settings-api`: 2 of 2 passed.
+- The six changed paths are the plan's section 2 list; the code matches decisions D1 to D7 of `plans/AGL-06.md`. Open point 1 is implemented as the Navigator's option (a).
+- Commit subjects: the plan named `test(AGL-06)` for commit 1; the commit is `feat(AGL-06)` (prompt.md commit rule). Not a defect.
+- Code rejections of AGL-06: 0.
