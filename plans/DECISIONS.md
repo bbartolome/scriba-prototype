@@ -3885,3 +3885,14 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Patch id of the approved code (`git diff main...unit/SHL-10 -- . ':!plans' ':!units' | git patch-id --stable`, on the merge base a662edf): 004d5ad55dc72542d60e8097706302ae22f7dcc9. The rebase must not change it.
 - The rebase-time swap (494b682) matches plan step R2 (iii) and (vi) and SHL-11's section 2b-bis; the view TSDoc (062b183, lines 8 and 9) now describes the preview. Criteria 1 (T1 to T3), 2 (T4 to T6) and 3 (T7) pass, with T8 and T9 beyond them. The barrel keeps all 14 lines from main and adds six.
 - Code rejections of SHL-10 in this stage: 4 (the first, the second, the post-swap review and the TSDoc review), and the approval before the swap stands as a record.
+
+## 2026-11-14 — TRG-01 — Opus code review (first): NOT APPROVED
+
+- Patch id at this review (`git diff main...unit/TRG-01 -- . ':!plans' ':!units' | git patch-id --stable`, base 6b1183f): 9bec006a42f5039133046ca59e96cde9f84223fc.
+- Item 1: E2 misses a refusal the plan requires: the detail refuses a views object with no `ports` ("which the lint response and the detail refuse in turn"). Add `expect(registry.toolDetailSchema.safeParse(withField(detail, 'views', noPorts)).success).toBe(false)`. The row also says each valid value round-trips; three are not passed to `roundTrips`: `summary`, the summary that fails lint, and `{lint: [warning], views: null}`. Add them.
+- Item 2: `resolvedEntitySchema.type` is `entityKindSchema` (`call.ts` line 13). The resolution builds `type` from Project store's `z.string().min(1)`, and D5 limits `ENTITY_KIND_PATTERN` to the entity-type `kind`. With the pattern, a call built from a valid resolution (for example `type: 'Person'`) is refused as invalid input, and TRG-12's `TOOL_ENTITY_KIND_MISMATCH` never gets to report. Correction: `type: z.string().min(1)`.
+- Item 3: `routes.ts` line 4 says "the eight per-tool commands" but lists six. Correct to "the six per-tool commands".
+- Item 4: the C4 test's blocks do not use every name of their row (plan section 3: "Each block then uses the names of its own row"): the Graph runner block leaves out 13 names and the Agent loop block 4. Add `expectTypeOf<Name>().not.toBeAny()` for each missing name in its block.
+- Judgement (a), on the size change: the plan's claim applies to the default build only; `contracts-boot` imports all ten subpaths at runtime, so its total must grow by the slice's size (637.01 kB is main.js plus styles.css; no slice string appears in dist/scriba-web). Acceptable; the record gives the default build's total against step 1 (505.85 kB, unchanged).
+- Judgements (b) and (c) are consistent with the plan, except item 2.
+- Code rejections of TRG-01: 1 (this one).
