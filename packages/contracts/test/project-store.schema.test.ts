@@ -5,6 +5,7 @@ import {
   citationSchema,
   ENTITY_ID_PATTERN,
   entityBaseSchema,
+  entityResolveQuerySchema,
   draftVersionSchema,
   fileEntrySchema,
   fileReadSchema,
@@ -228,6 +229,16 @@ describe('project-store contract slice', () => {
     expect(citationSchema.safeParse('[@a]x').success).toBe(false);
     expect(citationSchema.safeParse('x[@a]').success).toBe(false);
     expect(citationSchema.safeParse('[@a;@b]').success).toBe(false);
+  });
+
+  it('C3: the entity resolve query takes one id as a plain string or a repeated list, parses one id to a one-element array, and refuses a missing ids key', () => {
+    expect(entityResolveQuerySchema.parse({ ids: 'ann' })).toEqual({
+      ids: ['ann'],
+    });
+    expect(entityResolveQuerySchema.parse({ ids: ['ann', 'bob'] })).toEqual({
+      ids: ['ann', 'bob'],
+    });
+    expect(entityResolveQuerySchema.safeParse({}).success).toBe(false);
   });
 
   it("E1: route constants sit under /api/project-store/, project-scoped ones carry :projectId, every error code passes Platform's errorCodeSchema, PROJECT_ERROR_STATUS covers every code, the projects section parses, and every timestamp field is an ISO Z string", () => {
