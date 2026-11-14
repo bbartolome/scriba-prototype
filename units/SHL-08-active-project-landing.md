@@ -19,6 +19,6 @@ unblocks: [SHL-09]
 - Apart from the setup-status route and schema, the Shell imports nothing from `/setup-auth`.
 
 ## Acceptance criteria (with the fakes)
-- [ ] Incomplete setup status sends `/` to `/setup`; complete with an active project → `/projects/<id>/chat`; with none → `/projects`.
-- [ ] Opening `/projects/b/chat` while `a` is active shows the switch page; Switch POSTs activate and proceeds; "Go to the active project" goes to `/projects/a/chat`.
-- [ ] A fake `project-switched` event moves an open `/projects/a/review` tab to `/projects/b/review`.
+- [x] Incomplete setup status sends `/` to `/setup`; complete with an active project → `/projects/<id>/chat`; with none → `/projects`.
+- [x] Opening `/projects/b/chat` while `a` is active shows the switch page; Switch POSTs activate and proceeds; "Go to the active project" goes to `/projects/a/chat`.
+- [x] A fake `project-switched` event moves an open `/projects/a/review` tab to `/projects/b/review`.

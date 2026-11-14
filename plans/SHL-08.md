@@ -1,6 +1,6 @@
 ---
 id: SHL-08
-status: planned
+status: done
 ---
 
 # SHL-08 plan — landing redirect, active-project signal and project-route reconciliation
