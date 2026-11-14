@@ -52,7 +52,7 @@ Merging this **closes Project store `phase:contract`**. Zod schemas and TS types
 **Error codes** (`PROJECT_` prefix, Platform convention): `PROJECT_PATH_INVALID`, `PROJECT_PATH_OUTSIDE`, `PROJECT_PATH_RESERVED`, `PROJECT_NOT_FOUND`, `PROJECT_NOT_TEXT`, `PROJECT_FILE_TOO_LARGE`, `PROJECT_FILE_EXISTS`, `PROJECT_WRITE_CONFLICT`, `PROJECT_EDIT_NO_MATCH`, `PROJECT_EDIT_AMBIGUOUS`, `PROJECT_NO_ACTIVE`, `PROJECT_NOT_ACTIVE`, `PROJECT_EXISTS`, `PROJECT_INVALID`, `PROJECT_SCHEMA_TOO_NEW`, `PROJECT_ENTITY_NOT_FOUND`, `PROJECT_ENTITY_DUPLICATE`, `PROJECT_PENDING_CONFLICT`, `PROJECT_PENDING_NOT_OPEN`, `PROJECT_VALIDATION_FAILED`.
 
 ## Acceptance criteria
-- [ ] The slice builds and is importable from both `apps/api` and `apps/web`, with no runtime dependencies beyond Zod, and imports nothing from `/providers`.
-- [ ] Schema tests accept a valid `project.yaml` (with and without `order`), reject a missing `schemaVersion`, and preserve unknown keys.
-- [ ] Pending-change, search and entity-reference schemas have round-trip tests; the ID and citation patterns have positive/negative cases.
-- [ ] Platform's sample check (PLT-20) can import the `project.yaml` schema and the entity base.
+- [x] The slice builds and is importable from both `apps/api` and `apps/web`, with no runtime dependencies beyond Zod, and imports nothing from `/providers`.
+- [x] Schema tests accept a valid `project.yaml` (with and without `order`), reject a missing `schemaVersion`, and preserve unknown keys.
+- [x] Pending-change, search and entity-reference schemas have round-trip tests; the ID and citation patterns have positive/negative cases.
+- [x] Platform's sample check (PLT-20) can import the `project.yaml` schema and the entity base.

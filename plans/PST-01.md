@@ -1,6 +1,6 @@
 ---
 id: PST-01
-status: planned
+status: done
 ---
 # PST-01 plan — project-store contract slice (closes Project store phase:contract)
 
