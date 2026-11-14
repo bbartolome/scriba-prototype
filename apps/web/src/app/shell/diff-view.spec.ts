@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DiffView } from './index';
-import { restoreRangeRects, stubRangeRects } from './testing/dom-range';
 import { restoreMatchMedia, stubMatchMedia } from './testing/match-media';
 
 // The seam: the rendered DiffView in a host that binds signals to its inputs, as a consumer does.
@@ -59,12 +58,10 @@ let resize: (width: number, height: number) => void;
 
 beforeEach(() => {
   resize = stubMatchMedia(390, 844);
-  stubRangeRects();
 });
 
 afterEach(() => {
   restoreMatchMedia();
-  restoreRangeRects();
 });
 
 interface Rendered {
