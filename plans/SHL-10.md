@@ -1,6 +1,6 @@
 ---
 id: SHL-10
-status: draft
+status: planned
 ---
 
 # SHL-10 plan — tool-call card component and view model
