@@ -75,9 +75,7 @@ function parseRoot(argv) {
   return null;
 }
 
-if (
-  process.argv[1] !== undefined &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-) {
+// Runs only as the entry point; importing the module (PLT-21, PLT-22) runs no check.
+if (import.meta.main) {
   process.exitCode = main();
 }
