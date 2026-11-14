@@ -1,6 +1,6 @@
 ---
 id: PST-02
-status: planned
+status: done
 ---
 
 # PST-02 plan - Project store module skeleton and the path-safety function

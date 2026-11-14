@@ -26,6 +26,6 @@ A confused model must never read or change another book or anything outside the 
 - Registers the `projects` settings section with Platform's hook (PLT-07): version 1, default `{schemaVersion: 1, active: null}`.
 
 ## Acceptance criteria
-- [ ] Table-driven suite (through a test-only route or the provider, using real temp folders and real symlinks): `..`, absolute, backslash, NUL, empty segment → invalid; symlink out → outside; symlink within → allowed; `.scriba/…` and `drafts/.versions/…` → reserved; a not-yet-existing nested target under a valid ancestor → allowed.
-- [ ] No error message or response contains an absolute container path.
-- [ ] The module boots in `create-test-app` and the `projects` section appears in `settings.yaml` with its default.
+- [x] Table-driven suite (through a test-only route or the provider, using real temp folders and real symlinks): `..`, absolute, backslash, NUL, empty segment → invalid; symlink out → outside; symlink within → allowed; `.scriba/…` and `drafts/.versions/…` → reserved; a not-yet-existing nested target under a valid ancestor → allowed.
+- [x] No error message or response contains an absolute container path.
+- [x] The module boots in `create-test-app` and the `projects` section appears in `settings.yaml` with its default.
