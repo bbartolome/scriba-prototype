@@ -2518,3 +2518,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   4. U1 (line 146) cites F34 for "the image tags are local"; F34 records that `:latest` and every semver tag are absent, and the tags are local only because S-1 step 1 builds them. Correction: cite S-1 step 1. S-3 (line 161) never removes `$T`: add `rm -rf "$T"`.
 - **Count.** Rejections of PLT-17: 8. Items 2 and 3 are output-routing and test-coverage defects; items 1 and 4 are factual corrections.
 - **Next.** The PLT-17 subagent applies items 1 to 4 to `plans/PLT-17.md` (untracked). Then Opus reviews again.
+
+## 2026-11-14 — SHL-08 — the Navigator's decision on the switch page's title source (option a)
+
+- **Decision (the Navigator, session e441ef9487974df3be73d324870f7d76, `decide`, 2026-11-14).** Option (a): the switch page takes its title from the project list (`GET PROJECTS_ROUTE`, `projectListSchema`; the id as the fallback), and `modules/shell.md` line 43 is amended to add the project list shape, as the plan's decision 17 already records. Reason: the plan's decision 7 (`plans/SHL-08.md` line 28) commits the page to the list title, and decision 17 (line 48) already records the additive amendment; option (b) would contradict the plan's own decisions.
+- **What this changes.** The plan's open point 11 is decided, not open. The amendment to `modules/shell.md` line 43 is made in the code stage of SHL-08 (decision 17 names it), not in the plan stage. Decisions 7 and 17 stand as written.
+- **Source.** The Navigator's decision text, which the orchestrator records here as given.
