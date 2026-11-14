@@ -2441,3 +2441,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   6. C4 (line 139) says "bash on a saved file", but the harness (line 70) writes the script to bash's stdin. Correction: name one method in both places.
 - **Count.** Rejections of PLT-17: 3. Item 1 applies a settled decision (DECISIONS line 803); the rest are factual corrections.
 - **Next.** The PLT-17 subagent applies items 1 to 6 to `plans/PLT-17.md` (untracked). Then Opus reviews again.
+
+## 2026-11-14 — PLT-20 — Opus fifth review of the plan (revision 5): APPROVED
+
+- **Result.** An Opus reviewer with no earlier context returned APPROVED for `plans/PLT-20.md` (revision 5, after four rejections). The six criteria each have a named test in `scripts/examples-check*.test.mjs` through the CLI on temp trees; the blockers (PLT-13 and PST-01, both done) are correct; the rules R1 and R2 flag none of the 83 tracked test files; the worktree convention, the skip-set scope and the stop-rule steps are consistent; the C3 `/\bfiction\b/` check and the C5 issue shapes are right; the PLT-21 and PLT-22 layer files and merge notes are stated.
+- **Count.** Rejections of PLT-20 before this approval: 4 (the item 1 of rejection 4 corrected a plan to the worktree convention; the rest were factual and consistency corrections).
+- **Next.** The orchestrator sets `status: planned` and commits `plans/PLT-20.md`. The code stage is the next iteration, in a worktree on `unit/PLT-20` cut from main.
