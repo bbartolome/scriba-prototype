@@ -1,16 +1,17 @@
 import { z } from 'zod';
 import { entityRefSchema, projectPathSchema } from '../project-store/index.js';
 import { VALIDATE_MODES } from './constants.js';
-import { entityKindSchema, outputKindSchema } from './spec.js';
+import { outputKindSchema } from './spec.js';
 
 // The arguments of a call: values the model or the form passes, checked against `inputs` by Ajv.
 export const toolArgumentsSchema = z.record(z.string(), z.unknown());
 export type ToolArguments = z.infer<typeof toolArgumentsSchema>;
 
-// An entity resolved for a call: its id, its kind, its project path and its content.
+// An entity resolved for a call: its id, its type, its project path and its content. The type is any
+// non-empty string, as project-store resolves it; a type the tool does not take is refused by TRG-12 (TOOL_ENTITY_KIND_MISMATCH).
 export const resolvedEntitySchema = z.object({
   ref: entityRefSchema,
-  type: entityKindSchema,
+  type: z.string().min(1),
   path: projectPathSchema,
   content: z.string(),
 });

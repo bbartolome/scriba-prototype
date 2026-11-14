@@ -1,7 +1,7 @@
 // Route constants of the tool-registry API. Every path is under /api/tool-registry.
 // Reads are GET and never mutate; every command is a POST. Per-tool routes sit under /tools/:name.
 // GET: TOOLS_ROUTE, TOOL_ROUTE, TOOL_BUILTIN_ROUTE, TOOL_USER_ROUTE, FUNCTIONS_ROUTE, ENTITY_TYPES_ROUTE.
-// POST: LINT_ROUTE and the eight per-tool commands (validate, enabled, save, delete, render, execute).
+// POST: LINT_ROUTE and the six per-tool commands (validate, enabled, save, delete, render, execute).
 export const TOOLS_ROUTE = '/api/tool-registry/tools' as const;
 export const TOOL_ROUTE = '/api/tool-registry/tools/:name' as const;
 export const TOOL_BUILTIN_ROUTE =

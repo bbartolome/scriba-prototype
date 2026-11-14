@@ -165,6 +165,10 @@ describe('C4: Genre packs, Agent loop and Graph runner can import every type and
       expectTypeOf<EntityToResolve>().not.toBeAny();
       expectTypeOf<ToolOutput>().not.toBeAny();
       expectTypeOf<ToolArgsIssue>().not.toBeAny();
+      expectTypeOf<ToolCallRequest>().not.toBeAny();
+      expectTypeOf<ResolvedEntity>().not.toBeAny();
+      expectTypeOf<ToolErrorCode>().not.toBeAny();
+      expectTypeOf<ToolArgsInvalidDetails>().not.toBeAny();
 
       expect(OUTPUT_KINDS).toContain('draft');
       expect(Object.values(TOOL_ERROR_CODES)).toContain('TOOL_ARGS_INVALID');
@@ -195,6 +199,19 @@ describe('C4: Genre packs, Agent loop and Graph runner can import every type and
       expectTypeOf<ToolDetail>().not.toBeAny();
       expectTypeOf<ToolRegistryEvent>().not.toBeAny();
       expectTypeOf<PortDescriptor>().not.toBeAny();
+      expectTypeOf<FormDescriptor>().not.toBeAny();
+      expectTypeOf<ToolSummary>().not.toBeAny();
+      expectTypeOf<ToolList>().not.toBeAny();
+      expectTypeOf<ToolValidateResult>().not.toBeAny();
+      expectTypeOf<EntityToResolve>().not.toBeAny();
+      expectTypeOf<ResolvedEntity>().not.toBeAny();
+      expectTypeOf<ToolCallRequest>().not.toBeAny();
+      expectTypeOf<ToolCallResult>().not.toBeAny();
+      expectTypeOf<ToolOutput>().not.toBeAny();
+      expectTypeOf<OutputKind>().not.toBeAny();
+      expectTypeOf<ToolErrorCode>().not.toBeAny();
+      expectTypeOf<ToolArgsIssue>().not.toBeAny();
+      expectTypeOf<ToolArgsInvalidDetails>().not.toBeAny();
 
       expect(PORT_TYPES).toEqual(['text', 'entity', 'style']);
       expect(TOOLS_ROUTE).toBe('/api/tool-registry/tools');

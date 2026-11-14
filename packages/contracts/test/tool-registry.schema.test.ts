@@ -609,14 +609,16 @@ describe('E2: descriptors, function schema, lint, catalog and call shapes', () =
     expect(registry.toolSummarySchema.safeParse(refusedFile).success).toBe(
       true,
     );
-    expect(
-      registry.toolSummarySchema.safeParse({
-        ...summary,
-        output: 'draft',
-        valid: false,
-        enabled: true,
-      }).success,
-    ).toBe(true);
+    // A tool that fails lint keeps its author's enabled switch, so the summary is accepted as written.
+    const lintFailing = {
+      ...summary,
+      output: 'draft',
+      valid: false,
+      enabled: true,
+    };
+    expect(registry.toolSummarySchema.safeParse(lintFailing).success).toBe(
+      true,
+    );
     const unparsable = {
       name: 'broken',
       description: '',
@@ -692,6 +694,10 @@ describe('E2: descriptors, function schema, lint, catalog and call shapes', () =
       registry.toolDetailSchema.safeParse(without(detail, 'views')).success,
     ).toBe(false);
     expect(
+      registry.toolDetailSchema.safeParse(withField(detail, 'views', noPorts))
+        .success,
+    ).toBe(false);
+    expect(
       registry.toolDetailSchema.safeParse(
         withField(detail, 'origin', 'builtin'),
       ).success,
@@ -741,6 +747,19 @@ describe('E2: descriptors, function schema, lint, catalog and call shapes', () =
         entities: [without(ann, 'content')],
       }).success,
     ).toBe(false);
+    // The type is any non-empty string, so a type the tool does not take reaches TRG-12 (TOOL_ENTITY_KIND_MISMATCH).
+    expect(
+      registry.toolCallRequestSchema.safeParse({
+        ...callRequest,
+        entities: [withField(ann, 'type', 'Person')],
+      }).success,
+    ).toBe(true);
+    expect(
+      registry.toolCallRequestSchema.safeParse({
+        ...callRequest,
+        entities: [withField(ann, 'type', '')],
+      }).success,
+    ).toBe(false);
 
     const callResult = {
       output: { kind: 'draft', content: 'The light went out at dusk.' },
@@ -762,6 +781,9 @@ describe('E2: descriptors, function schema, lint, catalog and call shapes', () =
     roundTrips(registry.formFieldSchema, length);
     roundTrips(registry.modelFunctionSchema, views.functionSchema);
     roundTrips(registry.lintResponseSchema, { lint: [warning], views });
+    roundTrips(registry.lintResponseSchema, { lint: [warning], views: null });
+    roundTrips(registry.toolSummarySchema, summary);
+    roundTrips(registry.toolSummarySchema, lintFailing);
     roundTrips(registry.toolSummarySchema, refusedFile);
     roundTrips(registry.toolSummarySchema, unparsable);
     roundTrips(registry.toolDetailSchema, detail);
