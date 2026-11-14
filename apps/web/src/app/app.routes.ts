@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { activeProjectGuard } from './shell/active-project-guard';
 import { withDeviceGate } from './shell/device-class';
 import { NotFoundPage } from './shell/not-found';
+import type { ShellRouteData } from './shell/route-data';
 
 /**
  * Project-scoped routes. Features append their entries here, under
@@ -32,6 +33,19 @@ export const APP_ROUTES: Routes = withDeviceGate([
     path: 'projects/:projectId',
     canActivate: [activeProjectGuard],
     children: [...PROJECT_ROUTES, { path: '**', component: NotFoundPage }],
+  },
+  {
+    path: 'core-gate',
+    pathMatch: 'full',
+    data: {
+      scope: 'app',
+      minDeviceClass: 'phone',
+      nav: { label: 'Core gate', icon: 'science', order: 100 },
+    } satisfies ShellRouteData,
+    loadChildren: () =>
+      import('./shell/core-gate/core-gate.routes').then(
+        (feature) => feature.coreGateRoutes,
+      ),
   },
   { path: '**', component: NotFoundPage },
 ]);

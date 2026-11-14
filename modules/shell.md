@@ -60,6 +60,7 @@ SHL-01 composition root, route table + registration pattern, dev proxy, not-foun
 | `/projects/:projectId/graphs/:graphId` | Graph runner (canvas; child route of the same entry) | project | tablet (child-level gate) | no |
 | `/projects/:projectId/manuscript` | Compile & export | project | phone | yes |
 | `/projects/:projectId/switch` (`switch` is a reserved child name under `projects/:projectId/`) | Shell (SHL-08) | project | phone | no |
+| `/core-gate` | Shell (SHL-09 dummy) | app | phone | yes |
 
 Pages with richer layouts on larger screens (files editing, the Tools editor) declare `phone` and switch layout on the device-class signal. The canvas child route is gated with the exported `deviceClassGuard('tablet')` (`canMatch`).
 
@@ -85,7 +86,7 @@ Pages with richer layouts on larger screens (files editing, the Tools editor) de
 - External behaviour only: what the author sees and does in a rendered route, and what goes over the wire (HTTP requests, `EventSource` messages). Never private services, signal wiring or component internals.
 - Seam: rendered routes with Angular's Vitest runner against the fake API client and fake event source (SHL-07), which every feature module uses too.
 - SSE client tested through a stubbed global `EventSource`; breakpoints by driving `matchMedia` / `BreakpointObserver`.
-- System: Platform's Playwright e2e runs against the dev server, exercising the proxy, SSE through the proxy and nav on every run.
+- System: Platform's Playwright e2e runs against the build the API serves on port 8080.
 - Prior art: the canvas library evaluation's headless-Chromium touch synthesis (reference for tablet touch checks); the Markdown round-trip probe (model for the editor fixture suite).
 
 ### Out of scope
