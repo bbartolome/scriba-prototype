@@ -170,7 +170,8 @@ function checkExamplesTree(ctx) {
 function checkSampleRoot(sample) {
   const issues = [];
   const rel = `examples/${sample.id}`;
-  if (!lexists(join(sample.dir, 'project.yaml'))) {
+  // A symbolic link here is reported under D12 by the tree walk; a folder is not a project.yaml.
+  if (!lstatOrNull(join(sample.dir, 'project.yaml'))?.isFile()) {
     issues.push({
       file: `${rel}/project.yaml`,
       message: 'sample folder has no project.yaml',
