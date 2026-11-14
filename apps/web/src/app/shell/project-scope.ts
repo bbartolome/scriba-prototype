@@ -27,8 +27,8 @@ const BASE = 'http://scriba.invalid';
 
 /**
  * The part of a project URL after `projects/<id>`, as one string: the child path and the query
- * (`/chat?run=3`, or '' with no child). On the switch page it is the `to` query instead. Any other
- * URL gives undefined.
+ * (`/chat?run=3`, or '' with no child). On the switch page it is the `to` query instead, or '' when
+ * that query is not a valid `to` (see `validTo`). Any other URL gives undefined.
  */
 export function remainderOf(url: string): string | undefined {
   const parsed = new URL(url, BASE);
@@ -38,10 +38,28 @@ export function remainderOf(url: string): string | undefined {
   if (segments[0] !== 'projects' || segments.length < 2) return undefined;
   const child = segments.slice(2);
   if (child.length === 1 && child[0] === 'switch') {
-    return parsed.searchParams.get('to') ?? undefined;
+    const to = parsed.searchParams.get('to');
+    if (to === null) return undefined;
+    return validTo(to) ? to : '';
   }
   const path = child.length === 0 ? '' : `/${child.join('/')}`;
   return path + parsed.search;
+}
+
+/**
+ * Whether a `to` query is a child path or query of the project (`projectTarget` joins it to the
+ * id): empty, or starting with `/` or `?`, with no `.` or `..` segment in its path. Percent-encoded
+ * dots (`%2e`) count as dots.
+ */
+export function validTo(to: string): boolean {
+  if (to === '') return true;
+  if (!to.startsWith('/') && !to.startsWith('?')) return false;
+  const path = to.split('?')[0] ?? '';
+  return !path.split('/').some(isDotSegment);
+}
+
+function isDotSegment(segment: string): boolean {
+  return /^(\.|%2e){1,2}$/i.test(segment);
 }
 
 /** The URL of a project route: the id is encoded, and the remainder follows it. */
