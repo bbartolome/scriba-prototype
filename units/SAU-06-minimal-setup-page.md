@@ -4,7 +4,7 @@ title: Minimal /setup page and the sign-in notice
 module: setup-auth
 phase: phase:token-guard
 milestone: M1
-blocked_by: [SAU-05, "Frontend shell phase:core (SHL-09)"]
+blocked_by: [SAU-05, "Frontend shell phase:core (SHL-09)", "Frontend shell phone toolbar (SHL-20)"]
 parallel_with: [SAU-07]
 unblocks: [SAU-08, SAU-11, SAU-15]
 ---

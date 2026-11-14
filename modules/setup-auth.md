@@ -15,7 +15,7 @@ SAU-01 contract slice  ══> phase:contract
          ├─ SAU-04 global guard (default-deny, Host, cookie credential, Origin, no CORS, CSP, accessor)
          │    └─ SAU-07 cross-module invariant tests
          ├─ SAU-05 status endpoint + Continue (access-only)
-         └─ SAU-06 minimal /setup page + sign-in notice   (needs 05 + Shell phase:core)
+         └─ SAU-06 minimal /setup page + sign-in notice   (needs 05 + Shell phase:core + SHL-20)
  SAU-08 token-guard gate (e2e setup step, demo)  ══> phase:token-guard
  SAU-09 setup-flow API (steps, preferences, preferences reader) ─┐
  SAU-10 compose-version status ──────────────────────────────────┤

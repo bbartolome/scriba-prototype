@@ -81,6 +81,7 @@ A phase **closes when its gate unit is merged** (the gate is the phase's last un
 | Frontend shell | `phase:shared-components` | M1, M2 | SHL-10 … SHL-12 | all three | Card and preview may merge first and are usable at M1; read-only diff at M2. Consumers adopt each component as soon as its unit merges |
 | Frontend shell | `phase:editor` | M3 | SHL-13 … SHL-16 | all four | |
 | Frontend shell | `phase:polish` | M7 | SHL-17 … SHL-19 | SHL-19 | |
+| Frontend shell | `phase:phone-toolbar` | M1 | SHL-20 | SHL-20 | The toolbar fits 390 px with the connection label showing; Setup & auth's phone unit (SAU-06) waits for it |
 | Setup & auth | `phase:contract` | M1 | SAU-01 | SAU-01 | |
 | Setup & auth | `phase:token-guard` | M1 | SAU-02 … SAU-08 | SAU-08 | "Setup & auth minimal token" |
 | Setup & auth | `phase:setup-flow` | M2 | SAU-09 … SAU-16 | SAU-16 | |
