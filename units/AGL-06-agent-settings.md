@@ -17,5 +17,5 @@ unblocks: [AGL-03, AGL-08, AGL-21]
 - Read by the loop at the start of each agent run (step cap, research families).
 
 ## Acceptance criteria
-- [ ] A fresh library gets the default section; changing `stepCap` persists across restarts and changes only that field.
-- [ ] An invalid value returns `PLATFORM_VALIDATION_FAILED`.
+- [x] A fresh library gets the default section; changing `stepCap` persists across restarts and changes only that field.
+- [x] An invalid value returns `PLATFORM_VALIDATION_FAILED`.

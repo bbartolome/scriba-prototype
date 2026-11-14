@@ -1,6 +1,6 @@
 ---
 id: AGL-06
-status: planned
+status: done
 ---
 # AGL-06 plan - agent settings section and settings API
 
