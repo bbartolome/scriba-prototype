@@ -2335,3 +2335,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Decision (the orchestrator).** 2e is recorded as passed, on that report. It is a result of the run the Navigator required (the Navigator's decision of this date, option (b)), and it is recorded in `docs/adr/0001-tailscale-serve-mechanism.md` (line 3) and in `deploy/RUNBOOK.md` (checklist row 92).
 - **Criterion 2.** It stays unticked: the plan ticks criterion 2 only when 2a to 2e all pass (section 4), and 2c is deferred under N5. This entry ticks no criterion.
 - **Unit status.** PLT-16 stays `planned`. Whether the unit closes with 2c (N5) and 4b (N3) recorded as deferred is a question for the Navigator, asked next.
+
+## 2026-11-14 — PLT-16 — closed as complete (the Navigator's decision, option a); criterion 3 ticked
+
+- **Decision (the Navigator, session e441ef9487974df3be73d324870f7d76, `decide`, 2026-11-14).** Close PLT-16 as complete, with 2c (N5) and 4b (N3) recorded as tracked deferrals; criteria 2 and 4 stay unticked, as the plan's rule requires; criteria 1 and 5 stay with the coordinator (line 1965). Reason: 2e is now passed (the operator's report of 2026-11-14, recorded in the ADR line 3 and RUNBOOK row 92), and N3 and N5 are the plan's own deferral mechanism.
+- **Ticks.** Criterion 3 (ST-2) is ticked: the plan states its condition is met by 3b as the ADR records it (section 4, criterion 3). Criterion 1 (the coordinator's, line 1965), criterion 2 (2c deferred under N5), criterion 4 (4b deferred under N3) and criterion 5 (the coordinator's) stay unticked.
+- **Plan status.** `plans/PLT-16.md` is set to `done`: the code is on `main` (`8ee4290`) and the unit is closed as complete with the deferrals above. The `done` status is used for the README's "code is on main" meaning; the Navigator's word "complete" is recorded here.
+- **Open for the coordinator.** Criteria 1 and 5 ticks; the N3 and N5 deferrals (2c and 4b) remain open items for a later run.

@@ -26,6 +26,6 @@ Tailnet and host-network behaviour is verified on real hardware before releases 
 ## Acceptance criteria
 - [ ] ST-1 passes for one Serve variant, compose ships that variant, and the ADR records both attempts and the result.
 - [ ] ST-1's extra checks pass: `http://scriba` and `http://<100.x>:8080` are refused from another tailnet device.
-- [ ] ST-2 passes: echo envelopes arrive unbatched over the tailnet URL.
+- [x] ST-2 passes: echo envelopes arrive unbatched over the tailnet URL.
 - [ ] ST-3 passes on a Mac and on Linux, and the Linux host-binding requirement is written into the installer hint text (consumed by PLT-17) and the setup guidance.
 - [ ] The runbook names ST-4 as deferred.

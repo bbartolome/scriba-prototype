@@ -1,6 +1,6 @@
 ---
 id: PLT-16
-status: planned
+status: done
 ---
 # PLT-16 plan — ST-1 to ST-3 runbook, manual runs and Serve ADR
 
