@@ -102,7 +102,7 @@ export class SwitchProjectPage {
   private current(): { projectId: string; to: string } {
     return {
       projectId: this.route.snapshot.paramMap.get('projectId') ?? '',
-      to: this.route.snapshot.queryParamMap.get('to') ?? '',
+      to: validTo(this.route.snapshot.queryParamMap.get('to') ?? ''),
     };
   }
 
@@ -115,4 +115,19 @@ export class SwitchProjectPage {
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : 'The request failed.';
+}
+
+/**
+ * The `to` query when it is a child path or query of the project: empty, or starting with `/` or
+ * `?`, with no `.` or `..` segment in its path (`projectTarget` joins it to the id). Any other
+ * value is treated as empty. Percent-encoded dots (`%2e`) count as dots.
+ */
+function validTo(to: string): string {
+  if (to === '' || (!to.startsWith('/') && !to.startsWith('?'))) return '';
+  const path = to.split('?')[0] ?? '';
+  return path.split('/').some(isDotSegment) ? '' : to;
+}
+
+function isDotSegment(segment: string): boolean {
+  return /^(\.|%2e){1,2}$/i.test(segment);
 }
