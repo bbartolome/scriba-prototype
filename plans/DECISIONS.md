@@ -3848,3 +3848,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - 4a holds 55 + 20 + 13 = 88 exports, 89 names with arrayContaining; D14 has 13 routes, nine per-tool; blocked_by and unblocks are exact inverses; C1 to C4 each have a named test; the three implementer problems are handled (D7, D11, section 5, E2).
 - Notes, not defects: step 11's `git diff --stat main --` is more robust as `"$(git merge-base main HEAD)"`; no open plan changes package-lock.json today.
 - Status set to planned (commit on main). The code stage starts in a later iteration.
+
+## 2026-11-14 — SHL-10 — Opus code review (first, branch before the rebase-time swap): NOT APPROVED
+
+- Patch id at this review (`git diff af470ff unit/SHL-10 -- . ':!plans' ':!units' | git patch-id --stable`): fd2954839fbf844fe2d1420a0f3a5bcbefa04a95.
+- Item 1: apps/web/src/app/shell/testing/sample-chat.ts lines 12 and 13 say that the contract slice is not on main yet, so the sample hand-writes its shapes. That is false: the AGL-01 slice (ee7fde5) is in the base af470ff, and agent-loop/index.ts exports its modules there. The comment also gives the wrong reason and contradicts plan decision 3: the Shell does not import /agent-loop because of modules/shell.md line 44. Correction: rewrite the comment to say that the shapes follow the AGL-01 events (decisions D3 to D7, events.ts) and are hand-written because the Shell never imports /agent-loop (modules/shell.md line 44); keep it marked illustrative. Commit with SHL-10 in the message. This is case L: run steps 5 to 9 again and ask for a new review (the patch id will change).
+- Note, not blocking: Angular turns the markdown-text block's text into " {{ output.text }} ", with a space at each end, so under white-space: pre-wrap the leading space shows; T3's toContain does not catch it. Step R replaces the block at the step-6 rebase and it never reaches main, so no fix now.
+- All criteria pass through their tests (T1 to T9), the six paths are right, the BS1 check passes, and lint, tsc, prettier, the build and the web suite (101 of 101) pass.
+- Code rejections of SHL-10: 1.
