@@ -3286,3 +3286,16 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the four open problems is a decision: a path rule for a mutant, a test-count rule for the red stage, a resume rule and a citation to a ruling. The Navigator's rulings stand. No Navigator question is open on this plan.
 - **Action.** A new Opus subagent writes the plan again from the draft (revision 6, `68d6179`) and the list above, as revision 7. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — SHL-10 — Opus review of the plan (revision 6): NOT APPROVED
+
+- **Result (Opus subagent, fresh context).** NOT APPROVED, three factual items. The resume rule (three cases, decision 17's wording), step R (the same card in either merge order, `R0` before and after the swap), T3 (only `provideMarkdown` with `SANITIZE`), the counts (B plus 15; N1 to N4) and the cited lines of the other plans are right; no criterion is weakened.
+  1. Step 9 (`plans/SHL-10.md` line 178) asks for "the failing set … of each control". Case L (line 150) resumes at step 5 and runs no control, so a case-L session cannot report that. A Haiku implementer may then run N1 to N4 when it should not, or stop. Add "(or 'not re-run: case L')" for the controls, as the line already does for step 2 ("made by an earlier session").
+  2. F4 (line 251) says the review of MPR-09's revision 5 is the "entry from 3261". At `2b6e6dd` and at HEAD `dd4e0ea`, line 3261 of `plans/DECISIONS.md` is blank and the heading is line 3262. Write "entry from 3262".
+  3. Section 4 (line 192) says the two calls (`fixture.detectChanges()`, then `await fixture.whenStable()`) follow `render(view)`, `setInput` and a click, and nothing else. T9 (line 216) renders through a spec-local host fixture, not `render(view)`, and T8 (line 215) renders again after `navigateByUrl`. Neither says the two calls follow, yet section 0 (line 33) claims every card test makes them. Say that T9's host fixture makes the two calls after it is created and after the tap, and that T8 awaits each `navigateByUrl` and then makes the same two calls.
+- **Rejections of the SHL-10 plan: 5** (revisions 1, 3, 4, 5 and 6). The rule of prompt.md step 5 applies: the open problems are errors of fact and wording, so an Opus subagent writes the plan again (revision 7).
+
+## 2026-11-14 — SHL-10 — five rejections: examination of the open problems (rule of prompt.md step 5)
+
+- **Examination.** None of the three open problems is a decision: a control's wording for case L, a citation and a statement about the awaits. The Navigator's rule (DECISIONS line 3102) stands. No Navigator question is open on this plan.
+- **Action.** A new Opus subagent writes the plan again from the draft (revision 6, `86c9ee4`) and the list above, as revision 7. The new draft is committed, then a new Opus subagent reviews it.
