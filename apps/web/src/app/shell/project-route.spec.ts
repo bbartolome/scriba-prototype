@@ -197,4 +197,56 @@ describe('project route', () => {
     clickButton(harness, 'Go to the active project');
     await vi.waitFor(() => expect(router.url).toBe('/projects/a/review'));
   });
+
+  it('a valid to keeps its path and query on Go from the switch page', async () => {
+    const doubles = createShellTestDoubles();
+    seed(doubles, 'a');
+    renderWith(doubles);
+    const router = TestBed.inject(Router);
+    const harness = await RouterTestingHarness.create(
+      `/projects/b/switch?to=${encodeURIComponent('/review?run=3')}`,
+    );
+    await vi.waitFor(() => {
+      expect(textOf(harness)).toContain('Switch to Beta?');
+      expect(hasButton(harness, 'Go to the active project')).toBe(true);
+    });
+
+    clickButton(harness, 'Go to the active project');
+    await vi.waitFor(() => expect(router.url).toBe('/projects/a/review?run=3'));
+  });
+
+  it.each(['x', '/../../settings'])(
+    'an invalid to (%s) is treated as empty: Go goes to the active root, Switch to the id alone',
+    async (to) => {
+      const doubles = createShellTestDoubles();
+      seed(doubles, 'a');
+      renderWith(doubles);
+      const router = TestBed.inject(Router);
+      const url = `/projects/b/switch?to=${encodeURIComponent(to)}`;
+      const harness = await RouterTestingHarness.create(url);
+      await vi.waitFor(() => {
+        expect(textOf(harness)).toContain('Switch to Beta?');
+        expect(hasButton(harness, 'Go to the active project')).toBe(true);
+      });
+
+      clickButton(harness, 'Go to the active project');
+      await vi.waitFor(() => expect(router.url).toBe('/projects/a'));
+
+      await router.navigateByUrl(url);
+      await vi.waitFor(() => {
+        expect(textOf(harness)).toContain('Switch to Beta?');
+        expect(hasButton(harness, 'Go to the active project')).toBe(true);
+      });
+
+      doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'b' });
+      doubles.api.respond('POST', ACTIVE_PROJECT_ROUTE, { active: 'b' });
+      clickButton(harness, 'Switch');
+      await vi.waitFor(() => expect(router.url).toBe('/projects/b'));
+      expect(doubles.api.requests).toContainEqual({
+        method: 'POST',
+        path: ACTIVE_PROJECT_ROUTE,
+        body: { projectId: 'b' },
+      });
+    },
+  );
 });
