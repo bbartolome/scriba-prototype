@@ -38,8 +38,8 @@ Releases cut automatically from Conventional Commits (story 44); a semver image 
 - semantic-release config file at the root.
 
 ## Acceptance criteria
-- [ ] A push to `main` with no releasable commit publishes `latest` and `sha-<short>` for both arches and creates no git tag.
-- [ ] A push with a `feat:` or `fix:` commit publishes the semver tag too, then creates the git tag and GitHub release; the image reports that semver from `/healthz`.
+- [x] A push to `main` with no releasable commit publishes `latest` and `sha-<short>` for both arches and creates no git tag.
+- [x] A push with a `feat:` or `fix:` commit publishes the semver tag too, then creates the git tag and GitHub release; the image reports that semver from `/healthz`.
 - [ ] A failure in any build or smoke job leaves no new tag on Docker Hub and no git tag.
-- [ ] All smoke checks pass on both arches.
-- [ ] No step relies on a tag push triggering another workflow; no PAT or App token required.
+- [x] All smoke checks pass on both arches.
+- [x] No step relies on a tag push triggering another workflow; no PAT or App token required.

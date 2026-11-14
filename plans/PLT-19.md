@@ -1,6 +1,6 @@
 ---
 id: PLT-19
-status: planned
+status: done
 ---
 # PLT-19 plan — publish.yml: plan, native multi-arch build, smoke, merge, release
 
