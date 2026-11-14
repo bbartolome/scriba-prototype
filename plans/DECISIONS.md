@@ -3178,3 +3178,8 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Examination.** None of the three open problems is a decision: a resume rule for an existing branch, a wording fix, and a fixture name. No Navigator question is open on this plan.
 - **Action.** A new Opus subagent writes the plan again from the draft (revision 4, `329079a`) and the list above, as revision 5. The new draft is committed, then a new Opus subagent reviews it.
+
+## 2026-11-14 — MPR-09 — a smaller decision of the driver: where the /providers copies live
+
+- **Decision (the driver, a smaller decision under `prompt.md` step 4: the simplest option).** The copies module and its parity spec live under `apps/web/src/app/features/providers/`, in place of `providers-contract.ts`, the file that held the dynamic import. They do not go into the Shell's barrel. Reason: the Navigator's ruling (the entry above) replaces `providers-contract.ts`, and `modules/shell.md` line 43 limits what the Shell consumes, so a feature-owned copy adds no Shell export. The project-store copies stay in the Shell, because SHL-08 decided that location for their values; this is not a change to that decision.
+- **Consequence.** MPR-09 revision 3 (`plans/MPR-09.md`, the header) names the feature folder; its file count is 12; the web test count is the baseline plus 16 (the 14 criterion and E tests plus the two parity tests P1 and P2).
