@@ -12,6 +12,7 @@ import {
 import { SetupAuthModule } from './modules/setup-auth/setup-auth.module';
 import { ProvidersModule } from './modules/providers/providers.module';
 import { ProjectStoreModule } from './modules/project-store/project-store.module';
+import { AgentLoopModule } from './modules/agent-loop/agent-loop.module';
 
 // The composition root. Each feature module adds one import here.
 export const COMPOSED_MODULES: Type<unknown>[] = [
@@ -19,6 +20,7 @@ export const COMPOSED_MODULES: Type<unknown>[] = [
   SetupAuthModule,
   ProvidersModule,
   ProjectStoreModule,
+  AgentLoopModule,
 ];
 
 export interface RootModuleOptions {
