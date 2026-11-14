@@ -1,6 +1,6 @@
 ---
 id: SHL-12
-status: planned
+status: done
 ---
 
 # SHL-12 plan — read-only diff view on @codemirror/merge

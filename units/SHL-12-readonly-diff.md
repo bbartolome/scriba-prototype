@@ -21,6 +21,6 @@ A clear diff of current vs proposed text (18); unified on phones, side by side o
 - Designed so SHL-16 can make the proposed side editable without changing the read-only API.
 
 ## Acceptance criteria
-- [ ] Shows insertions, deletions and changed lines for fixture pairs.
-- [ ] Unified on phones, side by side on tablet/desktop; the toggle overrides.
-- [ ] Whitespace-only, LF→CRLF-only and front-matter-only changes are visible; identical inputs show "no changes".
+- [x] Shows insertions, deletions and changed lines for fixture pairs.
+- [x] Unified on phones, side by side on tablet/desktop; the toggle overrides.
+- [x] Whitespace-only, LF→CRLF-only and front-matter-only changes are visible; identical inputs show "no changes".
