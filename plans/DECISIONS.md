@@ -2475,3 +2475,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   3. Text errors (lines 156, 162 and 228): step 3 gives the wrong reason ("Docker Desktop mounts only `/Users`"); the real reason is that bind sources resolve on the Mac, and in this container only `workspace` and a few other mounts are the Mac's folders. F37's "only `workspace` and some dotfolders" leaves out `~/Cline`. The manual U4 entry says U4 needs the `0.1.0` tag; the one-liner without a tag also needs `:latest`, as S-2 says.
 - **Count.** Rejections of PLT-17: 5. Item 1 is a procedure defect with a real consequence (the author's `~/Books`); the rest are factual corrections.
 - **Next.** The PLT-17 subagent applies items 1 to 3 to `plans/PLT-17.md` (untracked). Then Opus reviews again.
+
+## 2026-11-14 — PLT-20 — Opus re-review of the code (after the corrections): APPROVED
+
+- **Result.** An Opus reviewer with no earlier context returned APPROVED for the corrected code of PLT-20 (commits 58bc233, 888c0cf, cbce580, 8e83a1d on top of 0f4eee6 and 6ecd3b3). Each test commit comes before its fix (the reviewer reran each commit's files: 58bc233 fails the guard test with `0 !== 2`; cbce580 fails the D8 test with `0 !== 1`). The guard is `import.meta.main`: through a symlink with a missing `--root` it exits 2; imported, `LAYERS` loads and `main` does not run. D8 raises the issue unless the project.yaml is a regular file; a symlink keeps the D12 line. Only the plan's five files changed. The logs show node tests 34 of 34, the vitest totals (contracts 175, api 129, web 69, packs 1, e2e 12), lint and build exit 0.
+- **Count.** Rejections of PLT-20's code: 2 (both fixed; no Navigator call).
+- **Next.** Collect `unit/PLT-20` onto `main` through a batch of one: rebase, batch checks, the criteria ticks (C1 to C6, all passed), `status: done`, and the fast-forward.
