@@ -1,0 +1,258 @@
+---
+id: SHL-11
+status: draft
+---
+
+# SHL-11 plan — Markdown preview: front matter hidden, sanitised
+
+Unit: SHL-11 (module shell, phase:shared-components, M1; `units/SHL-11-markdown-preview.md`). Revision 1, written 2026-11-14. Status `draft`. Base: `main` at `22040f6` (`git rev-parse --short HEAD`); the tree outside `plans/` was clean when this plan was written. `plans/SHL-11.md` is untracked (this plan). The driver creates `unit/SHL-11` from `main`. This plan writes no code and changes only `plans/SHL-11.md`.
+
+The only blocker, SHL-09, is done (F3), so no workaround is needed. `plans/DECISIONS.md` has no entry for SHL-11 (F4), so the decisions this plan obeys come from the unit, `modules/shell.md` and the SHL-01 decisions about `ngx-markdown`.
+
+Tags: `[FACT Fn]` means checked in this session, with the file and line in section 7a. `[ASSUMED An]` means a step of section 3 tests it or section 7b lists it. `[DECISION]` means a smaller choice made here (names, file layout, test structure; `prompt.md` line 154), not a Navigator decision. Line numbers were read with `grep -n`, `sed -n` or `cat -n` at writing time.
+
+## 1. Decisions this plan follows
+
+1. **Renders through `ngx-markdown`, configured once at the root, sanitiser on.** The component uses `ngx-markdown`'s `MarkdownComponent` and the root `provideMarkdown({ sanitize: { provide: SANITIZE, useValue: SecurityContext.HTML } })`. It adds no provider of its own. Source: unit line 18; `apps/web/src/app/app.config.ts` lines 22 to 24; `plans/SHL-01.md` decision 5 (line 24), approved at `plans/DECISIONS.md` lines 1012 to 1014. [FACT F2, F7]
+
+2. **No sanitiser bypass.** The new files never set `disableSanitizer` on the component, never call `bypassSecurityTrust*`, and never change `SANITIZE`. `plans/SHL-01.md` decision 5 says "`disableSanitizer` is never set", and its step 4 greps for it (line 84). Step 5 of this plan repeats that grep. [FACT F8] [DECISION on the grep]
+
+3. **Hides a leading YAML front-matter block, for display only.** The component removes the block from the string it hands to the renderer. It has no output, no write path and no setter on its input, so nothing is written back. Source: unit line 19. [FACT F2]
+
+4. **Input is a Markdown string; no file I/O.** The component injects nothing from the Shell (no API client, no SSE client) and does not use `ngx-markdown`'s `src` input, which would fetch over HTTP. Source: unit line 20; `modules/shell.md` line 43 ("shared components take Shell-local inputs"). [FACT F2, F5, F8]
+
+5. **The Shell front-matter rule is Pandoc's, without YAML validation.** A block is front matter when the text (after an optional BOM) starts with a line that is only `---` (trailing spaces or tabs allowed), the next line is not blank, and a later line is only `---` or `...`. Without a closing line, or with a blank line after the opening `---`, nothing is hidden. Reason: the compile engine is Pandoc (`units/CEX-04-assembled-markdown.md` line 18, "One Pandoc Markdown document", and line 25, each file's YAML front matter is stripped), so the reading pane and the export agree on what is metadata; and the blank-line rule keeps a scene break (`---`, blank line, text, `---`) visible. The Shell cannot import the API's parser (`modules/shell.md` line 43), so it keeps its own copy of the rule. [DECISION] [ASSUMED A4] Open points 2 and 7.
+
+6. **Location and names.** The component is Shell code, so it lives in `apps/web/src/app/shell/`, outside `features/`. File `markdown-preview.ts`, class `MarkdownPreview`, selector `app-markdown-preview` (prefix `app`, `apps/web/angular.json` line 14), like `theme-toggle.ts` / `ThemeToggle` / `app-theme-toggle`. It is exported from `shell/index.ts`, the Shell's entry for features. Source: `modules/shell.md` line 42; `plans/SHL-01.md` decision 12 (line 31); `apps/web/src/app/shell/index.ts` line 1. [FACT F12, F14] [DECISION]
+
+7. **The input is named `content`, not `markdown`.** `ngx-markdown`'s `MarkdownComponent` has the selector `markdown, [markdown]`, which matches any element that has an attribute or binding named `markdown` in a template where that component is in scope. A binding `[markdown]` on `app-markdown-preview` would instantiate a second `MarkdownComponent` on the host if a consumer also imported it. `content` has no such clash and matches the file API's `content` field. Source: `node_modules/ngx-markdown/fesm2022/ngx-markdown.mjs` line 656; `packages/contracts/src/project-store/files.ts` line 35. [FACT F8, F17] [DECISION]
+
+8. **One signal input, no outputs.** `content = input<string>('')`. A `computed` strips the front matter and the template is `<markdown [data]="body()" />`. The default `''` renders an empty pane. [DECISION]
+
+9. **No optional `ngx-markdown` features.** `katex`, `mermaid`, `emoji`, `clipboard`, line numbers and `src` stay off. Their optional peers are not installed, and `marked-katex-extension` is an external of the build (`apps/web/angular.json` line 28). No unit or module asks for them. Source: `plans/SHL-01.md` decision 22 (line 41) and open point 4 (line 215). [FACT F7, F8]
+
+10. **No dependency, lock or build-config change.** `ngx-markdown` 22.1.1 and `marked` 18.2.0 are already installed. `apps/web/package.json`, `package-lock.json` and `apps/web/angular.json` do not change. Source: `apps/web/package.json` line 21; `plans/SHL-01.md` decision 5. [FACT F7]
+
+11. **Test seam.** A rendered component under Angular's Vitest runner (jsdom), with the app's real root providers, asserted on the DOM the author sees. No private helper, signal or service is tested; the front-matter rule is tested through the rendered pane. Source: `modules/shell.md` lines 86 and 87; `units/README.md` line 133. [FACT F5, F13] [DECISION on the spec shape]
+
+12. **Criteria are not weakened.** Both criteria keep their literal wording, and each gets a named test (section 4), plus negative controls that show the tests can fail (step 4). Source: `prompt.md` lines 136 and 144. [FACT F16]
+
+13. **Build stop rule.** The production build exits 0 with the 1 MB error budget holding; the only warnings allowed are the three known ones (two CommonJS warnings and the 500 kB initial-total warning). Source: `plans/DECISIONS.md` lines 2681 to 2685 and 2712 to 2716; `plans/SHL-09.md` decision 12 (line 38). [FACT F15]
+
+14. **The swap in the card (branch B).** If SHL-10's tool-call card is on `main` when this unit is coded, this unit replaces the card's plain-text Markdown block with the preview and updates the card's test T3 in place (section 2b-bis, step 3b); otherwise it changes nothing of SHL-10's. This keeps both plans correct whichever unit merges first. Source: `plans/SHL-10.md` line 45 (decision 6), line 139 (T3, branches a and b), line 167 (the SHL-11 row of its section 5), line 178 (open point 1) and line 235 (its section 8). [DECISION]
+
+## 2. Files to create or change
+
+### 2a. New files (2)
+
+| Path | Purpose | Decision |
+|---|---|---|
+| `apps/web/src/app/shell/markdown-preview.ts` | Standalone `MarkdownPreview`, selector `app-markdown-preview`. Imports only `@angular/core` and `ngx-markdown` (`MarkdownComponent`). The input `content` (string, default `''`). A module-private function `stripFrontMatter(text)` (section 3, step 3). A `computed` `body`. Template `<markdown [data]="body()" />`. `encapsulation: ViewEncapsulation.None` with a few element-scoped rules for phones: the host is `display: block` with `overflow-wrap: anywhere`; `app-markdown-preview markdown` is `display: block`; `img` has `max-width: 100%; height: auto`; `pre` and `table` are `display: block; overflow-x: auto`. No colours, so the theme applies. A doc comment names the input and says a test bed needs the root markdown providers | 1 to 9 |
+| `apps/web/src/app/shell/markdown-preview.spec.ts` | The tests of section 4 (19 tests) | 11, 12 |
+
+### 2b. Changed files (1)
+
+| Path | Change | Decision |
+|---|---|---|
+| `apps/web/src/app/shell/index.ts` | Append after line 11: `export { MarkdownPreview } from './markdown-preview';`. Line 1 (the comment) is not changed | 6 |
+
+### 2b-bis. Changed files only if SHL-10 is on `main` at code time (branch B of step 0)
+
+`plans/SHL-10.md` (decision 6, step 1b, open point 1 and its section 8) plans a plain-text block for Markdown output until SHL-11 lands, and proposes that SHL-11's code stage replaces it when SHL-11 merges second. This plan accepts that, so the two plans are correct in either order: if SHL-11 merges first, SHL-10 imports this component itself (its branch a); if SHL-10 merges first, this unit does the swap.
+
+| Path | Change | Decision |
+|---|---|---|
+| `apps/web/src/app/shell/tool-call-card.ts` | Replace the plain-text (`white-space: pre-wrap`) block that shows `output` of kind `markdown` with `<app-markdown-preview [content]="..." />`, bound to that output's text, and add `MarkdownPreview` (imported from `./markdown-preview`) to the card's `imports`. Nothing else changes | 14 |
+| `apps/web/src/app/shell/tool-call-card.spec.ts` | Test T3 of SHL-10 ("shows Markdown output") changes to its branch (a): the output region has no literal `**` and shows `bold` inside a `strong`. The test bed gains the root markdown providers (the recipe of section 4). No test is added or removed | 14 |
+
+### 2c. Edits made at closure, by the driver and not by the code stage
+
+`units/SHL-11-markdown-preview.md`: tick the two criteria after each passes (`prompt.md` line 117 and line 144). `plans/SHL-11.md`: status. `plans/DECISIONS.md`: the records of the reviews.
+
+### 2d. Files that must not change
+
+`apps/web/package.json`; `package-lock.json`; `apps/web/angular.json`; `apps/web/src/app/app.config.ts`; `apps/web/src/app/app.routes.ts`; `apps/web/src/app/app.ts`, `app.html`; `eslint.config.mjs`; `apps/web/tsconfig.json`, `tsconfig.app.json`, `tsconfig.spec.json`; every other file under `apps/web/src/app/shell/`, including `shell/testing/` (the fakes of SHL-07; open point 3); `modules/shell.md`; every other unit file; everything under `e2e/`, `apps/api/`, `packages/` and `scripts/`. In branch B, `tool-call-card.ts` and `tool-call-card.spec.ts` are the only other `shell/` files that change (section 2b-bis).
+
+## 3. Method
+
+Run from the repo root on `unit/SHL-11` (or on `main` if the driver has not created the branch). Do not commit, push or switch branches. Record `node -v` and `npm -v`. Each step names its files.
+
+0. **Preconditions (no file change).**
+   - `git status --short -- ':!plans'` prints nothing (other units' plans may be untracked during parallel work).
+   - `node -v` prints `v26.x`.
+   - `test -d node_modules/@angular/core && test -d node_modules/ngx-markdown && test -d node_modules/marked` succeeds, and `node -p "require('./node_modules/ngx-markdown/package.json').version"` prints `22.1.1` (F7). If `node_modules` is missing, run `npm ci` first and say so.
+   - `npm run build -w @bbartolome/scriba-contracts` exits 0 (the web specs and the production build use `packages/contracts/dist`; SHL-09 plan step 0).
+   - Branch check. `ls apps/web/src/app/shell/tool-call-card.ts` and `grep -n -i 'markdown' apps/web/src/app/shell/tool-call-card.ts`. Branch A: the file is absent; three files change, and step 3b is skipped. Branch B: the file is present and shows Markdown output as plain text; five files change (section 2b-bis) and step 3b runs. If the file is present and already uses a preview component, stop and report. Record the branch.
+1. **Baseline (no file change, before any edit).**
+   - `npm test -w @bbartolome/scriba-web` exits 0. Record the passed count `B` (86 in 20 files at the SHL-09 batch head, F15) [ASSUMED A7].
+   - `npm run build -w @bbartolome/scriba-web` exits 0. Record `Initial total` as `I0` (505.56 kB at the SHL-09 batch head) and the warnings `W0` (two CommonJS warnings and the initial-total warning).
+2. **Red first (files: the spec, the component in pass-through mode, `index.ts`).**
+   - Write `markdown-preview.spec.ts` (section 4).
+   - Write `markdown-preview.ts` with `body = computed(() => this.content())`, that is, with no stripping yet, and add the export to `index.ts`.
+   - `npm test -w @bbartolome/scriba-web` exits 1. Expected failures: only the four rows of "C1 hides a leading front-matter block" and "C1 keeps a thematic break that is in the body" (its front matter is still shown). Every other new test passes: the two other C1 negative controls (nothing is stripped, so nothing is swallowed), the eleven C2 tests and the HTTP test (the root sanitiser already works). If the spec cannot build its test bed (A1), stop and report; open point 3 gives the fallback.
+3. **Green: the stripper (file: `markdown-preview.ts`).** Replace `body` with `computed(() => stripFrontMatter(this.content()))` and write the function. Algorithm, in order:
+   1. Drop one leading U+FEFF, if present. The result is `source`.
+   2. Split `source` into lines that keep their terminators (`\r\n`, `\n` or `\r`): `source.match(/[^\r\n]*(?:\r\n|\n|\r)|[^\r\n]+$/g) ?? []` (F10).
+   3. If there are fewer than two lines, return `source`.
+   4. If line 1 without its terminator does not match `/^---[ \t]*$/`, return `source`.
+   5. If line 2 without its terminator is empty or only spaces and tabs, return `source`.
+   6. For each line from the second on, if it without its terminator matches `/^(?:---|\.\.\.)[ \t]*$/`, return the lines after it, joined with `''`, with the leading blank lines removed (`.replace(/^(?:[ \t]*(?:\r\n|\n|\r))+/, '')`). Reason: `ngx-markdown` derives its indentation trim from the first non-empty line, and a lone `\r` line counts as one column of indentation (F8, lines 419 to 439), so a CRLF remainder that starts with a blank line would lose a column from every indented line.
+   7. Return `source` (no closing line).
+   - Then `npx prettier --write` on the three paths of section 2.
+3b. **Branch B only: the swap in the card (files: `tool-call-card.ts`, `tool-call-card.spec.ts`).** Make the two edits of section 2b-bis, then `npx prettier --write` on both paths. Do this after step 3, so the preview is complete when the card uses it. `npm test -w @bbartolome/scriba-web` still exits 0, with the same count as before this step.
+4. **Green, then negative controls.**
+   - `npm test -w @bbartolome/scriba-web` exits 0. The passed count is `B + 19`.
+   - Each control: `cp` the file to `/tmp/shl11-<name>.<ext>`, edit, run `npm test -w @bbartolome/scriba-web`, restore with `cp`, then `cmp` prints nothing.
+   - M1, in `markdown-preview.ts`: `body = computed(() => this.content())`. Expected: exit 1, with the four "hides" rows and "keeps a thematic break that is in the body" failing, and no other test failing.
+   - M2, in `app.config.ts`: `useValue: SecurityContext.NONE`. Expected: exit 1, with C2 failing at least on the script rows, the attribute rows and the link rows (the structural checks a to c), and the C1 tests passing. This shows the tests run against the real root config.
+   - M3, in `markdown-preview.ts`: add `[disableSanitizer]="true"` to `<markdown>`. Expected: the same failures as M2.
+   - M4, in `markdown-preview.ts`: in step 7 of the algorithm, return `''` instead of `source` (an unterminated block swallows the whole text). Expected: exit 1 with only "shows everything when the opening --- has no closing fence" failing.
+   - M5, in `markdown-preview.ts`: drop step 5 of the algorithm. Expected: exit 1 with only "shows both scenes when the opening --- is followed by a blank line" failing.
+   - M6: apply M3, and in the spec comment out checks a to c of `expectInert`. If C2 still fails, the canary works (A2). If C2 passes, the canary cannot fail in this runner, and checks a to c carry criterion 2 alone; record which. Restore both files.
+   - M7, in `markdown-preview.ts`: remove the leading-blank-line removal of step 6 of the algorithm. Expected: exit 1 with only the CRLF row of "hides a leading front-matter block" failing (its nested list collapses).
+   - `git diff -- apps/web/src/app/app.config.ts` prints nothing after every restore.
+5. **Static checks (no file change).**
+   - a. `git status --short -uall -- ':!plans' ':!units'` prints exactly three lines in branch A: ` M apps/web/src/app/shell/index.ts`, `?? apps/web/src/app/shell/markdown-preview.spec.ts` and `?? apps/web/src/app/shell/markdown-preview.ts`. In branch B it prints those three and, in addition, ` M apps/web/src/app/shell/tool-call-card.ts` and ` M apps/web/src/app/shell/tool-call-card.spec.ts` (SHL-10's files, if they are committed on `main`; the order of the lines may differ).
+   - b. `git diff --quiet -- apps/web/package.json package-lock.json apps/web/angular.json apps/web/src/app/app.config.ts apps/web/src/app/app.routes.ts apps/web/src/app/app.ts apps/web/src/app/app.html eslint.config.mjs apps/web/tsconfig.json apps/web/tsconfig.app.json apps/web/tsconfig.spec.json apps/web/src/app/shell/testing modules e2e apps/api packages scripts` exits 0. (`git diff --quiet` ignores untracked files, which is right here.)
+   - c. `grep -rn -e disableSanitizer -e bypassSecurityTrust -e 'SecurityContext.NONE' -e innerHTML apps/web/src` prints nothing. The new files must not contain these words, not even in comments.
+   - d. `grep -rln "from 'ngx-markdown'" apps/web/src` prints only `app.config.ts` and `shell/markdown-preview.ts`.
+   - e. `grep -n "from '" apps/web/src/app/shell/markdown-preview.ts` prints only `@angular/core` and `ngx-markdown`.
+   - f. `grep -n 'MarkdownPreview' apps/web/src/app/shell/index.ts` prints one line, the export.
+6. **Lint, types and format (no file change).** `npm run lint -w @bbartolome/scriba-web` exits 0. `npx tsc --noEmit -p apps/web/tsconfig.app.json` and `npx tsc --noEmit -p apps/web/tsconfig.spec.json` each exit 0. `npx prettier --check` on the three paths exits 0.
+7. **Production build (stop rule, decision 13).** `npm run build -w @bbartolome/scriba-web` exits 0. Record `I1` and `W1`. Expected: `W1` is the same three warnings as `W0`, and `I1` equals `I0` within 0.1 kB, because no entry point imports the component or the barrel (F12) [ASSUMED A5]. The compiler still type-checks the component and its template, because `tsconfig.app.json` includes `src/**/*.ts` (F14). A new warning or a failure stops the code stage and goes to the Navigator. A difference in `I1` is recorded with its cause and is not a stop on its own.
+8. **Full runs (no file change).** `npm test -w @bbartolome/scriba-web` exits 0 with count `B + 19` (the same in branch B: T3 of the card is changed, not added). The root `npm test` runs once; a failing test that this unit does not touch is recorded as found on `main` and is not fixed here.
+9. **Record (no file change).** Report `B`, `B + 19`, `I0`, `I1`, `W0`, `W1`, the failing set of step 2 and of each control M1 to M7, and `git status --short -uall`. Do not commit.
+
+No dev stack, no e2e and no demo run: the unit has no route, and the e2e does not render the preview (open point 4).
+
+## 4. Acceptance criteria tests
+
+Seam for both criteria: the component rendered through a spec-local host (`<app-markdown-preview [content]="text()" />`, importing `MarkdownPreview` from `./index`, which also checks the barrel export), under Angular's Vitest runner in jsdom. The test bed uses the app's real root providers: `TestBed.configureTestingModule({ providers: [...appConfig.providers, { provide: SSE_CLIENT, useValue: { start: () => undefined } }, provideHttpClientTesting()] })`. The `SSE_CLIENT` stub is there because the root `provideAppInitializer` calls `start()` on it (app.config.ts lines 26 to 28); the component does not use it. `provideHttpClientTesting()` comes after `appConfig.providers`, which supplies `provideHttpClient()`. A `beforeEach` silences `console.warn` with `vi.spyOn(console, 'warn').mockImplementation(() => undefined)`, because Angular's sanitiser warns in dev mode when it strips content (F9); `afterEach` calls `vi.restoreAllMocks()` and sets `document.title` back to `''`. A test renders with `fixture.componentInstance.text.set(...)`, `fixture.detectChanges()` and `await fixture.whenStable()` (the render is async, and `ngx-markdown` registers it as a pending task, F8), then reads the `markdown` element inside `app-markdown-preview`.
+
+**Criterion 1** (unit line 23): "A draft with front matter renders without the front-matter block." File: `apps/web/src/app/shell/markdown-preview.spec.ts`.
+
+Shared strings: `FRONT = 'title: Zebra Anthem\nstatus: draft\ntags: [alpha, beta]'`; `BODY = '# Chapter One\n\nThe rain began at noon.\n\n- outer\n  - inner\n'` (the nested item makes a lost column of indentation visible, step 3); `LF = '---\n' + FRONT + '\n---\n\n' + BODY`.
+
+- **C1 hides a leading front-matter block** (`it.each`, four rows, four tests):
+  - `LF`: the text `LF`.
+  - `CRLF`: `LF` with every `\n` replaced by `\r\n`.
+  - `a leading BOM`: `'\uFEFF' + LF`.
+  - `a closing ... fence`: `'---\n' + FRONT + '\n...\n\n' + BODY`.
+  - Expected for each row: the pane's text contains `Chapter One` and `The rain began at noon.`; it contains none of `Zebra Anthem`, `status` and `alpha`; it has no `hr` and no `h2` (a setext-heading artifact of the raw `---`); it has exactly one `h1`, and the `h1` is its first element child; and it has a nested list, `ul ul li`, with the text `inner`.
+- **C1 keeps a thematic break that is in the body:** `LF + '\n---\n\nSecond scene.\n'`. Expected: no `Zebra Anthem`, the text `Second scene.`, and exactly one `hr`.
+- **C1 shows everything when the opening --- has no closing fence:** `'---\n' + FRONT + '\n\n' + BODY`. Expected: the text contains `Zebra Anthem`, `Chapter One` and `The rain began at noon.` (nothing is swallowed).
+- **C1 shows both scenes when the opening --- is followed by a blank line:** `'---\n\nScene one.\n\n---\n\nScene two.\n'`. Expected: the text contains `Scene one.` and `Scene two.`, and there are two `hr`.
+
+**Criterion 2** (unit line 24): "Fixtures with `<script>`, `onerror` attributes and `javascript:` links: nothing executes or renders as active HTML." Same file.
+
+Each fixture below is wrapped as `'Safe text before.\n\n' + fixture + '\n\nSafe text after.\n'`, except row 10. `document.title = '<name>'` is the canary each fixture would set, where `<name>` is the short name inside the fixture.
+
+| Row | Fixture |
+|---|---|
+| 1 a script block | `<script>document.title = 'script-block'</script>` |
+| 2 an inline script | `Hello <script>document.title = 'script-inline'</script> world` |
+| 3 an onerror attribute | `<img src="x" onerror="document.title = 'onerror'">` |
+| 4 onclick, onmouseover and onload attributes | `<a href="https://example.test/" onclick="document.title = 'onclick'">link</a> <div onmouseover="document.title = 'onmouseover'">hover</div> <svg onload="document.title = 'onload'"></svg>` |
+| 5 a Markdown javascript: link | `[click me](javascript:document.title='md-link')` |
+| 6 a mixed-case javascript: link | `<a href="JaVaScRiPt:document.title='mixed-case'">mixed</a>` |
+| 7 an entity-encoded javascript: link | `<a href="&#106;avascript&colon;document.title='entity'">entity</a>` |
+| 8 a tab-split javascript: link | `<a href="java&#x09;script:document.title='tab'">tab</a>` |
+| 9 embedding elements | `<iframe src="javascript:document.title='iframe'"></iframe><object data="javascript:document.title='object'"></object><embed src="javascript:document.title='embed'"><form action="javascript:document.title='form'"><button>send</button></form><style>body { display: none }</style>` |
+| 10 a script after front matter | the whole text `'---\ntitle: Zebra Anthem\n---\nSafe text before.\n\n<script>document.title = \'after-front-matter\'</script>\n\nSafe text after.\n'` |
+
+- **C2 renders nothing active for `<row>`** (`it.each`, ten rows, ten tests). The helper `expectInert(root)` asserts five things.
+  - a. `root.querySelectorAll('script, iframe, object, embed, form, style, link, meta, base, svg')` is empty.
+  - b. No element in `root` (or `root` itself) has an attribute whose name, in lower case, starts with `on`.
+  - c. For every attribute named `href`, `src`, `xlink:href`, `action`, `formaction`, `poster`, `background` or `cite`, `new URL(value, 'http://example.test/').protocol` is not `javascript:` (a value that `new URL` rejects passes). After sanitising, a `javascript:` value becomes `unsafe:javascript:...` (F9, F10), so its protocol is `unsafe:`.
+  - d. The text contains `Safe text before.` and `Safe text after.`, so an empty pane cannot pass.
+  - e. The canary: the test sets `document.title = ''` before rendering. After rendering, it dispatches `new Event(type)` for `error`, `load`, `click` and `mouseover` on `root` and every element in it, then asserts `document.title` is still `''`. jsdom's Vitest environment runs inline handler attributes (`runScripts: 'dangerously'`, F11), so a surviving `onerror` or `onclick` would change the title. The canary is a DOM write on purpose: an inline handler runs in jsdom's own window, and Vitest points the test's `window` and `document.defaultView` at Node's global, so a global variable set by a handler would not be visible to the test (F11). `document` is the same object in both [ASSUMED A2]. A plain `Event` does not trigger a link's navigation in jsdom.
+- **C2 control: safe Markdown still renders.** The text is `'# Heading\n\nSome *emphasis*, **strong** and a [link](https://example.test/path).\n\n- one\n- two\n\n> quote\n\n```\ncode block\n```\n'`. Expected: `h1` `Heading`; `em` `emphasis`; `strong`; `a[href="https://example.test/path"]` with the text `link`; two `li` in a `ul`; a `blockquote`; and `pre code` with `code block`. It shows the sanitiser does not strip ordinary Markdown, and that criterion 2 is not met by blanking the pane.
+
+**Supplementary (unit decision, line 20):**
+
+- **Renders from the string alone: no HTTP request.** Render `LF`, then `TestBed.inject(HttpTestingController).verify()` does not throw. A use of `ngx-markdown`'s `src` input, or any other request, would be an outstanding request.
+
+In branch B, T3 of SHL-10 (`tool-call-card.spec.ts`) is also run and is the check of the swap: with the preview in the card, a Markdown output shows its `**bold**` as a `strong`. It is SHL-10's test, changed in place, and it adds nothing to the count of 19.
+
+"Never written back" (unit line 19) needs no test of its own: the component has no output and no setter, and the input is a primitive string (decision 3). Counts: C1 has 7 tests, C2 has 11, the supplementary one has 1: 19 in all.
+
+## 5. Agreement with downstream units
+
+Public API of this unit, for the consumers below: selector `app-markdown-preview`; class `MarkdownPreview`, imported from the Shell entry (`shell/index.ts`); one input `content` (string, default `''`); no outputs. The pane hides a leading front-matter block, sanitises what is left, and re-renders on every change of `content`. Any test bed that renders it needs the root markdown providers (open point 3).
+
+| Unit | What it needs from SHL-11 | Provided by this plan |
+|---|---|---|
+| SHL-15 editor layout (`blocked_by: [SHL-11, SHL-13]`; unit line 18; `modules/shell.md` line 28) | A preview for the split view and the phone toggle, fed the editor's current text and updating live | Yes. `[content]` takes the text and re-renders on change. The editor shows front matter as plain text (SHL-13 unit line 19) and the preview hides it, so the two panes differ only there, which is intended. The render is async, so SHL-15's tests must `await fixture.whenStable()` after each change (A6) |
+| SHL-19 polish gate (`blocked_by` names SHL-11; unit line 17 lists nav, landing, notices, editor, diff and card) | Nothing specific for the preview | Yes. The pane's output is the semantic HTML that Markdown gives (headings, lists, links, code) and sets no colours, so the theme's contrast applies. A heading level inside the pane follows the author's Markdown; the pass may review it |
+| PST-10 files UI (`blocked_by` names "Frontend shell Markdown preview (SHL-11)"; unit lines 17 and 18) | A read-only preview of a file, on phones and until the editor lands | Yes. PST-10 passes the file API's `content` string (`fileReadSchema`, `files.ts` lines 33 to 39) as `[content]`. A BOM and CRLF are handled. PST-10's component tests ("preview renders Markdown", unit line 23) need the root markdown providers in their test bed (open point 3) |
+| SHL-10 tool-call card (parallel; unit line 21: "uses SHL-11's preview for Markdown output if available") | The component's name and input | The name and input above. SHL-10 binds `[content]`, never `[markdown]` (decision 7). `plans/SHL-10.md` reads the selector and input at its code time (step 1b). If SHL-11 merges first, SHL-10 uses the preview (its branch a). If SHL-10 merges first, it shows plain text, and this unit swaps the block in `tool-call-card.ts` and updates T3 (section 2b-bis, step 3b), as `plans/SHL-10.md` line 235 proposes. A tool output that begins with front matter will have it hidden (open point 6) |
+| Agent loop chat (AGL-07, AGL-08, via SHL-10; `modules/shell.md` line 80 names "Agent loop") | Safe rendering of agent text | Yes: the root sanitiser applies to all text. Each update of `content` re-parses the whole string, so a consumer that streams tokens may throttle (open point 7). The unit's front matter lists "Agent loop" without a unit id, which `units/README.md` line 65 treats as informative |
+| "Compile & export reading" (`unblocks` entry without a unit id; `modules/shell.md` line 80) | Informative only | No `units/CEX-*.md` file mentions a preview or a Markdown reading pane (grep, F6), and CEX-17 is a read-only outline on phones, not Markdown. Nothing to provide beyond the API above |
+| GRR-13 inline results (Graph runner; "an expandable preview of `output`", unit line 21) | Not named in SHL-11's `unblocks` | Informative. The component may be reused for text output. No commitment |
+| SHL-01 (done) | The root `provideMarkdown` stays as it is | Yes. `app.config.ts` is not changed (section 2d); `externalDependencies` is untouched because no optional input is set |
+| SHL-07 fakes (done) | Used as they are | Yes. `shell/testing/` is not changed. The spec does not use `createShellTestDoubles()` (it provides a fake SSE client with no `start`), so it builds its test bed as section 4 says |
+| SHL-09 gate (done) | No change | Yes. No route, no nav item, no route-table row |
+| Front matter of `units/SHL-11-markdown-preview.md` | `unblocks` is the exact inverse of `blocked_by` | Holds: the units whose `blocked_by` names SHL-11 are SHL-15, SHL-19 and PST-10 (grep, F6); the other two entries have no unit id. `parallel_with` `[SHL-10, SHL-12, SHL-13, SHL-17, SHL-18]` is symmetric (each of those units lists SHL-11) and pairs SHL-11 with none of its dependents. No unit file changes |
+
+## 6. Open points
+
+1. **"No raw-HTML pass-through" (unit line 18, SHL-01 decision 5). Owner: the Navigator.** SHL-01 read it as "the sanitiser is on and `disableSanitizer` is never set", and Opus approved that reading (`plans/DECISIONS.md` lines 1012 to 1014). Under that reading Angular's sanitiser still lets safe raw HTML through (for example `<b>`, `<div>`, `<img src="https://...">`: F9 lists their elements and attributes). Criterion 2 is about scripts, event attributes and `javascript:` links, and the tests assert only those, so they hold under either reading. This plan keeps SHL-01's reading. If the Navigator wants raw HTML shown as literal text, the change is a `MARKED_OPTIONS` renderer for `html` tokens in the root config (`app.config.ts`, a file this plan leaves alone) and a new test. Nothing else here would change.
+2. **The front-matter rule (decision 5). Owner: the Navigator, only if a stricter rule is wanted.** The rule follows Pandoc and does not validate YAML. A file that opens with `---`, a non-blank line, and a later `---` or `...` line has that block hidden even if it is not YAML (for example `---`, `Note to self`, `---`). The blank-line rule covers the common scene-break case (tested). A stricter guard (the first line must look like `key:` or a comment) would reduce the false positives and add rows to C1. The Project store's own parser (PST-08, not yet planned) may define the rule differently; if it does, the Shell's copy should follow it.
+3. **Test beds for consumers (SHL-10, SHL-15, PST-10). Owner: the coordinator.** `MarkdownService` has no `providedIn`, so a test bed that renders the preview fails with a missing provider unless the root markdown providers are supplied (F8). This plan does not change `createShellTestDoubles()` (SHL-07's file) or `app.config.ts`. The recipe in section 4 works for any consumer: `...appConfig.providers`, a stub `SSE_CLIENT` with `start`, and the consumer's own fakes after them. Two cleaner options exist, each touching a shared file: export the markdown provider set as one constant from a new Shell file, used by `app.config.ts` and by the doubles; or add `provideMarkdown` to the doubles. Either is additive and can follow when PST-10 or SHL-10 needs it. If A1 fails in step 2, the fallback for this unit's spec is a local `provideMarkdown({ sanitize: { provide: SANITIZE, useValue: SecurityContext.HTML } })` plus one extra test that reads `appConfig.providers` for that same provider; the Navigator would then decide the constant.
+4. **No real-browser check of "nothing executes". Owner: the Navigator.** The tests check the sanitised DOM and run a canary in jsdom, whose parser is not the one in Chromium or Safari. A real browser run needs a page that hosts the preview, and no route does until PST-10 (the dummy page of SHL-09 is not changed). The sanitiser itself uses the browser's own parser at run time. If the Navigator wants a browser check, it can be added to PST-10's phone e2e, or run here as a scratch script outside the repo against a temporary host route that is not committed.
+5. **The input name (decision 7). Owner: the coordinator.** `plans/SHL-10.md` does not name SHL-11's selector or input (its A8); it reads them at code time. A name other than `content` is a change of sections 2b-bis, 4 and 5 and the spec, and nothing else.
+6. **No toggle for the front-matter hiding. Owner: consumers.** The unit says "reading panes". A chat message or a tool-result card (AGL-07, SHL-10) may want to show a file's front matter as it is. This plan adds no flag, so as not to build what no unit asks for. A boolean input with the default `true` is additive and can be added later.
+7. **Known limits of `ngx-markdown` 22.1.1, accepted and untested. Owner: consumers.** (a) The library removes the indentation of the first non-blank line from every line (`trimIndentation`, called for every parse, F8), so a text whose first line is an indented code block loses the code block. (b) Task-list checkboxes (`<input>`) are not in Angular's allowed elements and are removed (F9). (c) `data:` and `vbscript:` values in `href` pass Angular's URL check, which blocks only `javascript:` (F10); current browsers do not run them from a link. (d) Links are plain `<a href>`: an external link leaves the app in the same tab, and a relative link such as `drafts/ch02.md` is not routed in-app. PST-10 or SHL-15 may want link handling. (e) Each change re-parses the whole string.
+
+## 7. Facts checked and assumed
+
+### 7a. Facts checked (file and line)
+
+- **F1.** `git rev-parse --short HEAD` prints `22040f6`. `git status` at the start was clean. `plans/SHL-11.md` did not exist. `ls plans` lists plans for PLT-01 to PLT-18 and PLT-20, PST-01, SAU-01 to SAU-07, SHL-01 to SHL-09 and MPR-01 to MPR-07, and no other SHL plan.
+- **F2.** `units/SHL-11-markdown-preview.md`: line 7 `blocked_by: [SHL-09]`; line 8 `parallel_with: [SHL-10, SHL-12, SHL-13, SHL-17, SHL-18]`; line 9 `unblocks: [SHL-15, SHL-19, "Project store files preview (PST-10)", "Compile & export reading", "Agent loop"]`; line 15 (Why); line 18 (ngx-markdown, sanitiser on, no raw-HTML pass-through); line 19 (hides a leading front-matter block, display only); line 20 (input is a string, no file I/O); lines 23 and 24 (the two criteria, both unchecked).
+- **F3.** `grep -n '^status' plans/SHL-0*.md` prints `status: done` for SHL-01 to SHL-09. `units/SHL-09-core-gate.md` line 9 lists SHL-11 in `unblocks`.
+- **F4.** `grep -n 'SHL-11' plans/DECISIONS.md` prints nothing. `grep -n -i 'ngx-markdown' plans/DECISIONS.md` finds the SHL-01 entries: lines 946 and 958 (reviewer facts: 22.1.1 with a required `marked` peer), 1002 to 1014 (decision 22, the KaTeX peer and `externalDependencies`; approval at 1012 to 1014), 1037 (the code review). Lines 2681 to 2685 (the bundle stop rule, option a) and 2712 to 2716 (the batch head: initial total 504.21 kB, three warnings).
+- **F5.** `modules/shell.md`: line 5 (the Shell publishes no contract slice); line 9 (consumers adopt a component as soon as its unit merges); line 25 (graph: SHL-10, SHL-11, SHL-12 in `phase:shared-components`); line 28 (SHL-15 needs 11); line 37 (after SHL-09, SHL-10 to SHL-13, SHL-17 and SHL-18 run in parallel); line 42 (Shell code lives outside `features/`); line 43 (shared components take Shell-local inputs; the Shell never consumes `/agent-loop`, `/graph-runner` or `/compile-export`); line 80 (Markdown preview: Compile & export, Project store, Agent loop; unit SHL-11); lines 86 and 87 (testing: external behaviour, rendered routes with the fakes).
+- **F6.** `grep -rn 'SHL-11' units modules` (and `-i 'markdown preview|preview'` over `units/` and `modules/`): `units/SHL-15-editor-layout-touch.md` line 7 (`blocked_by: [SHL-11, SHL-13]`) and line 18 (split view with the SHL-11 preview); `units/SHL-19-polish-gate.md` line 7 (`blocked_by` lists SHL-11) and line 17 (the pass covers the card, which will show Markdown); `units/PST-10-files-ui.md` line 7 (`blocked_by` names "Frontend shell Markdown preview (SHL-11)"), line 17 (read-only preview until the editor lands) and line 18 (phone: read-only preview); `units/SHL-10-tool-call-card.md` line 8 (`parallel_with` lists SHL-11), line 18 (output "Markdown via the preview component") and line 21 (uses SHL-11's preview if available, no blocking); `units/SHL-12`, `SHL-13`, `SHL-17` and `SHL-18` list SHL-11 in `parallel_with`. No `units/CEX-*.md` or `units/AGL-*.md` file mentions a preview or a Markdown reading pane. `units/GRR-13-run-controls-status.md` line 21 has "an expandable preview of `output`". `units/SHL-13-editor-wrapper-lossless.md` line 19 (front matter is plain text in the editor) and line 23 (CRLF and BOM fixtures).
+- **F7.** `apps/web/src/app/app.config.ts` lines 22 to 24 (`provideMarkdown({ sanitize: { provide: SANITIZE, useValue: SecurityContext.HTML } })`) and lines 26 to 28 (`provideAppInitializer` calls `inject(SSE_CLIENT).start()`). `apps/web/package.json` line 21 (`"ngx-markdown": "22.1.1"`), lines 29 and 30 (`jsdom` 30.1.3, `vitest` 5.1.0). `node_modules/ngx-markdown/package.json`: version 22.1.1, `sideEffects: false` (line 65), peers `marked` `^17 || ^18`, optional peers for clipboard, emoji, katex, mermaid, none installed (`ls node_modules/katex node_modules/mermaid node_modules/prismjs node_modules/clipboard node_modules/emoji-toolkit node_modules/marked-katex-extension` finds none). `node_modules/marked/package.json` line 5: 18.2.0. `node_modules/@angular/core/package.json` line 3: 22.2.5. `apps/web/angular.json` line 28 (`externalDependencies: ["marked-katex-extension"]`).
+- **F8.** `node_modules/ngx-markdown/fesm2022/ngx-markdown.mjs`: line 88 (`SANITIZE` token); line 108 and lines 124 and 125 (`MarkdownService` injects `SANITIZE` optionally and `DomSanitizer`; it has no `providedIn`, and `provideMarkdown` lists it, line 743 onward); line 153 (`DEFAULT_SECURITY_CONTEXT = SecurityContext.HTML`); lines 159 to 181 (`parse`: `trimIndentation` at line 176, then `marked`, then `sanitizeHtml` unless `disableSanitizer`); lines 419 to 439 (`trimIndentation`); lines 441 to 449 (`sanitizeHtml`: a function, or `DomSanitizer.sanitize` with the configured context, or the raw html when the context is `NONE`); line 464 (`MarkdownComponent`); lines 510 to 521 (`ngOnChanges` renders `data`; `src` fetches over HTTP); lines 523 to 525 (`ngAfterViewInit` transcludes when `data` and `src` are both falsy); lines 535 to 540 (`render` registers a pending task, so `whenStable` waits); line 561 and line 562 (`parsed` is assigned to `innerHTML`); line 650 (inputs `data`, `src`, `disableSanitizer`, `katex`, `mermaid`, `emoji` and others; outputs `error`, `load`, `ready`); line 656 (selector `markdown, [markdown]`).
+- **F9.** `node_modules/@angular/core/fesm2022/_debug_node-chunk.mjs`: line 3108 (`SAFE_URL_PATTERN = /^(?!javascript:)(?:[a-z0-9+.-]+:|[^&:\/?#]*(?:[\/?#]|$))/i`); lines 3109 to 3115 (`_sanitizeUrl` prefixes `unsafe:` and warns in dev mode); lines 3138 to 3143 (`VALID_ELEMENTS` has block and inline elements such as `a`, `img`, `div`, `b`, `video`, but not `script`, `iframe`, `object`, `embed`, `form`, `button`, `input`, `svg` or `style`; `URI_ATTRS` are `background,cite,href,itemtype,longdesc,poster,src,xlink:href`; `HTML_ATTRS` has no `on*` attribute; `SKIP_TRAVERSING_CONTENT_IF_INVALID_ELEMENTS` is `script,style,template`); line 3270 (`WARNING: sanitizing HTML stripped some content`).
+- **F10.** A `node -e` run in `/tmp`, no repo file touched. `SAFE_URL_PATTERN.test` is `false` (so Angular prefixes `unsafe:`) for `javascript:alert(1)`, `JaVaScRiPt:alert(1)`, `java<TAB>script:alert(1)` and ` javascript:alert(1)`; it is `true` for `https://example.test/`, `vbscript:x`, `data:text/html,x`, `#frag` and `drafts/ch02.md`. The line-splitting regex of step 3 gives `["---\r\n","title: x\r\n","---\r\n","\r\n","# H\r\n","b"]` for a CRLF text, `null` for `''` and `["a\n","\n","b\n"]` for `'a\n\nb\n'`.
+- **F11.** `node_modules/vitest/dist/chunks/index.Bi0NXYPf.js` line 1395: the jsdom environment defaults `runScripts = "dangerously"` and `pretendToBeVisual = true`; lines 1223 to 1232 (`populateGlobal`: `global.window`, `self`, `top` and `parent` are set to the Node global, and `document.defaultView` is rewritten to return it). `node_modules/@angular/build/src/builders/unit-test/runners/vitest/index.js` line 43 (a DOM environment is required: `jsdom` or `happy-dom`) and `plugins.js` lines 62 and 63 (falls back to `jsdom`). `apps/web/angular.json` lines 75 to 77: the `test` target is `@angular/build:unit-test`.
+- **F12.** `apps/web/src/app/shell/index.ts` lines 1 to 11 (the comment at line 1; the last export, `ActiveProjectSignal`, at line 11). `grep -rn "from '\./shell'\|shell/index" apps/web/src` finds only `shell/route-data.spec.ts` line 2 (`import type { ShellRouteData } from './index'`), so no production file imports the barrel and the component will not be in any bundle until a consumer imports it.
+- **F13.** Test idioms: `apps/web/src/app/core-gate.spec.ts` lines 1 to 31 (TestBed with `provideRouter(APP_ROUTES)` and `createShellTestDoubles()`, `fixture.detectChanges()` then `await fixture.whenStable()`); `apps/web/src/app/app.spec.ts` (a TestBed with `{ provide: SSE_CLIENT, useClass: SseClient }`); `apps/web/src/app/shell/testing/test-doubles.ts` lines 187 to 198 (`createShellTestDoubles()` provides `API_CLIENT`, `SSE_CLIENT` as `FakeEventSource`, which has no `start`, and a throwing `HttpBackend`); `apps/web/src/app/shell/tokens.ts` line 12 (`SSE_CLIENT` is an `InjectionToken<SseClient>`). `grep -rn -i markdown apps/web/src` finds only `app.config.ts`.
+- **F14.** `apps/web/tsconfig.json` line 8 (`noPropertyAccessFromIndexSignature`); `tsconfig.spec.json` line 6 (`types: ["vitest/globals"]`); `tsconfig.app.json` lines 8 and 9 (`include: src/**/*.ts`, `exclude: src/**/*.spec.ts`); `apps/web/angular.json` line 14 (`prefix: "app"`), lines 35 and 36 (initial budget 500 kB warning, 1 MB error), lines 40 and 41 (component style 4 kB warning, 8 kB error). `eslint.config.mjs` lines 27 to 41: the boundaries elements are `src/modules/*` and `src/app/features/*`, so `shell/` is not covered. `.prettierrc.json`: `singleQuote`, `trailingComma: "all"`; `.prettierignore`: `/units/`, `/modules/`, `/plans/`, `/package-lock.json`.
+- **F15.** `plans/SHL-09.md` lines 291 and 292 (batch head: web 86 tests in 20 files; the initial total 505.56 kB against 504.21 kB; the same three warnings) and decision 12 (line 38, the stop rule). `plans/DECISIONS.md` lines 2681 to 2685 and 2712 to 2716.
+- **F16.** `prompt.md` line 117 (tick the criteria at closure), line 136 (do not weaken or delete a criterion or a test), line 144 (mark a box only after the test passed), line 154 (smaller decisions are recorded in the plan).
+- **F17.** `packages/contracts/src/project-store/files.ts` lines 33 to 39 (`fileReadSchema`: `path`, `content` (a string), `hash`, `mtime`); `packages/contracts/src/shell/index.ts` is `export {}`.
+
+### 7b. Things assumed
+
+- **A1.** `TestBed.configureTestingModule({ providers: [...appConfig.providers, { provide: SSE_CLIENT, useValue: { start: () => undefined } }, provideHttpClientTesting()] })` initialises in the unit-test runner: the later `SSE_CLIENT` provider replaces the root one, the root app initializer runs against the stub, and the root router and error-listener providers do no harm. Step 2 tests it. The fallback is open point 3.
+- **A2.** jsdom runs inline handler attributes in the Angular unit-test runner (the Vitest default is `runScripts: 'dangerously'`, F11, but the Angular builder's own jsdom options are not read here), a handler's `document` is the test's `document`, and dispatching a plain `Event` on an anchor does not navigate. If any of these is false, the canary of check e cannot fail, and checks a to c carry criterion 2 alone. Step 4, control M6, shows which is the case.
+- **A3.** Angular's sanitiser under jsdom's DOM parser strips the ten fixtures as its allowlist (F9) and URL pattern (F10) say. The allowlist was read from source, not run. Step 2 runs it: the ten C2 rows must pass there, before the stripper exists.
+- **A4.** Pandoc's rule for a YAML metadata block (opening `---` not followed by a blank line; closing `---` or `...`) is as stated in the Pandoc manual. It is from memory: Pandoc is not installed here and no network lookup was made.
+- **A5.** `I1` equals `I0` because nothing imports the component from an entry point (F12). Step 7 measures it.
+- **A6.** After `fixture.detectChanges()`, `await fixture.whenStable()` waits for the async render, because `MarkdownComponent.render` registers a pending task (F8, lines 535 to 540). A first render with `''` also runs the transclusion path (lines 523 to 525); it renders the element's own empty content, so it does not change the output. Step 2 shows it.
+- **A7.** `B` is 86 (F15). Step 1 records the real figure.
+- **A8.** `ViewEncapsulation.None` with the element-scoped rules of section 2a does not leak into other components: every rule begins with `app-markdown-preview`. No test covers the styles, and no criterion needs them. They are a phone-width safeguard (images, code blocks and tables do not widen the page).
+- **A9.** The new files pass ESLint's recommended rules, `tsc` and Prettier without more than formatting changes. Step 6 checks it.
+- **A10.** The behaviour on iOS Safari and Chromium is not tested here (open point 4).
+
+## 8. Shared files
+
+The other units planned in this batch are SAU-06, AGL-01, PLT-19, PST-02, PST-11, SHL-10, MPR-09, SHL-12 and TRG-01. This plan changes one file that another unit might also change:
+
+- **`apps/web/src/app/shell/index.ts`.** SHL-11 appends one line after line 11: `export { MarkdownPreview } from './markdown-preview';`. SHL-10 (the card) and SHL-12 (the diff view) are the units likely to append their own export to the same barrel; SAU-06 and MPR-09 import from it but are not expected to edit it (`plans/SAU-06.md` reads lines 3 to 7 only). The two changes are correct in either order: each unit appends its own `export` line and keeps the others. A text conflict at the end of the file is resolved by keeping every line. SHL-11 does not edit line 1 (the comment), so it cannot conflict there.
+- **`apps/web/src/app/shell/tool-call-card.ts` and `tool-call-card.spec.ts` (SHL-10's new files).** Changed by SHL-11 only in branch B, that is, only if SHL-10 has merged first: the plain-text Markdown block becomes `<app-markdown-preview [content]="..." />` and T3 changes to its branch (a) (section 2b-bis). If SHL-11 merges first, SHL-11 does not touch them, and SHL-10 uses the preview itself (`plans/SHL-10.md` decision 6, branch a). Either order gives the same end state.
+- **`units/SHL-11-markdown-preview.md`.** Only SHL-11 changes it (the two checkboxes, at closure).
+
+No other file of section 2 is shared. (`plans/SHL-12.md` changes `apps/web/package.json` and the lock for its CodeMirror dependencies; this plan changes neither, so there is no conflict, and every `git diff --quiet` check of step 5b compares with the branch's own base.) `app.config.ts`, `app.routes.ts`, `package.json`, `package-lock.json`, `angular.json`, `eslint.config.mjs`, `modules/shell.md` and `shell/testing/` are not changed (section 2d), so an edit by SAU-06, MPR-09 or SHL-10 to any of them (a route entry in `app.routes.ts`, for instance) does not meet this plan. AGL-01, PLT-19, PST-02, PST-11 and TRG-01 are contract, API or release units that do not touch `apps/web`. The semantic overlap with SHL-10 is the API of section 5 (`app-markdown-preview`, input `content`), used by the card as the two paragraphs above say.
+
+## 9. Summary of the plan's commitments
+
+- Two criteria, 19 named tests in one spec file: criterion 1 has seven (four hide rows and three negative controls), criterion 2 has eleven (ten fixture rows and one control), and one supplementary test checks that no HTTP request is made.
+- One component (`MarkdownPreview`, input `content`) over `ngx-markdown`'s `MarkdownComponent`, using the root sanitiser as it is; a private front-matter stripper with Pandoc's rule; the export appended to `shell/index.ts`.
+- Three files change: the component, its spec and the barrel; in branch B (SHL-10 already on `main`) two more, SHL-10's card and its spec, for the swap of section 2b-bis. No dependency, lock, build config, root config, route or fake changes.
+- Seven mutation controls (M1 to M7) show the tests can fail.
+- Seven open points: the Navigator's on the raw-HTML reading (1), the front-matter rule (2), the browser check (4); the coordinator's on consumer test beds (3) and the input name (5); and the consumers' on the front-matter toggle (6) and the known limits (7).
