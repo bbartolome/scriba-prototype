@@ -2708,3 +2708,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 
 - **Result.** An Opus reviewer returned APPROVED. The invalid `to` is treated as empty in `remainderOf`'s switch branch (`validTo` is an exported predicate in `project-scope.ts`; the page uses `validTo(to) ? to : ''`); the follower spec expects `/projects/c` for `to=x`; the reused-page spec (another id, POST `{ projectId: 'c' }`, URL `/projects/c/review`) would fail if the id were read at construction (the mutation was run and reverted); a valid `to` still gives `/review?run=3`; the guard does not see switch URLs; every target stays inside the app. The logs: 85 of 85 in 19 files; lint and both tsc checks clean. Decision 8's "returns `s`" is tightened (an invalid `s` gives `''`); recorded here.
 - **Next.** Collect `unit/SHL-08` onto `main` through a batch of one (rebase; the batch checks; the criteria ticks C1 to C3, which pass; the plan's status to `done`; fast-forward).
+
+## 2026-11-14 — SHL-08 — closed on main: the three criteria ticked; the bundle at the batch head
+
+- **Ticks.** C1 (the landing routes by setup status and active project), C2 (the switch page's Switch and Go, and the guard's redirect), C3 (a fake `project-switched` event moves an open project tab) are ticked (unit lines 22 to 24), each on its passing named test (web 85 of 85 in 19 files at the batch head).
+- **Build at the batch head.** `npm run build` exits 0; `I1` 504.21 kB (the Navigator's accepted warning level; the 1 MB error budget holds); the expected two CommonJS warnings, and the initial-total warning.
+- **Status.** `plans/SHL-08.md` is set to `done`: the code is on `main`.
