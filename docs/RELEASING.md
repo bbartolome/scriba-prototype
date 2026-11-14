@@ -24,7 +24,7 @@ A breaking change needs a footer line that starts with `BREAKING CHANGE:` in the
 
 - The PR title is a Conventional Commit.
 - CI is green on the pull request.
-- If the change touches `Dockerfile`, `deploy/`, `scripts/entrypoint.sh` or the installer, run the pre-release checklist in the runbook: `../deploy/RUNBOOK.md#pre-release-checklist`.
+- If the change touches `Dockerfile`, `deploy/`, `scripts/entrypoint.sh` or the installer, run the [pre-release checklist](../deploy/RUNBOOK.md#pre-release-checklist) in the runbook.
 
 ## How to read a run
 

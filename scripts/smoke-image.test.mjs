@@ -44,7 +44,7 @@ function healthBody(version) {
 }
 
 // The ordered stub rules for one run. over[name] replaces fields of one rule. The rule names
-// are the checks, plus the calls they make: healthz-run, healthz-final, healthz-poll, size-raw.
+// are the checks, plus the calls they make: healthz-run, healthz-final, healthz-poll, size-raw, logs.
 function rulesFor(over = {}, version = '0.0.0-dev') {
   const base = {
     dispenser: { match: '*-e SETUP=true*', stdout: bootScript() },
@@ -70,6 +70,7 @@ function rulesFor(over = {}, version = '0.0.0-dev') {
       stdout: healthBody(version),
     },
     'healthz-poll': { match: '*exec *', stdout: '' },
+    logs: { match: '*logs *', stdout: 'K10 app log line\n' },
   };
   return Object.keys(base).map((name) => ({ ...base[name], ...over[name] }));
 }
@@ -224,6 +225,11 @@ test('K10 a container that never answers fails healthz, and the trap removes it 
   expectFail(r, 'healthz', 'K10');
   expectOthersPass(r, 'healthz', 'K10');
   expectRemoved(r, 'K10');
+  assert.match(
+    r.stderr,
+    /K10 app log line/,
+    'K10: stderr holds the output of docker logs',
+  );
 });
 
 test('K11 EXPECTED_ARCH=arm64 but process.arch prints x64 fails arch', () => {

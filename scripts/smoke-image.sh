@@ -139,7 +139,7 @@ check_arch() {
 
 run_check() {
   local name=$1 out result
-  if out=$("check_$name" 2>/dev/null); then
+  if out=$("check_$name"); then
     result=PASS
   else
     result=FAIL
