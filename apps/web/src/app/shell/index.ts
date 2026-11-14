@@ -11,3 +11,4 @@ export { DeviceClassService, deviceClassGuard } from './device-class';
 export { ActiveProjectSignal } from './project-scope';
 export { MarkdownPreview } from './markdown-preview';
 export { DiffView } from './diff-view';
+export { MarkdownEditor } from './markdown-editor';
