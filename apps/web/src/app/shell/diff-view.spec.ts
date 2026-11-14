@@ -489,7 +489,7 @@ describe('extra behaviour', () => {
   it.each(LAYOUTS.map((l) => [l.name, l.size] as const))(
     'E5 marks a line with a byte order mark and shows the mark on the proposed side, %s',
     async (_name, size) => {
-      const { root } = await render(size, 'Text\n', '﻿Text\n');
+      const { root } = await render(size, 'Text\n', '\ufeffText\n');
       expect(addedLines(root).length).toBeGreaterThan(0);
       expect(specialMarks(proposedEditor(root))).toBeGreaterThan(0);
       expect(root.textContent).not.toContain('No changes');
