@@ -3760,3 +3760,10 @@ Result: NOT APPROVED. Rejections of the SHL-10 plan since the approval of revisi
   - S-P3: arm64 (VERSION 1.2.3) all checks pass; amd64 (emulated) all checks pass; dev arm64 (0.0.0-dev) passes; the 9.9.9 guards fail as expected.
 - Ticks (O1): criteria 1, 2, 4 and 5 ticked. Criterion 3 stays unticked, as the Navigator's O1 decision records; the unit is complete without it.
 - The unrun parts stay recorded as untested with their cause (O1): the Docker Hub push and pull, the GitHub release, the native amd64 run, the real Actions run and the pull by digest.
+
+## 2026-11-14 — PLT-19 — follow-up: third-party actions are pinned by tag, not by commit SHA (security review, not applied)
+
+- `.github/workflows/publish.yml` uses `docker/setup-buildx-action@v3`, `docker/login-action@v3` and `docker/build-push-action@v6` (lines 76, 77, 83, 134, 163, 164). An automated security review (MEDIUM, "GitHub Actions Third-Party Unpinned") asks for full 40-character commit SHAs with the version as a comment, and for test W10 to require `/@[0-9a-f]{40}$/` for non-`actions/*` uses.
+- Not applied in this run. The file is the approved plan's text (the reviewer checked it byte for byte), so the change is a plan revision with a new Opus review, and it also changes test W10. The SHAs cannot be checked offline; this session has no remote and no network access to GitHub.
+- Exposure: none until a push. The workflow has never run.
+- Before any push: revise PLT-19 (or a new unit) to pin the three actions by SHA, update W10, and have Opus review the change.
