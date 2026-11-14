@@ -1,6 +1,6 @@
 ---
 id: PST-03
-status: draft
+status: planned
 ---
 
 # PST-03 plan - Project discovery, the project list, New and Import
