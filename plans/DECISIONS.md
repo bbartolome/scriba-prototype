@@ -3367,3 +3367,10 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
 - **Result (Opus subagent, fresh context).** APPROVED. Patch id `d2b751351c6f9a66bb5ee84ba154cc36170d2d` (branch `unit/PST-02`, commits `279c535` (red) and `d8a348c` (feat), base `c0c7863`).
 - **Checks run by the reviewer.** `npx vitest run` on the two new API test files: 5 tests pass (C1, C2, C3, E1, E2). API lint passes; the root build passes; the full API test run passes (58 files, 154 tests); Prettier passes on the eight files. The diff touches exactly the eight files of the plan's section 2, all additions.
 - **Non-blocking note.** `realRoot()` in `path-safety.ts` calls `statSync` outside its `try`; a race that removes the root between the two calls would throw the raw filesystem error into the server log (the root path would appear there, not in any response). Testing this is not reliable; the plan's open point 10 accepts it. A later unit may wrap the call.
+
+## 2026-11-14 — AGL-01 — Opus review of the code: APPROVED
+
+- **Result (Opus subagent, fresh context).** APPROVED. Patch id `5d80db525185f9e8678bb6da53d7d874d03d12a4` (branch `unit/AGL-01`, commits `e386fb6`, `642397a`, `0b8444a`, `53e269f`, base `c0c7863`).
+- **Checks run by the reviewer.** The contracts package passes (210 tests); the criteria C1a, C1b, C2, C3, E1 to E4 each pass; the root lint, build and test pass; mutations M5 and M6 are caught by C1b (the implementer's M1 to M4 were not re-run). The web "Initial total" is unchanged at 505.56 kB.
+- **Open points.** The plan's open points 1 to 3 have no Navigator answer in DECISIONS, so the plan's defaults stand. The feat commit does not say which defaults it used; this entry records that they are the plan's own defaults.
+- **Non-blocking notes.** `.min(1)` is applied to some fields the plan does not name (tool-call name, provenance tool, intent, run-ended pending ids); each narrows an unspecified field and is loosenable later. The C1b source scan had to be fixed (`0b8444a`): it had read no source, and the fix makes it read the `.ts` sources and assert it found some.
