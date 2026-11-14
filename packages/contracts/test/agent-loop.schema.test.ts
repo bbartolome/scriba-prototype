@@ -198,7 +198,7 @@ function without(data: Data, key: string): Data {
   return copy;
 }
 
-describe('C1a: every shape parses its valid example and refuses its invalid one', () => {
+describe('C1a: every shape of the unit parses its valid example and refuses its invalid one', () => {
   it('request group: start, stop and grounding requests', () => {
     expect(
       agentStartRequestSchema.safeParse({ intent: 'Summarize' }).success,
@@ -645,7 +645,7 @@ const EVENT_CASES: EventCase[] = [
   },
 ];
 
-describe('C2: each event schema parses one valid example and refuses one invalid example', () => {
+describe('C2: each of the ten events parses one valid example and refuses one invalid example', () => {
   for (const c of EVENT_CASES) {
     it(`C2: ${c.type}`, () => {
       for (const data of c.valid) {
@@ -736,7 +736,7 @@ describe('C2: each event schema parses one valid example and refuses one invalid
   });
 });
 
-describe('E1: enums, constants and path rules', () => {
+describe("E1: the enums and constants have exactly the unit's values, each enum schema has the same options as its tuple, and the path rules build and match the listed paths", () => {
   it('the enums and constants hold the unit values, and each enum schema has its tuple as options', () => {
     expect(AGENT_TOOL_FAMILIES).toEqual([
       'project',
@@ -877,7 +877,7 @@ describe('E1: enums, constants and path rules', () => {
   });
 });
 
-describe('E2: the grounding summary and the Project store field, the provenance, and the hash', () => {
+describe("E2: the grounding summary equals the Project store's grounding field, a draft provenance survives inside a pending change, and the artefact hash is the Project store's hash", () => {
   it('the grounding summary parses like pendingGroundingSchema, and the two types are equal', () => {
     const samples: unknown[] = [
       SUMMARY,
@@ -936,7 +936,7 @@ describe('E2: the grounding summary and the Project store field, the provenance,
   });
 });
 
-describe('E3: error codes, status table and routes', () => {
+describe("E3: every error code passes Platform's errorCodeSchema, the status table covers exactly the four codes with no 401, and every route is under /api/agent-loop/", () => {
   it('every code passes errorCodeSchema, and the status table covers exactly the four codes with no 401', () => {
     for (const code of Object.values(AGENT_ERROR_CODES)) {
       expect(errorCodeSchema.safeParse(code).success, code).toBe(true);
@@ -976,7 +976,7 @@ describe('E3: error codes, status table and routes', () => {
   });
 });
 
-describe('E4: the settings section keeps unknown keys, and the update body takes any subset', () => {
+describe('E4: the settings section keeps unknown keys at both levels, and the update body takes any subset, research included', () => {
   it('the section keeps unknown keys at both levels and refuses a research object without enabled', () => {
     const parsed = agentSettingsSchema.parse({
       ...AGENT_SETTINGS_DEFAULTS,

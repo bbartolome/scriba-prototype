@@ -145,7 +145,7 @@ describe('agent-loop subpath exports', () => {
     }
   });
 
-  it('C1: the subpath exports every named shape, constant and route, every *Schema export has an inferred type, no export is a function, and the sources declare no function', () => {
+  it('C1b: the subpath exports every named shape, constant and route, every *Schema export has an inferred type, no export is a function, and the sources declare no function', () => {
     // (1) Every name of the unit.
     expect(run.status, run.stderr).toBe(0);
     expect(report.names).toEqual(expect.arrayContaining(C1_NAMES));
