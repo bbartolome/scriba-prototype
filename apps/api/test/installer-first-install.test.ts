@@ -1,4 +1,11 @@
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
 import {
@@ -11,6 +18,7 @@ import {
   physicalPath,
   readLog,
   runInstaller,
+  runInstallerOnTerminal,
   snapshot,
   type RunResult,
   type Sandbox,
@@ -18,6 +26,21 @@ import {
 
 const UID = String(process.getuid?.() ?? -1);
 const GID = String(process.getgid?.() ?? -1);
+
+// The bad-library case needs a terminal for /dev/tty. util-linux `script` takes -c; BSD script
+// (macOS) does not, so the case is skipped, with a message, unless util-linux script is on PATH.
+const scriptProbe = spawnSync(
+  'sh',
+  ['-c', 'command -v script >/dev/null 2>&1 && script --version 2>&1'],
+  { encoding: 'utf8' },
+);
+const hasUtilLinuxScript =
+  scriptProbe.status === 0 && /util-linux/.test(scriptProbe.stdout);
+if (!hasUtilLinuxScript) {
+  console.warn(
+    'installer-first-install: util-linux `script` is not on PATH, so the bad-library case is skipped.',
+  );
+}
 
 interface Install {
   sandbox: Sandbox;
@@ -162,7 +185,7 @@ it('with no TTY the first install takes the defaults and prompts nothing', async
 
     // No prompt text (read -p would write to stderr), and no question on stdout.
     expect(run.stderr).toBe('');
-    expect(run.stdout).not.toMatch(/Library|Port|\?/);
+    expect(run.stdout).not.toMatch(/Folder for your books|Web port/);
 
     // The image is local, so no pull ran.
     expect(readLog(sandbox).some((line) => line.startsWith('pull '))).toBe(
@@ -222,3 +245,72 @@ it('an install folder inside the library exits 1 before the library or .env is w
     disposeSandbox(install.sandbox);
   }
 });
+
+it('an install folder inside the library exits 1 when HOME is a symlink to the folder that holds the library', async () => {
+  const sandbox = createSandbox();
+  try {
+    const bin = makeBin(sandbox, { docker: true });
+    const homeLink = join(sandbox.root, 'home-link');
+    symlinkSync(sandbox.home, homeLink);
+    const env = installerEnv(sandbox, bin, {
+      HOME: homeLink,
+      STUB_IMAGE_LOCAL: '1',
+      STUB_HEALTH: 'healthy',
+      STUB_COMPOSE: '2.30.0',
+    });
+    const emitted = emitInstaller(env);
+    expect(emitted.code).toBe(0);
+    const inside = join(sandbox.home, 'Books', 'inside');
+    mkdirSync(inside, { recursive: true });
+
+    const run = await runInstaller(emitted.stdout, env, inside);
+
+    expect(run.code).toBe(1);
+    expect(run.stderr).toContain('library');
+    expect(existsSync(join(inside, '.env'))).toBe(false);
+    expect(existsSync(join(sandbox.home, 'Books', '.scriba'))).toBe(false);
+  } finally {
+    disposeSandbox(sandbox);
+  }
+});
+
+it.skipIf(!hasUtilLinuxScript)(
+  'a library answer with quotes, backticks, dollar signs or a relative path is asked again; ~/ expands and a trailing slash is dropped',
+  async () => {
+    const sandbox = createSandbox();
+    try {
+      const bin = makeBin(sandbox, { docker: true });
+      const env = installerEnv(sandbox, bin, {
+        STUB_IMAGE_LOCAL: '1',
+        STUB_HEALTH: 'healthy',
+        STUB_COMPOSE: '2.30.0',
+        STUB_SETUP_URL: '0',
+      });
+      const emitted = emitInstaller(env);
+      expect(emitted.code).toBe(0);
+      const scriptFile = join(sandbox.root, 'installer.sh');
+      writeFileSync(scriptFile, emitted.stdout);
+
+      // Four bad library answers, then ~/Lib/, then an empty port answer (the default 8080). The
+      // first three are absolute on purpose: a relative path is refused by another rule, so only an
+      // absolute answer reaches the quote, backtick and dollar-sign rules on its own.
+      const answers = ['/bad"x', '/`x`', '/$x', 'rel', '~/Lib/', ''];
+      const run = await runInstallerOnTerminal(
+        scriptFile,
+        env,
+        sandbox.install,
+        answers.map((answer) => `${answer}\n`).join(''),
+      );
+
+      // One library prompt per answer: the four bad ones are asked again.
+      expect(run.stdout.split('Folder for your books').length - 1).toBe(5);
+      expect(run.stdout.split('Enter an absolute path').length - 1).toBe(4);
+      expect(run.code).toBe(0);
+      expect(readFileSync(join(sandbox.install, '.env'), 'utf8')).toBe(
+        envFile(join(sandbox.home, 'Lib'), '8080', '0.1.0'),
+      );
+    } finally {
+      disposeSandbox(sandbox);
+    }
+  },
+);

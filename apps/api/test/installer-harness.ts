@@ -218,8 +218,41 @@ export function runInstaller(
   env: Env,
   cwd: string,
 ): Promise<RunResult> {
+  return runCollected(
+    '/bin/sh',
+    ['-c', 'umask 022; exec bash'],
+    env,
+    cwd,
+    script,
+  );
+}
+
+// Runs the printed script from a file under util-linux `script`, so bash has a controlling
+// terminal and the script's /dev/tty prompts read `answers`, one line each, from stdin.
+export function runInstallerOnTerminal(
+  scriptFile: string,
+  env: Env,
+  cwd: string,
+  answers: string,
+): Promise<RunResult> {
+  return runCollected(
+    findOnPath('script'),
+    ['-qec', `umask 022; exec bash '${scriptFile}'`, '/dev/null'],
+    env,
+    cwd,
+    answers,
+  );
+}
+
+function runCollected(
+  command: string,
+  args: string[],
+  env: Env,
+  cwd: string,
+  input: string,
+): Promise<RunResult> {
   return new Promise((resolveRun, rejectRun) => {
-    const child = spawn('/bin/sh', ['-c', 'umask 022; exec bash'], {
+    const child = spawn(command, args, {
       cwd,
       env,
       detached: true,
@@ -249,7 +282,7 @@ export function runInstaller(
       clearTimeout(timer);
       resolveRun({ code, stdout, stderr });
     });
-    child.stdin.end(script);
+    child.stdin.end(input);
   });
 }
 
