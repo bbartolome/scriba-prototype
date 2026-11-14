@@ -3361,3 +3361,9 @@ Record of Navigator decisions and Opus rejections. Only add to this file. Each e
   4. State F and D21 look for `PLT-19` in the commit subject only; `prompt.md` lines 82 and 112 require the unit id in the message. Correction: check each full message (`git log --format=%B`), or add the subject rule as a stated requirement.
 - **Non-blocking:** F1 says the four unit worktrees are all at `c0c7863`; they have their own commits. Section 4.8 leaves out G1 and K2 from its list of ids with several cases (the count is unaffected). Main moved to `4be90ef` during the review; only `plans/DECISIONS.md`, `plans/SHL-10.md` and `plans/TRG-01.md` changed.
 - **Rejections of the PLT-19 plan: 5** (revisions 1, 3, 5, 6 and 7). Items 1, 3 and 4 are errors of fact and procedure. Item 2 has a candidate fix that the rewrite must test; if no variant works, it goes to the Navigator.
+
+## 2026-11-14 — PST-02 — Opus review of the code: APPROVED
+
+- **Result (Opus subagent, fresh context).** APPROVED. Patch id `d2b751351c6f9a66bb5ee84ba154cc36170d2d` (branch `unit/PST-02`, commits `279c535` (red) and `d8a348c` (feat), base `c0c7863`).
+- **Checks run by the reviewer.** `npx vitest run` on the two new API test files: 5 tests pass (C1, C2, C3, E1, E2). API lint passes; the root build passes; the full API test run passes (58 files, 154 tests); Prettier passes on the eight files. The diff touches exactly the eight files of the plan's section 2, all additions.
+- **Non-blocking note.** `realRoot()` in `path-safety.ts` calls `statSync` outside its `try`; a race that removes the root between the two calls would throw the raw filesystem error into the server log (the root path would appear there, not in any response). Testing this is not reliable; the plan's open point 10 accepts it. A later unit may wrap the call.
