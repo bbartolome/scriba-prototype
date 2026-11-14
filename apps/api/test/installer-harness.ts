@@ -27,6 +27,7 @@ export const ENTRYPOINT = join(REPO_ROOT, 'scripts', 'entrypoint.sh');
 const HINT_SOURCE = join(REPO_ROOT, 'deploy', 'installer-hint.txt');
 
 // Host tools that the entrypoint and the printed script call. Each is linked into the test PATH.
+// cp and date are the update branch's (the timestamped backups of PLT-18 D4).
 const LINKED_TOOLS = [
   'id',
   'tar',
@@ -39,6 +40,8 @@ const LINKED_TOOLS = [
   'mktemp',
   'mv',
   'rm',
+  'cp',
+  'date',
 ];
 
 export type Env = Record<string, string>;
@@ -85,6 +88,15 @@ export function createSandbox(): Sandbox {
 
 export function disposeSandbox(sandbox: Sandbox): void {
   rmSync(sandbox.root, { recursive: true, force: true });
+}
+
+// Replaces the fixture's compose.yaml with the repo's deploy/compose.yaml, so a re-run installs the
+// real file (the tests that run the real Compose CLI need its services).
+export function useRepoComposeFile(sandbox: Sandbox): void {
+  copyFileSync(
+    join(REPO_ROOT, 'deploy', 'compose.yaml'),
+    join(sandbox.fixture, 'compose.yaml'),
+  );
 }
 
 function findOnPath(tool: string): string {
@@ -139,8 +151,10 @@ echo "sleep $*" >> "$STUB_LOG"
 `;
 
 // Logs every call to STUB_LOG. Behaviour comes from STUB_* variables:
-// STUB_INFO (ok|fail), STUB_IMAGE_LOCAL (1|0), STUB_COMPOSE (a version, or none),
-// STUB_HEALTH (healthy|starting|unhealthy), STUB_SETUP_URL (1|0), STUB_FIXTURE (folder for tar).
+// STUB_INFO (ok|fail), STUB_IMAGE_LOCAL (1|0), STUB_LOCAL_TAGS (space-separated full refs that
+// count as local, for example bbartolome/scriba:0.1.0), STUB_PULL (ok|fail: `docker pull` and
+// `compose pull` fail), STUB_COMPOSE (a version, or none), STUB_HEALTH (healthy|starting|unhealthy),
+// STUB_SETUP_URL (1|0), STUB_FIXTURE (folder for tar). Unset variables keep the PLT-17 behaviour.
 const STUB_DOCKER = `#!/bin/bash
 echo "$*" >> "$STUB_LOG"
 case "$1" in
@@ -149,11 +163,15 @@ case "$1" in
     exit 0 ;;
   image)
     if [ "\${STUB_IMAGE_LOCAL:-0}" = 1 ]; then exit 0; fi
+    for tag in \${STUB_LOCAL_TAGS:-}; do
+      if [ "$tag" = "$3" ]; then exit 0; fi
+    done
     echo "[]"
     echo "Error: No such image: $3" >&2
     exit 1 ;;
   pull)
     echo "1.0.0: Pulling from bbartolome/scriba (stub progress)"
+    if [ "\${STUB_PULL:-ok}" = fail ]; then echo "Error: pull failed (stub)" >&2; exit 1; fi
     exit 0 ;;
   run)
     for arg in "$@"; do
@@ -165,6 +183,9 @@ case "$1" in
       version)
         if [ "\${STUB_COMPOSE:-2.30.0}" = none ]; then exit 1; fi
         echo "\${STUB_COMPOSE:-2.30.0}"
+        exit 0 ;;
+      pull)
+        if [ "\${STUB_PULL:-ok}" = fail ]; then echo "Error: pull failed (stub)" >&2; exit 1; fi
         exit 0 ;;
       ps)
         echo "stub-container-id"

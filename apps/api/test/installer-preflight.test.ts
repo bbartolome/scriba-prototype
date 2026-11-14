@@ -102,11 +102,11 @@ it('extra: the root refusal exits 1 before any write (stub id prints 0)', async 
   }
 });
 
-it('extra: an existing .env stops the first install before any write', async () => {
+it('extra E5: an existing .env with no docker on PATH exits 1 at the Docker check, with the home and install folder unchanged', async () => {
   const sandbox = createSandbox();
   try {
     writeFileSync(join(sandbox.install, '.env'), 'SCRIBA_PORT=9999\n');
-    const bin = makeBin(sandbox, { docker: true });
+    const bin = makeBin(sandbox, { docker: false });
     const env = installerEnv(sandbox, bin, {
       STUB_IMAGE_LOCAL: '1',
       STUB_HEALTH: 'healthy',
@@ -120,7 +120,7 @@ it('extra: an existing .env stops the first install before any write', async () 
     const run = await runInstaller(emitted.stdout, env, sandbox.install);
 
     expect(run.code).toBe(1);
-    expect(run.stderr).toContain('.env');
+    expect(run.stderr).toContain('Docker');
     expect(snapshot(sandbox.home)).toEqual(homeBefore);
     expect(snapshot(sandbox.install)).toEqual(installBefore);
     expect(readLog(sandbox)).toEqual([]);
