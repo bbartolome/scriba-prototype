@@ -3688,3 +3688,12 @@ Items the reviewer found:
 5. `modules/setup-auth.md` line 35 (Parallelism) still says "SAU-06 once Shell `phase:core` lands", while line 18 names SHL-20. Add SHL-20 to line 35, and list the edit in the "Documents changed" paragraph of section 8.
 
 Notes: SHL-20's front matter, shape and phase are correct; its one criterion can be tested with Playwright at 390 by 844. This is the third rejection since revision 5 was approved, so prompt.md lines 114 to 116 (the examination of the open problems) apply. The items are errors of fact, so one Opus subagent writes the plan again (revision 9).
+
+## 2026-11-14 — SHL-13 — Opus code review (first): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SHL-13 -- . ':!plans' ':!units' | git patch-id --stable`, on the base dda4601): 79f207233b93e37c5253da8f24758e46236840bc. The rebase must not change it.
+- Criteria 1 to 3 are each tested in `markdown-editor.spec.ts` (18 of 18 passed; the round trip over 12 fixtures; the two targeted edits through `findFromDOM` and `dispatch`, which open point 7 accepts; the read-only test and its editable control). E7 passed in `project-store-copies.spec.ts`. The whole web suite passed (121 of 121).
+- Settled points are implemented as the Navigator decided: no save-mode input (open point 6); no bare-CR guard (open point 1); the seam of open point 7.
+- The rendered browser check (plan step 10) was not run: the dev stack was not up. It is recorded as not run, not as a criterion.
+- Commit subjects match the plan's steps 2 and 5. Not a defect.
+- Code rejections of SHL-13: 0.
