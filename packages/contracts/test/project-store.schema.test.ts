@@ -356,6 +356,13 @@ describe('project-store contract slice', () => {
     expect(
       projectStoreEventSchema.safeParse({
         module: 'project-store',
+        type: 'pending-deleted',
+        data: { projectId: 'my-book', pendingChange: pendingChange() },
+      }).success,
+    ).toBe(false);
+    expect(
+      projectStoreEventSchema.safeParse({
+        module: 'project-store',
         type: 'project-switched',
         data: { from: null },
       }).success,
