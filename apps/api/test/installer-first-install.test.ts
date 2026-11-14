@@ -275,7 +275,7 @@ it('an install folder inside the library exits 1 when HOME is a symlink to the f
 });
 
 it.skipIf(!hasUtilLinuxScript)(
-  'a library answer with quotes, backticks, dollar signs or a relative path is asked again; ~/ expands and a trailing slash is dropped',
+  'a library answer with quotes, backticks, dollar signs, a backslash or a relative path is asked again; ~/ expands and a trailing slash is dropped',
   async () => {
     const sandbox = createSandbox();
     try {
@@ -291,10 +291,10 @@ it.skipIf(!hasUtilLinuxScript)(
       const scriptFile = join(sandbox.root, 'installer.sh');
       writeFileSync(scriptFile, emitted.stdout);
 
-      // Four bad library answers, then ~/Lib/, then an empty port answer (the default 8080). The
-      // first three are absolute on purpose: a relative path is refused by another rule, so only an
-      // absolute answer reaches the quote, backtick and dollar-sign rules on its own.
-      const answers = ['/bad"x', '/`x`', '/$x', 'rel', '~/Lib/', ''];
+      // Five bad library answers, then ~/Lib/, then an empty port answer (the default 8080). The
+      // first four are absolute on purpose: a relative path is refused by another rule, so only an
+      // absolute answer reaches the quote, backtick, dollar-sign and backslash rules on its own.
+      const answers = ['/bad"x', '/`x`', '/$x', '/x\\y', 'rel', '~/Lib/', ''];
       const run = await runInstallerOnTerminal(
         scriptFile,
         env,
@@ -302,9 +302,9 @@ it.skipIf(!hasUtilLinuxScript)(
         answers.map((answer) => `${answer}\n`).join(''),
       );
 
-      // One library prompt per answer: the four bad ones are asked again.
-      expect(run.stdout.split('Folder for your books').length - 1).toBe(5);
-      expect(run.stdout.split('Enter an absolute path').length - 1).toBe(4);
+      // One library prompt per answer: the five bad ones are asked again.
+      expect(run.stdout.split('Folder for your books').length - 1).toBe(6);
+      expect(run.stdout.split('Enter an absolute path').length - 1).toBe(5);
       expect(run.code).toBe(0);
       expect(readFileSync(join(sandbox.install, '.env'), 'utf8')).toBe(
         envFile(join(sandbox.home, 'Lib'), '8080', '0.1.0'),
