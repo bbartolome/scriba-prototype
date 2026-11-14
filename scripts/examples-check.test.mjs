@@ -329,6 +329,26 @@ test('E3: a sample folder without its own project.yaml fails, naming the folder'
   });
 });
 
+test('E3: a sample whose project.yaml is a folder, not a file, fails under D8, naming the path', () => {
+  withTree(treeWith({ 'examples/nonfiction/project.yaml': null }), (root) => {
+    mkdirSync(join(root, 'examples/nonfiction/project.yaml'));
+    const result = run(root);
+    assert.equal(result.status, 1, result.stderr);
+    assert.ok(
+      hasLine(
+        result,
+        'examples/nonfiction/project.yaml: sample folder has no project.yaml',
+      ),
+      result.stderr,
+    );
+    assert.equal(
+      errorLines(result).at(-1),
+      'examples check failed: 1 issue(s)',
+      result.stderr,
+    );
+  });
+});
+
 test('E4: an unclosed front matter block or invalid YAML fails, naming the file', () => {
   withTree(
     treeWith({
