@@ -71,4 +71,19 @@ export const TEXTS = {
   retriesLabel: 'Retries',
   wholeAtLeastOne: 'Enter a whole number of at least 1.',
   wholeAtLeastZero: 'Enter a whole number of at least 0.',
+  testConnection: 'Test connection',
+  testing: 'Testing the connection...',
+  testSavedNote:
+    'The test uses the saved settings. Save your changes first to test them.',
+  testHeading: 'Connection test',
+  testPassed: 'The connection test passed.',
+  stageReach: 'Reach the server',
+  stageList: 'List the models',
+  stageChat: 'Send a test message',
+  statePassed: 'passed',
+  stateFailed: 'failed',
+  stateNotRun: 'not run',
+  latency: (ms: number): string => `Latency ${ms} ms`,
+  modelCount: (count: number): string =>
+    count === 1 ? '1 model listed.' : `${count} models listed.`,
 } as const;

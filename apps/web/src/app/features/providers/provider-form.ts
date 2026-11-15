@@ -13,15 +13,21 @@ import { MatButton } from '@angular/material/button';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import type {
+  ConnectionTestRequest,
+  ConnectionTestResult,
   Preset,
   ProviderConfigInput,
 } from '@bbartolome/scriba-contracts/providers';
+import { ConnectionTestResultView } from './connection-test-result';
 import { KeyField } from './key-field';
 import { ModelListState, ModelPicker } from './model-picker';
 import {
   contractUrl,
   finiteNumber,
   integerAtLeast,
+  isOllamaProvider,
+  OLLAMA_CONTEXT_NOTE,
+  OLLAMA_PULL_NOTE,
   PROVIDER_DEFAULTS_COPY,
 } from './providers-copies';
 import { TEXTS } from './providers-texts';
@@ -62,6 +68,7 @@ type FieldName =
     MatInput,
     ModelPicker,
     KeyField,
+    ConnectionTestResultView,
   ],
   styles: `
     .provider-form {
@@ -85,8 +92,8 @@ type FieldName =
   template: `
     <form class="provider-form" (submit)="$event.preventDefault()">
       <h3>{{ heading() }}</h3>
-      @if (preset(); as current) {
-        @for (hint of current.hints; track hint) {
+      @if (preset() && !ollama()) {
+        @for (hint of preset()?.hints ?? []; track hint) {
           <p>{{ hint }}</p>
         }
       }
@@ -112,6 +119,9 @@ type FieldName =
         (valueChange)="setModel($event)"
         (retry)="retryModels()"
       />
+      @if (pullNoteShown()) {
+        <p>{{ pullNote }}</p>
+      }
       <mat-form-field>
         <mat-label>{{ texts.temperatureLabel }}</mat-label>
         <input
@@ -138,6 +148,9 @@ type FieldName =
         <p class="problem">{{ message }}</p>
       }
       <p>{{ texts.contextHint }}</p>
+      @if (ollama()) {
+        <p>{{ contextNote }}</p>
+      }
       <mat-form-field>
         <mat-label>{{ texts.maxTokensLabel }}</mat-label>
         <input
@@ -192,6 +205,9 @@ type FieldName =
       @if (status(); as message) {
         <p role="status">{{ message }}</p>
       }
+      @if (providerId() !== undefined) {
+        <p>{{ texts.testSavedNote }}</p>
+      }
       <div class="actions">
         <button
           matButton="filled"
@@ -201,10 +217,19 @@ type FieldName =
         >
           {{ texts.save }}
         </button>
+        <button
+          matButton
+          type="button"
+          [disabled]="!canTest() || testing()"
+          (click)="test()"
+        >
+          {{ testing() ? texts.testing : texts.testConnection }}
+        </button>
         <button matButton type="button" (click)="close()">
           {{ texts.close }}
         </button>
       </div>
+      <app-connection-test-result [result]="result()" [omitHint]="omitHint()" />
     </form>
   `,
 })
@@ -224,6 +249,14 @@ export class ProviderForm implements OnInit {
   protected readonly modelList = signal<ModelListState>({ state: 'unsaved' });
   /** How many key steps have ended in this form (see KeyField's `settled`). */
   protected readonly keySettled = signal(0);
+  /** A connection test is in flight: the test button waits (MPR-10 D3). */
+  protected readonly testing = signal(false);
+  /** The last connection test's result. A new test clears it (MPR-10 D3). */
+  protected readonly result = signal<ConnectionTestResult | undefined>(
+    undefined,
+  );
+  protected readonly contextNote = OLLAMA_CONTEXT_NOTE;
+  protected readonly pullNote = OLLAMA_PULL_NOTE;
 
   protected readonly form = new FormGroup({
     label: new FormControl('', { nonNullable: true }),
@@ -278,7 +311,7 @@ export class ProviderForm implements OnInit {
   protected readonly keySet = computed(() => this.saved()?.keySet ?? false);
   protected readonly keyHint = computed(() => this.saved()?.keyHint);
   protected readonly model = computed(() => this.values().model);
-  /** The typed key, as the key control holds it. It is sent only in a key/set body (D8). */
+  /** The typed key, as the key control holds it. It is sent only in a key/set body (D8) and in a connection-test body (MPR-10 D2). */
   protected readonly typedKey = computed(() => this.values().key);
 
   /** The seven editable fields, or undefined while a field is invalid (D13). The update and create bodies use them. */
@@ -353,6 +386,32 @@ export class ProviderForm implements OnInit {
   protected readonly canSave = computed(
     () =>
       this.draft() !== undefined && Object.keys(this.problems()).length === 0,
+  );
+
+  /**
+   * Whether the provider is Ollama (MPR-10 D5): on the stored config once saved, and before the
+   * create on the preset's id and the typed URL. A custom URL is Ollama by its port only.
+   */
+  protected readonly ollama = computed(() =>
+    isOllamaProvider({
+      id: this.providerId() ?? this.preset()?.id,
+      baseURL: this.saved()?.baseURL ?? this.values().baseURL,
+    }),
+  );
+
+  /** The pull note is on screen: an Ollama provider whose model list is empty (MPR-10 D6). */
+  protected readonly pullNoteShown = computed(
+    () => this.ollama() && this.modelList().state === 'empty',
+  );
+
+  /** The hint the result view leaves out while the pull note is on screen (MPR-10 D8). */
+  protected readonly omitHint = computed(() =>
+    this.pullNoteShown() ? OLLAMA_PULL_NOTE : undefined,
+  );
+
+  /** A saved provider is tested by its id; before the create the test needs a valid draft (MPR-10 D1). */
+  protected readonly canTest = computed(
+    () => this.providerId() !== undefined || this.draft() !== undefined,
   );
 
   constructor() {
@@ -445,6 +504,39 @@ export class ProviderForm implements OnInit {
       next: () => this.requestModels(id),
       error: (error: unknown) =>
         this.alert.set(failureMessage(error, TEXTS.genericFailure)),
+    });
+  }
+
+  /**
+   * Tests the saved provider by its id, or the draft before the create (MPR-10 D1), with the typed
+   * key when one is typed (D2). The reply is shown in the result view. A failed request goes to the
+   * alert field (D3).
+   */
+  protected test(): void {
+    const id = this.providerId();
+    const draft = this.draft();
+    const key = this.typedKey();
+    const keyPart = key === '' ? {} : { key };
+    let body: ConnectionTestRequest;
+    if (id !== undefined) {
+      body = { providerId: id, ...keyPart };
+    } else if (draft !== undefined) {
+      body = { draft, ...keyPart };
+    } else {
+      return;
+    }
+    this.alert.set(undefined);
+    this.result.set(undefined);
+    this.testing.set(true);
+    this.store.testConnection(body).subscribe({
+      next: (result) => {
+        this.testing.set(false);
+        this.result.set(result);
+      },
+      error: (error: unknown) => {
+        this.testing.set(false);
+        this.alert.set(failureMessage(error, TEXTS.genericFailure));
+      },
     });
   }
 

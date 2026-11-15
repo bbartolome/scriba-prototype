@@ -2,6 +2,8 @@ import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import type {
   AppDefault,
+  ConnectionTestRequest,
+  ConnectionTestResult,
   ModelChoice,
   Preset,
   ProviderRead,
@@ -11,6 +13,8 @@ import { API_CLIENT } from '../../shell';
 import {
   APP_DEFAULT_PATH,
   appDefaultCopy,
+  CONNECTION_TEST_PATH,
+  connectionTestResultCopy,
   emptyBodyCopy,
   KEY_CLEAR_PATH,
   KEY_SET_PATH,
@@ -177,6 +181,14 @@ export class ProvidersStore {
     return this.api
       .post(APP_DEFAULT_PATH, choice, appDefaultCopy)
       .pipe(tap((reply) => this.appDefault.set(reply.appDefault)));
+  }
+
+  /**
+   * Tests a stored provider by id, or a draft config, with the typed key if any. The reply is not
+   * stored: no signal changes and no list is read (MPR-10 D3, D10).
+   */
+  testConnection(body: ConnectionTestRequest): Observable<ConnectionTestResult> {
+    return this.api.post(CONNECTION_TEST_PATH, body, connectionTestResultCopy);
   }
 
   /** Replaces the row with the reply's id, or appends the row when the id is new. */
