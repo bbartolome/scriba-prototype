@@ -4291,3 +4291,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Judged acceptable: the initial bundle grows by about 50 kB (525.10 to 575.39 kB) because the Model providers panel is embedded in the route (D5). The 1 MB stop rule is not reached; the 500 kB warning already existed, as accepted for SHL-08 (lines 2683-2685).
 - Judged acceptable: `whenLoaded` makes each action wait for the one shared contract load (no new contract access, no new route).
 - Code rejections: 0.
+
+## 2026-11-15 — TRG-09 — Sonnet code review (two parts): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/TRG-09 -- . ':!plans' ':!units' | git patch-id --stable`, head 7b2981c, plan revision d801560): 5e2f7e4cdc5d91c0ec80d117a11b1508afed9cbf.
+- Part 1 (steps 1-10; T1, T2, T4, E1): APPROVED. Part 2 (steps 11-15; T3): APPROVED. 6 files / 35 tests pass in the Part 1 gate; root build, test and lint exit 0.
+- Judged acceptable: the literal mutation of enabledOf passes all tests because the routes use the private helper enabledWith; the implementer's mutation of enabledWith fails T1, E1 and T2, so the check's intent is met. Three commits instead of one (commit-per-part).
+- Code rejections: 0.
