@@ -1,4 +1,10 @@
-import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  inject,
+  Injectable,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import type { ProjectSummary } from '@bbartolome/scriba-contracts/project-store';
 import { filter } from 'rxjs';

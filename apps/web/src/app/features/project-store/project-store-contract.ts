@@ -18,7 +18,8 @@ export const PROJECTS_PATH: ApiPath = '/api/project-store/projects';
 export const PROJECT_NEW_PATH: ApiPath = '/api/project-store/projects/new';
 
 /** `POST` the import of a folder (`PROJECT_IMPORT_ROUTE`). */
-export const PROJECT_IMPORT_PATH: ApiPath = '/api/project-store/projects/import';
+export const PROJECT_IMPORT_PATH: ApiPath =
+  '/api/project-store/projects/import';
 
 /** `POST` a project made from a sample (`PROJECT_START_FROM_SAMPLE_ROUTE`). */
 export const PROJECT_START_FROM_SAMPLE_PATH: ApiPath =

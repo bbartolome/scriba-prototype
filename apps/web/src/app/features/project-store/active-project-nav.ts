@@ -1,4 +1,10 @@
-import { Component, DestroyRef, effect, inject, untracked } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  untracked,
+} from '@angular/core';
 import { ActiveProjectSignal } from '../../shell';
 import { ProjectsState } from './projects-state';
 

@@ -26,7 +26,9 @@ const PICKER_ROUTES: Routes = [
     path: 'projects',
     pathMatch: 'full',
     loadChildren: () =>
-      import('./project-store.routes').then((feature) => feature.projectsRoutes),
+      import('./project-store.routes').then(
+        (feature) => feature.projectsRoutes,
+      ),
   },
   { path: 'projects/:projectId/chat', component: ChatStub },
 ];
@@ -122,7 +124,10 @@ function rowOf(scope: ParentNode, id: string): HTMLElement {
   );
 }
 
-function buttonIn(scope: ParentNode, name: string): HTMLButtonElement | undefined {
+function buttonIn(
+  scope: ParentNode,
+  name: string,
+): HTMLButtonElement | undefined {
   return [...scope.querySelectorAll<HTMLButtonElement>('button')].find(
     (button) => button.textContent.trim() === name,
   );
@@ -134,7 +139,11 @@ function buttonsNamed(scope: ParentNode, name: string): HTMLButtonElement[] {
   );
 }
 
-function hasExactText(scope: ParentNode, selector: string, text: string): boolean {
+function hasExactText(
+  scope: ParentNode,
+  selector: string,
+  text: string,
+): boolean {
   return [...scope.querySelectorAll(selector)].some(
     (element) => element.textContent.trim() === text,
   );
@@ -202,7 +211,10 @@ describe('project picker', () => {
     const harness = await renderPicker();
 
     fillInput(newForm(rootOf(harness)), 'title', 'My Book');
-    must(buttonIn(newForm(rootOf(harness)), 'Create project'), 'Create project').click();
+    must(
+      buttonIn(newForm(rootOf(harness)), 'Create project'),
+      'Create project',
+    ).click();
     await settle(harness);
 
     expect(bodiesOf('POST', PROJECT_NEW_PATH)).toStrictEqual([
@@ -257,7 +269,9 @@ describe('project picker', () => {
     doubles.api.respond('POST', ACTIVE_PROJECT_PATH, { active: 'demo-book' });
     const harness = await renderPicker();
     const card = must(
-      rootOf(harness).querySelector<HTMLElement>('section[aria-label="Nonfiction"]'),
+      rootOf(harness).querySelector<HTMLElement>(
+        'section[aria-label="Nonfiction"]',
+      ),
       'Nonfiction card',
     );
 

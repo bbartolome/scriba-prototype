@@ -201,7 +201,12 @@ function problemOf(error: unknown): Problem {
         @if (opened() === sample.id) {
           <form
             (submit)="
-              startFromSample($event, sample, sampleFolder.value, sampleTitle.value)
+              startFromSample(
+                $event,
+                sample,
+                sampleFolder.value,
+                sampleTitle.value
+              )
             "
           >
             <label>
@@ -215,7 +220,12 @@ function problemOf(error: unknown): Problem {
             </label>
             <label>
               Title
-              <input name="title" #sampleTitle [value]="sample.title" required />
+              <input
+                name="title"
+                #sampleTitle
+                [value]="sample.title"
+                required
+              />
             </label>
             <button mat-flat-button type="submit" [disabled]="busy()">
               Create from sample
