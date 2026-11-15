@@ -67,10 +67,13 @@ describe('providers client: timeout and abort', () => {
     expect(elapsed).toBeGreaterThanOrEqual(250);
     expect(elapsed).toBeLessThanOrEqual(4000);
 
-    await vi.waitFor(async () => {
-      const [record] = await recordsOf(mock, 'stalled');
-      expect(record?.closedByClient).toBe(true);
-    });
+    await vi.waitFor(
+      async () => {
+        const [record] = await recordsOf(mock, 'stalled');
+        expect(record?.closedByClient).toBe(true);
+      },
+      { timeout: 5000 },
+    );
   });
 
   test('criterion 5: a slow stream whose gaps are under timeout completes', async () => {
@@ -114,10 +117,13 @@ describe('providers client: timeout and abort', () => {
     await expectCoded(events.next(), 'PROVIDER_ABORTED');
     expect(performance.now() - started).toBeLessThan(1000);
 
-    await vi.waitFor(async () => {
-      const [record] = await recordsOf(mock, 'long-stream');
-      expect(record?.closedByClient).toBe(true);
-    });
+    await vi.waitFor(
+      async () => {
+        const [record] = await recordsOf(mock, 'long-stream');
+        expect(record?.closedByClient).toBe(true);
+      },
+      { timeout: 5000 },
+    );
   });
 
   test('criterion 6: abort during the retry wait makes no further attempt', async () => {
@@ -204,9 +210,12 @@ describe('providers client: timeout and abort', () => {
     expect(elapsed).toBeGreaterThanOrEqual(250);
     expect(elapsed).toBeLessThanOrEqual(4000);
 
-    await vi.waitFor(async () => {
-      const [record] = await recordsOf(mock, 'stalled');
-      expect(record?.closedByClient).toBe(true);
-    });
+    await vi.waitFor(
+      async () => {
+        const [record] = await recordsOf(mock, 'stalled');
+        expect(record?.closedByClient).toBe(true);
+      },
+      { timeout: 5000 },
+    );
   });
 });

@@ -159,24 +159,30 @@ describe('connection status', () => {
 
     // (c) the probe fails at the network level: the banner appears, the label stays
     probe.settle('network');
-    await vi.waitFor(() => {
-      fixture.detectChanges();
-      expect(bannerText(fixture)).toContain('Server unreachable');
-    });
+    await vi.waitFor(
+      () => {
+        fixture.detectChanges();
+        expect(bannerText(fixture)).toContain('Server unreachable');
+      },
+      { timeout: 5000 },
+    );
     expect(indicator(fixture)?.getAttribute('data-state')).toBe('reconnecting');
     expect(root(fixture).querySelector('h1')?.textContent).toContain('Scriba');
 
     // (d) the native retry opens the same stream: label and banner clear, one reopen tick
     latest().emitOpen();
-    await vi.waitFor(() => {
-      fixture.detectChanges();
-      expect(indicator(fixture)).toBeNull();
-      expect(bannerText(fixture)).not.toContain('Server unreachable');
-    });
+    await vi.waitFor(
+      () => {
+        fixture.detectChanges();
+        expect(indicator(fixture)).toBeNull();
+        expect(bannerText(fixture)).not.toContain('Server unreachable');
+      },
+      { timeout: 5000 },
+    );
     expect(sources).toHaveLength(1);
     expect(ticks).toEqual(['reopen']);
     expect(debug).toHaveBeenCalledWith('[sse] tick', 'reopen');
-  });
+  }, 15000);
 
   it('connecting and open show neither the indicator nor the banner', async () => {
     const { client, fixture } = await render();

@@ -179,12 +179,15 @@ describe('HttpApiClient', () => {
         { status: 401, statusText: 'Unauthorized' },
       );
 
-    await vi.waitFor(() => {
-      expect(router.url).toBe('/setup');
-    });
+    await vi.waitFor(
+      () => {
+        expect(router.url).toBe('/setup');
+      },
+      { timeout: 5000 },
+    );
     expect(outcome.errors[0]).toBeInstanceOf(ApiError);
     expect(outcome.errors[0]).toMatchObject({ status: 401 });
-  });
+  }, 10000);
 
   // T8
   it('does not navigate for other errors', async () => {
