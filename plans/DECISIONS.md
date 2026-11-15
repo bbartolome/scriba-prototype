@@ -4305,3 +4305,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 1 (steps 1 to 11; tests K1, T1, T2, T3): APPROVED. The six changed paths are exactly the plan's section 2 list. Full web suite 44 files / 314 tests pass; T3 phone e2e passes.
 - Accepted differences: debounce via timer(250) and switchMap instead of debounceTime(250) (same behaviour); lint fix commit 59e98c3; mutation checks (a) to (c) and the whole-branch gates are steps, not acceptance tests, and were not run by the implementer.
 - Code rejections: 0.
+
+## 2026-11-15 — TRG-05 — PLAN DOES NOT WORK (implementer, branch head a4ef55c)
+
+- Step: 11, the e2e run of criterion C2 (T2, the entity drop). C1, C3 and C4 pass. C5 was not reached.
+- Cause: the drag reaches the drop area of the `person` picker only when the pointer does not pass the `styleProfile` picker. During the drag, the `styleProfile` picker refuses the chip and writes its reason ("A person cannot go here.") into its own `p.reason` line (`entity-picker.ts`, `admits`, lines 301 to 308). That line shifts the `person` select from y=805 to y=825 mid-drag. CDK caches each drop list's rectangle when receiving starts, so the drop lands on the last container entered on the path (`entityIds`).
+- `entity-picker.ts` is a TRG-04 file, read-only for TRG-05 (plan section 2). The defect is outside the unit.
+- The branch is based on 4dbe960; main is at 46602ba (TRG-09 is on main). The rebase is still to do.
+- Plan returns to draft for an Opus reviser.
