@@ -38,7 +38,11 @@ it('C1: start from sample copies the test sample under the chosen name, changes 
       expect(readFileSync(join(root, 'project.yaml'), 'utf8')).toBe(
         TEST_PROJECT_YAML.replace('title: Test Sample', 'title: My Copy'),
       );
-      for (const path of ['sources/outline.md', 'drafts/chapter-one.md', '.gitignore']) {
+      for (const path of [
+        'sources/outline.md',
+        'drafts/chapter-one.md',
+        '.gitignore',
+      ]) {
         expect(readFileSync(join(root, path))).toEqual(
           readFileSync(join(sampleRoot, path)),
         );

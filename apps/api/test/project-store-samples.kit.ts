@@ -76,7 +76,13 @@ export function buildSamplesFixture(): SamplesFixture {
     file(join(test, 'logs', 'run.log'), 'A run.\n');
     file(join(test, 'snapshots', 'snap.md'), 'A snapshot.\n');
     file(
-      join(test, 'drafts', '.versions', 'chapter-one.md', '2026-01-01T00-00-00Z.md'),
+      join(
+        test,
+        'drafts',
+        '.versions',
+        'chapter-one.md',
+        '2026-01-01T00-00-00Z.md',
+      ),
       'A version.\n',
     );
 

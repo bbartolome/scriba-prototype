@@ -6,6 +6,8 @@ import { PROJECTS_SECTION_DEF } from './project-store.section';
 import { ProjectStoreService } from './project-store.service';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
+import { SamplesController } from './samples.controller';
+import { SamplesService } from './samples.service';
 
 // Modules outside project-store import these from this entry file only.
 export { ProjectStoreService } from './project-store.service';
@@ -17,7 +19,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
 // path-check provider.
 @Module({
   imports: [PlatformModule],
-  controllers: [ProjectsController, ActiveProjectController],
+  controllers: [ProjectsController, ActiveProjectController, SamplesController],
   providers: [
     {
       provide: PROJECT_STORE_SECTION_REGISTRATION,
@@ -30,6 +32,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     ProjectStoreService,
     ProjectsService,
     ActiveProjectService,
+    SamplesService,
   ],
   exports: [ProjectStoreService],
 })
