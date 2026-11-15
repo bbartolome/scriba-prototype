@@ -1,6 +1,6 @@
 ---
 id: SAU-08
-status: planned
+status: draft
 title: Token-guard gate — e2e setup step and M1 demo
 module: setup-auth
 ---
