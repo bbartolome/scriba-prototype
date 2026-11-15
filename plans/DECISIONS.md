@@ -4091,3 +4091,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Reason (YAGNI test, the reviser's reply):** criterion 3 is in the way now, because no correct PR at M1 can test it while SHL-14, SHL-15 and SHL-16 are not merged. It is needed, because it is a criterion of the unit and `plans/SHL-13.md` line 164 relies on it. The action is a split, and its cause is units that are not done.
 - **Downstream units:** none needs PST-34. PST-12 does not (Navigator decision above). PST-14 and PST-21 need only the tree, `?path=` and the refresh on `files-changed`.
 - **Note:** `plans/SHL-13.md` line 164 still says "PST-10's third criterion" (SHL-13 is done; not changed here).
+
+## 2026-11-15 — TRG-02 — Sonnet code review (one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/TRG-02 -- . ':!plans' ':!units' | git patch-id --stable`, branch head be412d9): 43edf4a47407483284a408af7f8d6245777d40df.
+- Files changed: exactly the plan's section 2 list (12 files): the seven tool-registry sources, `app.module.ts` (one import, one array entry), `apps/api/package.json` (`"ajv": "8.20.0"`, exact), `package-lock.json`, `invariant-sweep.ts` (two FIXTURE_PATHS entries) and `tool-registry-api.test.ts`.
+- Lock change: besides ajv 8.20.0 and json-schema-traverse 1.0.0, the `"dev": true` flag is removed from fast-deep-equal, fast-uri and require-from-string, which are runtime dependencies of ajv now. No version changed. This is what `npm install ajv@8.20.0 --save-exact` produces.
+- Tests: AC1 to AC4 and E1 to E3 pass (7 tests in `tool-registry-api.test.ts`, the reviewer's targeted run).
+- Note for TRG-07 (not a defect here): `stripExtensions` keeps property names under `properties`, so a property literally named `x-foo` would reach the function schema. A lint rule for it belongs to TRG-07.
+- Code rejections of TRG-02: 0.
