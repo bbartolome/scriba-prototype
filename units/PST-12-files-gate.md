@@ -19,14 +19,14 @@ Merging this **closes Project store `phase:files`**. API work in PST-02…PST-08
 - Verify the `phase:files` checklist end to end on `main`.
 
 ## Acceptance criteria (the `phase:files` checklist)
-- [ ] Discovery lists exactly the non-dot immediate subfolders with `project.yaml` and marks the others `importable`.
-- [ ] New creates the layout without `structure/` and with `.gitignore` containing `.scriba/`; Import leaves every other file byte-identical.
-- [ ] Start from sample copies the nonfiction sample under a chosen name; nothing is copied at startup.
-- [ ] The path-safety table passes **over HTTP**.
-- [ ] Requests naming a non-active project fail (propose is tested in PST-15); switching publishes `project-switched` after the in-process hooks.
-- [ ] `delete`/`move`, `updateProjectYaml` byte-identity, `edit` distinct failures, stale `baseHash` conflict, entity resolution with unknown/duplicate reporting, `too-new` listing and activation refusal all pass.
-- [ ] Every GET is side-effect free (Setup & auth's invariant test passes for these routes).
-- [ ] Unauthenticated requests to Project store routes are refused by the guard.
+- [x] Discovery lists exactly the non-dot immediate subfolders with `project.yaml` and marks the others `importable`.
+- [x] New creates the layout without `structure/` and with `.gitignore` containing `.scriba/`; Import leaves every other file byte-identical.
+- [x] Start from sample copies the nonfiction sample under a chosen name; nothing is copied at startup.
+- [x] The path-safety table passes **over HTTP**.
+- [x] Requests naming a non-active project fail (propose is tested in PST-15); switching publishes `project-switched` after the in-process hooks.
+- [x] `delete`/`move`, `updateProjectYaml` byte-identity, `edit` distinct failures, stale `baseHash` conflict, entity resolution with unknown/duplicate reporting, `too-new` listing and activation refusal all pass.
+- [x] Every GET is side-effect free (Setup & auth's invariant test passes for these routes).
+- [x] Unauthenticated requests to Project store routes are refused by the guard.
 
 **M1 "done when"** (shared with the Agent loop): *the author types "summarize my outline" and gets a correct answer with visible tool calls.* The Project store's part is the file API the agent's tools call and `sources/outline.md`.
 

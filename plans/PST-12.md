@@ -1,6 +1,6 @@
 ---
 id: PST-12
-status: planned
+status: done
 ---
 # PST-12 plan - files gate: guard adoption, GET-never-mutates, the phase:files checklist
 
