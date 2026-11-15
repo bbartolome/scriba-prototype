@@ -26,8 +26,8 @@ Callers turn entity IDs into files and contents in one call (story 46); pickers 
 - The ID→path map is rebuilt from a **`(path, mtime, size)` manifest** of `entities/` and `sources/`, diffed against disk on each request, so host edits are picked up. Build the manifest as a reusable component; search (PST-13) reuses it.
 
 ## Acceptance criteria
-- [ ] Resolution returns contents for IDs in `entities/` (by front-matter id and by stem) and `sources/` (with and without front matter).
-- [ ] Unknown and duplicate IDs are reported with typed errors; duplicates list both paths.
-- [ ] An `entities/` file without `type`, or with an ID failing the pattern, appears in `invalid` and isn't resolvable.
-- [ ] A host edit adding an entity is visible on the next request with no rebuild.
-- [ ] Both GETs are side-effect free.
+- [x] Resolution returns contents for IDs in `entities/` (by front-matter id and by stem) and `sources/` (with and without front matter).
+- [x] Unknown and duplicate IDs are reported with typed errors; duplicates list both paths.
+- [x] An `entities/` file without `type`, or with an ID failing the pattern, appears in `invalid` and isn't resolvable.
+- [x] A host edit adding an entity is visible on the next request with no rebuild.
+- [x] Both GETs are side-effect free.

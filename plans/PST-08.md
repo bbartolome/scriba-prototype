@@ -1,6 +1,6 @@
 ---
 id: PST-08
-status: planned
+status: done
 unit: units/PST-08-entity-resolution.md
 ---
 # PST-08 plan — entity resolution, entity list and the shared file manifest
