@@ -25,6 +25,8 @@ import { changedPaths, withProjectsApp } from './project-store-projects.kit';
 const ANN_LOVELACE = '---\nid: ann\ntype: person\n---\nAnn Lovelace.\n';
 const ANN_TWO = '---\nid: ann\ntype: person\n---\nA second Ann.\n';
 const CARL = '---\ntype: person\n---\nCarl.\n';
+// The in-place rewrite of carl.md: other content, other size, other type.
+const CARL_MOVED = '---\ntype: place\n---\nCarl moved.\n';
 
 // The list answer of a reply, which must be a 200, parsed with the contract's schema.
 function listOf(reply: Reply): EntityList {
@@ -211,6 +213,32 @@ it('E4: a host edit adding an entity is visible on the next request with no rebu
       );
       expect(found.resolved).toEqual([
         { id: 'carl', type: 'person', path: 'entities/carl.md', content: CARL },
+      ]);
+
+      // An in-place rewrite of the same path, with new content and a new size. putFile writes the
+      // existing file (it does not remove it first), so the cached front matter must not be reused.
+      putFile(fixture.library, 'book/entities/carl.md', CARL_MOVED);
+      const moved = listOf(await listEntities(app, cookie, 'book'));
+      expect(moved.entities).toContainEqual({
+        id: 'carl',
+        type: 'place',
+        path: 'entities/carl.md',
+      });
+      expect(moved.entities).not.toContainEqual({
+        id: 'carl',
+        type: 'person',
+        path: 'entities/carl.md',
+      });
+      const rewritten = resolutionOf(
+        await resolveEntities(app, cookie, 'book', ['carl']),
+      );
+      expect(rewritten.resolved).toEqual([
+        {
+          id: 'carl',
+          type: 'place',
+          path: 'entities/carl.md',
+          content: CARL_MOVED,
+        },
       ]);
 
       rmSync(carl);
