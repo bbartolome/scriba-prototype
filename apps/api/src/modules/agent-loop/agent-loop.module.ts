@@ -1,11 +1,20 @@
 import { Module } from '@nestjs/common';
 import { PlatformModule, SettingsService } from '../platform/platform.module';
+import { ProjectStoreModule } from '../project-store/project-store.module';
 import { AgentSettingsController } from './agent-settings.controller';
 import { AGENT_SETTINGS_SECTION_DEF } from './agent-settings.section';
 import { AgentSettingsService } from './agent-settings.service';
+import { AgentToolsService } from './agent-tools.service';
 
 // Modules outside agent-loop import these from this entry file only.
 export { AgentSettingsService } from './agent-settings.service';
+export { AgentToolsService } from './agent-tools.service';
+export type { ToolRun } from './tools/tool-run';
+export type {
+  DispatchResult,
+  ToolIssue,
+  ToolOutcome,
+} from './tools/tool-types';
 export type {
   AgentSettings,
   AgentSettingsUpdate,
@@ -13,9 +22,10 @@ export type {
 
 const AGENT_SETTINGS_REGISTRATION = 'AGENT_SETTINGS_REGISTRATION';
 
-// Agent loop: the agent section of settings.yaml and its settings API. The loop itself lands in later units.
+// Agent loop: the agent section of settings.yaml, its settings API, and the tool dispatcher. The loop itself lands in
+// later units.
 @Module({
-  imports: [PlatformModule],
+  imports: [PlatformModule, ProjectStoreModule],
   controllers: [AgentSettingsController],
   providers: [
     {
@@ -27,7 +37,8 @@ const AGENT_SETTINGS_REGISTRATION = 'AGENT_SETTINGS_REGISTRATION';
       },
     },
     AgentSettingsService,
+    AgentToolsService,
   ],
-  exports: [AgentSettingsService],
+  exports: [AgentSettingsService, AgentToolsService],
 })
 export class AgentLoopModule {}

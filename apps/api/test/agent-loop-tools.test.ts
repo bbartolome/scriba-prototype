@@ -162,7 +162,9 @@ it('AC1: a path outside the project is refused with a readable error, and nothin
         summary: 'Listed sources.',
       });
       const entries = (
-        listed.outcome as { output: { entries: { path: string; kind: string }[] } }
+        listed.outcome as {
+          output: { entries: { path: string; kind: string }[] };
+        }
       ).output.entries;
       expect(entries).toHaveLength(1);
       expect(entries[0]).toMatchObject({
@@ -184,8 +186,7 @@ it('AC1: a path outside the project is refused with a readable error, and nothin
           kind: 'result',
           summary: 'Read sources/outline.md.',
           output: { path: 'sources/outline.md', content: '# Outline\n' },
-          modelText:
-            '{"path":"sources/outline.md","content":"# Outline\\n"}',
+          modelText: '{"path":"sources/outline.md","content":"# Outline\\n"}',
         },
       });
 
@@ -306,7 +307,12 @@ it('AC3: a tool is withdrawn on the third consecutive invalid call, and a valid 
       ).toEqual({
         arguments: { path: 'sources/outline.md' },
         valid: true,
-        outcome: { kind: 'error', message: WITHDRAWN, attempt: 3, withdrawn: true },
+        outcome: {
+          kind: 'error',
+          message: WITHDRAWN,
+          attempt: 3,
+          withdrawn: true,
+        },
       });
       const listed = await callResult(
         app,

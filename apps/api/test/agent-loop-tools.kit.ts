@@ -65,7 +65,9 @@ export function agentLoopToolsKitModule(): Type<unknown> {
     @Get('runs/:runId/tools')
     offered(@Param('runId') runId: string): { tools: string[] } {
       return {
-        tools: runOf(runId).schemas().map((schema) => schema.function.name),
+        tools: runOf(runId)
+          .schemas()
+          .map((schema) => schema.function.name),
       };
     }
   }
