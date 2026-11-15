@@ -117,6 +117,15 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/tool-registry/tools/:name/validate': {
     path: '/api/tool-registry/tools/no-such-tool/validate',
   },
+  '/api/tool-registry/tools/:name/builtin': {
+    path: '/api/tool-registry/tools/no-such-tool/builtin',
+  },
+  '/api/tool-registry/tools/:name/user': {
+    path: '/api/tool-registry/tools/no-such-tool/user',
+  },
+  '/api/tool-registry/tools/:name/enabled': {
+    path: '/api/tool-registry/tools/no-such-tool/enabled',
+  },
   '/api/setup-auth/steps/:step': {
     path: '/api/setup-auth/steps/access',
   },
