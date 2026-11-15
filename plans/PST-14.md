@@ -1,6 +1,6 @@
 ---
 id: PST-14
-status: planned
+status: done
 unit: units/PST-14-search-box-ui.md
 ---
 # PST-14 plan — Search box in the files UI

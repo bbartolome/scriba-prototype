@@ -19,8 +19,8 @@ Merging this (with PST-13) **closes Project store `phase:search`**.
 - Works at phone width.
 
 ## Acceptance criteria
-- [ ] Component test (fake API): typing a query shows ranked results; selecting a result opens that path.
-- [ ] Scope toggle restricts the request.
-- [ ] Phone viewport test passes.
+- [x] Component test (fake API): typing a query shows ranked results; selecting a result opens that path.
+- [x] Scope toggle restricts the request.
+- [x] Phone viewport test passes.
 
 **M2 note.** Search gives the workhorse tools and the Agent loop a way to look things up. M2's "done when" (each workhorse produces a draft citing its source files) is demoed by the Tool registry, Genre packs and the Agent loop, citing via entity resolution (PST-08) and this search.
