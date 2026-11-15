@@ -17,8 +17,10 @@ unblocks: [SAU-12, SAU-13, SAU-14, SAU-16, SAU-20]
 - **Routing:** the SPA sends an authenticated author to `/setup` until `complete` is set (the Shell's landing route reads this module's status), and to the main app afterwards. Re-running `/setup` is always allowed.
 - Works at phone width, including over the tailnet (finishing a skipped step from the phone).
 - Replaces the minimal M1 page's Continue with the wizard's own completion (keeping the "skip the rest" path).
+- Renders the compose-version warning (from SAU-10's GET /api/setup-auth/status) for mismatch and unknown states, using SAU-10's re-run-the-installer one-liner; hidden for ok.
 
 ## Acceptance criteria
 - [ ] Component tests (fake API): step order, skip, completion, prefilled defaults on re-run.
 - [ ] Landing routing: incomplete → `/setup`; complete → app.
 - [ ] Phone viewport renders and completes the flow.
+- [ ] Component test (fake API): compose-version warning shown for mismatch/unknown with the one-liner; hidden for ok.
