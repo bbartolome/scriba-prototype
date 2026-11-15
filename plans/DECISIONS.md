@@ -4177,3 +4177,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Tests: T1 to T8, E1 and E2 pass (reviewer ran the web suite: 39 files, 272 tests). T4 asserts the picker ids shown and returned, plus the length default that D6 adds at init; criterion 1 for the picker slots still holds.
 - Differences (native `required` with `novalidate`, range bounds as properties, the `role=switch` click, the process differences) break no requirement.
 - Code rejections: 0.
+
+## 2026-11-15 — PST-12 — Sonnet code review (one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/PST-12 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 82be602, based on main 02330aa): 0b1c8d7778ef23c2c71db2d3d696b541c162fc46.
+- Files changed: exactly `apps/api/test/project-store-files-gate.test.ts` (new), the one file the plan's section 2 lists.
+- Tests: F1 (criterion 25, 56 rows over HTTP), F2 (criterion 29, the fifteen route-method pairs refused without a cookie), F3 (criterion 28, seven GET routes side-effect free) pass; the criteria 22 to 24, 26, 27 pass through the existing tests the plan names. The reviewer ran the new file (3 of 3) and the prettier check.
+- Criterion 26's propose part is PST-15's by the criterion's own wording; not part of this approval.
+- Not run: plan step 5 (mutation checks M1 to M3). The plan requires no code from them; the evidence that F1 to F3 catch regressions is missing. The implementer's edit to `apps/api/src/modules/project-store/path-safety.ts` was denied by the permission classifier.
+- Code rejections: 0.
