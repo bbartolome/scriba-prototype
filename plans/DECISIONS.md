@@ -3905,3 +3905,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Judgement recorded: the contracts-boot size change is the slice's size, since contracts-boot imports all ten subpaths at runtime.
 - Notes, not blocking: the comment on ENTITY_KIND_PATTERN (constants.ts line 10) still says "the type of an entity"; it could say "the entity-type kind (D5)".
 - Code rejections of TRG-01: 2 (the first, and the fix review, approved).
+
+## 2026-11-15 — SHL-20 — Sonnet code review (part 1): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SHL-20 -- . ':!plans' ':!units' | git patch-id --stable`, base b1a41e6): 66364eec1a6b71353d930508397abe5cc8306775.
+- Criterion (the 390 by 844 check) passes through its e2e test in `e2e/specs/phone-toolbar.e2e.ts`; the reviewer confirmed the changed files are the three the plan lists.
+- Code rejections of SHL-20: 0.
