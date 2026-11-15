@@ -4245,3 +4245,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Not tested: a real pointer or touch drag (jsdom has no layout); GRR-12, GRR-15 and GRR-17 own those gestures. The running app with the real Project store was not run.
 - Reviewer observation: a full web run showed timeouts in shell specs the branch does not touch (sample-chat.spec.ts, setup-page.spec.ts C1b), which pass alone. To be confirmed on a quiet machine at the main gates.
 - Code rejections: 0.
+
+## 2026-11-15 — GRR-01 — Sonnet code review (two parts): APPROVED
+
+- Full-branch patch id of the approved code (`git diff main...unit/GRR-01 -- . ':!plans' ':!units' | git patch-id --stable`, head 67494e8, plan revision 3 on main at f8fe30e): 3bfef4438f18b6e00f51d0e3f28dade704d56082.
+- Part 1 (steps 1-9; tests C1-C4, E1-E12): APPROVED. 17 files and 247 tests pass in the contracts package; the 14 changed files are exactly the plan's section 2 list.
+- Part 2 (steps 10-17; test C5): APPROVED for the local steps. Criterion 5 is NOT tested and NOT ticked: it needs a CI run on a pushed main that contains 67494e8, and no push has happened (67494e8 is not an ancestor of origin/main). Local evidence: a fresh clone passes npm ci, lint, test and build in CI order.
+- Deviations judged acceptable: the E12 title wording; one extra compile-time test (the z.infer of each exported type); graphErrorCodeSchema as z.enum; the run-log node-status error uses runErrorSchema.
+- Open for the owner: after pushing a main that contains 67494e8, the orchestrator runs step 17 (gh run list / gh run view) and records criterion 5. Until then GRR-01 cannot reach status done.
+- Code rejections: 0.
