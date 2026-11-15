@@ -4359,3 +4359,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 1 (steps 0 to 12, Vitest): APPROVED. The M3 rework run (revision 2, page gate replaced by `true`) fails only W2; the revert is clean (`git diff` empty); the clean suite passes 47 files / 319 tests.
 - Part 2 (steps 13 to 18, Playwright): APPROVED earlier on the same patch id. Full e2e suite passes (6 tests).
 - Code rejections: 0 (the earlier REWORK item is resolved by plan revision 2, not by a code change).
+
+## 2026-11-15 — TRG-05 — Sonnet code review (three parts): part 1 REWORK, parts 2 and 3 APPROVED
+
+- Patch id reviewed (`git diff main...unit/TRG-05 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 93aaecf): 3a023525bc9dad716cd77159827de216880ca909.
+- Part 1 (steps 0 to 9, tests S1, S2, S3, T3): REWORK. Item 1: step 2 (the rebase onto main) was not done. `git merge-base --is-ancestor main unit/TRG-05` exits 1 because main has SAU-11 code since e04969b. Correction: rebase the branch onto main and run npm ci; then `git diff --name-only main...unit/TRG-05` must still list exactly the eight section 2 paths, and the web build and suite must pass on the rebased head. The change of base changes the patch id; the next review checks the new one.
+- Part 2 (steps 10 to 12, tests T1, T2): APPROVED. T2 follows revision 3; three e2e runs pass (T1 and T2).
+- Part 3 (steps 13 to 19, tests T4, T5): APPROVED. Spike note committed, 4 verdict rows; root build, test and lint pass; fresh clone passes.
+- Code rejections: 1 (the rebase, a step not done). The rebase should not change the code, so the approvals of parts 2 and 3 are re-checked on the new patch id by the same review.
