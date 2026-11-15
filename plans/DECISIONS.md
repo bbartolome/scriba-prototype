@@ -4481,3 +4481,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Point for the PLT-22 planner and reviser, not settled here: PLT-22 unit line 21 lists story-node paths among the references that must resolve. That is the same rule as PLT-21 D6 and criterion 2. PLT-22 must not report the same issue twice. Section 5 of plans/PLT-21.md gives the merge rule for either order.
 - Review parts: one part (steps 0 to 12, D1 to D11, the four files, C1 to C4 and E1 to E6).
 - Facts: the reviser confirmed the code on main at 418fe6f (index.mjs, lib.mjs, m1.mjs, PLT-20 test helpers, package.json, graph contract). Zod error shapes were checked with a scratch script on Node v26.13.0; the real graphFileSchema was not run, because its built file is not in this checkout.
+
+## 2026-11-15 — SHL-22 — Code review: approved
+
+- Patch id of the code (`git diff main...unit/SHL-22 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 4860be6, based on 6ba3516): 55cb1cbac96f7a86e1a376e38ee4fdc6e4eab090.
+- Reviewer (Part 1, the only part): APPROVED. The reviewer checked the four spec files against plan section 2 and table 2.3, the LOAD_WAIT declaration, the test timeouts, that no assertion or title changed, and the rows 1 to 4 evidence in the report. Only the four spec files change.
+- Accepted deviations (reviewer): the implementer followed the rebase branch of step 9 because main moved to 6ba3516; the edits were applied by a script at AST positions and then formatted with prettier; the criterion 4 red run also passed 24 of 24, so the load did not reproduce the failure, which the plan allows recording.
