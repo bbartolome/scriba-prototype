@@ -3928,3 +3928,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 2 (view state and page; tests T1 to T4 and X2 to X7): approved.
 - Notes, not blocking: D14 also disables New conversation and the conversation buttons while a run is active; the settings save shows a notice for an invalid step cap (D13 does not state it).
 - Code rejections of AGL-07: 0.
+
+## 2026-11-15 — PST-04 — Sonnet code review (whole plan, one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/PST-04 -- . ':!plans' ':!units' | git patch-id --stable`, base 62bb745): e9e667bf89547f30cfbc32d170ce8b1c9bcd61f0.
+- Files changed: exactly the seven files of the plan's section 2 (active-project controller and service, project-store module and services, the kit and the test file).
+- Commit 1248dec changes one comment line only (the word "examples" in a test comment, required by plan step 8(c)); no assertion or behaviour changed.
+- Code rejections of PST-04: 0.
