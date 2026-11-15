@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   SETUP_STEP_KEYS,
   setupAuthSectionSchema,
@@ -7,20 +7,27 @@ import {
 } from '@bbartolome/scriba-contracts/setup-auth';
 import {
   EXPECTED_COMPOSE_VERSION,
+  SCRIBA_ENV,
   SettingsService,
+  type ScribaEnv,
   type SettingsSection,
 } from '../platform/platform.module';
 import { SETUP_AUTH_SECTION_DEF } from './setup-auth.section';
+import { composeVersionStatus } from './compose-status';
 
 type Steps = SetupAuthSection['steps'];
 
 // The body of the status route. Access is done because only an authenticated caller gets this body.
-// The compose state is unknown until the compose-version check (SAU-10) reports it.
-function statusBody(steps: Steps, complete: boolean): SetupStatus {
+// The compose state is the compose-version check of compose-status.ts, passed in by each caller.
+function statusBody(
+  steps: Steps,
+  complete: boolean,
+  compose: SetupStatus['compose'],
+): SetupStatus {
   return {
     steps: { ...steps, access: 'done' },
     complete,
-    compose: { state: 'unknown', expected: EXPECTED_COMPOSE_VERSION },
+    compose,
   };
 }
 
@@ -36,12 +43,22 @@ function continuedSteps(steps: Steps): Steps {
 // Reads the setupAuth section for the status route, and reads and writes it for Continue.
 @Injectable()
 export class SetupStatusService {
-  constructor(private readonly settings: SettingsService) {}
+  constructor(
+    private readonly settings: SettingsService,
+    @Inject(SCRIBA_ENV) private readonly env: ScribaEnv,
+  ) {}
 
   // Reads only: nothing is written and no cookie is set.
   status(): SetupStatus {
     const section = this.parsed(this.stored());
-    return statusBody(section.steps, section.complete);
+    return statusBody(
+      section.steps,
+      section.complete,
+      composeVersionStatus(
+        this.env.SCRIBA_COMPOSE_VERSION,
+        EXPECTED_COMPOSE_VERSION,
+      ),
+    );
   }
 
   // Writes the setupAuth section only. The write is a merge: steps and complete change, and every other key is kept.
@@ -49,7 +66,14 @@ export class SetupStatusService {
     const stored = this.stored();
     const steps = continuedSteps(this.parsed(stored).steps);
     this.settings.write('setupAuth', { ...stored, steps, complete: true });
-    return statusBody(steps, true);
+    return statusBody(
+      steps,
+      true,
+      composeVersionStatus(
+        this.env.SCRIBA_COMPOSE_VERSION,
+        EXPECTED_COMPOSE_VERSION,
+      ),
+    );
   }
 
   // The stored section, or the module default when the section is missing from the file.
