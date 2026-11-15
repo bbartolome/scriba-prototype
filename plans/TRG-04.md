@@ -1,6 +1,6 @@
 ---
 id: TRG-04
-status: draft
+status: planned
 unit: units/TRG-04-entity-style-pickers.md
 module: tool-registry
 phase: phase:form-renderer
@@ -8,13 +8,13 @@ milestone: M2
 ---
 # TRG-04 plan — Entity picker (kind-filtered, several, chip drop) and style picker (project default)
 
-Unit: `units/TRG-04-entity-style-pickers.md` (Tool registry, phase:form-renderer, milestone M2). Revision 1 (Opus reviser), checked at main `8d0e946`. The draft (`8d0e946`) was read at `5111a16`; `8d0e946` adds only this file. Nothing was built, installed, run or committed except this file. The status stays `draft`: one point (O7, the drop mechanism and payload) is for the Navigator (section 7).
+Unit: `units/TRG-04-entity-style-pickers.md` (Tool registry, phase:form-renderer, milestone M2). Revision 1 (Opus reviser), checked at main `8d0e946`. The draft (`8d0e946`) was read at `5111a16`; `8d0e946` adds only this file. Nothing was built, installed, run or committed except this file. Revision 2 (Opus reviser, at main `1e27f30`): O7, the drop mechanism and payload, is decided, option (b) Angular CDK drag and drop, by the `plans/DECISIONS.md` entry of 2026-11-15 committed at `1e27f30` (section 7). The status is `planned`.
 
 Scope in one line: the two picker controls of TRG-03's tool form replace their read-only slots. They read the server's active project, the Project store's entity list (PST-08) and, for the style picker, the `styleProfile` line of the project's `project.yaml` through the file read. No server code, endpoint, contract or dependency change is planned (section 2).
 
 Tags: **checked** means read in this session (file and line, or a grep, ls or git command). **assumed** means not run or not verified here (section 8b).
 
-Result in short: the blockers are done (TRG-03, PST-08, PST-01; section 8a). Each of the unit's three criteria gets one UI test (criterion 2 has three parts, section 4). Of the draft's eleven open points, ten are settled from the unit files, the module file and `plans/DECISIONS.md` (section 1b, P10 to P19). O7 stays open: it decides the drop mechanism and payload that GRR-12 and GRR-15 inherit and that TRG-05's running-app check needs (section 7). Steps 7, 14 and the tests AC2b and AC2c wait for it; everything else can be built once it is settled.
+Result in short: the blockers are done (TRG-03, PST-08, PST-01; section 8a). Each of the unit's three criteria gets one UI test (criterion 2 has three parts, section 4). Of the draft's eleven open points, ten are settled from the unit files, the module file and `plans/DECISIONS.md` (section 1b, P10 to P19). The eleventh, O7 (the drop mechanism and payload that GRR-12 and GRR-15 inherit and that TRG-05's running-app check needs), is decided: option (b), Angular CDK drag and drop (section 7). Every step, including steps 7 and 14 and the tests AC2b and AC2c, can be built.
 
 ## 1. Decisions this plan obeys
 
@@ -35,7 +35,7 @@ Result in short: the blockers are done (TRG-03, PST-08, PST-01; section 8a). Eac
 - **Active project.** GET `ACTIVE_PROJECT_ROUTE` (`routes.ts` line 12) answers `{active: string | null}` (`project.ts` lines 76 to 78, `activeProjectSchema`). `apps/web/src/app/shell/project-scope.ts` lines 70 to 73: the URL's id is not the server's active project; features that need the server's answer read GET active.
 - **File read.** GET `PROJECT_FILE_ROUTE` (`routes.ts` line 16) with query `path`, answer `{path, content, hash, mtime, upgraded?}` (`files.ts` lines 33 to 39, `fileReadSchema`). The server reads `project.yaml` like any text file and refuses a too-new one (`files.service.ts` lines 256 to 268).
 - **`styleProfile` is an entity ID.** `projectYamlSchema.styleProfile` is `entityRefSchema.optional()` (`project.ts` line 24), which is `entityIdSchema` with `ENTITY_ID_PATTERN` `/^[a-z0-9][a-z0-9-]*$/` (`entities.ts` lines 6 and 8; `constants.ts` line 4).
-- **Chips are the Graph runner's.** The drag source, the pinning rules on ports, and chip removal from ports belong to GRR-12 (its unit lines 18 to 20). This plan takes only the drop onto the Tool form's picker (O7).
+- **Chips are the Graph runner's.** The drag source, the pinning rules on ports, and chip removal from ports belong to GRR-12 (its unit lines 18 to 20). This plan takes only the drop onto the Tool form's picker (O7, decided: CDK drag and drop, section 7).
 
 ### 1b. Decisions this plan makes
 
@@ -66,20 +66,20 @@ Each is the smallest reading that meets the unit.
 | Path | Change | Purpose |
 |---|---|---|
 | `apps/web/src/app/features/tool-registry/tool-form.ts` | edit | The picker branch (lines 85 to 86, 292 to 306) renders the picker component. `idsOf` (lines 129 to 130, binding line 516) and the `.picker-slot` rule (line 211) go. Layouts, defaults (`ngOnInit`, line 578), issues and submit are unchanged. |
-| `apps/web/src/app/features/tool-registry/entity-picker.ts` | new | The picker component: scalar mode, list mode with chips, the drop target (O7), the style variant with the preselect. Injects the Shell's `API_CLIENT`. |
+| `apps/web/src/app/features/tool-registry/entity-picker.ts` | new | The picker component (standalone): scalar mode, list mode with chips, the drop target (O7, option b: its template holds a `cdkDropList`, and the component imports `CdkDropList` from `@angular/cdk/drag-drop` itself), the style variant with the preselect. Injects the Shell's `API_CLIENT`. |
 | `apps/web/src/app/features/tool-registry/project-store-copy.ts` | new | Hand-written path functions for `ACTIVE_PROJECT_ROUTE`, `PROJECT_ENTITIES_ROUTE` and `PROJECT_FILE_ROUTE`; guards for the active answer, the entity list and the file read; `ENTITY_ID_PATTERN` copy; `STYLE_PROFILE_KIND`; the `styleProfileOf(text)` line rule (P14). Type-only imports from the contract. |
 | `apps/web/src/app/features/tool-registry/project-store-copy.spec.ts` | new | The parity spec and the line-rule spec. It imports the contract's runtime routes, schemas and pattern, as `features/project-store/project-store-contract.spec.ts` lines 1 to 12 does. |
 | `apps/web/src/app/features/tool-registry/tool-form.spec.ts` | edit | Keeps a reference to `doubles.api` in the `beforeEach` (lines 240 to 244) and registers the three GETs; the comment at line 241 ("The component does no I/O") is changed. T1 picker assertions (lines 322 to 338); T4 `.picker-slot` text assertions (lines 450 to 466), while the `value` and `submitted` assertions (lines 468 to 478) stay; T7 picker `aria-describedby` (lines 516 to 525). The TRG-04 tests of section 4. |
 
 Unchanged, checked against the list above:
-- `tool-registry.routes.ts` (the entry exports `ToolForm`; the picker stays internal). It changes only if O7 option (a) or (c) exports the chip payload from the entry.
-- `apps/web/package.json` and `package-lock.json` (P14: no dependency).
+- `tool-registry.routes.ts` (the entry exports `ToolForm`; the picker stays internal). Under O7 option (b) nothing is exported for the drop: a chip carries its `{id, type}` as `cdkDragData`.
+- `apps/web/package.json` and `package-lock.json` (P14: no dependency; `@angular/cdk` 22.2.7 is already a dependency of `apps/web`, `apps/web/package.json` line 12).
 - `packages/contracts/**` (P13), `apps/api/**`, `apps/web/src/app/shell/**` (read only: `api-client.ts`, `testing/test-doubles.ts`, `index.ts`), `apps/web/src/app/features/project-store/**`.
 - `units/`, `modules/`, and `plans/` except `plans/TRG-04.md`.
 
 ## 3. Procedure
 
-For the implementer. Step 7 and step 14 wait until the Navigator settles O7; the other steps do not depend on it.
+For the implementer. O7 is decided (option b, section 7); steps 7 and 14 follow that decision.
 
 1. Start from the commit on main that holds this plan. Confirm the blockers still read done: the status line of `plans/TRG-03.md`, `plans/PST-08.md` and `plans/PST-01.md`. Read the O7 decision in `plans/DECISIONS.md` (search "TRG-04").
 2. Write `project-store-copy.ts`: the three path functions (the route template with the project ID encoded where `:projectId` stands), the three guards (the list guard refuses a body without `invalid`; the active guard accepts `null`), the `ENTITY_ID_PATTERN` copy, `STYLE_PROFILE_KIND`, and `styleProfileOf(text): string | undefined` (P14). Type-only imports for the types.
@@ -87,14 +87,14 @@ For the implementer. Step 7 and step 14 wait until the Navigator settles O7; the
 4. Write `entity-picker.ts`. Inputs: the form field (its `control`, `list`, `entityKinds`) and the describedBy string (P6); a `model` for the field's value (P5), bound by `ToolForm` to its `value`. On init: GET active; then GET the list with no params (P10), checked by the guard; for a style picker, also GET the file with `path=project.yaml`. A `computed` keeps the valid entities of the kinds (P2, P3, P4, P11, P13). Loading and failure states as P17(e); `active: null` as P12.
 5. Scalar mode (P17 a, b): the select lists the filtered entities and writes one ID.
 6. List mode (P17 c): one chip per ID with its Remove button; the add select writes the ID at the end of the array.
-7. **(After O7.)** The drop target in both modes: read the payload that O7 sets; accept a chip whose type is in the field's kinds (or any kind under P11; `style-profile` for a style picker): append it in list mode (no duplicate ID), replace in scalar mode (P17 d); refuse any other kind as P16. The drop writes through the value model (P8).
+7. **The drop target (O7, option b), in both modes.** In `entity-picker.ts`, which is standalone and imports `CdkDropList` from `@angular/cdk/drag-drop` itself, the picker's template wraps the control in an element with `cdkDropList` (sorting disabled; the picker's own chips are not `cdkDrag`). One function `accepts(chip)` is true when `chip.type` is in the field's kinds, any kind when the field has none (P11), and only `style-profile` for a style picker (P13). Bind it as `[cdkDropListEnterPredicate]` (with the `CdkDrag` argument, reading `drag.data`). A chip is a `cdkDrag` whose `cdkDragData` is `{id: string, type: string}`. On `(cdkDropListDropped)` read `event.item.data`, check `accepts` again (the test delivers the event directly, and a malformed payload is refused), then: list mode appends the ID if absent (no duplicate), scalar mode replaces the value (P17 d); write through the value model (P8) and clear the reason. A refused chip leaves `value` unchanged and shows the one-line reason (P16); in a real gesture the predicate refuses entry, so the picker sets the reason when the predicate returns false for a chip over it. `tool-form.ts` gains no CDK import: ToolForm only imports the picker component; the drop group (`cdkDropListGroup`) or connected IDs are the chip source's (TRG-05's dev route, GRR-12).
 8. Style mode: the same component with the style kind. When `styleProfileOf` gives an ID and the field's value is absent or `''`, write it (P15).
 9. In `tool-form.ts`, replace the picker branch with the component, bound to the field, the field's slot of `value`, and `describedBy(view)` (P6). Keep the issue paragraphs below it. Delete `idsOf`, its binding and the `.picker-slot` rule.
 10. In `tool-form.spec.ts`, keep `doubles.api` from `createShellTestDoubles()` and register in the `beforeEach`: GET active `{active: 'p1'}`, an empty entity list `{entities: [], invalid: []}`, and a `project.yaml` read with no `styleProfile`. The fake throws for an unregistered GET (`test-doubles.ts` line 92). Change the comment at line 241. A test that needs other answers registers them before it renders.
 11. Change T1, T4 and T7 as section 2 says: T1 and T7 read the picker's control instead of `.picker-slot`; T4 reads the chips and the selected option instead of the read-only text, and keeps its `value` and `submitted` assertions. Leave every other TRG-03 test as it is. If one of them fails, stop and report; do not change its expectation.
 12. Add the tests AC1, AC2a, AC3, X2 and X4 of section 4.
 13. In `apps/web`, run the test script (`ng test --watch=false`) and the lint script. Run `npx prettier --check` on the changed paths. The lint boundary rule must report no import from another feature.
-14. **(After O7.)** Add AC2b and AC2c, and run step 13 again.
+14. **Drop tests (O7, option b).** Add AC2b and AC2c of section 4. Each finds the picker's `CdkDropList` directive in the fixture (`By.directive(CdkDropList)`, then its injector) and calls its `cdkDropListDropped` output (`dropped.emit`) with a fake `CdkDragDrop` whose `item.data` is the chip `{id, type}`; jsdom has no layout, so no gesture is simulated. Run step 13 again.
 15. Run `git status --short`: only the paths of section 2 may appear. Commit by path only; never `git add -A` or `git commit -a`.
 
 ## 4. Acceptance criteria and tests
@@ -105,8 +105,8 @@ One test per criterion (unit lines 23 to 25); criterion 2 has three parts, one t
 |---|---|---|---|
 | 1. A mixed-type fixture: the picker offers only the field's kinds (unit line 23) | `TRG-04 AC1: the entity picker offers only the kinds of its field` | A spec-local single-ID field (kinds `['person']`), with a canned list of two person, one place, one claim and one style-profile entity plus one invalid entry, renders exactly the two person IDs as options (after the empty option), in list order, labelled by `title` when present. No other ID appears in the picker's DOM. | nothing |
 | 2a. List fields accept several and render chips (unit line 24) | `TRG-04 AC2a: a list field accepts several entities and renders one chip per value` | A list field (kinds `['person']`) with `['ada']` renders one chip; choosing `bob` in the add select gives `value.entityIds` `['ada', 'bob']` and two chips with those IDs; no read-only text remains. | nothing |
-| 2b. A dropped chip of the right kind is added (unit line 24) | `TRG-04 AC2b: a dropped chip of the right kind is added` | A drop of a person chip `cy` on the list field adds `cy` to `value.entityIds`, and a submit emits it in `submitted`. | O7 (payload and how the test delivers the drop) |
-| 2c. A wrong-kind chip is refused (unit line 24) | `TRG-04 AC2c: a dropped chip of the wrong kind is refused` | A drop of a place chip leaves `value` deep-equal to what it was before, and the field shows the one-line reason (P16). | O7 |
+| 2b. A dropped chip of the right kind is added (unit line 24) | `TRG-04 AC2b: a dropped chip of the right kind is added` | A drop of a person chip `cy` on the list field adds `cy` to `value.entityIds`, and a submit emits it in `submitted`. Delivery: option (b), the `cdkDropListDropped` output called with a fake `CdkDragDrop` carrying `{id: 'cy', type: 'person'}`. | nothing (O7 decided) |
+| 2c. A wrong-kind chip is refused (unit line 24) | `TRG-04 AC2c: a dropped chip of the wrong kind is refused` | A drop of a place chip leaves `value` deep-equal to what it was before, and the field shows the one-line reason (P16). Delivery: option (b), the `cdkDropListDropped` output called with a fake `CdkDragDrop` carrying a `place` chip. | nothing (O7 decided) |
 | 3. The style picker preselects the project's style profile (unit line 25) | `TRG-04 AC3: the style picker preselects the project's style profile` | With GET active `{active: 'p1'}`, a list holding style-profile entities `house-style` and `plain`, and a `project.yaml` read whose content has `styleProfile: house-style`, and no `styleProfile` in the host's value: the select shows `house-style` as selected, `value.styleProfile` is `house-style`, and a submit emits it. | nothing |
 
 Support tests. They check agreements, not new behaviour:
@@ -115,21 +115,21 @@ Support tests. They check agreements, not new behaviour:
 - **X3 The TRG-03 suite.** T2, T3, T5, T6, T8, E1 and E2 pass unchanged. T1, T4 and T7 change as section 2 says and keep their `value` and issue assertions.
 - **X4 No overwrite.** With `value.styleProfile` `plain` before the reads finish, the preselect leaves `plain` (P15).
 
-Drop tests. jsdom 30.1.3 has no `DataTransfer` and no `DragEvent` (checked: no match in `node_modules/jsdom/lib`). How AC2b and AC2c deliver the drop depends on O7: a dispatched `drop` event carrying a stand-in data-transfer object (option a), the CDK drop-list's `cdkDropListDropped` output called with a fake `CdkDragDrop` (option b; jsdom has no layout, as `modules/graph-runner.md` line 53 notes), or the picker's accept method (option c). Real gestures are GRR-12's and GRR-15's Playwright checks.
+Drop tests. jsdom 30.1.3 has no `DataTransfer` and no `DragEvent` (checked: no match in `node_modules/jsdom/lib`). O7 is decided as option (b), so AC2b and AC2c deliver the drop by calling the CDK drop-list's `cdkDropListDropped` output with a fake `CdkDragDrop` (jsdom has no layout, as `modules/graph-runner.md` line 53 notes; step 14). Real gestures are GRR-12's and GRR-15's Playwright checks and GRR-17's iPad check.
 
 Running-app check. The unit's criteria are component tests (unit line 20). The running-app chip check is TRG-05's criterion 2 (its line 22), not TRG-04's.
 
 ## 5. Downstream agreement
 
-- **TRG-05 (spike gate, no plan, no `unit/TRG-05` branch; `units/TRG-05-spike-gate.md` line 7, blocked by TRG-04).** Its criterion 2 (line 22) needs the picker in the running dev app on `/tools` (line 17) and a dropped chip accepted there. P12 serves `/tools` without a URL project. No chip source exists before GRR-12 (M4), and GRR-12 cannot come first (GRR-12 is blocked by GRR-11, which is blocked by TRG-05: `units/GRR-12-entity-side-list-chips.md` line 7, `units/GRR-11-tool-nodes-wires.md` line 7). So TRG-05's dev route must carry its own dev chip that emits the payload O7 sets; that is TRG-05's plan's step, and it needs O7 settled.
+- **TRG-05 (spike gate, no plan, no `unit/TRG-05` branch; `units/TRG-05-spike-gate.md` line 7, blocked by TRG-04).** Its criterion 2 (line 22) needs the picker in the running dev app on `/tools` (line 17) and a dropped chip accepted there. P12 serves `/tools` without a URL project. No chip source exists before GRR-12 (M4), and GRR-12 cannot come first (GRR-12 is blocked by GRR-11, which is blocked by TRG-05: `units/GRR-12-entity-side-list-chips.md` line 7, `units/GRR-11-tool-nodes-wires.md` line 7). So TRG-05's dev route must carry its own dev chip: under O7 (b) it is a `cdkDrag` with `cdkDragData` `{id, type}`, in the same `cdkDropListGroup` as the picker (the dev route wraps the chip and the form in an element with `cdkDropListGroup`). That is TRG-05's plan's step.
 - **TRG-03 (done).** Its plan says the pickers are TRG-04's (`plans/TRG-03.md` lines 98 and 107). The value round trip (T4 `value` and `submitted`) and the issue link (T7) stay. Only the slot assertions change (section 2).
 - **TRG-02 (done), TRG-12, AGL-09: the caller rule.** Unchanged; P15 says how they meet a preselected field.
 - **TRG-16 (Try panel, no plan, `units/TRG-16-try-panel.md` line 15).** "Pickers on the active project" is P12. Its fill of an empty style field still holds (P15). It can reuse `styleProfileOf` and the copies from the same feature. The picker's value shape (P5) is its input.
 - **TRG-15 (live previews, no plan, line 21).** P3 provides the re-filter.
 - **TRG-13 (no plan).** `/tools` needs no project input (P12).
 - **GRR-11 (tool nodes, line 18).** The node body uses `ToolForm` in node-body layout, so non-port entity and style fields render the picker in `params`; P12 reads the server's active project on the canvas page as well. Port fields are port rows, not pickers.
-- **GRR-12 (entity chips, no plan, no branch; lines 7 and 18 to 20).** Its side list is the chip source; its port drops pin chips into `params` with refusal reasons. Its chips must emit the payload and use the gesture O7 sets, so that a chip dropped on a `params` picker inside a node body is accepted or refused by TRG-04's rule. Its refusal reason and TRG-04's (P16) are both short lines.
-- **GRR-15 (touch, line 20).** "Drop a chip" by touch in Playwright's touch emulation; the O7 mechanism decides whether drops onto pickers can pass that check.
+- **GRR-12 (entity chips, no plan, no branch; lines 7 and 18 to 20).** Its side list is the chip source; its port drops pin chips into `params` with refusal reasons. Under O7 (b) its side list is a `cdkDropList` of `cdkDrag` chips with `cdkDragData` `{id, type}`, connected to the picker drop lists inside the ngx-vflow nodes through `cdkDropListGroup` or connected IDs, so that a chip dropped on a `params` picker inside a node body is accepted or refused by TRG-04's rule. Its refusal reason and TRG-04's (P16) are both short lines.
+- **GRR-15 (touch, line 20) and GRR-17 (iPad, line 18).** The touch drop in Playwright's touch emulation (GRR-15) and the chip drop on an iPad in Safari (GRR-17) are real-gesture checks in their own units. CDK drag uses pointer events, one mechanism for mouse and touch; the decision does not by itself make those checks pass (not verified, `plans/DECISIONS.md` 2026-11-15 TRG-04 entry).
 - **PST-08 (done, `plans/PST-08.md` line 153).** Its hand-off (one `type`) is answered by P10. The list GET is used unchanged.
 - **PST-01 (done, `units/PST-01-contract-slice.md` line 9 lists TRG-04 in `unblocks`).** The shapes it publishes are the ones this plan copies.
 
@@ -143,13 +143,14 @@ The draft and planned plans at `8d0e946`: `plans/GRR-01.md` (draft), `plans/MPR-
 
 Units without a plan that will change the same files: TRG-05 and TRG-13 (the `/tools` route, `tool-registry.routes.ts`); their blockers order them after TRG-04. TRG-16 may reuse `project-store-copy.ts`; it is blocked after TRG-04 (through TRG-12 and TRG-13).
 
-## 7. Open point for the Navigator
+## 7. Decided point
 
-- **O7 The drop mechanism and payload.** Facts: no drag-and-drop code exists in `apps/web/src` (checked by grep for `dataTransfer`, `dragover`, `CdkDrag`, `cdkDrag`, `ondrop` and `(drop)`); `@angular/cdk` 22.2.7 is a dependency of `apps/web` (`apps/web/package.json`); jsdom has no `DataTransfer` or `DragEvent`; the unit names the chips as "the Graph runner's drag-to-input chips" (line 18) and its criterion 2 tests the drop, so the decision is protected and cannot be reworded; GRR-12 (M4) requires chips that work "with mouse and touch" (line 18) and a real gesture in Playwright (line 26), GRR-15 a touch drop in Playwright's touch emulation (line 20) and GRR-17 a chip drop on an iPad in Safari (line 18); TRG-05 needs a chip in the running app before GRR-12 exists. A split of criterion 2 into a subunit blocked by GRR-12 would make a cycle (TRG-05 needs it; GRR-12 is behind GRR-11, which is behind TRG-05), so TRG-04 must define the drop now. Options:
-  - **(a) Native HTML drag and drop.** The picker handles `dragover` and `drop` and reads a JSON `{id, type}` under a custom MIME type (for example `application/x-scriba-entity+json`). The type and the MIME constant are exported from the feature's entry (`tool-registry.routes.ts`), so GRR-12 and TRG-05's dev chip import them. Tests dispatch a `drop` event with a stand-in data transfer. Effect: GRR-12's chips must start a native drag; native drag from touch is uneven across browsers, so GRR-15's touch check and GRR-17's iPad check may fail for drops onto pickers, and GRR-12 may need a second gesture for its ports.
-  - **(b) Angular CDK drag and drop.** The picker is a `cdkDropList` whose `cdkDropListEnterPredicate` checks the kind; chips are `cdkDrag` with `cdkDragData: {id, type}`. Pointer-based, so mouse and touch behave alike. Effect: GRR-12 must use CDK drag and connect its side list to every picker drop list inside ngx-vflow nodes (a `cdkDropListGroup` or connected IDs, which the picker must then expose); TRG-05's dev chip must be a `cdkDrag` in the same group; tests call the drop output with a fake event, since jsdom has no layout.
-  - **(c) A mechanism-neutral accept API plus (a) in the form.** TRG-04 exports the chip type `{id, type}` and a picker method that accepts or refuses a chip (P16), and wires a native `drop` (option a) for the form layout; GRR-12 chooses its own gesture and calls the method on the picker it drops on. Effect: one more exported API from the feature; GRR-12 needs a way to reach the picker instance inside the node body (an output or a service), which TRG-03's API does not have today.
-  - The reviser's suggestion, not a decision: (b) fits GRR-12's touch requirement with the dependency already present; (a) is the smallest for TRG-04 alone.
+- **O7 The drop mechanism and payload — decided: option (b), Angular CDK drag and drop.** The decision lives in `plans/DECISIONS.md` (entry of 2026-11-15, "TRG-04 — Navigator decision: O7", commit `1e27f30`). Decision: the picker is a `cdkDropList` whose `cdkDropListEnterPredicate` checks the dragged chip's type against the field's allowed kinds (any kind under P11; `style-profile` for a style picker). A chip is a `cdkDrag` whose `cdkDragData` is `{id: string, type: string}`. An accepted drop (`cdkDropListDropped`) appends in list mode with no duplicate ID, or replaces in scalar mode, and writes through the value model (P8). A refused drop shows the one-line reason (P16) and leaves `value` unchanged. Tests call the `cdkDropListDropped` output with a fake `CdkDragDrop`. Reason: GRR-12 requires chips that work with mouse and touch; native HTML drag and drop (a) is mouse-only by the browser spec (its Safari touch support is the Navigator's unverified claim); CDK drag uses pointer events, one mechanism for mouse and touch; `@angular/cdk` 22.2.7 is already a direct dependency of `apps/web`; option (c) adds an exported API without solving the touch gap. The orchestrator checked `cdkDropListEnterPredicate`, `cdkDropListDropped`, `cdkDragData` and `CdkDropListGroup` (selector `cdkDropListGroup`) in `@angular/cdk` 22.2.7; there is no `DragDropGroup` class. The facts and options below are the record of what was considered.
+- Facts at the time of the choice: no drag-and-drop code exists in `apps/web/src` (checked by grep for `dataTransfer`, `dragover`, `CdkDrag`, `cdkDrag`, `ondrop` and `(drop)`); `@angular/cdk` 22.2.7 is a dependency of `apps/web` (`apps/web/package.json`); jsdom has no `DataTransfer` or `DragEvent`; the unit names the chips as "the Graph runner's drag-to-input chips" (line 18) and its criterion 2 tests the drop, so the decision is protected and cannot be reworded; GRR-12 (M4) requires chips that work "with mouse and touch" (line 18) and a real gesture in Playwright (line 26), GRR-15 a touch drop in Playwright's touch emulation (line 20) and GRR-17 a chip drop on an iPad in Safari (line 18); TRG-05 needs a chip in the running app before GRR-12 exists. A split of criterion 2 into a subunit blocked by GRR-12 would make a cycle (TRG-05 needs it; GRR-12 is behind GRR-11, which is behind TRG-05), so TRG-04 must define the drop now.
+- Options considered:
+  - **(a) Native HTML drag and drop** with a JSON `{id, type}` under a custom MIME type exported from the feature's entry. Not chosen: native drag from touch is uneven, so GRR-15 and GRR-17 might need a second gesture.
+  - **(b) Angular CDK drag and drop** (`cdkDropList` with an enter predicate, `cdkDrag` chips). **Chosen.**
+  - **(c) A mechanism-neutral accept API plus (a) in the form.** Not chosen: one more exported API, and the touch gap remains.
 
 ## 8. Facts checked and facts assumed
 
@@ -157,7 +158,7 @@ Units without a plan that will change the same files: TRG-05 and TRG-13 (the `/t
 
 - **Blockers done.** `plans/TRG-03.md`, `plans/PST-08.md`, `plans/PST-01.md`: status `done`. TRG-03's unit lists TRG-04 in `unblocks` (line 9); PST-08's unit (line 9) and PST-01's (line 9) do too.
 - **Downstream not in the pipeline.** No `plans/TRG-05.md`, `plans/GRR-12.md` or `plans/TRG-16.md`; no `unit/TRG-05` or `unit/GRR-12` branch (`git branch --list`). The only `unit/*` branches are `unit/MPR-08` and `unit/SHL-14`.
-- **No TRG-04 entry in `plans/DECISIONS.md`** (grep "TRG-04": no match). The GRR-12 grep finds no entry; the TRG-03 entries concern `valueType`, controls and its code review, none about pickers.
+- **One TRG-04 entry in `plans/DECISIONS.md`** at `1e27f30`: the Navigator's O7 decision of 2026-11-15 (section 7). At `8d0e946` there was none. The GRR-12 grep finds no entry; the TRG-03 entries concern `valueType`, controls and its code review, none about pickers.
 - **Dependency graph.** `units/TRG-05-spike-gate.md` line 7 (blocked by TRG-04) and line 9 (unblocks GRR-11); `units/GRR-11-tool-nodes-wires.md` line 7 (blocked by TRG-05); `units/GRR-12-entity-side-list-chips.md` line 7 (blocked by GRR-11).
 - **Contract shapes.** `routes.ts` lines 12, 16 and 27; `entities.ts` lines 6, 8, 50 and 55; `project.ts` line 24 (`styleProfile: entityRefSchema.optional()`), lines 39 to 46 (summary without `styleProfile`), lines 76 to 78 (`activeProjectSchema`); `files.ts` lines 33 to 39 (`fileReadSchema`); `constants.ts` line 4 (`ENTITY_ID_PATTERN`); `packages/contracts/src/tool-registry/constants.ts` line 11 (`ENTITY_KIND_PATTERN`).
 - **Server file read.** `apps/api/src/modules/project-store/files.service.ts` lines 256 to 268 (`read`; a too-new `project.yaml` is refused); line 105 (`isRootProjectYaml`). No Project store source file writes `styleProfile` (grep in `apps/api/src/modules/project-store`).
@@ -168,6 +169,7 @@ Units without a plan that will change the same files: TRG-05 and TRG-13 (the `/t
 - **Dependencies.** `apps/web/package.json`: `@angular/cdk` 22.2.7 and `@angular/material` 22.2.7; no `yaml`. `yaml` 2.9.1 is in the root and `apps/api` manifests only.
 - **Rules and decisions.** `plans/DECISIONS.md` lines 1084 to 1089 (no runtime zod; the dependency rule), 2546 to 2549 (parity route), 3465 (no YAML library in `apps/web`). `plans/TRG-01.md` line 225. `plans/PST-08.md` lines 152 and 153. `units/README.md` lines 57 and 136. `modules/tool-registry.md` lines 45, 51, 52 and 60. `modules/graph-runner.md` line 53 (no layout in the DOM test environment).
 - **No drag code; jsdom.** As in section 7; `node_modules/jsdom` 30.1.3.
+- **CDK (revision 2, at `1e27f30`).** `apps/web/package.json` line 12: `"@angular/cdk": "22.2.7"`; `node_modules/@angular/cdk/package.json` version 22.2.7. `node_modules/@angular/cdk/types/drag-drop.d.ts`: `CdkDropList` is standalone (selector `[cdkDropList]`), with inputs `cdkDropListEnterPredicate`, `cdkDropListSortingDisabled`, `cdkDropListConnectedTo` and output `cdkDropListDropped` (line 441); `CdkDragDrop` interface at line 499. `tool-form.ts` lines 158 to 167: ToolForm is standalone with its own `imports` list (no CDK entry; none is added).
 
 ### 8b. Assumed (not run, or not verified here)
 
@@ -175,7 +177,8 @@ Units without a plan that will change the same files: TRG-05 and TRG-13 (the `/t
 - The Angular unit-test builder runs its tests under jsdom. Not verified; the devDependencies list jsdom and no other DOM library.
 - The TRG-03 tests that render a picker still pass once the `beforeEach` registers the three GETs of step 10. Not run.
 - The fake answers synchronously enough that a test can await `fixture.whenStable()` before reading the options. Not run; if not, the test flushes with the fake's observable completion.
-- The drop delivery of the chosen O7 option reaches the picker's handler under the Angular test runner (AC2b, AC2c). Not run.
+- Emitting `cdkDropListDropped` on the picker's `CdkDropList` directive with a fake `CdkDragDrop` reaches the picker's handler under the Angular test runner (AC2b, AC2c). Not run.
+- GRR-15 and GRR-17 pass with CDK pointer-event drag alone. Not verified (`plans/DECISIONS.md`, 2026-11-15 TRG-04 entry); their own units check it.
 
 ## 9. Review parts
 
@@ -183,4 +186,4 @@ One part per group; each step and each test is in exactly one part.
 
 - **Part 1 — Copies and the line rule.** Steps 1, 2, 3. Tests: X1.
 - **Part 2 — The picker without drops, and its wiring into ToolForm.** Steps 4, 5, 6, 8, 9, 10, 11, 12, 13, 15. Tests: AC1, AC2a, AC3, X2, X3, X4. The reviewer of this part also checks that only the paths of section 2 changed.
-- **Part 3 — The chip drop (after O7).** Steps 7, 14. Tests: AC2b, AC2c.
+- **Part 3 — The chip drop (O7, option b, CDK).** Steps 7, 14. Tests: AC2b, AC2c.
