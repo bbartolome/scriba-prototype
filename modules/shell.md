@@ -10,6 +10,8 @@ Consumers may adopt an individual component as soon as its unit merges (e.g. the
 
 The spec made phases serial. Gates are unchanged, but units wait only on what they use: the editor wrapper (SHL-13) and the merge view (SHL-16) need the core gate plus the relevant shared component, not each other; PWA and polish work (SHL-17, SHL-18) may start after the core gate, but the polish gate (SHL-19) waits for the editor phase because its accessibility pass covers the editor.
 
+SHL-21 is ungated; it fixes the Shell's contract loader (`shell/contract-chunks.ts` reads the CommonJS default export) and unblocks Setup & auth's gate SAU-08.
+
 ### Dependency graph
 
 ```

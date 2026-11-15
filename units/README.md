@@ -82,6 +82,7 @@ A phase **closes when its gate unit is merged** (the gate is the phase's last un
 | Frontend shell | `phase:editor` | M3 | SHL-13 … SHL-16 | all four | |
 | Frontend shell | `phase:polish` | M7 | SHL-17 … SHL-19 | SHL-19 | |
 | Frontend shell | `phase:phone-toolbar` | M1 | SHL-20 | SHL-20 | The toolbar fits 390 px with the connection label showing; Setup & auth's phone unit (SAU-06) waits for it |
+| Frontend shell | none (ungated) | M1 | SHL-21 | — | The Shell's contract loader reads the CommonJS default export; Setup & auth's gate (SAU-08) waits for it |
 | Setup & auth | `phase:contract` | M1 | SAU-01 | SAU-01 | |
 | Setup & auth | `phase:token-guard` | M1 | SAU-02 … SAU-08 | SAU-08 | "Setup & auth minimal token" |
 | Setup & auth | `phase:setup-flow` | M2 | SAU-09 … SAU-16 | SAU-16 | |
@@ -120,6 +121,7 @@ A phase **closes when its gate unit is merged** (the gate is the phase's last un
 | Compile & export | `phase:manuscript-snapshots` | M5 | CEX-16 … CEX-20 | CEX-20 | Milestone demo |
 
 Ungated: AGL-25 (manual real-model eval script), which lands right after Agent loop `phase:file-tools-chat`.
+SHL-21 (the Shell's contract loader reads the CommonJS default export), which lands after Frontend shell `phase:core` and unblocks Setup & auth's gate SAU-08.
 
 ## Conventions shared by every module
 

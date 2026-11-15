@@ -4,7 +4,7 @@ title: Token-guard gate — e2e setup step and M1 demo
 module: setup-auth
 phase: phase:token-guard
 milestone: M1
-blocked_by: [SAU-03, SAU-04, SAU-05, SAU-06, SAU-07]
+blocked_by: [SAU-03, SAU-04, SAU-05, SAU-06, SAU-07, SHL-21]
 parallel_with: []
 unblocks: [SAU-09, SAU-10, SAU-17, "Agent loop loop core (AGL-03)", "Compile & export effective order and the view model (CEX-02)", "Graph runner graph CRUD (GRR-02)", "Graph runner engine gate (GRR-08)", "Model providers client gate (MPR-08)", "Project store files gate (PST-12)", "Tool registry loader gate (TRG-11)"]
 ---
