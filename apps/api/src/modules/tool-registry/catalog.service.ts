@@ -4,6 +4,7 @@ import {
   TOOL_ERROR_CODES,
   TOOL_ERROR_STATUS,
   type BuiltinOrigin,
+  type EntityTypeList,
   type FunctionList,
   type PortDescriptor,
   type ToolDetail,
@@ -19,6 +20,12 @@ import {
   SCRIBA_ENV,
   type ScribaEnv,
 } from '../platform/platform.module';
+import {
+  readEntityTypes,
+  entityValidatorOf,
+  type EntityTypeEntry,
+  type EntityValidator,
+} from './entity-types';
 import {
   emptyUserScan,
   readBuiltinTools,
@@ -90,6 +97,7 @@ function summaryOf({ entry, overrides }: Row): ToolSummary {
 @Injectable()
 export class CatalogService {
   private readonly builtins: Map<string, ToolEntry>;
+  private readonly entityEntries: Map<string, EntityTypeEntry>;
   private readonly userFolder: string;
   private userScan: UserPackScan;
   private readonly listeners: CatalogListener[] = [];
@@ -100,6 +108,7 @@ export class CatalogService {
         (entry): [string, ToolEntry] => [entry.name, entry],
       ),
     );
+    this.entityEntries = readEntityTypes(env.SCRIBA_PACKS_DIR);
     this.userFolder = userToolsDir(env.SCRIBA_BOOKS_DIR);
     this.userScan = scanUserTools(this.userFolder, emptyUserScan());
   }
@@ -183,6 +192,20 @@ export class CatalogService {
   validate(name: string, request: ToolValidateRequest): ToolValidateResult {
     this.refresh();
     return validateArguments(this.loaded(name), request);
+  }
+
+  // The built-in entity types, sorted by kind.
+  entityTypes(): EntityTypeList {
+    const entityTypes = [...this.entityEntries.values()]
+      .map((entry) => entry.spec)
+      .sort((a, b) => (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0));
+    return { entityTypes };
+  }
+
+  // The checker of one entity kind's front matter, or undefined for a kind that no pack defines.
+  entityValidator(kind: string): EntityValidator | undefined {
+    const entry = this.entityEntries.get(kind);
+    return entry === undefined ? undefined : entityValidatorOf(entry);
   }
 
   // The entry a name resolves to: a valid user copy, else the built-in, else an invalid user copy alone.

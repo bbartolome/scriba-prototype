@@ -11,10 +11,12 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   Module,
+  NotFoundException,
   Param,
   Post,
   Query,
@@ -25,9 +27,11 @@ import { errorBodySchema } from '@bbartolome/scriba-contracts/platform';
 import {
   TOOL_ROUTE,
   TOOL_VALIDATE_ROUTE,
+  entityTypeListSchema,
   functionListSchema,
   toolDetailSchema,
   toolListSchema,
+  type EntityTypeList,
   type FunctionList,
   type ToolSummary,
 } from '@bbartolome/scriba-contracts/tool-registry';
@@ -77,6 +81,22 @@ function loaderKitModule(): Type<unknown> {
     @Get('changes')
     seen(): string[][] {
       return this.changes;
+    }
+
+    @Get('entity-types')
+    entityTypes(): EntityTypeList {
+      return this.catalog.entityTypes();
+    }
+
+    // Checks front matter against one kind. The front matter comes back too, to show that the check changed nothing.
+    @Post('entity-validate')
+    @HttpCode(200)
+    entityValidate(@Body() body: { kind: string; frontMatter: unknown }) {
+      const check = this.catalog.entityValidator(body.kind);
+      if (check === undefined) {
+        throw new NotFoundException(`No entity type "${body.kind}".`);
+      }
+      return { ...check(body.frontMatter), frontMatter: body.frontMatter };
     }
   }
 
@@ -165,12 +185,26 @@ function kitGet(app: TestApp, path: string): Promise<Reply> {
   return send(app.baseUrl, { host: LOOPBACK_HOST, path: `${KIT}/${path}` });
 }
 
-function kitPost(app: TestApp, path: string): Promise<Reply> {
+function kitPost(app: TestApp, path: string, body?: unknown): Promise<Reply> {
   return send(app.baseUrl, {
     host: LOOPBACK_HOST,
     method: 'POST',
     path: `${KIT}/${path}`,
+    body: body === undefined ? undefined : JSON.stringify(body),
   });
+}
+
+// A claim file whose fields block is `fields`, with the envelope of the claim fixture.
+function claimFile(fields: string): string {
+  return [
+    'schemaVersion: 1',
+    'kind: claim',
+    'title: Claim',
+    'description: A test kind.',
+    'folder: entities',
+    fields,
+    '',
+  ].join('\n');
 }
 
 function toolGet(app: TestApp, name: string): Promise<Reply> {
@@ -603,4 +637,95 @@ it('E7: refresh returns the changed names once, and the onChange listener runs o
       ['extra'],
     ]);
   });
+});
+
+it('AC5: the claim entity type loads; its validator accepts a valid front matter and rejects a bad evidence item', async () => {
+  const frontMatter = {
+    statement: 'Ada wrote the first program.',
+    status: 'supported',
+    evidence: [{ source: 'Lovelace 1843', pages: 12 }, { source: 'Notes G' }],
+    aliases: ['Ada'],
+  };
+  await withLoader(async (app) => {
+    const types = await kitGet(app, 'entity-types');
+    expect(types.status).toBe(200);
+    const kinds = entityTypeListSchema
+      .parse(json(types))
+      .entityTypes.map((type) => type.kind);
+    expect(kinds).toContain('claim');
+
+    const valid = await kitPost(app, 'entity-validate', {
+      kind: 'claim',
+      frontMatter,
+    });
+    expect(valid.status).toBe(200);
+    expect(json(valid)).toEqual({
+      valid: true,
+      issues: [],
+      frontMatter,
+    });
+
+    const extraKey = await kitPost(app, 'entity-validate', {
+      kind: 'claim',
+      frontMatter: {
+        statement: 'A claim.',
+        evidence: [{ source: 'Notes', note: 'an extra key' }],
+      },
+    });
+    expect(json(extraKey)).toMatchObject({
+      valid: false,
+      issues: expect.arrayContaining([
+        expect.objectContaining({ path: '/evidence/0' }),
+      ]),
+    });
+
+    const noSource = await kitPost(app, 'entity-validate', {
+      kind: 'claim',
+      frontMatter: {
+        statement: 'A claim.',
+        evidence: [{ source: 'Notes' }, { pages: 2 }],
+      },
+    });
+    expect(json(noSource)).toMatchObject({
+      valid: false,
+      issues: [expect.objectContaining({ path: '/evidence/1' })],
+    });
+  });
+});
+
+it('E6: a two-level object, a list item without additionalProperties false, or an object field stops boot, and the message names the file', async () => {
+  const refused = [
+    // A list item that holds an object: two levels.
+    claimFile(
+      'fields: {type: object, properties: {evidence: {type: array, items: {type: object, properties: {source: {type: object, properties: {title: {type: string}}}}, additionalProperties: false}}}}',
+    ),
+    // A list item that does not declare additionalProperties: false.
+    claimFile(
+      'fields: {type: object, properties: {evidence: {type: array, items: {type: object, properties: {source: {type: string}}}}}}',
+    ),
+    // An object field at the top of the fields.
+    claimFile(
+      'fields: {type: object, properties: {meta: {type: object, properties: {title: {type: string}}}}}',
+    ),
+  ];
+  for (const text of refused) {
+    const packs = mkdtempSync(join(tmpdir(), 'scriba-loader-packs-'));
+    const library = newLibrary();
+    try {
+      mkdirSync(join(packs, 'nonfiction', 'entity-types'), { recursive: true });
+      writeFileSync(
+        join(packs, 'nonfiction', 'entity-types', 'claim.yaml'),
+        text,
+      );
+      const boot = createTestApp({
+        libraryDir: library,
+        env: { SCRIBA_PACKS_DIR: packs },
+        modules: [PlatformModule, ToolRegistryModule],
+      });
+      await expect(boot).rejects.toThrow(/claim\.yaml/);
+    } finally {
+      rmSync(library, { recursive: true, force: true });
+      rmSync(packs, { recursive: true, force: true });
+    }
+  }
 });
