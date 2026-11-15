@@ -4345,3 +4345,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Evidence: candidate without mutation: setup-page + landing 1 failed | 13 passed (W2); full web suite 1 failed | 318 passed. M3 with the wrapper in place: 14 passed (not caught). Baseline 298d227: 14 passed.
 - Options for the reviser: (A) keep the unconditional render and change W2's ok check to test the text (no `code`, no warning paragraph) rather than the element count; this edits the spec, which the plan does not list for this fix. (B) keep the wrapper and change M3's target to the page gate (`loaded.compose.state !== 'ok'` replaced by `true`); this changes the plan's M3 definition.
 - Plan returns to draft for an Opus reviser. Branch unit/SAU-11 stays at 298d227 (the candidate was reverted; nothing committed).
+
+## 2026-11-15 — SAU-11 — Plan revision 2 (reviser, READY): M3 targets the page gate
+
+- Option B chosen. M3 replaces the page condition `loaded.compose.state !== 'ok'` in setup-page.ts with `true`, so the host element exists for ok and W2's zero-element check fails. No criterion text changes (unit line 26 unchanged). No code or test changes; the branch head stays 298d227 and the M3 run is a verification step that commits nothing.
+- Option A (keep the component's unconditional render and check the text, not the element count) rejected: it weakens W2 and edits the spec and setup-page.ts, which the fix does not list.
+- Cause: SAU-15 created compose-warning.ts first (commit 4238cb3, an ancestor of c0d53a9); SAU-11 adopts it unchanged. The plan text had said SAU-11 creates it.
+- Plan commit d5d595d (status planned). The part 1 review of the M3 run is repeated.
