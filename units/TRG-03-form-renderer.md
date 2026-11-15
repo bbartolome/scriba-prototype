@@ -23,6 +23,6 @@ Quick controls (8), required marks and defaults (9), messages next to fields (10
 - Required marks, defaults prefilled; server-side `issues` shown inline next to their fields; emits the argument value and a submit event.
 
 ## Acceptance criteria (Vitest + Shell fakes)
-- [ ] Each control type renders from a fixture descriptor and round-trips its value.
-- [ ] Node-body layout shows port rows for port fields (in order) and params controls for the rest, with a supplied handle template.
-- [ ] `issues` render next to their fields.
+- [x] Each control type renders from a fixture descriptor and round-trips its value.
+- [x] Node-body layout shows port rows for port fields (in order) and params controls for the rest, with a supplied handle template.
+- [x] `issues` render next to their fields.

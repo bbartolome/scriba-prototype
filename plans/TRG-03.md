@@ -1,6 +1,6 @@
 ---
 id: TRG-03
-status: planned
+status: done
 ---
 # TRG-03 plan — Angular tool-form component: form and node-body layouts, every control, inline issues
 
