@@ -180,7 +180,9 @@ function mkdirParent(file: string): void {
     if (code === 'ENOTDIR' || code === 'EEXIST' || code === 'EISDIR') {
       throw notAFile();
     }
-    throw new Error(`The project folder could not be created (${code}).`);
+    throw new Error(`The project folder could not be created (${code}).`, {
+      cause: error,
+    });
   }
 }
 
@@ -210,7 +212,9 @@ function removeEntry(entry: string): void {
     unlinkSync(entry);
   } catch (error) {
     const code = errnoOf(error) ?? 'unknown';
-    throw new Error(`The project file could not be deleted (${code}).`);
+    throw new Error(`The project file could not be deleted (${code}).`, {
+      cause: error,
+    });
   }
 }
 
@@ -370,7 +374,9 @@ export class FilesService {
       if (code === 'ENOTDIR' || code === 'EEXIST' || code === 'EISDIR') {
         throw notAFile();
       }
-      throw new Error(`The project file could not be moved (${code}).`);
+      throw new Error(`The project file could not be moved (${code}).`, {
+        cause: error,
+      });
     }
     this.events.publish({
       module: 'project-store',
@@ -475,7 +481,9 @@ export class FilesService {
       if (code === 'ENOTDIR' || code === 'EEXIST' || code === 'EISDIR') {
         throw notAFile();
       }
-      throw new Error(`The log line could not be written (${code}).`);
+      throw new Error(`The log line could not be written (${code}).`, {
+        cause: error,
+      });
     }
   }
 
@@ -503,7 +511,9 @@ export class FilesService {
       mkdirSync(folder, { recursive: true });
     } catch (error) {
       const code = errnoOf(error) ?? 'unknown';
-      throw new Error(`The project folder could not be created (${code}).`);
+      throw new Error(`The project folder could not be created (${code}).`, {
+        cause: error,
+      });
     }
     if (realpathSync.native(folder) !== join(rootReal, '.scriba', owner)) {
       throw fail(PROJECT_ERROR_CODES.PATH_OUTSIDE, PATH_MESSAGES.OUTSIDE);
