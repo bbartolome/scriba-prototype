@@ -1,6 +1,6 @@
 ---
 id: MPR-10
-status: planned
+status: done
 ---
 # MPR-10 plan — connection-test UI: staged result, Ollama context-length note, pull-a-model note
 

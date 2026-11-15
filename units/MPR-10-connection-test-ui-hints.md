@@ -17,5 +17,5 @@ unblocks: [MPR-11]
 - **"Pull a model" hint** (`ollama pull <model>` on the host) when an Ollama provider's model list is empty.
 
 ## Acceptance criteria
-- [ ] The test shows the failing stage and its hint for unreachable, unauthorized and unknown-model results.
-- [ ] An Ollama provider shows the context-length hint; an empty model list shows the pull hint; a non-Ollama provider shows neither.
+- [x] The test shows the failing stage and its hint for unreachable, unauthorized and unknown-model results.
+- [x] An Ollama provider shows the context-length hint; an empty model list shows the pull hint; a non-Ollama provider shows neither.
