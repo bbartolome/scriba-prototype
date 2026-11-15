@@ -4444,3 +4444,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Checked and fine: the code matches D1 to D5, D7, D8 and D10; only section 2 paths are changed; commit messages follow the style and contain the unit id.
 - Code rejections: 0 (no code change required by item 1 or 2; the work is to run the checks and report them).
 
+## 2026-11-15 — GRR-01 — Navigator decision (session 6cc25c13e88d4acba938c8431ef7ee64): COMPLETE-WITHOUT-CRITERION-5
+
+- **Decision (Navigator, option COMPLETE-WITHOUT-CRITERION-5):** GRR-01 is complete with criteria 1 to 4 ticked. Criterion 5 ("Contract tests pass in CI.", units/GRR-01-contract-slice.md line 39) stays unticked, with the cause "not yet pushed". Plan status done once the code is on main.
+- **Reason:** no local procedure satisfies criterion 5. It is a CI run on a remote service, and plans/GRR-01.md line 216 labels the fresh-clone run local evidence, not the test. The GRR-01 commit (12a955e) is not in origin/main, so step 17 of the plan cannot run. Plan section 7 (line 268) defers this point to the Navigator. Criteria 1 to 4 pass; the Sonnet approval holds for patch id 3bfef4438f18b6e00f51d0e3f28dade704d56082; local npm ci, lint, test and build exit 0 on the branch head.
+- **Clarification recorded in the same session:** origin/main is at 1f1e234, behind local main. The earlier wording "at or after 44e34fb" was wrong; the decision does not depend on it.
+- **Reopen:** when the owner pushes a main that contains the GRR-01 commit, the orchestrator runs step 17 of plans/GRR-01.md and ticks criterion 5 in a new docs commit.
+
