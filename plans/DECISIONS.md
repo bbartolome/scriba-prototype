@@ -3997,3 +3997,7 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Open point 2 (front-matter rule):** settled by the Navigator decision at line 3466 above. The API rule is PLT-20 D10 with BOM removal, and the Shell follows the API rule.
 - **Open point 3 (manifest scope):** settled in the plan. The manifest lists every regular file under `entities/` and `sources/`; only `.md` entries are entity candidates.
 - **Review parts:** one part (steps 1 to 14; tests E1 to E5, X1 to X3).
+
+## 2026-11-15 — PST-08 — Sonnet code review (one part): REWORK (patch id 2a352834df39f8d7f54ee6eb5bb0399737522191)
+
+1. E4 does not catch mutation (e) (skip the stat diff in the cache), and the plan's step 10(e) requires that it does. The plan's E4 steps 1 to 4 only add and then remove a file, so the stale-cache path is never exercised. Correction: add an in-place rewrite to E4 between steps 3 and 4 (rewrite `carl.md` with different content and a different size, e.g. `'---\ntype: place\n---\nCarl moved.\n'`), assert `GET list` shows `carl` as `place` and `GET resolve?ids=carl` returns the new content, then re-run mutation (e) and confirm E4 fails. Only `apps/api/test/project-store-entities.test.ts` changes. No source change is needed.
