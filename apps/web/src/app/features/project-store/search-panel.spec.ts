@@ -19,7 +19,6 @@ import { filesRoutes } from './project-store.routes';
 const LIST: ApiPath = '/api/project-store/projects/p1/files';
 const READ: ApiPath = '/api/project-store/projects/p1/file';
 const SEARCH: ApiPath = '/api/project-store/projects/p1/search';
-const LIST_PARAMS = { path: '.', recursive: 'true' };
 const MTIME = '2026-11-14T09:00:00Z';
 const HASH = `sha256:${'a'.repeat(64)}`;
 
@@ -110,7 +109,9 @@ function toggleNamed(
   label: string,
 ): HTMLButtonElement {
   const toggle = Array.from(
-    root(harness).querySelectorAll<HTMLButtonElement>('mat-button-toggle button'),
+    root(harness).querySelectorAll<HTMLButtonElement>(
+      'mat-button-toggle button',
+    ),
   ).find((button) => button.textContent?.trim() === label);
   expect(toggle).toBeDefined();
   return toggle!;

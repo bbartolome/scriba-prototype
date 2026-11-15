@@ -110,12 +110,7 @@ function failureMessage(error: unknown): string {
   `,
   template: `
     <label for="project-search">Search the project</label>
-    <input
-      id="project-search"
-      type="search"
-      #box
-      (input)="typed(box.value)"
-    />
+    <input id="project-search" type="search" #box (input)="typed(box.value)" />
     <mat-button-toggle-group
       multiple
       aria-label="Search scope"
@@ -157,7 +152,8 @@ export class SearchPanel {
   private readonly api = inject(API_CLIENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly projectId = inject(ActiveProjectSignal).projectId;
-  private readonly box = viewChild.required<ElementRef<HTMLInputElement>>('box');
+  private readonly box =
+    viewChild.required<ElementRef<HTMLInputElement>>('box');
 
   /** The project the panel last worked for. A change of project clears it. */
   private loadedFor = this.projectId();
