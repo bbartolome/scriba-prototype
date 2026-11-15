@@ -1,6 +1,6 @@
 ---
 id: PST-13
-status: planned
+status: done
 unit: units/PST-13-fts5-search.md
 ---
 # PST-13 plan — FTS5 keyword search per project, the index format and the orphan prune

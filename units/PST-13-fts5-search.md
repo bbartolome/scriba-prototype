@@ -24,9 +24,9 @@ Find quotes and studies by keyword (36), fresh without manual rebuilds (37), reb
 - **Search is a POST** (it may refresh the index) and is on the in-process provider; subject to the active-project check.
 
 ## Acceptance criteria
-- [ ] A query returns ranked `{path, offset, snippet, score}`, and the passage text sits at `offset` in the file.
-- [ ] A file edited on the host appears in the next query's results with no manual rebuild; a deleted file disappears.
-- [ ] Files in `drafts/` never appear in results.
-- [ ] Overwriting the index with one whose `user_version` differs triggers a rebuild; results stay correct.
-- [ ] Queries containing `"`, `*`, `-`, `NEAR` don't error.
-- [ ] An orphan index file is removed at startup; a project id with unusual characters gets a safe file name.
+- [x] A query returns ranked `{path, offset, snippet, score}`, and the passage text sits at `offset` in the file.
+- [x] A file edited on the host appears in the next query's results with no manual rebuild; a deleted file disappears.
+- [x] Files in `drafts/` never appear in results.
+- [x] Overwriting the index with one whose `user_version` differs triggers a rebuild; results stay correct.
+- [x] Queries containing `"`, `*`, `-`, `NEAR` don't error.
+- [x] An orphan index file is removed at startup; a project id with unusual characters gets a safe file name.
