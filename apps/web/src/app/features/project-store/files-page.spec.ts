@@ -366,6 +366,7 @@ describe('FilesPage', () => {
     const link = (nav.nativeElement as HTMLElement).querySelector(
       'a[href="/projects/p1/files"]',
     );
-    expect(link?.textContent?.trim()).toBe('Files');
+    // The link holds the icon's ligature (`folder`) and then the label in a span.
+    expect(link?.querySelector('span')?.textContent?.trim()).toBe('Files');
   });
 });

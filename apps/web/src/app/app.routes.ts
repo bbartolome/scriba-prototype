@@ -22,6 +22,19 @@ export const PROJECT_ROUTES: Routes = [
         (feature) => feature.chatRoutes,
       ),
   },
+  {
+    path: 'files',
+    pathMatch: 'full',
+    data: {
+      scope: 'project',
+      minDeviceClass: 'phone',
+      nav: { label: 'Files', icon: 'folder', order: 30 },
+    } satisfies ShellRouteData,
+    loadChildren: () =>
+      import('./features/project-store/project-store.routes').then(
+        (feature) => feature.filesRoutes,
+      ),
+  },
 ];
 
 /**
