@@ -93,6 +93,12 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/project-store/projects/:projectId/file/edit': {
     path: '/api/project-store/projects/no-such-project/file/edit',
   },
+  '/api/project-store/projects/:projectId/entities': {
+    path: '/api/project-store/projects/no-such-project/entities',
+  },
+  '/api/project-store/projects/:projectId/entities/resolve': {
+    path: '/api/project-store/projects/no-such-project/entities/resolve',
+  },
 };
 
 // The disposable derived caches, exempt from the library snapshot. The exemption covers each path and

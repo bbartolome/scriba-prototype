@@ -67,7 +67,7 @@ function hashOf(bytes: Buffer): string {
 
 // The text of bytes, or undefined when a byte is 0x00 or the bytes are not valid UTF-8 (P6). A BOM is kept as
 // U+FEFF, so the text and the bytes round-trip (S16).
-function decodeText(bytes: Buffer): string | undefined {
+export function decodeText(bytes: Buffer): string | undefined {
   if (bytes.includes(0)) return undefined;
   try {
     return new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(

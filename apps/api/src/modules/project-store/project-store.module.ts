@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { PlatformModule, SettingsService } from '../platform/platform.module';
 import { ActiveProjectController } from './active-project.controller';
 import { ActiveProjectService } from './active-project.service';
+import { EntitiesController } from './entities.controller';
+import { EntitiesService } from './entities.service';
+import { EntityManifest } from './entity-manifest';
 import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
 import { PROJECTS_SECTION_DEF } from './project-store.section';
@@ -14,6 +17,8 @@ import { SamplesService } from './samples.service';
 // Modules outside project-store import these from this entry file only.
 export { ProjectStoreService } from './project-store.service';
 export { FilesService } from './files.service';
+export { EntitiesService } from './entities.service';
+export { EntityManifest } from './entity-manifest';
 export type { ResolvedProjectPath } from './path-safety';
 
 const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
@@ -27,6 +32,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     ActiveProjectController,
     SamplesController,
     FilesController,
+    EntitiesController,
   ],
   providers: [
     {
@@ -42,7 +48,9 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     ActiveProjectService,
     SamplesService,
     FilesService,
+    EntityManifest,
+    EntitiesService,
   ],
-  exports: [ProjectStoreService, FilesService],
+  exports: [ProjectStoreService, FilesService, EntitiesService, EntityManifest],
 })
 export class ProjectStoreModule {}
