@@ -1,6 +1,6 @@
 ---
 id: PST-07
-status: planned
+status: done
 unit: units/PST-07-delete-move-helpers.md
 title: delete, move and the in-process helpers (updateProjectYaml, appendLog, stateDir)
 module: project-store

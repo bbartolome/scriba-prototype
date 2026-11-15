@@ -25,7 +25,7 @@ Consumers: Graph runner (graph delete/rename, run logs), Compile & export (snaps
   - Reworded by revision of PST-07 on 2026-11-15. The old text was: "unblocks: [PST-12, MPR-12]". See plans/DECISIONS.md.
 
 ## Acceptance criteria
-- [ ] `delete` and `move` work on single files, refuse folders, reserved and unsafe paths; `move` refuses an existing target.
-- [ ] `updateProjectYaml` changes only the named key: a fixture with comments is byte-identical outside that key; an invalid patch is refused and the file is unchanged.
-- [ ] `appendLog` refuses paths outside `logs/`, works for a non-active `ok` project, and appends exactly one line.
-- [ ] `stateDir` creates and returns `.scriba/<owner>/`, which remains unreachable through the public file API.
+- [x] `delete` and `move` work on single files, refuse folders, reserved and unsafe paths; `move` refuses an existing target.
+- [x] `updateProjectYaml` changes only the named key: a fixture with comments is byte-identical outside that key; an invalid patch is refused and the file is unchanged.
+- [x] `appendLog` refuses paths outside `logs/`, works for a non-active `ok` project, and appends exactly one line.
+- [x] `stateDir` creates and returns `.scriba/<owner>/`, which remains unreachable through the public file API.
