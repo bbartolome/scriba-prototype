@@ -4331,3 +4331,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Observation for TRG-04's owner and for GRR-12, GRR-15 and GRR-17:** `admits` runs at drag start, and its reason line reflows the pickers below it, so CDK's cached rectangles for those lists go stale for the rest of the drag. TRG-05 does not change this.
 - **Unit changes:** none. YAGNI: no criterion of TRG-05, TRG-07, TRG-13 or GRR-11 depends on the drag-start behaviour.
 - The plan is `status: planned` (commit cea245a). The branch unit/TRG-05 continues from a4ef55c after a rebase onto main.
+
+## 2026-11-15 — TRG-05 — Failed check: the rebase of step 2 (orchestrator, cherry-pick instead)
+
+- The implementer's `git rebase main` failed twice with "Your local changes to the following files would be overwritten by merge" (apps/web/src/app/app.routes.ts and tool-registry.routes.ts, then one file). `git status` showed only the untracked e2e spec, and the three-way merge with `git merge-tree` was clean. `git rebase --abort` and `git update-index --refresh` did not clear it.
+- The orchestrator rebuilt the branch from main with `git checkout -B unit/TRG-05 main` and `git cherry-pick a4ef55c`, with a backup branch `unit/TRG-05-backup` at a4ef55c. Result: d81b721. Patch id 83f32966e2fcbf1addf6334421428497e471c35e, equal to the old branch's.
+- The rest of step 2 (`npm ci`) runs next. Plan step 2 is otherwise satisfied: the branch holds only the TRG-05 commit above main.
