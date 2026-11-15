@@ -49,6 +49,9 @@ export interface TranscriptRun {
   assistantText: string;
   cards: AgentCard[];
   steps: TranscriptStep[];
+  lastSeq: number; // the largest seq of the file's lines (AGL-05)
+  cap?: number; // the cap of the last step line (AGL-05)
+  pendingChangeIds: string[]; // from the run-end line; empty without one (AGL-05)
 }
 
 export type FinishedTranscriptRun = TranscriptRun & {
@@ -111,6 +114,8 @@ function runOf(lines: ParsedLine[], file: string): TranscriptRun | undefined {
     assistantText: '',
     cards: [],
     steps: [],
+    lastSeq: 0,
+    pendingChangeIds: [],
   };
   const steps = new Map<number, TranscriptStep>();
   const stepOf = (number: number): TranscriptStep => {
@@ -126,9 +131,11 @@ function runOf(lines: ParsedLine[], file: string): TranscriptRun | undefined {
 
   for (const line of lines) {
     const data = line.data as Record<string, unknown>;
+    run.lastSeq = Math.max(run.lastSeq, line.seq);
     switch (line.kind) {
       case 'step':
         stepOf(data.step as number);
+        run.cap = data.cap as number;
         break;
       case 'assistant-text':
         stepOf(data.step as number).text += data.text as string;
@@ -193,6 +200,7 @@ function runOf(lines: ParsedLine[], file: string): TranscriptRun | undefined {
           run.finished = true;
           run.reason = data.reason as AgentRunEndReason;
           run.endedAt = line.at;
+          run.pendingChangeIds = data.pendingChangeIds as string[];
         }
         break;
       default:

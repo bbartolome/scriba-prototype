@@ -4,6 +4,7 @@ import {
   AGENT_ERROR_CODES,
   AGENT_ERROR_STATUS,
   type AgentErrorCode,
+  type AgentRunState,
   type AgentStartRequest,
   type AgentStartResponse,
   type AgentToolFamily,
@@ -21,6 +22,7 @@ import { AgentRun } from './agent-run';
 import { AgentSettingsService } from './agent-settings.service';
 import { AgentToolsService } from './agent-tools.service';
 import { AgentTranscriptsService } from './transcript-reader';
+import { runStateOfTranscript } from './transcript-run-state';
 import { TranscriptWriter, transcriptPathOf } from './transcript-writer';
 
 // The runs of one project: the active one, and the most recent one that ended (D2).
@@ -113,6 +115,26 @@ export class AgentRunsService {
     run.begin();
     void run.execute();
     return { runId, conversationId };
+  }
+
+  // The state of the active project's run (AGL-05). The active run, else the project's most recent ended run, is served
+  // from memory as the run's own state (D1, D9). Else the latest transcript run of the project is rebuilt from its file
+  // (D1, D4). Else there is no run (D3). Nothing is written and no slot changes (D2, D10). A project with no active
+  // project is refused before any read (D8).
+  current(): AgentRunState | null {
+    const projectId = this.store.activeId();
+    if (projectId === null) {
+      throw refusal(
+        AGENT_ERROR_CODES.NO_ACTIVE_PROJECT,
+        'No project is active. Activate a project first.',
+      );
+    }
+    const slot = this.slots.get(projectId);
+    const run = slot?.active ?? slot?.ended;
+    if (run !== undefined) return run.state;
+    const runs = this.transcripts.runs(projectId);
+    const latest = runs[runs.length - 1];
+    return latest === undefined ? null : runStateOfTranscript(latest);
   }
 
   // Asks the run to stop. A run that is not in any slot is not found; a run that has ended or is already ending is a
