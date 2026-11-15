@@ -23,6 +23,6 @@ Try every feature on realistic material (story 9), copied only on request (10), 
 - Tests use a tiny test sample in a temp `SCRIBA_EXAMPLES_DIR`, never the real `examples/`.
 
 ## Acceptance criteria
-- [ ] Start from sample copies a test sample under a chosen name; only `title` differs in `project.yaml` (comments intact); excluded folders planted in the test sample are not copied.
-- [ ] Nothing is copied at startup (library unchanged after boot).
-- [ ] The sample list GET returns the `samples.yaml` entries and is side-effect free.
+- [x] Start from sample copies a test sample under a chosen name; only `title` differs in `project.yaml` (comments intact); excluded folders planted in the test sample are not copied.
+- [x] Nothing is copied at startup (library unchanged after boot).
+- [x] The sample list GET returns the `samples.yaml` entries and is side-effect free.

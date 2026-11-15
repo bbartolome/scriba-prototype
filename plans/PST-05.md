@@ -1,6 +1,6 @@
 ---
 id: PST-05
-status: planned
+status: done
 title: Start from sample and the sample list
 module: project-store
 ---
