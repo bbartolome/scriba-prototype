@@ -4234,3 +4234,14 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Note (outside this unit): one router spec under the shell glob flaked once on a load-related wait and passed on rerun. Judged unrelated; not part of approval.
 - Controls M12 (accepted as observably equivalent) and step 11 (browser check, not tested) unchanged.
 - Code rejections in the re-review: 0.
+
+## 2026-11-15 — TRG-04 — Sonnet code review (three parts): APPROVED
+
+- Full-branch patch id of the approved code (`git diff main...unit/TRG-04 -- . ':!plans' ':!units' | git patch-id --stable`, head c5bc742, based on main 801a967): 3d386a7ce75bb72bcefe81b64a9f513dc8198677.
+- Part 1 (5a13b90: project-store-copy.ts and its spec, X1): APPROVED, patch id 5aa79f16. Eight X1 tests pass.
+- Part 2 (e0fda8d: entity-picker.ts, tool-form.ts, tool-form.spec.ts): APPROVED, patch id 4c2bfd06. AC1, AC2a, AC3, X2, X3, X4 pass; TRG-03's T1, T4 and T7 changed as section 2 says.
+- Part 3 (2968282: the chip drop, per the O7 decision, option b): APPROVED, patch id 84c4645c. AC2b and AC2c pass. The drop is a CDK cdkDropList with an enter predicate and a fake CdkDragDrop in tests; no DataTransfer or native drag code.
+- Implementer differences judged acceptable by the reviewers: write() protected for the template binding; MatInput and MatLabel imports with matNativeControl kept; a held value shown in the scalar select after a failed read (P17e); empty entityKinds treated as every kind; refusal text and chip-ID pattern check; test rename commit c5bc742 (list field named entityIds).
+- Not tested: a real pointer or touch drag (jsdom has no layout); GRR-12, GRR-15 and GRR-17 own those gestures. The running app with the real Project store was not run.
+- Reviewer observation: a full web run showed timeouts in shell specs the branch does not touch (sample-chat.spec.ts, setup-page.spec.ts C1b), which pass alone. To be confirmed on a quiet machine at the main gates.
+- Code rejections: 0.
