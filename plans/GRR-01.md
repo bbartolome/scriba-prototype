@@ -1,6 +1,6 @@
 ---
 id: GRR-01
-status: planned
+status: done
 ---
 # GRR-01 plan — graph-runner contract slice (closes Graph runner phase:contract)
 

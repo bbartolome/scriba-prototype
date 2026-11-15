@@ -32,8 +32,8 @@ Merging this **closes Graph runner `phase:contract`**. Zod + TS, shapes and cons
 - **Example fixtures:** one story graph and one recipe file used by contract tests.
 
 ## Acceptance criteria
-- [ ] The subpath exports everything above, importing only from `/tool-registry`, `/project-store` and `/platform`.
-- [ ] The union accepts the example story graph and recipe; rejects an unknown key, a recipe node in a story graph, a `relation` on a recipe wire, a tool node without `tool`, a node id containing a dot, and `schemaVersion` above 1.
-- [ ] The example files round-trip through parse and serialise without loss.
-- [ ] Node-run-status is exactly the six values; run status exactly four.
+- [x] The subpath exports everything above, importing only from `/tool-registry`, `/project-store` and `/platform`.
+- [x] The union accepts the example story graph and recipe; rejects an unknown key, a recipe node in a story graph, a `relation` on a recipe wire, a tool node without `tool`, a node id containing a dot, and `schemaVersion` above 1.
+- [x] The example files round-trip through parse and serialise without loss.
+- [x] Node-run-status is exactly the six values; run status exactly four.
 - [ ] Contract tests pass in CI.
