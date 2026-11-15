@@ -23,7 +23,7 @@ Built against the Shell's fakes (SHL-07) from contract types; merges once the AP
 - At `run-ended`, a link to `/projects/:projectId/review?run=<runId>` when pending change IDs exist.
 
 ## Acceptance criteria (Vitest + fakes)
-- [ ] Tokens append; cards move from started to result or error with the attempt number.
-- [ ] Stop appears only while an agent run is active.
-- [ ] A reconnect replaces the view from run-state and ignores events at or below `lastSeq`.
-- [ ] The phone breakpoint shows one column with collapsed cards.
+- [x] Tokens append; cards move from started to result or error with the attempt number.
+- [x] Stop appears only while an agent run is active.
+- [x] A reconnect replaces the view from run-state and ignores events at or below `lastSeq`.
+- [x] The phone breakpoint shows one column with collapsed cards.

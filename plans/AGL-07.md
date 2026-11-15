@@ -1,6 +1,6 @@
 ---
 id: AGL-07
-status: planned
+status: done
 title: Chat panel UI — conversations, streaming text, tool-call cards, stop, step counter, settings sheet, phone layout
 module: agent-loop
 ---
