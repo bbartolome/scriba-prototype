@@ -464,6 +464,31 @@ describe('MarkdownEditor saving', () => {
     expect(postCount(client)).toBe(2);
   });
 
+  it('Save stays enabled during a write, and a click during it saves once after the write', async () => {
+    const client = new HoldingApiClient();
+    const { fixture, host } = await render({ raw: 'alpha\n', client });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    save(fixture);
+    expect(postCount(client)).toBe(1);
+    expect(host.saveState).toBe('saving');
+
+    fixture.detectChanges();
+    expect(saveButton(fixture).disabled).toBe(false);
+
+    save(fixture);
+    expect(postCount(client)).toBe(1);
+
+    holdingRelease(client, 0, writeResult(H1));
+    fixture.detectChanges();
+    expect(postCount(client)).toBe(2);
+    expect(lastWrite(client)).toEqual({
+      path: PATH,
+      content: 'alphaX\n',
+      baseHash: H1,
+    });
+  });
+
   it('the state moves unsaved, saving, saved', async () => {
     const client = new HoldingApiClient();
     const { fixture, host } = await render({ raw: 'alpha\n', client });
@@ -633,7 +658,10 @@ describe('MarkdownEditor saving', () => {
     const { fixture, api } = await render({ raw: 'alpha\n' });
 
     insertAtLineEnd(fixture, 1, 'X');
+    // Runs the pending change detection first, so the count after destroy holds only the editor's timers.
+    fixture.detectChanges();
     fixture.destroy();
+    expect(vi.getTimerCount()).toBe(0);
     vi.advanceTimersByTime(1500);
     expect(postCount(api)).toBe(0);
   });
