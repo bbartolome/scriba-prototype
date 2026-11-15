@@ -1,0 +1,36 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat", "turnIndex": 0 },
+      "reply": {
+        "kind": "toolCalls",
+        "calls": [{ "name": "list_files", "argumentChunks": ["{}"] }]
+      }
+    },
+    {
+      "match": { "endpoint": "chat", "turnIndex": 1 },
+      "reply": {
+        "kind": "toolCalls",
+        "calls": [
+          {
+            "name": "read_file",
+            "argumentChunks": ["{\"path\":\"sources/outline.md\"}"]
+          }
+        ]
+      }
+    },
+    {
+      "match": { "endpoint": "chat", "turnIndex": 2 },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "The outline has six chapters: ",
+          "Born to It?, What Counts as Practice, ",
+          "The Ten-Thousand-Hour Idea, The Plateau Is Not the End, ",
+          "The Coach in the Room, and Practice for the Rest of Us."
+        ],
+        "chunkDelayMs": 150
+      }
+    }
+  ]
+}

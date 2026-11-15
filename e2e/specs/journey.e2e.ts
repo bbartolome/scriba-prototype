@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type TestInfo } from '@playwright/test';
 
@@ -93,7 +93,76 @@ test('journey: setup, project from sample, agent run, accept change, manuscript'
   });
 
   // Owner: Agent loop, M1 (AGL-08). Configures a provider at SCRIBA_E2E_MOCK_URL through the API.
-  await test.step('agent run', () => pending(testInfo, 'agent run'));
+  await test.step('agent run', async () => {
+    const errors: Error[] = [];
+    page.on('pageerror', (error) => errors.push(error));
+    const mock = process.env.SCRIBA_E2E_MOCK_URL!;
+    const origin = 'http://127.0.0.1:8080';
+    // A provider at the summarize-outline scenario, made the app default, so the run never reaches Ollama.
+    const created = await page.request.post('/api/providers', {
+      headers: { origin },
+      data: {
+        label: 'Mock',
+        kind: 'openai-compatible',
+        baseURL: `${mock}/scenario/summarize-outline/v1`,
+        model: 'mock-model',
+        temperature: 0.7,
+        contextSize: 64000,
+        maxTokens: 4096,
+        timeout: 120000,
+        retries: 2,
+      },
+    });
+    expect(created.status()).toBe(201);
+    const { id } = (await created.json()) as { id: string };
+    const defaulted = await page.request.post('/api/providers/app-default', {
+      headers: { origin },
+      data: { providerId: id, model: 'mock-model' },
+    });
+    expect(defaulted.status()).toBe(200);
+
+    await page
+      .getByRole('textbox', { name: 'Intent', exact: true })
+      .fill('summarize my outline');
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(
+      page.getByRole('article', { name: 'Tool call: list_files', exact: true }),
+    ).toContainText('Listed the project root.', { timeout: 15_000 });
+    await expect(
+      page.getByRole('article', { name: 'Tool call: read_file', exact: true }),
+    ).toContainText('Read sources/outline.md.', { timeout: 15_000 });
+    await expect(
+      page.getByRole('region', { name: 'Messages', exact: true }),
+    ).toContainText('The outline has six chapters', { timeout: 15_000 });
+    await expect(
+      page.getByRole('button', { name: 'Stop', exact: true }),
+    ).toHaveCount(0, { timeout: 15_000 });
+
+    // The three requests of the run, in order, and the third one carries the outline the model read.
+    const requests = await fetch(
+      `${mock}/__mock/scenarios/summarize-outline/requests`,
+    );
+    const records = (await requests.json()) as {
+      step: number | null;
+      body: unknown;
+    }[];
+    expect(records.map((record) => record.step)).toEqual([0, 1, 2]);
+    expect(JSON.stringify(records[2].body)).toContain(
+      'Chapter 6: Practice for the Rest of Us',
+    );
+
+    // The run wrote one transcript into the project's logs. Its closing line may follow the end event, so only the name is checked.
+    const transcripts = join(
+      process.env.SCRIBA_E2E_LIBRARY!,
+      'demo-book',
+      'logs',
+      'agent-runs',
+    );
+    await expect
+      .poll(() => readdir(transcripts).catch(() => []), { timeout: 15_000 })
+      .toEqual([expect.stringMatching(/^\d{8}T\d{6}Z-.+\.jsonl$/)]);
+    expect(errors).toEqual([]);
+  });
 
   // Owner: Project store review, M3 (PST-22; AGL-15).
   await test.step('accept change', () => pending(testInfo, 'accept change'));
