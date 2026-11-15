@@ -4451,3 +4451,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Clarification recorded in the same session:** origin/main is at 1f1e234, behind local main. The earlier wording "at or after 44e34fb" was wrong; the decision does not depend on it.
 - **Reopen:** when the owner pushes a main that contains the GRR-01 commit, the orchestrator runs step 17 of plans/GRR-01.md and ticks criterion 5 in a new docs commit.
 
+
+## 2026-11-15 — AGL-05 — Sonnet code review (Part 1): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/AGL-05 -- . ':!plans' ':!units' | git patch-id --stable`, head 18e9de2, based on main 44e34fb): 16da058c9490395540e5ff6411ea3897579c9ef9.
+- Reviewer (Part 1, the only part): APPROVED. Re-run in the worktree: C1, C2, C3, S1, S2, S3 pass, 6 of 6. Only the section 2 paths change. Commit messages contain AGL-05 and follow the style.
+- REWORK items 1 and 2 (mutation checks (a) to (f), each red on its named test; fresh clone with npm ci, build, test and lint exit 0) are reported COMPLETE by the implementer at 18e9de2. The reviewer accepted the report without re-running them.
+- Accepted deviations: the fresh clone used /tmp/agl05-fresh-impl because /tmp/agl05-fresh already existed and was not empty; `npm run build -w @bbartolome/scriba-contracts` was needed before the API tests (not in the plan).
