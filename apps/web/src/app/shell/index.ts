@@ -18,3 +18,4 @@ export type {
   ToolCallStatus,
   ToolCallView,
 } from './tool-call-view';
+export { unsavedTextGuard } from './unsaved-text';
