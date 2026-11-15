@@ -4410,3 +4410,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Result: 275 passed, 2 failed of 277. The two new criteria (AC1, AC2) pass.
 - Source edits (tool-types.ts, builtin-tools.ts, agent-tools.service.ts) are uncommitted in the worktree; they are not reverted. The plan must name the two tests as changed, or decide otherwise.
 - Plan goes back to draft for an Opus reviser.
+
+## 2026-11-15 — AGL-10 — Sonnet code review (one part): APPROVED; merged to main (orchestrator)
+
+- Patch id of the approved code (code head c08a51e, after the rebase onto 5fbc4d9): c211b55ca37e1045efc843df97ec80cf5dbd0981. Checks on the branch head: npm ci, lint, test, build all exit 0.
+- Criteria 1 and 2 ticked. Plan set to done. Fast-forward of main to 482b6a2. Branch and worktree removed.
+- Units on main from this session: MPR-08, AGL-03, AGL-10 (3 of 5).
