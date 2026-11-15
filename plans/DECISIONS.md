@@ -4018,3 +4018,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 
 - **Decision (Navigator, session `74b9c36bbaa14f72bbc4f657b25a613d`):** criterion 2 (`units/MPR-08-client-gate.md` line 23) is the model path only. The seeded ollama provider reaches Ollama on the host through the real compose stack, shown by T2 steps S3 to S6 (`plans/MPR-08.md` section 4.2). The Agent loop's chat run ("summarize my outline") is AGL-08's and is not part of this criterion.
 - **Reason:** the criterion's parenthetical says the M1 done-when is owned by the Agent loop and this phase supplies the model path. The reverse reading is a cycle: MPR-08 would wait for AGL-08, AGL-08 is blocked by AGL-03 (`units/AGL-08-file-tools-chat-gate.md` front matter), and AGL-03 is blocked by MPR-08 (`units/AGL-03-loop-core.md` line 7). AGL-08 reaches MPR-08 only transitively.
+
+## 2026-11-15 — MPR-08 — Navigator decision: open point 3 (the module's real-model check): T2 meets the rule, with a transitional note
+
+- **Decision (Navigator, session `74b9c36bbaa14f72bbc4f657b25a613d`, option a):** T2 (`plans/MPR-08.md` section 4.2) satisfies the module's real-model rule. Add an additive transitional note after `modules/providers.md` line 46: "Until AGL-25 exists, the MPR-08 T2 procedure (plans/MPR-08.md section 4.2) serves as the providers module's real-model check." Line 46 is not rewritten; AGL-25 remains the eventual canonical check. No second check is required.
+- **Reason:** line 46 is a principle in the Testing principles list. It requires a real model, not CI. T2 meets both parts. The named vehicle is blocked by AGL-08, so it is a forward reference. Inventing another check would add scope the spec does not require.
+- **Note for the MPR-08 reviser:** the module note is a change of a module file. It is made in the MPR-08 revision (as the module file's additive note), not by the orchestrator.
