@@ -6,7 +6,7 @@ phase: phase:file-tools-chat
 milestone: M1
 blocked_by: [AGL-02, AGL-06, "Model providers phase:client (MPR-08)", "Setup & auth phase:token-guard (SAU-08)"]
 parallel_with: [AGL-07]
-unblocks: [AGL-04, AGL-05, AGL-08]
+unblocks: [AGL-04, AGL-05, AGL-08, AGL-10]
 ---
 
 # AGL-03 — Loop core
