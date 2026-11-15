@@ -18,7 +18,6 @@ import {
   type AgentLoopEvent,
 } from '@bbartolome/scriba-contracts/agent-loop';
 import {
-  chatBodies,
   get,
   listThenReadSteps,
   observe,
@@ -30,7 +29,6 @@ import {
   type Harness,
 } from './agent-loop-transcript.kit';
 import { snapshotLibrary } from './invariant-sweep';
-import { recordsOf } from './providers-client.kit';
 
 // The text the token-delta events of one run carried, in order.
 function deltaTextOf(events: AgentLoopEvent[]): string {

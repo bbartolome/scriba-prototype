@@ -7,6 +7,7 @@ import {
   transcriptEntrySchema,
   type AgentLoopEvent,
 } from '@bbartolome/scriba-contracts/agent-loop';
+import { transcriptPayloadSchemas } from '../src/modules/agent-loop/transcript-entries';
 import { SecretsStore } from '../src/modules/providers/secrets/secrets-store';
 import type { ScribaEnv } from '../src/modules/platform/platform.module';
 import {
@@ -80,8 +81,6 @@ it('T1 (AC1): the transcript file matches the contract entry schema line by line
       ]);
 
       // Each data parses with its own payload schema of the transcript writer.
-      const { transcriptPayloadSchemas } =
-        await import('../src/modules/agent-loop/transcript-entries');
       for (const entry of entries) {
         const schema = transcriptPayloadSchemas[entry.kind];
         expect(schema, entry.kind).toBeDefined();

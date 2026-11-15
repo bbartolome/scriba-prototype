@@ -35,22 +35,20 @@ async function runTwice(
   h: Harness,
 ): Promise<{ request: ChatBody; conversationId: string }> {
   const stream = await observe(h);
-  let conversationId = '';
   try {
     const first = await startRun(h, { intent: 'Read two files' });
-    conversationId = first.conversationId;
     await readUntilEnded(stream);
     await startRun(h, {
       intent: 'Second question',
-      conversationId,
+      conversationId: first.conversationId,
     });
     await readUntilEnded(stream);
+    const bodies = await requestsOf(h);
+    expect(bodies).toHaveLength(4);
+    return { request: bodies[3], conversationId: first.conversationId };
   } finally {
     await stream.close();
   }
-  const bodies = await requestsOf(h);
-  expect(bodies).toHaveLength(4);
-  return { request: bodies[3], conversationId };
 }
 
 it('T3a (AC3): with a tiny contextSize, the oldest tool results are shortened and the turn is kept', async () => {
@@ -105,15 +103,20 @@ it('T3b (AC3): when shortening is not enough, the oldest turn is dropped and the
   try {
     const { request, conversationId } = await runTwice(h);
 
-    // Run A is a finished turn of the conversation, so the request below is trimmed and not empty from the start.
+    // Run A is a finished turn of the conversation (run B is one too), so the request below is trimmed from a history
+    // that is not empty to begin with.
     const historyReply = await get(
       h,
       AGENT_CONVERSATION_ROUTE.replace(':conversationId', conversationId),
     );
     expect(historyReply.status).toBe(200);
-    expect(
-      conversationHistorySchema.parse(JSON.parse(historyReply.body)).turns,
-    ).toHaveLength(1);
+    const turns = conversationHistorySchema.parse(
+      JSON.parse(historyReply.body),
+    ).turns;
+    expect(turns.map((turn) => turn.intent)).toEqual([
+      'Read two files',
+      'Second question',
+    ]);
 
     const b = request.messages;
 
