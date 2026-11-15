@@ -3935,3 +3935,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Files changed: exactly the seven files of the plan's section 2 (active-project controller and service, project-store module and services, the kit and the test file).
 - Commit 1248dec changes one comment line only (the word "examples" in a test comment, required by plan step 8(c)); no assertion or behaviour changed.
 - Code rejections of PST-04: 0.
+
+## 2026-11-15 — PST-05 — Sonnet code review (whole plan, one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/PST-05 -- . ':!plans' ':!units' | git patch-id --stable`, base 7736a4c): fe20cef649434dc51367087eb962a86be0f69736.
+- Files changed: exactly the five paths of the plan's section 2 (samples controller and service, project-store module, the samples kit and test).
+- list() returns the schema-parsed entries (extra keys stripped), as the plan's own algorithm states; the fixture has no extra keys, so C3 holds. The importable branch in start() is unreachable, as the plan states.
+- Code rejections of PST-05: 0.
