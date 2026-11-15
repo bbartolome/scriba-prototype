@@ -4283,3 +4283,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Reason:** AGL-10's criteria heading has no seam parenthetical, so `units/README.md` line 57 gives the module default, `modules/agent-loop.md` line 62. The kit allowance exists only in AGL-02's own heading (`units/AGL-02-tool-framework-file-reads.md` line 24, "until AGL-03 exists"), so it cannot be borrowed. AGL-03 is not on main: it has no plan, and its `blocked_by` (line 7) names MPR-08, AGL-06 and SAU-08. AGL-10 therefore waits for AGL-03.
 - **Effect:** AGL-10 is not available until AGL-03 is on main. AGL-03 waits on MPR-08, which waits on the owner's manual check (see the MPR-08 entries above). The AGL-10 plan (`plans/AGL-10.md`, status draft) must be revised to the composed-app seam; its open point 1 is closed by this decision.
 - **Unit change to apply:** `units/AGL-10-search-notes.md` line 7 gains AGL-03; the `unblocks` line of `units/AGL-03-loop-core.md` gains AGL-10 so the two stay exact inverses.
+
+## 2026-11-15 — SAU-15 — Sonnet code review (two parts): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SAU-15 -- . ':!plans' ':!units' | git patch-id --stable`, head b6372ad, plan revision 495b7ef): 43ee530e16cb0f3f3a15d057988ddf5580050c9c.
+- Part 1 (steps 0-8; S1, Y1, P1): APPROVED. Part 2 (steps 9-11; D1): APPROVED. Web 45 files / 314 tests pass; root test, lint and build exit 0.
+- Judged acceptable: the initial bundle grows by about 50 kB (525.10 to 575.39 kB) because the Model providers panel is embedded in the route (D5). The 1 MB stop rule is not reached; the 500 kB warning already existed, as accepted for SHL-08 (lines 2683-2685).
+- Judged acceptable: `whenLoaded` makes each action wait for the one shared contract load (no new contract access, no new route).
+- Code rejections: 0.
