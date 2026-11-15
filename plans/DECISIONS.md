@@ -4426,7 +4426,7 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 
 ## 2026-11-15 — AGL-05 — Step 3 failed check: pre-existing failure on main (orchestrator); not merged
 
-- Code approval: not yet sought. Branch unit/AGL-05 at 16da058 (patch id 16da058c9490395540e5ff6411ea3897579c9ef9 for the code diff; the implementer reports COMPLETE, criteria C1 to C3 and S1 to S3 pass).
+- Code approval: not yet sought. Branch unit/AGL-05 at head 37946e6 (patch id 16da058c9490395540e5ff6411ea3897579c9ef9 for the code diff; the implementer reports COMPLETE, criteria C1 to C3 and S1 to S3 pass).
 - Check failed: npm test (root) exits 1. The API workspace passes (91 files, 291 tests). The failure is apps/web src/app/shell/landing.spec.ts, test C1 "routes by setup status and active project": expected '/' to be '/setup'.
 - Not caused by AGL-05: the branch does not change apps/web (git diff --name-only main...unit/AGL-05 lists no apps/web path; the apps/web tree equals main). The same spec fails on main when run alone (apps/web: npx vitest run src/app/shell/landing.spec.ts, 2 failed: C1 and E1). It passed in some full-suite runs earlier in this session and failed in others, so it is also intermittent.
 - Same defect as noted for GRR-01 (SHL-08 landing spec, see the GRR-01 entry above). Step 3 of prompt.md requires all three checks to pass before a merge, so AGL-05 is not merged. Its branch and worktree are kept.
