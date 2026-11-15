@@ -13,12 +13,15 @@ import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { SamplesController } from './samples.controller';
 import { SamplesService } from './samples.service';
+import { SearchController } from './search.controller';
+import { SearchService } from './search.service';
 
 // Modules outside project-store import these from this entry file only.
 export { ProjectStoreService } from './project-store.service';
 export { FilesService } from './files.service';
 export { EntitiesService } from './entities.service';
 export { EntityManifest } from './entity-manifest';
+export { SearchService } from './search.service';
 export type { ResolvedProjectPath } from './path-safety';
 
 const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
@@ -31,6 +34,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     ProjectsController,
     ActiveProjectController,
     SamplesController,
+    SearchController,
     FilesController,
     EntitiesController,
   ],
@@ -50,7 +54,14 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     FilesService,
     EntityManifest,
     EntitiesService,
+    SearchService,
   ],
-  exports: [ProjectStoreService, FilesService, EntitiesService, EntityManifest],
+  exports: [
+    ProjectStoreService,
+    FilesService,
+    EntitiesService,
+    EntityManifest,
+    SearchService,
+  ],
 })
 export class ProjectStoreModule {}
