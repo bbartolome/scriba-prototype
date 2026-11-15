@@ -1,6 +1,6 @@
 ---
 id: MPR-08
-status: planned
+status: done
 unit: units/MPR-08-client-gate.md
 ---
 # MPR-08 plan — Client gate: guard check, secrecy suite, seam test and the M1 model-path check
@@ -273,3 +273,7 @@ Each line is FACT, read with cat -n, sed, grep or git at 7e9469d. No test was ru
 - ASSUMED: the one-liner of `README.md` line 28 uses a local image named `bbartolome/scriba:latest` without a pull (`docker run` pulls only when the image is missing, its default). The owner confirms this in S1 (D13).
 - ASSUMED: Ollama on the Mac answers `/v1/models` with at least one model once `ollama pull <model>` has run.
 - ASSUMED: the implementer's machine is this machine: the same OS, the same node and npm on PATH, and no Ollama.
+
+## 9. Completion (fallback B)
+
+Criterion 2 (unit line 23) is not ticked. Cause: the owner cannot run T2 in this unattended session (no Ollama on this host). Navigator decision 2026-11-15, session ff79c6c9652849e1a58334562bd17059, option A: fallback B applies. See plans/DECISIONS.md, MPR-08.

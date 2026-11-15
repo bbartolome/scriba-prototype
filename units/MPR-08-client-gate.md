@@ -19,7 +19,7 @@ Merging this **closes Model providers `phase:client`** (the Agent loop's M1 chat
 - **System seam:** the Playwright e2e's "agent run" step configures its provider through this real API, pointing at a mock scenario URL (coordinate with the Agent loop, which owns the step).
 
 ## Acceptance criteria (the `phase:client` checklist)
-- [ ] Seeding, streaming/tool-call assembly, malformed pass-through, retry/401, timeout/abort, key storage and `auto` resolution criteria (MPR-02…MPR-07) pass on `main`.
+- [x] Seeding, streaming/tool-call assembly, malformed pass-through, retry/401, timeout/abort, key storage and `auto` resolution criteria (MPR-02…MPR-07) pass on `main`.
 - [ ] **Milestone part (M1):** with the real compose stack and Ollama on the host, the Agent loop's M1 run reaches the model through the seeded provider with no provider configuration. (M1 *done when* "the author types 'summarize my outline' and gets a correct answer with visible tool calls" is owned by the Agent loop; this phase supplies the model path.)
 
 ## Demo (under 5 min)
