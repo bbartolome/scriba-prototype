@@ -8,7 +8,21 @@ import type { ShellRouteData } from './shell/route-data';
  * Project-scoped routes. Features append their entries here, under
  * `projects/:projectId/`. Each entry loads only its own export.
  */
-export const PROJECT_ROUTES: Routes = [];
+export const PROJECT_ROUTES: Routes = [
+  {
+    path: 'chat',
+    pathMatch: 'full',
+    data: {
+      scope: 'project',
+      minDeviceClass: 'phone',
+      nav: { label: 'Chat', icon: 'chat', order: 10 },
+    } satisfies ShellRouteData,
+    loadChildren: () =>
+      import('./features/agent-loop/agent-loop.routes').then(
+        (feature) => feature.chatRoutes,
+      ),
+  },
+];
 
 /**
  * The root route table. App-level feature entries go above the `**` entry;

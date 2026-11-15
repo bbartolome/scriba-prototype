@@ -60,22 +60,18 @@ export const RUN_END_REASON_VALUES = [
 ] as const;
 
 /** The eight event types the page handles. The grounding types are not among them (D18). */
-const HANDLED_TYPES = [
-  'run-started',
-  'token-delta',
-  'tool-call-started',
-  'tool-call-args',
-  'tool-call-result',
-  'tool-call-error',
-  'step-cap-reached',
-  'run-ended',
-] as const;
+export type ChatEventType =
+  | 'run-started'
+  | 'token-delta'
+  | 'tool-call-started'
+  | 'tool-call-args'
+  | 'tool-call-result'
+  | 'tool-call-error'
+  | 'step-cap-reached'
+  | 'run-ended';
 
 /** One of the eight handled members of the agent loop's SSE union. */
-export type ChatEvent = Extract<
-  AgentLoopEvent,
-  { type: (typeof HANDLED_TYPES)[number] }
->;
+export type ChatEvent = Extract<AgentLoopEvent, { type: ChatEventType }>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
