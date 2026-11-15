@@ -12,6 +12,8 @@ The spec made phases serial. Gates are unchanged, but units wait only on what th
 
 SHL-21 is ungated; it fixes the Shell's contract loader (`shell/contract-chunks.ts` reads the CommonJS default export) and unblocks Setup & auth's gate SAU-08.
 
+SHL-22 is ungated and test-only; it gives the `vi.waitFor` calls that wait on a lazy load or an async settle an explicit timeout (the fix of 1f1e234 for `shell/landing.spec.ts`, applied to the specs that still use the 1000 ms default). It blocks nothing.
+
 ### Dependency graph
 
 ```
