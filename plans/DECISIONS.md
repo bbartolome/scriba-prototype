@@ -4169,3 +4169,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Files changed: exactly the six paths of the plan's section 2.
 - Tests: criteria 1 to 4, `refusals` and `theme is dropped and never stored` pass (reviewer ran four files: 16 tests); `tsc --noEmit` clean. Gates (implementer's report on 3b2f5ff): lint, test (75 pass) and build exit 0.
 - Code rejections: 0.
+
+## 2026-11-15 — TRG-03 — Sonnet code review (one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/TRG-03 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 027fe55, rebased onto main 500c3e0): 8f992f7c9f827e544ef719107d8160dde47c6d45.
+- Files changed: exactly the three paths of the plan's section 2 (the component, its entry file and its spec); plans and units are not changed by the code.
+- Tests: T1 to T8, E1 and E2 pass (reviewer ran the web suite: 39 files, 272 tests). T4 asserts the picker ids shown and returned, plus the length default that D6 adds at init; criterion 1 for the picker slots still holds.
+- Differences (native `required` with `novalidate`, range bounds as properties, the `role=switch` click, the process differences) break no requirement.
+- Code rejections: 0.
