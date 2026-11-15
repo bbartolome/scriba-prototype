@@ -1,6 +1,6 @@
 ---
 id: TRG-05
-status: planned
+status: draft
 ---
 # TRG-05 plan — Spike gate: dev preview on /tools, running-app checks, spike note
 
