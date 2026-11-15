@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EditorView } from '@codemirror/view';
-import { describe, expect, it } from 'vitest';
-import { ApiError } from './api-error';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { map, type Observable, Subject } from 'rxjs';
+import { parseResponse, type ApiPath, type ResponseSchema } from './api-client';
+import { ApiError, CLIENT_ERROR_CODES } from './api-error';
 import { MarkdownEditor } from './index';
 import { FakeApiClient } from './testing/test-doubles';
 import { API_CLIENT } from './tokens';
@@ -81,6 +83,7 @@ interface RenderOptions {
   raw?: string;
   readOnly?: boolean;
   readError?: ApiError;
+  client?: FakeApiClient;
 }
 
 interface Rendered {
@@ -91,7 +94,7 @@ interface Rendered {
 
 /** Renders the host with a fake API client that answers the read with `raw`, or fails it. */
 async function render(options: RenderOptions): Promise<Rendered> {
-  const api = new FakeApiClient();
+  const api = options.client ?? new FakeApiClient();
   if (options.readError !== undefined) {
     api.fail('GET', READ_PATH, options.readError);
   } else {
@@ -253,5 +256,385 @@ describe('MarkdownEditor', () => {
     ).toContain('The file was not found.');
     expect(root(fixture).querySelector('.cm-editor')).toBeNull();
     expect(host.error).toBe('The file was not found.');
+  });
+});
+
+const H1 = `sha256:${'c'.repeat(64)}`;
+const H2 = `sha256:${'d'.repeat(64)}`;
+
+/**
+ * A fake whose writes wait for the test. Each POST is one held request, numbered in the order the
+ * editor sent it. The test answers it with `holdingRelease`, with a response body.
+ */
+class HoldingApiClient extends FakeApiClient {
+  readonly held: Subject<unknown>[] = [];
+
+  override post<T>(
+    path: ApiPath,
+    body: unknown,
+    schema: ResponseSchema<T>,
+  ): Observable<T> {
+    const reply = new Subject<unknown>();
+    this.requests.push({ method: 'POST', path, body });
+    this.held.push(reply);
+    return reply.pipe(map((response) => parseResponse(path, schema, response)));
+  }
+}
+
+function holdingRelease(
+  client: HoldingApiClient,
+  index: number,
+  body: unknown,
+): void {
+  const reply = client.held[index];
+  if (reply === undefined) {
+    throw new Error(`No held write ${index}.`);
+  }
+  reply.next(body);
+  reply.complete();
+}
+
+/** A write response as the project store sends it. */
+function writeResult(hash: string): unknown {
+  return { path: PATH, hash, mtime: MTIME };
+}
+
+function postCount(api: FakeApiClient): number {
+  return api.requests.filter((request) => request.method === 'POST').length;
+}
+
+/** The body of the last write that reached the fake client. */
+function lastWrite(api: FakeApiClient): Record<string, unknown> {
+  const posts = api.requests.filter((request) => request.method === 'POST');
+  return (posts[posts.length - 1]?.body ?? {}) as Record<string, unknown>;
+}
+
+function statusText(fixture: ComponentFixture<EditorHost>): string {
+  fixture.detectChanges();
+  return (
+    root(fixture).querySelector('[role="status"]')?.textContent?.trim() ?? ''
+  );
+}
+
+function alertText(fixture: ComponentFixture<EditorHost>): string {
+  fixture.detectChanges();
+  return (
+    root(fixture).querySelector('[role="alert"]')?.textContent?.trim() ?? ''
+  );
+}
+
+function editorText(fixture: ComponentFixture<EditorHost>): string {
+  const view = EditorView.findFromDOM(root(fixture));
+  if (view === null) {
+    throw new Error('No editor view.');
+  }
+  return view.state.doc.toString();
+}
+
+/** Dispatches a keydown on the editor content, bubbling as a browser key press does. */
+function pressKey(
+  fixture: ComponentFixture<EditorHost>,
+  key: string,
+  modifiers: KeyboardEventInit,
+): void {
+  contentElement(fixture).dispatchEvent(
+    new KeyboardEvent('keydown', { key, bubbles: true, ...modifiers }),
+  );
+  fixture.detectChanges();
+}
+
+/** Advances the fake clock, then lets the view react to the timers. */
+function advance(fixture: ComponentFixture<EditorHost>, ms: number): void {
+  vi.advanceTimersByTime(ms);
+  fixture.detectChanges();
+}
+
+describe('MarkdownEditor saving', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('a pause of 1.5 s after typing saves once', async () => {
+    const { fixture, api } = await render({ raw: 'alpha\n' });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    advance(fixture, 1499);
+    expect(postCount(api)).toBe(0);
+
+    advance(fixture, 1);
+    expect(postCount(api)).toBe(1);
+    expect(writtenContent(api)).toBe('alphaX\n');
+  });
+
+  it('each keystroke restarts the debounce', async () => {
+    const { fixture, api } = await render({ raw: 'alpha\n' });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    advance(fixture, 1000);
+    insertAtLineEnd(fixture, 1, 'Y');
+    advance(fixture, 1000);
+    expect(postCount(api)).toBe(0);
+
+    advance(fixture, 500);
+    expect(postCount(api)).toBe(1);
+    expect(writtenContent(api)).toBe('alphaXY\n');
+  });
+
+  it.each([
+    ['Ctrl-S', { ctrlKey: true }],
+    ['Cmd-S', { metaKey: true }],
+  ])('%s saves at once', async (_name, modifier) => {
+    const { fixture, api } = await render({ raw: 'alpha\n' });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    pressKey(fixture, 's', modifier);
+    expect(postCount(api)).toBe(1);
+
+    advance(fixture, 1500);
+    expect(postCount(api)).toBe(1);
+  });
+
+  it('the Save button saves at once', async () => {
+    const { fixture, api } = await render({ raw: 'alpha\n' });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    save(fixture);
+    expect(postCount(api)).toBe(1);
+
+    advance(fixture, 1500);
+    expect(postCount(api)).toBe(1);
+  });
+
+  it('focus leaving the editor saves at once', async () => {
+    const { fixture, api } = await render({ raw: 'alpha\n' });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    contentElement(fixture).dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: null }),
+    );
+    fixture.detectChanges();
+    expect(postCount(api)).toBe(1);
+  });
+
+  it('focus moving to Save does not save', async () => {
+    const { fixture, api } = await render({ raw: 'alpha\n' });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    contentElement(fixture).dispatchEvent(
+      new FocusEvent('focusout', {
+        bubbles: true,
+        relatedTarget: saveButton(fixture),
+      }),
+    );
+    fixture.detectChanges();
+    expect(postCount(api)).toBe(0);
+  });
+
+  it('saves during an in-flight save coalesce into one follow-up', async () => {
+    const client = new HoldingApiClient();
+    const { fixture } = await render({ raw: 'alpha\n', client });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    save(fixture);
+    expect(postCount(client)).toBe(1);
+
+    insertAtLineEnd(fixture, 1, 'Y');
+    advance(fixture, 1500);
+    save(fixture);
+    pressKey(fixture, 's', { ctrlKey: true });
+    expect(postCount(client)).toBe(1);
+
+    holdingRelease(client, 0, writeResult(H1));
+    fixture.detectChanges();
+    expect(postCount(client)).toBe(2);
+    expect(lastWrite(client)).toEqual({
+      path: PATH,
+      content: 'alphaXY\n',
+      baseHash: H1,
+    });
+
+    holdingRelease(client, 1, writeResult(H2));
+    fixture.detectChanges();
+    advance(fixture, 5000);
+    expect(postCount(client)).toBe(2);
+  });
+
+  it('the state moves unsaved, saving, saved', async () => {
+    const client = new HoldingApiClient();
+    const { fixture, host } = await render({ raw: 'alpha\n', client });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    expect(host.saveState).toBe('unsaved');
+    expect(statusText(fixture)).toBe('Unsaved changes');
+
+    save(fixture);
+    expect(host.saveState).toBe('saving');
+    expect(statusText(fixture)).toBe('Saving...');
+
+    holdingRelease(client, 0, writeResult(H1));
+    fixture.detectChanges();
+    expect(host.saveState).toBe('saved');
+    expect(statusText(fixture)).toBe('Saved');
+  });
+
+  it('a failed write shows failed and keeps the text', async () => {
+    const { fixture, host, api } = await render({ raw: 'alpha\n' });
+    api.fail(
+      'POST',
+      WRITE_PATH,
+      new ApiError(
+        0,
+        CLIENT_ERROR_CODES.NETWORK,
+        'Could not reach the server.',
+      ),
+    );
+
+    insertAtLineEnd(fixture, 1, 'X');
+    advance(fixture, 1500);
+    expect(host.saveState).toBe('failed');
+    expect(alertText(fixture)).toBe('Could not reach the server.');
+    expect(editorText(fixture)).toBe('alphaX\n');
+    expect(host.dirty).toBe(true);
+
+    insertAtLineEnd(fixture, 1, 'Y');
+    expect(host.saveState).toBe('failed');
+
+    api.respond('POST', WRITE_PATH, writeResult(H1));
+    save(fixture);
+    expect(lastWrite(api)).toEqual({
+      path: PATH,
+      content: 'alphaXY\n',
+      baseHash: READ_HASH,
+    });
+    expect(host.saveState).toBe('saved');
+  });
+
+  it('a conflict shows conflict and never overwrites', async () => {
+    const { fixture, host, api } = await render({ raw: 'alpha\n' });
+    api.fail(
+      'POST',
+      WRITE_PATH,
+      new ApiError(
+        409,
+        'PROJECT_WRITE_CONFLICT',
+        'The file changed elsewhere.',
+      ),
+    );
+
+    insertAtLineEnd(fixture, 1, 'X');
+    advance(fixture, 1500);
+    expect(host.saveState).toBe('conflict');
+    expect(statusText(fixture)).toBe('Not saved: the file changed elsewhere');
+    expect(alertText(fixture)).toBe('The file changed elsewhere.');
+
+    insertAtLineEnd(fixture, 1, 'Y');
+    advance(fixture, 5000);
+    expect(host.saveState).toBe('conflict');
+    expect(postCount(api)).toBe(1);
+    expect(lastWrite(api)['baseHash']).toBe(READ_HASH);
+
+    save(fixture);
+    expect(postCount(api)).toBe(2);
+    expect(lastWrite(api)['baseHash']).toBe(READ_HASH);
+  });
+
+  it('closing the tab with unsaved text prevents the unload', async () => {
+    const { fixture } = await render({ raw: 'alpha\n' });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    const unload = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(unload);
+    expect(unload.defaultPrevented).toBe(true);
+
+    save(fixture);
+    const saved = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(saved);
+    expect(saved.defaultPrevented).toBe(false);
+  });
+
+  it('the second save carries the hash returned by the first', async () => {
+    const { fixture, api } = await render({ raw: 'alpha\n' });
+
+    api.respond('POST', WRITE_PATH, writeResult(H1));
+    insertAtLineEnd(fixture, 1, 'X');
+    save(fixture);
+    expect(lastWrite(api)['baseHash']).toBe(READ_HASH);
+
+    api.respond('POST', WRITE_PATH, writeResult(H2));
+    insertAtLineEnd(fixture, 1, 'Y');
+    save(fixture);
+    expect(lastWrite(api)['baseHash']).toBe(H1);
+  });
+
+  it('a reference change saves the old file first, then reads the new one', async () => {
+    const { fixture, host, api } = await render({ raw: 'alpha\n' });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    host.reference = { projectId: PROJECT_ID, path: 'drafts/ch02.md' };
+    fixture.detectChanges();
+
+    expect(api.requests).toEqual([
+      { method: 'GET', path: READ_PATH, params: { path: PATH } },
+      {
+        method: 'POST',
+        path: WRITE_PATH,
+        body: { path: PATH, content: 'alphaX\n', baseHash: READ_HASH },
+      },
+      {
+        method: 'GET',
+        path: READ_PATH,
+        params: { path: 'drafts/ch02.md' },
+      },
+    ]);
+  });
+
+  it('a reference change whose save fails asks; Cancel keeps the old file, and the next save writes to it', async () => {
+    const { fixture, host, api } = await render({ raw: 'alpha\n' });
+    api.fail(
+      'POST',
+      WRITE_PATH,
+      new ApiError(
+        0,
+        CLIENT_ERROR_CODES.NETWORK,
+        'Could not reach the server.',
+      ),
+    );
+
+    insertAtLineEnd(fixture, 1, 'X');
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    host.reference = { projectId: PROJECT_ID, path: 'drafts/ch02.md' };
+    fixture.detectChanges();
+
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(
+      api.requests.some(
+        (request) =>
+          request.method === 'GET' &&
+          request.params?.['path'] === 'drafts/ch02.md',
+      ),
+    ).toBe(false);
+    expect(alertText(fixture)).toBe('Could not reach the server.');
+
+    api.respond('POST', WRITE_PATH, writeResult(WRITE_HASH));
+    save(fixture);
+    expect(lastWrite(api)).toEqual({
+      path: PATH,
+      content: 'alphaX\n',
+      baseHash: READ_HASH,
+    });
+  });
+
+  it('destroying the editor cancels a pending debounce', async () => {
+    const { fixture, api } = await render({ raw: 'alpha\n' });
+
+    insertAtLineEnd(fixture, 1, 'X');
+    fixture.destroy();
+    vi.advanceTimersByTime(1500);
+    expect(postCount(api)).toBe(0);
   });
 });
