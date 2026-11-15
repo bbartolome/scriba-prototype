@@ -1,13 +1,13 @@
 ---
 id: PST-05
-status: draft
+status: planned
 title: Start from sample and the sample list
 module: project-store
 ---
 
 # PST-05 plan — start from sample and the sample list
 
-Unit: `units/PST-05-start-from-sample.md` (phase:files, M1). Blocked by PST-03, which is done (`plans/PST-03.md` status done; the last commit that touches the Project store code is `146abce`). Base: `main` at `d63a95b`. Parallel with PST-04, whose plan is `planned` and not on `main`. Scope: the API (`apps/api`) and its tests. The picker UI is PST-09.
+Unit: `units/PST-05-start-from-sample.md` (phase:files, M1). Blocked by PST-03, which is done (`plans/PST-03.md` status done; the last commit that touches its code is `146abce`; the last commit on the Project store code is now PST-04's `0e90f7e`). Base: `main` at `47b2462` at revision (the draft was written at `d63a95b`). PST-04, listed in `parallel_with`, reached `main` during the revision (`0e90f7e`, `6567322`; `plans/PST-04.md` status done at `29bf486`), so this plan builds on its code. The line numbers below are those of `main` at `47b2462`. Scope: the API (`apps/api`) and its tests. The picker UI is PST-09.
 
 ## 1. Decisions this plan follows
 
@@ -16,17 +16,17 @@ Each decision gives its source. "Planner's choice" marks a choice that neither t
 - **Samples location.** Samples are read-only at `SCRIBA_EXAMPLES_DIR` (default `/opt/scriba/examples`; the dev script points it at `examples/`). The API never writes there. Source: unit line 18; `packages/contracts/src/platform/env.ts` line 14; root `package.json` line 24.
 - **Sample list.** `GET /api/project-store/samples` (`SAMPLES_ROUTE`) reads `<SCRIBA_EXAMPLES_DIR>/samples.yaml`, a top-level list of `{id, title, description}`, and answers that array as it is. An absent file is an empty list. Source: unit line 19; `packages/contracts/src/project-store/project.ts` lines 81 to 88 (`sampleSchema`, `sampleListSchema`); `plans/PST-01.md` line 62 (answer: sample array); `plans/PLT-20.md` line 33 (D7: absent is an empty list).
 - **Start from sample.** `POST /api/project-store/projects/start-from-sample` (`PROJECT_START_FROM_SAMPLE_ROUTE`) with `{sampleId, folderName, title}`, checked by `startFromSampleRequestSchema` (`project.ts` lines 64 to 69; `routes.ts` lines 9 and 10). Source: unit line 20.
-- **The sample is looked up in the list only.** `sampleId` is matched against the ids in `samples.yaml`. It is never joined to a path. Source: `plans/DECISIONS.md` line 2352 (PST-01 review, item 4); `plans/PST-02.md` line 63 (S12).
+- **The sample is looked up in the lists only.** `sampleId` is matched against the ids in `samples.yaml`, and the sample folder is the entry of `readdirSync(SCRIBA_EXAMPLES_DIR, {withFileTypes: true})` whose name equals that id and that is a directory (`Dirent.isDirectory()`; a link is not one). The request value is never joined to a path: the folder path is built from the name that `readdirSync` returned, which cannot be `..` or contain `/`. Source: `plans/DECISIONS.md` line 2352 (PST-01 review, item 4: "look up `projectId` and `sampleId` only in the discovered lists, never by joining them to a path"); `plans/PST-02.md` line 63 (S12). Corrected by the revision: the draft joined the matched id to the samples folder.
 - **Copy content.** The copy is the sample's own tree, `examples/<sampleId>/` in the repository layout, minus four paths matched exactly against paths relative to the sample root: `.scriba`, `logs`, `snapshots` and `drafts/.versions`. Files are copied byte for byte. Dot-files are copied, the sample's `.gitignore` among them. `samples.yaml` sits outside every sample folder, so it is never copied. Source: unit lines 20 and 21; `plans/PLT-20.md` line 37 (D11: the same four paths, at the sample root only); `plans/PST-11.md` line 155 (the dot-file hand-off). Planner's choice: the four paths are matched at the root only, so a nested `logs/` inside a sample is copied.
 - **Title edit.** Only the `title` key of the copied `project.yaml` changes. The edit is a comment-preserving document edit (`parseDocument`, `Document.set`, `toString`), never a re-serialisation from an object. Source: unit line 20; `units/PST-03-discovery-new-import.md` line 23; `plans/DECISIONS.md` line 3485 (item 3: PST-05 makes this edit itself with `yaml`, which `apps/api/package.json` line 19 already lists). Measured in section 7.
-- **Folder reservation.** The folder is reserved with `reserveProjectFolder`, a plain mkdir. `false` means the name is taken: 409 `PROJECT_EXISTS`. A name the disk refuses as too long (ENAMETOOLONG) is 400 `PROJECT_PATH_INVALID`, raised by the same helper. Any failure after the reservation removes the new folder again. Source: `plans/DECISIONS.md` line 3665 (the caller maps `false` to `PROJECT_EXISTS` and rolls back); `plans/PST-03.md` lines 51 and 87; `apps/api/src/modules/project-store/project-folders.ts` lines 34 to 51; `projects.service.ts` lines 82 to 102 (the pattern New uses).
-- **Refusals.** An unknown `sampleId` (not in the list), and a listed sample whose folder or `project.yaml` is missing: 404 `PROJECT_NOT_FOUND`. A sample `project.yaml` that is not `ok` (invalid or too new): 422 `PROJECT_INVALID`. Source: unit line 20 (`PROJECT_NOT_FOUND`); `errors.ts` lines 9, 19, 62 and 72. The 422 row for a bad sample is a planner's choice (open point 9).
+- **Folder reservation.** The folder is reserved with `reserveProjectFolder`, a plain mkdir. `false` means the name is taken: 409 `PROJECT_EXISTS`. A name the disk refuses as too long (ENAMETOOLONG) is 400 `PROJECT_PATH_INVALID`, raised by the same helper. Any failure after the reservation removes the new folder again. Source: `plans/DECISIONS.md` line 3665 (the caller maps `false` to `PROJECT_EXISTS` and rolls back); `plans/PST-03.md` lines 51 and 87; `apps/api/src/modules/project-store/project-folders.ts` lines 34 to 51; `projects.service.ts` lines 75 to 95 (the pattern New uses).
+- **Refusals.** An unknown `sampleId` (not in the list), and a listed sample whose folder or `project.yaml` is missing: 404 `PROJECT_NOT_FOUND`. A sample `project.yaml` that is `invalid`: 422 `PROJECT_INVALID`. A sample `project.yaml` that is `too-new`: 409 `PROJECT_SCHEMA_TOO_NEW`, the code Import uses for the same state (`projects.service.ts` lines 118 to 123). Source: unit line 20 (`PROJECT_NOT_FOUND`); `errors.ts` lines 9, 19, 20, 62, 72 and 73. The rows for a bad sample are a planner's choice (open point 9). Corrected by the revision: the draft answered 422 `PROJECT_INVALID` for a too-new sample too.
 - **Answer.** Success is 201 with the project summary, as New answers. Source: `projects.controller.ts` line 30 (`@HttpCode(201)` on New); `plans/PST-01.md` line 38 (D8: start-from-sample answers the summary). Planner's choice: 201, not 200.
 - **No activation.** The new project is not made active. Activation is PST-04's POST (`units/PST-04-active-project-switching.md` line 19), and the picker calls it (`units/PST-09-project-picker-ui.md` line 22). Source: unit line 20 says nothing about activation. Planner's choice; open point 1.
-- **Writes.** `project.yaml` is written last, through `writeFileAtomic` (`atomic-write.ts` lines 6 to 16), as New does (`projects.service.ts` lines 95 to 98). Every destination path goes through `ProjectStoreService.resolvePath`, the one path check (`modules/project-store.md` line 44).
+- **Writes.** `project.yaml` is written last, through `writeFileAtomic` (`atomic-write.ts` lines 6 to 16), as New does (`projects.service.ts` lines 88 to 91). Every destination path goes through `ProjectStoreService.resolvePath`, the one path check (`modules/project-store.md` line 44).
 - **Symbolic links.** A symbolic link inside a sample, or any entry that is neither a regular file nor a folder, fails the start with 400 `PROJECT_PATH_OUTSIDE`, after the rollback. Source: `plans/PLT-20.md` line 38 (D12: no link under `examples/`, because a copy could bring in a file from outside the repository); `path-safety.ts` lines 45 to 47 (`fail`). Planner's choice of code: the contract has no sample-specific code (open point 4).
 - **No layout folders.** The copy does not add `sources/`, `entities/`, `drafts/`, `graphs/` or `logs/`. It holds what the sample ships. Source: unit line 20 (copies `examples/<sampleId>/`); `units/PST-03-discovery-new-import.md` line 22 (layout folders appear lazily). Planner's choice; open point 6.
-- **Messages.** Fixed strings in a module-local constant `SAMPLE_MESSAGES`, in `samples.service.ts`. Nothing is imported from `projects.service.ts`, so PST-05 does not depend on the export that PST-04 plans (`plans/PST-04.md` line 101). `plans/DECISIONS.md` line 3665 offers two options (a method in `ProjectsService`, or an exported map); this plan takes a third. Planner's choice; open point 5. No input value is echoed and no container path appears (`modules/project-store.md` line 48).
+- **Messages.** The taken-folder refusal reuses `PROJECT_MESSAGES.EXISTS`, imported from `./projects.service`, which PST-04 exported (`projects.service.ts` lines 34 and 37). This is the second option of `plans/DECISIONS.md` line 3665 (an exported map), as `plans/PST-04.md` line 101 (open point 6) recommends. The three sample refusals have no sentence there, so they are fixed strings in a module-local constant `SAMPLE_MESSAGES` in `samples.service.ts`: `NOT_FOUND` (`No sample with that id was found.`), `INVALID` (`The sample's project.yaml is not valid.`) and `TOO_NEW` (`The sample's project.yaml has a newer schema version than this app supports.`). Corrected by the revision: the draft copied the `EXISTS` sentence, to avoid a dependency on PST-04, which is now on `main`. Open point 5. No input value is echoed and no container path appears (`modules/project-store.md` line 48).
 - **Unreadable list.** A `samples.yaml` that is not YAML, or fails `sampleListSchema`, throws a plain `Error`. The exception filter answers 500 `PLATFORM_INTERNAL` and logs it (`platform-exception.filter.ts` lines 94 to 97). Planner's choice.
 - **Startup.** Nothing is copied at boot. Boot writes only the app-state folder and the settings file. Source: unit line 22; `platform/boot/app-state.ts` lines 8 to 11; `platform/settings/settings.service.ts` lines 82 to 95.
 - **Active-project rule.** Neither route names a project id, so the active-project rule (`modules/project-store.md` line 47) does not apply. Both routes sit behind the global default-deny guard (`setup-auth/setup-auth.module.ts` line 44; `setup-auth/setup-auth.guard.ts` line 35).
@@ -40,14 +40,14 @@ Only the five paths below change. Nothing under `packages/contracts/`, `examples
 
 | Path | Change | Purpose |
 |---|---|---|
-| `apps/api/src/modules/project-store/samples.service.ts` | new | `SamplesService` (`@Injectable()`). Constructor `(store: ProjectStoreService, projects: ProjectsService, @Inject(SCRIBA_ENV) env: ScribaEnv)`. Constants `SAMPLES_FILE = 'samples.yaml'`, `EXCLUDED_PATHS = ['.scriba', 'logs', 'snapshots', 'drafts/.versions']` and `SAMPLE_MESSAGES`. Methods `list(): Sample[]` and `start(request: StartFromSampleRequest): ProjectSummary`, and a private `copyTree`. Algorithm below |
+| `apps/api/src/modules/project-store/samples.service.ts` | new | `SamplesService` (`@Injectable()`). Constructor `(store: ProjectStoreService, @Inject(SCRIBA_ENV) env: ScribaEnv)`. Constants `SAMPLES_FILE = 'samples.yaml'`, `EXCLUDED_PATHS = ['.scriba', 'logs', 'snapshots', 'drafts/.versions']` and `SAMPLE_MESSAGES`; imports `PROJECT_MESSAGES` from `./projects.service`. Methods `list(): Sample[]` and `start(request: StartFromSampleRequest): ProjectSummary`, and a private `copyTree`. Algorithm below. The active id comes from `this.store.activeId()` (`project-store.service.ts` lines 45 to 51, added by PST-04); `libraryRoot` is at lines 35 to 38 and `resolvePath` at lines 40 to 43 |
 | `apps/api/src/modules/project-store/samples.controller.ts` | new | `SamplesController` (`@Controller()`). `@Get(SAMPLES_ROUTE) list()`; `@Post(PROJECT_START_FROM_SAMPLE_ROUTE) @HttpCode(201) start(@Body(new ZodValidationPipe(startFromSampleRequestSchema)) body)`. Style as `projects.controller.ts` |
-| `apps/api/src/modules/project-store/project-store.module.ts` | edit | Two imports, `./samples.controller` and `./samples.service`. Line 18 becomes `controllers: [ProjectsController, SamplesController],`. `SamplesService,` goes after `ProjectsService,` (line 29). `exports` and the entry-file exports do not change. Expect a text conflict with PST-04 on these lines (open point 3) |
+| `apps/api/src/modules/project-store/project-store.module.ts` | edit | Two imports after line 8, `./samples.controller` and `./samples.service`. Line 20 becomes `controllers: [ProjectsController, ActiveProjectController, SamplesController],`. `SamplesService,` goes after `ActiveProjectService,` (line 32). `exports` (line 34) and the entry-file exports (lines 11 and 12) do not change |
 | `apps/api/test/project-store-samples.kit.ts` | new | `buildSamplesFixture()` returns `{library, samples, remove}`. The temp library holds `book/project.yaml`. The temp samples folder holds `samples.yaml` and the samples below. `withSamplesApp(fixture, run)` boots `createTestApp({libraryDir: fixture.library, env: {SCRIBA_EXAMPLES_DIR: fixture.samples}})`, takes the session cookie and closes the app. Helpers `getSamples(app, cookie)` and `startFromSample(app, cookie, body)` |
 | `apps/api/test/project-store-samples.test.ts` | new | Four tests (section 4). The file does not contain the word "examples", so the examples-check rule (section 7) cannot flag it |
 
 Fixture contents (in the kit):
-- `samples.yaml`: four list items, each with `id`, `title` and `description`. `test-sample` (has a folder); `ghost` (listed, no folder); `broken` (its `project.yaml` is `schemaVersion: [1`); `linked` (has a symbolic link, below).
+- `samples.yaml`: five list items, each with `id`, `title` and `description`. `test-sample` (has a folder); `ghost` (listed, no folder); `broken` (its `project.yaml` is `schemaVersion: [1`); `newer` (its `project.yaml` is `schemaVersion: 2`, `title: Newer`, `genrePack: nonfiction`); `linked` (has a symbolic link, below).
 - `test-sample/project.yaml`: a comment line, then `schemaVersion: 1`, `title: Test Sample`, `genrePack: nonfiction`.
 - `test-sample/.gitignore` (`.scriba/`), `test-sample/sources/outline.md`, `test-sample/drafts/chapter-one.md`.
 - Planted excluded paths: `test-sample/.scriba/settings.yaml`, `test-sample/logs/run.log`, `test-sample/snapshots/snap.md`, `test-sample/drafts/.versions/chapter-one.md/2026-01-01T00-00-00Z.md`.
@@ -55,15 +55,16 @@ Fixture contents (in the kit):
 
 `SamplesService.start(request)`, in this order:
 1. Find `request.sampleId` in `list()`. Not found: 404 `NOT_FOUND`.
-2. Read `<samples folder>/<id>/project.yaml`. ENOENT or ENOTDIR: 404 `NOT_FOUND`. Other errors are rethrown.
-3. `readYamlState(text)` (`project-yaml.ts`). A status other than `ok`: 422 `INVALID`. Keep `genrePack` from the state.
-4. `const doc = parseDocument(text); doc.set('title', request.title); const yamlText = doc.toString();`
-5. `reserveProjectFolder(store.libraryRoot, request.folderName)`. `false`: 409 `EXISTS`. The root is `join(store.libraryRoot, request.folderName)`.
-6. In a try: `copyTree(sampleRoot, root, '')`, then `writeFileAtomic(store.resolvePath(root, 'project.yaml').realPath, yamlText)`. On any error: `rmSync(root, {recursive: true, force: true})`, then rethrow.
-7. Return `summaryOf(request.folderName, {status: 'ok', title: request.title, genrePack}, this.projects.activeId())`.
+2. Find the sample folder: the entry of `readdirSync(<samples folder>, {withFileTypes: true})` whose `name` equals the id and whose `isDirectory()` is true. None (or ENOENT on the samples folder): 404 `NOT_FOUND`. `sampleRoot = join(<samples folder>, entry.name)`.
+3. Read `join(sampleRoot, 'project.yaml')`. ENOENT or ENOTDIR: 404 `NOT_FOUND`. Other errors are rethrown.
+4. `readYamlState(text)` (`project-yaml.ts`). `invalid`: 422 `INVALID`. `too-new`: 409 `SCHEMA_TOO_NEW`. (`importable` cannot occur: the text exists.) Keep `genrePack` from the `ok` state.
+5. `const doc = parseDocument(text); doc.set('title', request.title); const yamlText = doc.toString();`
+6. `reserveProjectFolder(store.libraryRoot, request.folderName)`. `false`: 409 `EXISTS`. The root is `join(store.libraryRoot, request.folderName)`.
+7. In a try: `copyTree(sampleRoot, root, '')`, then `writeFileAtomic(store.resolvePath(root, 'project.yaml').realPath, yamlText)`. On any error: `rmSync(root, {recursive: true, force: true})`, then rethrow.
+8. Return `summaryOf(request.folderName, {status: 'ok', title: request.title, genrePack}, this.store.activeId())`.
 
 `copyTree(source, root, relative)`: for each entry of `readdirSync(join(source, relative), {withFileTypes: true})`, with `rel` the path relative to the sample root (`relative === '' ? name : relative + '/' + name`):
-- skip when `EXCLUDED_PATHS` contains `rel`, and skip `rel === 'project.yaml'` (step 6 writes it);
+- skip when `EXCLUDED_PATHS` contains `rel`, and skip `rel === 'project.yaml'` (step 7 writes it). The skip comes before `resolvePath`, so the reserved `.scriba` and `drafts/.versions` (`constants.ts` lines 17 to 20) never reach the path check;
 - a directory: `mkdirSync(store.resolvePath(root, rel).realPath)`, then recurse;
 - a regular file: `copyFileSync(join(source, rel), store.resolvePath(root, rel).realPath)`;
 - anything else: `throw fail(PROJECT_ERROR_CODES.PATH_OUTSIDE, PATH_MESSAGES.OUTSIDE)`.
@@ -72,22 +73,22 @@ Fixture contents (in the kit):
 
 ## 3. Method
 
-Run from `/Users/bbartolome/workspace/scriba-prototype`, on branch `unit/PST-05` created from `main`, in a clean worktree or the main tree as the orchestrator directs. Record `node -v` and `npm -v` beside each result. Do not push and do not open a pull request. Leave the changes for the orchestrator to commit. Commit subjects follow the prompt.md rule noted in `plans/DECISIONS.md` line 3666.
+Run in the worktree that the orchestrator gives, on branch `unit/PST-05` (made from `main`). A new worktree has no `node_modules/`: run `npm ci` in it first. Record `node -v` and `npm -v` beside each result. Do not push and do not open a pull request. Commit to `unit/PST-05` after each part of the work that is complete (after step 3, and after step 9); each commit message contains `PST-05` and uses `feat(PST-05): …`, also for the red commit (`plans/DECISIONS.md` line 3666).
 
 1. Runtime. `node -v` prints `v26.x` and `npm -v` prints the version found. Expected: `v26.x`.
-2. Base. On the new branch, `git status --short` prints nothing before any edit. Expected: no output.
+2. Base. On the new branch, after `npm ci`, `git status --short` prints nothing before any edit. Expected: no output.
 3. Red. Write the kit and the test file (sections 2 and 4). Run `npm test -w @bbartolome/scriba-api -- project-store-samples`. Expected: the build passes, and C1, C3 and E1 fail (404 from the two routes, or the first refusal row answering 404). C2 may already pass, because it exercises the boot only and nothing copies at boot; that is expected and is recorded. No compile error.
-4. Write `apps/api/src/modules/project-store/samples.service.ts` as section 2 specifies, in the order of the seven steps of `start`.
+4. Write `apps/api/src/modules/project-store/samples.service.ts` as section 2 specifies, in the order of the eight steps of `start`.
 5. Write `apps/api/src/modules/project-store/samples.controller.ts` as section 2 specifies.
-6. Edit `apps/api/src/modules/project-store/project-store.module.ts`: two imports, line 18 and the provider line (section 2). Change no other file under `apps/api/src`.
+6. Edit `apps/api/src/modules/project-store/project-store.module.ts`: two imports, line 20 and the provider line (section 2). Change no other file under `apps/api/src`.
 7. Run `npx prettier --write apps/api/src/modules/project-store apps/api/test/project-store-samples.kit.ts apps/api/test/project-store-samples.test.ts`. Expected: each file is reported as written or unchanged.
 8. Green. Run `npm test -w @bbartolome/scriba-api`. Expected: exit 0. The four new tests pass, and so does every existing API test, including the PST-02 and PST-03 tests.
 9. Root gates. From the root, run `npm run build`, `npm test` and `npm run lint`. Expected: each exits 0. `npm run lint` ends with `All matched files use Prettier code style!`.
 10. Reading checks.
     - (a) `grep -c "examples" apps/api/test/project-store-samples.test.ts` prints `0`.
-    - (b) `git diff --stat -- packages examples apps/api/src/modules/project-store/projects.service.ts apps/api/src/modules/project-store/project-store.service.ts apps/api/src/modules/project-store/projects.controller.ts` prints nothing.
-    - (c) `git status --short` lists exactly the five paths of section 2.
-    - (d) `grep -n "PROJECT_MESSAGES" apps/api/src/modules/project-store/samples.service.ts` prints nothing.
+    - (b) `git diff --stat main...HEAD -- packages examples apps/api/src/modules/project-store/projects.service.ts apps/api/src/modules/project-store/project-store.service.ts apps/api/src/modules/project-store/projects.controller.ts` prints nothing.
+    - (c) `git diff --name-only main...HEAD` lists exactly the five paths of section 2, and `git status --short` prints nothing.
+    - (d) `grep -c "PROJECT_MESSAGES.EXISTS" apps/api/src/modules/project-store/samples.service.ts` prints `1`, and `grep -c "already exists" apps/api/src/modules/project-store/samples.service.ts` prints `0` (the sentence is not copied).
 11. Record. Store the Node and npm versions and the output of the commands in steps 3, 8 and 9. A criterion row in section 4 is passed only when its pass condition holds.
 
 ## 4. Acceptance criteria and tests
@@ -97,9 +98,9 @@ All tests run with `npm test -w @bbartolome/scriba-api` after the build. None ne
 | Criterion (unit line) | Test file and test name | Pass condition |
 |---|---|---|
 | "Start from sample copies a test sample under a chosen name; only `title` differs in `project.yaml` (comments intact); excluded folders planted in the test sample are not copied." (26) | `apps/api/test/project-store-samples.test.ts`, `C1: start from sample copies the test sample under the chosen name, changes only the title line of project.yaml, and copies no excluded folder` | POST `{sampleId: 'test-sample', folderName: 'my-copy', title: 'My Copy'}` answers 201 with `{id: 'my-copy', title: 'My Copy', genrePack: 'nonfiction', active: false, status: 'ok'}`. The copy's `project.yaml` equals the sample text with `title: Test Sample` replaced by `title: My Copy`. `sources/outline.md`, `drafts/chapter-one.md` and `.gitignore` are byte-equal to the sample's. `.scriba`, `logs`, `snapshots` and `drafts/.versions` do not exist in the copy, and the copy has no `samples.yaml`. `snapshotLibrary(fixture.samples)` is the same before and after. |
-| "Nothing is copied at startup (library unchanged after boot)." (27) | `C2: nothing is copied at startup: after boot the library changes only inside .scriba` | `createTestApp` with the fixture and no request. `changedPaths(before, after)`, without the entries `.scriba` and `.scriba/...`, is `[]`. May already pass in the red state (section 3, step 3). |
+| "Nothing is copied at startup (library unchanged after boot)." (27) | `C2: nothing is copied at startup: after boot the library changes only inside .scriba` | `createTestApp` with the fixture and no request. `changedPaths(before, after)`, without the entries `.scriba` and `.scriba/...`, is `[]`. `.scriba/` is Platform's app-state folder, which every boot creates or updates (`app-state.ts` lines 8 to 11; `settings.service.ts` lines 82 to 95; `.scriba/setup-url`, read by `guard-request.ts` line 85), and it is not book content; the book folders and the top level of the library are compared in full. `snapshotLibrary(fixture.samples)` is the same before and after. May already pass in the red state (section 3, step 3). |
 | "The sample list GET returns the `samples.yaml` entries and is side-effect free." (28) | `C3: the sample list GET returns the samples.yaml entries and changes nothing` | GET answers 200, and its body equals `parse(samples.yaml)` read from the fixture. `snapshotLibrary` of the library and of `fixture.samples` is the same before and after. |
-| Extra, not a criterion: refusals | `E1: a refused start writes nothing: an existing folder, an unknown, unlisted or broken sample, a link inside a sample, and a bad folder name` | After one successful start of `my-copy`, seven refusal rows. Each row compares `snapshotLibrary(fixture.library)` before and after. `my-copy` again: 409 `PROJECT_EXISTS`. `missing`: 404 `PROJECT_NOT_FOUND`. `ghost`: 404 `PROJECT_NOT_FOUND`. `broken`: 422 `PROJECT_INVALID`. `linked`: 400 `PROJECT_PATH_OUTSIDE`. A 300-character folder name: 400 `PROJECT_PATH_INVALID`. `Bad_Name`: 400 `PLATFORM_VALIDATION_FAILED`. |
+| Extra, not a criterion: refusals | `E1: a refused start writes nothing: an existing folder, an unknown, unlisted, broken or newer sample, a link inside a sample, and a bad folder name` | After one successful start of `my-copy`, eight refusal rows. Each row compares `snapshotLibrary(fixture.library)` before and after. `my-copy` again: 409 `PROJECT_EXISTS`. `missing`: 404 `PROJECT_NOT_FOUND`. `ghost`: 404 `PROJECT_NOT_FOUND`. `broken`: 422 `PROJECT_INVALID`. `newer`: 409 `PROJECT_SCHEMA_TOO_NEW`. `linked`: 400 `PROJECT_PATH_OUTSIDE`. A 300-character folder name: 400 `PROJECT_PATH_INVALID`. `Bad_Name`: 400 `PLATFORM_VALIDATION_FAILED`. |
 
 Helpers come from the kit and from `apps/api/test/project-store-projects.kit.ts` (`postJson`, `readJson`, `errorOf`, `changedPaths`); `snapshotLibrary` comes from `apps/api/test/invariant-sweep.ts`.
 
@@ -124,6 +125,8 @@ The units whose `blocked_by` names PST-05 are PST-09, PST-12 and GNP-18. Each ch
   - (b) Its folder may hold nested `entities/`, `graphs/` and `drafts/`. The copy handles nested folders.
   - (c) Its `project.yaml` has no `order`, and the copy changes only the title.
   - (d) It adds no `.scriba/`, `logs/`, `snapshots/` or `drafts/.versions/` (unit line 22). If it did, the copy would skip them.
+  - (e) Its folder name must equal its `samples.yaml` id, and the folder must be a real folder, not a link (PLT-20 D7 and D12), because the copy finds the folder by that name in `readdirSync`. Informative: a copy holds a `.gitignore` only when the sample ships one; GNP-18 does not name one, unlike `examples/nonfiction/.gitignore`. No unit change: no criterion of PST-05 or GNP-18 needs it.
+- **PST-04 (parallel; done, on `main`).** Its check 8 (`plans/PST-04.md` line 91) asks that PST-05 add only its own lines to `project-store.module.ts` and no method to `ProjectStoreService`. Holds: PST-05 adds one controller entry, one provider entry and two imports, and does not change `project-store.service.ts` or `projects.service.ts`; it calls `ProjectStoreService.activeId()` and imports `PROJECT_MESSAGES`, both of which PST-04 made available. Its open point 6 (line 101) recommends that PST-05 reuse the exported `PROJECT_MESSAGES`: done for `EXISTS` (open point 5).
 
 Indirect consumers, not blocked by PST-05:
 - SAU-14 (`units/SAU-14-first-project-step.md` line 15) uses the same two endpoints. It is blocked by PST-12, so the PST-09 checks apply to it as well.
@@ -135,13 +138,13 @@ Indirect consumers, not blocked by PST-05:
 
 1. **No activation.** Start from sample does not make the new project active (section 1). PST-09's plan must say how the picker lands in the new project: the activate POST of PST-04, called after this one. Planner's choice; the orchestrator confirms it with PST-09.
 2. **Status 201.** Chosen to match New. The unit does not fix it. PST-09's client must treat 201 as success.
-3. **Shared module file with PST-04.** `project-store.module.ts` lines 18 and 29 are edited by both plans (`plans/PST-04.md` lines 43 and 49). The orchestrator keeps both sets of entries when the second plan merges. PST-06 and PST-08 will add providers to the same file when they are planned; the same rule applies.
+3. **Shared module file.** PST-04 is on `main`, so its entries are the base of this edit (section 2). No draft or planned plan of another unit changes `project-store.module.ts` now. PST-06 and PST-08 will add providers to the same file when they are planned; each adds its own lines, and the orchestrator keeps both sets of entries when the second one merges.
 4. **Link refusal code.** A link inside a sample is refused with `PROJECT_PATH_OUTSIDE` (400), a code the contract already has. The contract has no sample-specific code, and a new one would be an expand–contract change to the contract. Not done here.
-5. **Duplicate message text.** `SAMPLE_MESSAGES.EXISTS` repeats the sentence of `PROJECT_MESSAGES.EXISTS` (`projects.service.ts` line 38). The two can be merged later, once PST-04 has exported its list. Not done here, so PST-05 does not depend on PST-04.
+5. **Messages.** The taken-folder refusal uses `PROJECT_MESSAGES.EXISTS` (`projects.service.ts` line 37), the option of `plans/DECISIONS.md` line 3665 that PST-04 made possible. The three sample refusals are new sentences in `SAMPLE_MESSAGES`, because `PROJECT_MESSAGES.NOT_FOUND` names a project, not a sample, and its `INVALID` sentence promises details that this plan does not send. Planner's choice.
 6. **Layout folders.** A copy holds only the sample's own tree. PST-07's `appendLog` (not yet planned) must create `logs/` on its first write, as `units/PST-03-discovery-new-import.md` line 22 says for every layout folder. Check when PST-07 is planned.
 7. **Sweep order.** The invariant sweep covers the two new routes once they are on `main` when the sweep runs. `plans/SAU-07.md` line 178 (open point 4) leaves the ordering to the coordinator. PST-12 runs the sweep over every Project store GET (unit line 18).
 8. **Unit label (informative).** The `unblocks` label of PST-05 for GNP-18 (`"Genre packs fiction sample (GNP-18)"`) differs from GNP-18's own title (`units/GNP-18-fiction-sample.md` line 3). The IDs match in both directions. No unit change is requested.
-9. **Refusals of bad samples.** The 422 for an invalid or too-new sample `project.yaml`, and the 500 for an unreadable `samples.yaml`, are planner's choices. PLT-20 checks the shipped samples, so neither can happen with the shipped content.
+9. **Refusals of bad samples.** The 422 `PROJECT_INVALID` for an invalid sample `project.yaml`, the 409 `PROJECT_SCHEMA_TOO_NEW` for a too-new one (as Import), and the 500 for an unreadable `samples.yaml`, are planner's choices. PLT-20 checks the shipped samples, so neither can happen with the shipped content.
 
 ## 7. Facts checked
 
@@ -164,7 +167,7 @@ Other plans:
 - `plans/PST-01.md`: line 38 (D8: start-from-sample answers the summary), lines 61 and 62 (route rows: start-from-sample POST answers the summary; samples GET answers the sample array).
 - `plans/PST-02.md`: line 63 (S12, the lookup rule for `sampleId`), line 294 (PST-05 note).
 - `plans/PST-03.md`: lines 51 (reservation rule), 87 (`project-folders.ts` row; PST-05 reuses `reserveProjectFolder`), 167 (PST-05 hand-off), 186 (title edit by PST-05, closed).
-- `plans/PST-04.md`: line 3 (`status: planned`), 27 (D12, messages), 39 to 43 (rows for the shared files), 49 (shared-file note), 91 (check for PST-05), 101 (`PROJECT_MESSAGES` export recommended).
+- `plans/PST-04.md`: line 3 (`status: done` at revision; `planned` when the draft was written), 27 (D12, messages), 39 to 43 (rows for the shared files), 49 (shared-file note), 91 (check for PST-05), 101 (`PROJECT_MESSAGES` export recommended).
 - `plans/PST-11.md`: line 51 (the sample's title is a one-line plain scalar), 155 (dot-files hand-off to PST-05), 160 (title-only rewrite), 182 (F7: the Dockerfile copies `examples/`).
 - `plans/PLT-20.md`: lines 33 (D7), 34 (D8), 37 (D11), 38 (D12).
 - `plans/PLT-13.md`: line 264 (PST-09's e2e step uses `SCRIBA_EXAMPLES_DIR`).
@@ -180,15 +183,15 @@ Contracts (`packages/contracts/src/`):
 - `platform/env.ts`: line 14 (`SCRIBA_EXAMPLES_DIR` default `/opt/scriba/examples`).
 
 API code (`apps/api/src/`):
-- `modules/project-store/project-store.module.ts`: lines 1 to 6 (imports), 9 and 10 (entry-file exports), 16 to 32 (`@Module`; line 17 imports, 18 `controllers: [ProjectsController]`, 19 to 30 providers with `ProjectStoreService` at 28 and `ProjectsService` at 29, 31 exports).
+- `modules/project-store/project-store.module.ts` (at `47b2462`, after PST-04): lines 1 to 8 (imports), 11 and 12 (entry-file exports), 18 to 35 (`@Module`; line 19 imports, 20 `controllers: [ProjectsController, ActiveProjectController]`, 21 to 33 providers with `ProjectStoreService` at 30, `ProjectsService` at 31 and `ActiveProjectService` at 32, 34 exports).
 - `modules/project-store/projects.controller.ts`: lines 18 and 19 (class), 22 to 27 (list), 29 to 36 (New; `@HttpCode(201)` at line 30), 38 to 44 (Import).
-- `modules/project-store/projects.service.ts`: line 16 (`ModuleError` import), 35 to 44 (`PROJECT_MESSAGES`; `EXISTS` at line 38), 55 to 60 (`activeId`, public), 71 to 104 (`create`: reservation 82 to 88, rollback 90 to 102, writes 95 to 98, summary 103), 108 to 152 (`importProject`).
+- `modules/project-store/projects.service.ts` (at `47b2462`): line 15 (`ModuleError` import), 34 to 43 (`export const PROJECT_MESSAGES`; `EXISTS` at line 37), 48 (constructor takes `ProjectStoreService` only), 51 to 53 (`activeId` delegates to the store), 64 to 97 (`create`: reservation 75 to 81, rollback 83 to 95, writes 88 to 91, summary 96), 101 to 145 (`importProject`; `too-new` at 118 to 123).
 - `modules/project-store/project-folders.ts`: lines 34 to 51 (`reserveProjectFolder`; `EEXIST` returns `false` at line 45; ENAMETOOLONG at lines 46 to 48).
 - `modules/project-store/atomic-write.ts`: lines 6 to 16 (`writeFileAtomic`).
 - `modules/project-store/project-yaml.ts`: lines 14 to 18 (`YamlState`), 21 to 46 (`readYamlState`), 55 to 64 (`newProjectYaml`).
 - `modules/project-store/project-discovery.ts`: lines 47 to 69 (`summaryOf`).
 - `modules/project-store/path-safety.ts`: lines 21 to 34 (`PATH_MESSAGES`; `OUTSIDE` at 29 and 30), 45 to 47 (`fail`), 75 to 90 (`realRoot`; a missing root is `NOT_FOUND` at 82 and 87), 118 to 196 (`resolveProjectPath`).
-- `modules/project-store/project-store.service.ts`: line 8 (`SCRIBA_ENV` injected), 10 to 13 (`libraryRoot`), 15 to 18 (`resolvePath`).
+- `modules/project-store/project-store.service.ts` (at `47b2462`): lines 30 to 33 (constructor; `SCRIBA_ENV` injected at 31), 35 to 38 (`libraryRoot`), 40 to 43 (`resolvePath`), 45 to 51 (`activeId`).
 - `modules/platform/platform.module.ts`: line 13 (`SCRIBA_ENV` export), 17 (`ModuleError`, `ZodValidationPipe`), 19 (`SettingsService`).
 - `modules/platform/boot/env.ts`: line 10 (`SCRIBA_ENV` token), 15 to 28 (`ScribaEnv`; line 21 `SCRIBA_EXAMPLES_DIR`), 111 to 116 (read as an absolute path).
 - `modules/platform/boot/app-state.ts`: lines 8 to 11 (creates `.scriba` at boot).
@@ -212,8 +215,10 @@ Samples and repository state:
 - `examples/samples.yaml` lines 1 to 3 (one entry, `nonfiction`); `examples/nonfiction/project.yaml` lines 1 to 4 (a comment, `schemaVersion: 1`, `title: The Long Apprenticeship`, `genrePack: nonfiction`); `examples/nonfiction/.gitignore` line 1 (`.scriba/`).
 - `ls examples` lists `nonfiction/` and `samples.yaml` only. `git ls-files examples` lists ten files: nine under `nonfiction/` and `samples.yaml`. None is under a `structure/` folder.
 - `apps/web/src/app/features/` has no `project-store` folder (PST-09 is not on `main`).
-- `git rev-parse --short HEAD` on `main` is `d63a95b`; the working tree was clean when this plan was written.
-- Among the draft and planned plans, only `plans/PST-04.md` names `project-store.module.ts`, `projects.service.ts` or `project-store.service.ts` (grep of `plans/`).
+- `git rev-parse --short HEAD` on `main` is `d63a95b`; the working tree was clean when this plan was written. At revision, `main` is `47b2462`; between the two, PST-04's code reached `main` (`0e90f7e`, `6567322`), which is the last commit on the Project store code.
+- Checked at revision: PST-04's code (`0e90f7e`, `6567322`) is on `main`. It changed `project-store.module.ts` (two imports, `ActiveProjectController`, `ActiveProjectService`), `projects.service.ts` (`export const PROJECT_MESSAGES`; constructor takes only `ProjectStoreService`; `activeId()` delegates) and `project-store.service.ts` (adds `SettingsService`, `activeId`, the hooks and `requireActive`; `libraryRoot` and `resolvePath` unchanged), plus new files of its own. None of its files is a new file of this plan.
+- Checked at revision: `projects.service.ts` lines 118 to 123 (Import answers 409 `PROJECT_SCHEMA_TOO_NEW` for `too-new`); `errors.ts` lines 20 and 73; `constants.ts` lines 17 to 20 (`RESERVED_PATH_PREFIXES` is `.scriba/` and `drafts/.versions/`); `guard-request.ts` line 85 (`.scriba/setup-url`). The `yaml` probe of section 7 was repeated: the title edit of `examples/nonfiction/project.yaml` changes only the title line, and `schemaVersion: [1` gives one parse error.
+- Among the draft and planned plans, only `plans/PST-04.md` named `project-store.module.ts`, `projects.service.ts` or `project-store.service.ts` (grep of `plans/`). At revision, PST-04 is done and no other draft or planned plan names them: the only draft or planned plan is this one.
 
 Measured (a `node -e` probe against `node_modules/yaml` 2.9.1; no file was written):
 - `parseDocument` of `examples/nonfiction/project.yaml` has no errors. After `doc.set('title', 'Demo Copy')` and `toString()`, the text equals the file with only the title line changed.
@@ -228,7 +233,16 @@ Measured (a `node -e` probe against `node_modules/yaml` 2.9.1; no file was writt
 - `readdirSync` with `withFileTypes` reports a symbolic link as neither a file nor a folder, and `copyFileSync` copies bytes exactly. These are Node's documented behaviours; not probed.
 - In C2, boot writes only `.scriba` entries. `app-state.ts` and `settings.service.ts` (section 7) are the only boot writers read here.
 - The string `Test Sample` occurs once in the fixture's `project.yaml`, so the C1 replacement is exact.
-- PST-04 is implemented as its plan says. Its only overlap with this plan is `project-store.module.ts` (open point 3).
+- Nothing else changes the Project store code on `main` before this unit is implemented. If something does, the module row of section 2 keeps every existing entry and adds the two of this unit.
 - PST-09, PST-12, GNP-18 and SAU-14 are built as their units say. Their plans do not exist yet.
 - The two new routes get the global guard without any change (default-deny in `SetupAuthModule`), and `sessionCookie` works in the composed app on `main`, as the existing tests rely on.
-- Node 26 is on the PATH. The root `engines` field asks for `>=26 <27` (`plans/PLT-13.md` line 322). Not checked in this run.
+- Node 26 is on the PATH. The root `engines` field asks for `>=26 <27` (root `package.json` lines 11 to 13; checked at revision, `node -v` prints `v26.13.0`).
+
+## Review parts
+
+One part. The plan changes five files, and `samples.service.ts` serves all three criteria, so the steps cannot be split by criterion.
+
+- **Part 1 — sample list, start from sample, and startup.**
+  - Steps: section 3, steps 1 to 11 (with the file rows and the algorithm of section 2: `samples.service.ts`, `samples.controller.ts`, the `project-store.module.ts` edit, `project-store-samples.kit.ts` and `project-store-samples.test.ts`).
+  - Tests: C1 (criterion 1, unit line 26), C2 (criterion 2, unit line 27), C3 (criterion 3, unit line 28), and the extra test E1.
+  - The reviewer of this part also checks that `git diff --name-only main...unit/PST-05` lists only the five paths of section 2.
