@@ -1,117 +1,117 @@
 # Queue: written by the scout, a help for the selection, not a record of progress
-AGL-08 | M1 | available: no | is M1 demo gate; waits on AGL-05 (planned)
-AGL-25 | M1 | available: no | off M1 demo path; waits on AGL-08 (no plan)
-PST-34 | M1 | available: no | off M1 demo path; waits on SHL-15,SHL-16 (no plan)
+AGL-08 | M1 | available: no | on M1 demo path; waits on AGL-05 (planned)
 SHL-22 | M1 | available: yes | off M1 demo path; no open blockers
-TRG-07 | M2 | available: yes | path to M2 demo: TRG-07->GNP-01->GNP-05->GNP-12; no open blockers
-TRG-10 | M2 | available: no | path to M2 demo: TRG-10->TRG-11->AGL-09->AGL-11; waits on TRG-07 (no plan)
-GNP-01 | M2 | available: no | path to M2 demo: GNP-01->GNP-05->GNP-12; waits on TRG-07 (no plan)
-GNP-03 | M2 | available: no | path to M2 demo: GNP-03->GNP-05->GNP-12; waits on GNP-01 (no plan)
-TRG-11 | M2 | available: no | path to M2 demo: TRG-11->AGL-09->AGL-11; waits on TRG-07,TRG-10 (no plan)
-TRG-12 | M2 | available: no | path to M2 demo: TRG-12->AGL-09->AGL-11; waits on TRG-11 (no plan)
-GNP-02 | M2 | available: no | path to M2 demo: GNP-02->GNP-05->GNP-12; waits on TRG-12 (no plan)
-GNP-04 | M2 | available: no | path to M2 demo: GNP-04->GNP-05->GNP-12; waits on GNP-01,GNP-02 (no plan); GRR-01 (planned)
-AGL-09 | M2 | available: no | path to M2 demo: AGL-09->AGL-11; waits on AGL-08,TRG-12,TRG-11 (no plan)
-GNP-05 | M2 | available: no | path to M2 demo: GNP-05->GNP-12; waits on GNP-01,GNP-02,GNP-03,GNP-04 (no plan)
-GNP-06 | M2 | available: no | path to M2 demo: GNP-06->GNP-12; waits on GNP-01 (no plan)
-GNP-07 | M2 | available: no | path to M2 demo: GNP-07->GNP-12; waits on GNP-02,GNP-03,GNP-06 (no plan)
-GNP-08 | M2 | available: no | path to M2 demo: GNP-08->GNP-12; waits on GNP-02,GNP-03,GNP-06 (no plan)
-GNP-09 | M2 | available: no | path to M2 demo: GNP-09->GNP-12; waits on GNP-02,GNP-03,GNP-06 (no plan)
-GNP-10 | M2 | available: no | path to M2 demo: GNP-10->GNP-12; waits on GNP-02,GNP-03,GNP-06 (no plan)
-GNP-11 | M2 | available: no | path to M2 demo: GNP-11->GNP-12; waits on GNP-03,GNP-06 (no plan)
-SAU-12 | M2 | available: yes | path to M2 demo: SAU-12->SAU-16; no open blockers
-SAU-13 | M2 | available: yes | path to M2 demo: SAU-13->SAU-16; no open blockers
-SAU-14 | M2 | available: yes | path to M2 demo: SAU-14->SAU-16; no open blockers
-TRG-13 | M2 | available: no | path to M2 demo: TRG-13->TRG-17; waits on TRG-11 (no plan)
-TRG-14 | M2 | available: no | path to M2 demo: TRG-14->TRG-17; waits on TRG-13 (no plan)
-TRG-15 | M2 | available: no | path to M2 demo: TRG-15->TRG-17; waits on TRG-12,TRG-14 (no plan)
-TRG-16 | M2 | available: no | path to M2 demo: TRG-16->TRG-17; waits on TRG-12,TRG-13 (no plan)
-GNP-12 | M2 | available: no | is M2 demo gate; waits on GNP-05,GNP-06,GNP-07,GNP-08,GNP-09,GNP-10,GNP-11 (no plan)
-AGL-11 | M2 | available: no | is M2 demo gate; waits on AGL-09,GNP-12 (no plan)
-SAU-16 | M2 | available: no | is M2 demo gate; waits on SAU-12,SAU-13,SAU-14 (no plan)
-TRG-17 | M2 | available: no | is M2 demo gate; waits on TRG-13,TRG-14,TRG-15,TRG-16,GNP-12 (no plan)
+AGL-25 | M1 | available: no | off M1 demo path; waits on AGL-08 (no plan)
+SAU-12 | M2 | available: yes | on M2 demo path; no open blockers
+SAU-13 | M2 | available: yes | on M2 demo path; no open blockers
+SAU-14 | M2 | available: yes | on M2 demo path; no open blockers
+TRG-07 | M2 | available: yes | on M2 demo path; no open blockers
+GNP-01 | M2 | available: no | on M2 demo path; waits on TRG-07 (no plan)
+SAU-16 | M2 | available: no | on M2 demo path; waits on SAU-12 (no plan), SAU-13 (no plan), SAU-14 (no plan)
+TRG-10 | M2 | available: no | on M2 demo path; waits on TRG-07 (no plan)
+GNP-03 | M2 | available: no | on M2 demo path; waits on GNP-01 (no plan)
+GNP-06 | M2 | available: no | on M2 demo path; waits on GNP-01 (no plan)
+TRG-11 | M2 | available: no | on M2 demo path; waits on TRG-07 (no plan), TRG-10 (no plan)
+GNP-11 | M2 | available: no | on M2 demo path; waits on GNP-03 (no plan), GNP-06 (no plan)
+TRG-12 | M2 | available: no | on M2 demo path; waits on TRG-11 (no plan)
+TRG-13 | M2 | available: no | on M2 demo path; waits on TRG-11 (no plan)
+AGL-09 | M2 | available: no | on M2 demo path; waits on AGL-08 (no plan), TRG-12 (no plan), TRG-11 (no plan)
+GNP-02 | M2 | available: no | on M2 demo path; waits on TRG-12 (no plan)
+TRG-14 | M2 | available: no | on M2 demo path; waits on TRG-13 (no plan)
+TRG-16 | M2 | available: no | on M2 demo path; waits on TRG-12 (no plan), TRG-13 (no plan)
+GNP-04 | M2 | available: no | on M2 demo path; waits on GNP-01 (no plan), GNP-02 (no plan)
+GNP-07 | M2 | available: no | on M2 demo path; waits on GNP-02 (no plan), GNP-03 (no plan), GNP-06 (no plan)
+GNP-08 | M2 | available: no | on M2 demo path; waits on GNP-02 (no plan), GNP-03 (no plan), GNP-06 (no plan)
+GNP-09 | M2 | available: no | on M2 demo path; waits on GNP-02 (no plan), GNP-03 (no plan), GNP-06 (no plan)
+GNP-10 | M2 | available: no | on M2 demo path; waits on GNP-02 (no plan), GNP-03 (no plan), GNP-06 (no plan)
+TRG-15 | M2 | available: no | on M2 demo path; waits on TRG-12 (no plan), TRG-14 (no plan)
+GNP-05 | M2 | available: no | on M2 demo path; waits on GNP-01 (no plan), GNP-02 (no plan), GNP-03 (no plan), +1 more
+GNP-12 | M2 | available: no | on M2 demo path; waits on GNP-05 (no plan), GNP-06 (no plan), GNP-07 (no plan), +4 more
+AGL-11 | M2 | available: no | on M2 demo path; waits on AGL-09 (no plan), GNP-12 (no plan)
+TRG-17 | M2 | available: no | on M2 demo path; waits on TRG-13 (no plan), TRG-14 (no plan), TRG-15 (no plan), +2 more
 MPR-11 | M2 | available: yes | off M2 demo path; no open blockers
 MPR-12 | M2 | available: yes | off M2 demo path; no open blockers
-MPR-13 | M2 | available: no | off M2 demo path; waits on MPR-11,MPR-12 (no plan)
-PLT-21 | M2–M4 | available: no | off M2 demo path; waits on GRR-01 (planned)
+PLT-21 | M2–M4 | available: yes | off M2 demo path; no open blockers
+MPR-13 | M2 | available: no | off M2 demo path; waits on MPR-11 (no plan), MPR-12 (no plan)
 PLT-22 | M2 | available: no | off M2 demo path; waits on TRG-11 (no plan)
-PST-15 | M3 | available: yes | path to M3 demo: PST-15->AGL-12->PST-22; no open blockers
-PST-16 | M3 | available: no | path to M3 demo: PST-16->PST-17->PST-22; waits on PST-15 (no plan)
-SAU-17 | M3 | available: yes | path to M3 demo: SAU-17->SAU-18->SAU-21; no open blockers
-AGL-12 | M3 | available: no | path to M3 demo: AGL-12->PST-22; waits on AGL-08,PST-15 (no plan)
-AGL-13 | M3 | available: no | path to M3 demo: AGL-13->AGL-15->AGL-20; waits on AGL-09,AGL-12 (no plan); GRR-01 (planned)
-AGL-14 | M3 | available: no | path to M3 demo: AGL-14->AGL-15->AGL-20; waits on AGL-12 (no plan)
-AGL-16 | M3 | available: no | path to M3 demo: AGL-16->AGL-20; waits on AGL-12 (no plan)
-AGL-17 | M3 | available: no | path to M3 demo: AGL-17->AGL-20; waits on AGL-13,AGL-16 (no plan)
-AGL-18 | M3 | available: yes | path to M3 demo: AGL-18->AGL-20; no open blockers
-AGL-19 | M3 | available: no | path to M3 demo: AGL-19->AGL-20; waits on GNP-11 (no plan)
-PST-17 | M3 | available: no | path to M3 demo: PST-17->PST-22; waits on PST-16 (no plan)
-PST-18 | M3 | available: no | path to M3 demo: PST-18->PST-22; waits on PST-16 (no plan)
-PST-19 | M3 | available: no | path to M3 demo: PST-19->PST-22; waits on PST-16 (no plan)
-PST-20 | M3 | available: no | path to M3 demo: PST-20->PST-22; waits on PST-16,PST-17 (no plan)
-PST-21 | M3 | available: no | path to M3 demo: PST-21->PST-22; waits on PST-18 (no plan)
-SAU-18 | M3 | available: no | path to M3 demo: SAU-18->SAU-21; waits on SAU-17 (no plan)
-SAU-19 | M3 | available: no | path to M3 demo: SAU-19->SAU-21; waits on SAU-18 (no plan)
-SAU-20 | M3 | available: no | path to M3 demo: SAU-20->SAU-21; waits on SAU-17 (no plan)
-PST-22 | M3 | available: no | is M3 demo gate; waits on PST-17,PST-18,PST-19,PST-20,PST-21,AGL-12 (no plan)
-AGL-15 | M3 | available: no | path to M3 demo: AGL-15->AGL-20; waits on AGL-12,AGL-13,AGL-14,PST-22 (no plan)
-AGL-20 | M3 | available: no | is M3 demo gate; waits on AGL-15,AGL-16,AGL-17,AGL-18,AGL-19 (no plan)
-SAU-21 | M3 | available: no | is M3 demo gate; waits on SAU-18,SAU-19,SAU-20 (no plan)
+AGL-18 | M3 | available: yes | on M3 demo path; no open blockers
+PST-15 | M3 | available: yes | on M3 demo path; no open blockers
+SAU-17 | M3 | available: yes | on M3 demo path; no open blockers
+PST-16 | M3 | available: no | on M3 demo path; waits on PST-15 (no plan)
+SAU-18 | M3 | available: no | on M3 demo path; waits on SAU-17 (no plan)
+SAU-20 | M3 | available: no | on M3 demo path; waits on SAU-17 (no plan)
+AGL-12 | M3 | available: no | on M3 demo path; waits on AGL-08 (no plan), PST-15 (no plan)
+PST-17 | M3 | available: no | on M3 demo path; waits on PST-16 (no plan)
+PST-18 | M3 | available: no | on M3 demo path; waits on PST-16 (no plan)
+PST-19 | M3 | available: no | on M3 demo path; waits on PST-16 (no plan)
+SAU-19 | M3 | available: no | on M3 demo path; waits on SAU-18 (no plan)
+AGL-14 | M3 | available: no | on M3 demo path; waits on AGL-12 (no plan)
+AGL-16 | M3 | available: no | on M3 demo path; waits on AGL-12 (no plan)
+PST-20 | M3 | available: no | on M3 demo path; waits on PST-16 (no plan), PST-17 (no plan)
+PST-21 | M3 | available: no | on M3 demo path; waits on PST-18 (no plan)
+SAU-21 | M3 | available: no | on M3 demo path; waits on SAU-18 (no plan), SAU-19 (no plan), SAU-20 (no plan)
+AGL-19 | M3 | available: no | on M3 demo path; waits on GNP-11 (no plan)
+PST-22 | M3 | available: no | on M3 demo path; waits on PST-17 (no plan), PST-18 (no plan), PST-19 (no plan), +3 more
+AGL-13 | M3 | available: no | on M3 demo path; waits on AGL-09 (no plan), AGL-12 (no plan)
+AGL-15 | M3 | available: no | on M3 demo path; waits on AGL-12 (no plan), AGL-13 (no plan), AGL-14 (no plan), +1 more
+AGL-17 | M3 | available: no | on M3 demo path; waits on AGL-13 (no plan), AGL-16 (no plan)
+AGL-20 | M3 | available: no | on M3 demo path; waits on AGL-15 (no plan), AGL-16 (no plan), AGL-17 (no plan), +2 more
 SHL-15 | M3 | available: yes | off M3 demo path; no open blockers
 SHL-16 | M3 | available: yes | off M3 demo path; no open blockers
-GRR-02 | M4 | available: no | path to M4 demo: GRR-02->GRR-08->GRR-17; waits on GRR-01 (planned)
-GRR-03 | M4 | available: no | path to M4 demo: GRR-03->GRR-08->GRR-17; waits on GRR-01 (planned); TRG-11 (no plan)
-GRR-04 | M4 | available: no | path to M4 demo: GRR-04->GRR-08->GRR-17; waits on GRR-02,GRR-03,TRG-12 (no plan)
-GRR-05 | M4 | available: no | path to M4 demo: GRR-05->GRR-08->GRR-17; waits on GRR-04 (no plan)
-GRR-06 | M4 | available: no | path to M4 demo: GRR-06->GRR-08->GRR-17; waits on GRR-04,PST-15,PST-22 (no plan)
-GRR-07 | M4 | available: no | path to M4 demo: GRR-07->GRR-08->GRR-17; waits on GRR-04 (no plan)
-GRR-08 | M4 | available: no | path to M4 demo: GRR-08->GRR-17; waits on GRR-02,GRR-03,GRR-04,GRR-05,GRR-06,GRR-07,PST-22 (no plan)
-GRR-09 | M4 | available: no | path to M4 demo: GRR-09->GRR-17; waits on GRR-02 (no plan)
-GRR-10 | M4 | available: no | path to M4 demo: GRR-10->GRR-17; waits on GRR-01 (planned)
-GRR-11 | M4 | available: no | path to M4 demo: GRR-11->GRR-17; waits on GRR-03,GRR-10 (no plan)
-GRR-12 | M4 | available: no | path to M4 demo: GRR-12->GRR-17; waits on GRR-11 (no plan)
-GRR-13 | M4 | available: no | path to M4 demo: GRR-13->GRR-17; waits on GRR-04,GRR-05,GRR-06,GRR-11,PST-20 (no plan)
-GRR-14 | M4 | available: no | path to M4 demo: GRR-14->GRR-17; waits on GRR-10 (no plan)
-GRR-15 | M4 | available: no | path to M4 demo: GRR-15->GRR-17; waits on GRR-11,GRR-12,GRR-13,GRR-14 (no plan)
-GRR-16 | M4 | available: no | path to M4 demo: GRR-16->GRR-17; waits on GRR-01 (planned); PLT-21,PLT-22 (no plan)
-GRR-17 | M4 | available: no | is M4 demo gate; waits on GRR-08,GRR-09,GRR-10,GRR-11,GRR-12,GRR-13,GRR-14,GRR-15,GRR-16 (no plan)
-CEX-01 | M5 | available: no | path to M5 demo: CEX-01->CEX-08->CEX-20; waits on GRR-01 (planned)
-CEX-02 | M5 | available: no | path to M5 demo: CEX-02->CEX-03->CEX-16->CEX-20; waits on CEX-01 (no plan)
-CEX-04 | M5 | available: no | path to M5 demo: CEX-04->CEX-10->CEX-15->CEX-20; waits on CEX-02,GNP-03 (no plan)
-CEX-03 | M5 | available: no | path to M5 demo: CEX-03->CEX-16->CEX-20; waits on CEX-02 (no plan)
-CEX-05 | M5 | available: no | path to M5 demo: CEX-05->CEX-18->CEX-20; waits on CEX-02 (no plan)
-CEX-06 | M5 | available: no | path to M5 demo: CEX-06->CEX-09->CEX-10->CEX-15->CEX-20; waits on CEX-05 (no plan); GRR-01 (planned)
-CEX-07 | M5 | available: no | path to M5 demo: CEX-07->CEX-09->CEX-10->CEX-15->CEX-20; waits on CEX-05,GNP-03 (no plan)
-CEX-08 | M5 | available: no | path to M5 demo: CEX-08->CEX-20; waits on CEX-01 (no plan)
-CEX-09 | M5 | available: no | path to M5 demo: CEX-09->CEX-10->CEX-15->CEX-20; waits on CEX-02,CEX-03,CEX-04,CEX-05,CEX-06,CEX-07,CEX-08 (no plan)
-CEX-10 | M5 | available: no | path to M5 demo: CEX-10->CEX-15->CEX-20; waits on CEX-04,CEX-05,CEX-09 (no plan)
-CEX-11 | M5 | available: no | path to M5 demo: CEX-11->CEX-15->CEX-20; waits on CEX-10 (no plan)
-CEX-12 | M5 | available: no | path to M5 demo: CEX-12->CEX-15->CEX-20; waits on CEX-10 (no plan)
-CEX-13 | M5 | available: no | path to M5 demo: CEX-13->CEX-15->CEX-20; waits on CEX-10 (no plan)
-CEX-14 | M5 | available: no | path to M5 demo: CEX-14->CEX-15->CEX-20; waits on CEX-03,CEX-10 (no plan)
-CEX-15 | M5 | available: no | path to M5 demo: CEX-15->CEX-20; waits on CEX-10,CEX-11,CEX-12,CEX-13,CEX-14 (no plan)
-CEX-16 | M5 | available: no | path to M5 demo: CEX-16->CEX-20; waits on CEX-03 (no plan)
-CEX-17 | M5 | available: no | path to M5 demo: CEX-17->CEX-20; waits on CEX-01 (no plan)
-CEX-18 | M5 | available: no | path to M5 demo: CEX-18->CEX-20; waits on CEX-17,CEX-05,CEX-10,CEX-14 (no plan)
-CEX-19 | M5 | available: no | path to M5 demo: CEX-19->CEX-20; waits on CEX-16,CEX-17 (no plan)
-CEX-20 | M5 | available: no | is M5 demo gate; waits on CEX-08,CEX-15,CEX-16,CEX-17,CEX-18,CEX-19,PST-22 (no plan)
-GNP-13 | M6 | available: no | path to M6 demo: GNP-13->GNP-19; waits on GNP-01 (no plan)
-GNP-14 | M6 | available: no | path to M6 demo: GNP-14->GNP-19; waits on GNP-02,GNP-13 (no plan)
-GNP-15 | M6 | available: no | path to M6 demo: GNP-15->GNP-19; waits on GNP-02,GNP-13 (no plan)
-GNP-16 | M6 | available: no | path to M6 demo: GNP-16->GNP-19; waits on GNP-02,GNP-13 (no plan)
-GNP-17 | M6 | available: no | path to M6 demo: GNP-17->GNP-19; waits on GNP-02,GNP-13 (no plan)
-GNP-18 | M6 | available: no | path to M6 demo: GNP-18->GNP-19; waits on GNP-03,GNP-13,GNP-16 (no plan); GRR-01 (planned)
-GNP-19 | M6 | available: no | is M6 demo gate; waits on GNP-13,GNP-14,GNP-15,GNP-16,GNP-17,GNP-18,CEX-09,GRR-17 (no plan)
-GNP-20 | M7 | available: no | path to M7 demo: GNP-20->GNP-24; waits on GNP-02,GNP-12 (no plan)
-GNP-21 | M7 | available: no | path to M7 demo: GNP-21->GNP-24; waits on GNP-02,GNP-06,GNP-12 (no plan)
-GNP-22 | M7 | available: no | path to M7 demo: GNP-22->GNP-24; waits on GNP-02,GNP-06,GNP-12 (no plan)
-GNP-23 | M7 | available: no | path to M7 demo: GNP-23->GNP-24; waits on GNP-02,GNP-07,GNP-08,GNP-09,GNP-10,GNP-15,GNP-16,GNP-21,GNP-22 (no plan)
-SHL-17 | M7 | available: yes | path to M7 demo: SHL-17->SHL-19; no open blockers
-SHL-18 | M7 | available: yes | path to M7 demo: SHL-18->SHL-19; no open blockers
-GNP-24 | M7 | available: no | is M7 demo gate; waits on GNP-19,GNP-20,GNP-21,GNP-22,GNP-23 (no plan)
-SHL-19 | M7 | available: no | is M7 demo gate; waits on SHL-15,SHL-16,SHL-17,SHL-18,PST-22 (no plan)
+PST-34 | M1 | available: no | off M1 demo path; waits on SHL-15 (no plan), SHL-16 (no plan)
+GRR-02 | M4 | available: yes | on M4 demo path; no open blockers
+GRR-10 | M4 | available: yes | on M4 demo path; no open blockers
+GRR-09 | M4 | available: no | on M4 demo path; waits on GRR-02 (no plan)
+GRR-14 | M4 | available: no | on M4 demo path; waits on GRR-10 (no plan)
+GRR-03 | M4 | available: no | on M4 demo path; waits on TRG-11 (no plan)
+GRR-04 | M4 | available: no | on M4 demo path; waits on GRR-02 (no plan), GRR-03 (no plan), TRG-12 (no plan)
+GRR-11 | M4 | available: no | on M4 demo path; waits on GRR-03 (no plan), GRR-10 (no plan)
+GRR-16 | M4 | available: no | on M4 demo path; waits on PLT-21 (no plan), PLT-22 (no plan)
+GRR-05 | M4 | available: no | on M4 demo path; waits on GRR-04 (no plan)
+GRR-06 | M4 | available: no | on M4 demo path; waits on GRR-04 (no plan), PST-15 (no plan), PST-22 (no plan)
+GRR-07 | M4 | available: no | on M4 demo path; waits on GRR-04 (no plan)
+GRR-12 | M4 | available: no | on M4 demo path; waits on GRR-11 (no plan)
+GRR-08 | M4 | available: no | on M4 demo path; waits on GRR-02 (no plan), GRR-03 (no plan), GRR-04 (no plan), +4 more
+GRR-13 | M4 | available: no | on M4 demo path; waits on GRR-04 (no plan), GRR-05 (no plan), GRR-06 (no plan), +2 more
+GRR-15 | M4 | available: no | on M4 demo path; waits on GRR-11 (no plan), GRR-12 (no plan), GRR-13 (no plan), +1 more
+GRR-17 | M4 | available: no | on M4 demo path; waits on GRR-08 (no plan), GRR-09 (no plan), GRR-10 (no plan), +6 more
+CEX-01 | M5 | available: yes | on M5 demo path; no open blockers
+CEX-02 | M5 | available: no | on M5 demo path; waits on CEX-01 (no plan)
+CEX-08 | M5 | available: no | on M5 demo path; waits on CEX-01 (no plan)
+CEX-17 | M5 | available: no | on M5 demo path; waits on CEX-01 (no plan)
+CEX-03 | M5 | available: no | on M5 demo path; waits on CEX-02 (no plan)
+CEX-05 | M5 | available: no | on M5 demo path; waits on CEX-02 (no plan)
+CEX-04 | M5 | available: no | on M5 demo path; waits on CEX-02 (no plan), GNP-03 (no plan)
+CEX-06 | M5 | available: no | on M5 demo path; waits on CEX-05 (no plan)
+CEX-07 | M5 | available: no | on M5 demo path; waits on CEX-05 (no plan), GNP-03 (no plan)
+CEX-16 | M5 | available: no | on M5 demo path; waits on CEX-03 (no plan)
+CEX-09 | M5 | available: no | on M5 demo path; waits on CEX-02 (no plan), CEX-03 (no plan), CEX-04 (no plan), +4 more
+CEX-19 | M5 | available: no | on M5 demo path; waits on CEX-16 (no plan), CEX-17 (no plan)
+CEX-10 | M5 | available: no | on M5 demo path; waits on CEX-04 (no plan), CEX-05 (no plan), CEX-09 (no plan)
+CEX-11 | M5 | available: no | on M5 demo path; waits on CEX-10 (no plan)
+CEX-12 | M5 | available: no | on M5 demo path; waits on CEX-10 (no plan)
+CEX-13 | M5 | available: no | on M5 demo path; waits on CEX-10 (no plan)
+CEX-14 | M5 | available: no | on M5 demo path; waits on CEX-03 (no plan), CEX-10 (no plan)
+CEX-15 | M5 | available: no | on M5 demo path; waits on CEX-10 (no plan), CEX-11 (no plan), CEX-12 (no plan), +2 more
+CEX-18 | M5 | available: no | on M5 demo path; waits on CEX-17 (no plan), CEX-05 (no plan), CEX-10 (no plan), +1 more
+CEX-20 | M5 | available: no | on M5 demo path; waits on CEX-08 (no plan), CEX-15 (no plan), CEX-16 (no plan), +4 more
+GNP-13 | M6 | available: no | on M6 demo path; waits on GNP-01 (no plan)
+GNP-14 | M6 | available: no | on M6 demo path; waits on GNP-02 (no plan), GNP-13 (no plan)
+GNP-15 | M6 | available: no | on M6 demo path; waits on GNP-02 (no plan), GNP-13 (no plan)
+GNP-16 | M6 | available: no | on M6 demo path; waits on GNP-02 (no plan), GNP-13 (no plan)
+GNP-17 | M6 | available: no | on M6 demo path; waits on GNP-02 (no plan), GNP-13 (no plan)
+GNP-18 | M6 | available: no | on M6 demo path; waits on GNP-03 (no plan), GNP-13 (no plan), GNP-16 (no plan)
+GNP-19 | M6 | available: no | on M6 demo path; waits on GNP-13 (no plan), GNP-14 (no plan), GNP-15 (no plan), +5 more
+SHL-17 | M7 | available: yes | on M7 demo path; no open blockers
+SHL-18 | M7 | available: yes | on M7 demo path; no open blockers
+SHL-19 | M7 | available: no | on M7 demo path; waits on SHL-15 (no plan), SHL-16 (no plan), SHL-17 (no plan), +2 more
+GNP-20 | M7 | available: no | on M7 demo path; waits on GNP-02 (no plan), GNP-12 (no plan)
+GNP-21 | M7 | available: no | on M7 demo path; waits on GNP-02 (no plan), GNP-06 (no plan), GNP-12 (no plan)
+GNP-22 | M7 | available: no | on M7 demo path; waits on GNP-02 (no plan), GNP-06 (no plan), GNP-12 (no plan)
+GNP-23 | M7 | available: no | on M7 demo path; waits on GNP-02 (no plan), GNP-07 (no plan), GNP-08 (no plan), +6 more
+GNP-24 | M7 | available: no | on M7 demo path; waits on GNP-19 (no plan), GNP-20 (no plan), GNP-21 (no plan), +2 more
 AGL-21 | M7 | available: no | off M7 demo path; waits on AGL-08 (no plan)
 AGL-22 | M7 | available: no | off M7 demo path; waits on AGL-08 (no plan)
-AGL-23 | M7 | available: no | off M7 demo path; waits on AGL-20,AGL-21,AGL-22 (no plan)
-AGL-24 | M7 | available: no | off M7 demo path; waits on AGL-08,CEX-09,CEX-15 (no plan)
 PST-23 | M7 | available: no | off M7 demo path; waits on PST-16 (no plan)
+AGL-23 | M7 | available: no | off M7 demo path; waits on AGL-20 (no plan), AGL-21 (no plan), AGL-22 (no plan)
+AGL-24 | M7 | available: no | off M7 demo path; waits on AGL-08 (no plan), CEX-09 (no plan), CEX-15 (no plan)
