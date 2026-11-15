@@ -111,6 +111,9 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/tool-registry/tools/:name/validate': {
     path: '/api/tool-registry/tools/no-such-tool/validate',
   },
+  '/api/setup-auth/steps/:step': {
+    path: '/api/setup-auth/steps/access',
+  },
 };
 
 // The disposable derived caches, exempt from the library snapshot. The exemption covers each path and

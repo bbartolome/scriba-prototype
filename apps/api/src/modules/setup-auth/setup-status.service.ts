@@ -2,8 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   SETUP_STEP_KEYS,
   setupAuthSectionSchema,
+  type Preferences,
   type SetupAuthSection,
   type SetupStatus,
+  type SetupStep,
+  type SetupStepState,
 } from '@bbartolome/scriba-contracts/setup-auth';
 import {
   EXPECTED_COMPOSE_VERSION,
@@ -17,15 +20,17 @@ import { composeVersionStatus } from './compose-status';
 
 type Steps = SetupAuthSection['steps'];
 
-// The body of the status route. Access is done because only an authenticated caller gets this body.
+// The body of the status route. A pending access is shown as done, because only an authenticated caller gets this
+// body. A stored access that is done or skipped is shown as stored, so a skipped access is visible.
 // The compose state is the compose-version check of compose-status.ts, passed in by each caller.
 function statusBody(
   steps: Steps,
   complete: boolean,
   compose: SetupStatus['compose'],
 ): SetupStatus {
+  const access = steps.access === 'pending' ? 'done' : steps.access;
   return {
-    steps: { ...steps, access: 'done' },
+    steps: { ...steps, access },
     complete,
     compose,
   };
@@ -74,6 +79,44 @@ export class SetupStatusService {
         EXPECTED_COMPOSE_VERSION,
       ),
     );
+  }
+
+  // Sets one step's state and nothing else. complete is not written here: only Continue writes it.
+  setStep(key: SetupStep, state: SetupStepState): SetupStatus {
+    const stored = this.stored();
+    const section = this.parsed(stored);
+    const steps: Steps = { ...section.steps, [key]: state };
+    this.settings.write('setupAuth', { ...stored, steps });
+    return statusBody(
+      steps,
+      section.complete,
+      composeVersionStatus(
+        this.env.SCRIBA_COMPOSE_VERSION,
+        EXPECTED_COMPOSE_VERSION,
+      ),
+    );
+  }
+
+  // Reads only. The stored preferences, or {} when none are stored.
+  preferences(): Preferences {
+    return this.parsed(this.stored()).preferences;
+  }
+
+  // Merges the fields of the patch into the stored preferences. A field absent from the patch keeps its stored
+  // value, and a key the stored object holds beyond the schema is kept as it is. Writes the setupAuth section only.
+  savePreferences(patch: Preferences): Preferences {
+    const stored = this.stored();
+    this.parsed(stored);
+    const next = {
+      ...stored,
+      preferences: {
+        ...(stored.preferences as Record<string, unknown>),
+        ...patch,
+      },
+    };
+    const saved = this.parsed(next).preferences;
+    this.settings.write('setupAuth', next);
+    return saved;
   }
 
   // The stored section, or the module default when the section is missing from the file.
