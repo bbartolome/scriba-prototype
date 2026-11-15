@@ -1,6 +1,6 @@
 ---
 id: TRG-08
-status: planned
+status: done
 unit: units/TRG-08-template-engine.md
 ---
 # TRG-08 plan — Pure template engine: tag parser with positions, variables and renderer

@@ -29,7 +29,7 @@ The template language is small and pure: rendering can never read files, call th
 - API: `parse(template) → AST | diagnostics`, `variables(AST)` (for lint), `render(AST, {args, entities, toolCatalog}) → string`. Rendering takes only validated arguments, caller-supplied entity contents and catalogue data.
 
 ## Acceptance criteria (tested through a test harness rendering fixture templates; the HTTP seam lands in TRG-12)
-- [ ] `{{field}}`, arrays, absent fields, `#each` with `this`/`@index`, `#if/else`, comments and `{{toolCatalog}}` render as specified.
-- [ ] `{{entity id}}` inside `#each` inserts each entity's header and content.
-- [ ] Unbalanced blocks and unsupported syntax (partials, helpers, `{{{triple}}}`, `../`) produce positioned errors.
-- [ ] `__proto__`/`constructor` lookups render nothing.
+- [x] `{{field}}`, arrays, absent fields, `#each` with `this`/`@index`, `#if/else`, comments and `{{toolCatalog}}` render as specified.
+- [x] `{{entity id}}` inside `#each` inserts each entity's header and content.
+- [x] Unbalanced blocks and unsupported syntax (partials, helpers, `{{{triple}}}`, `../`) produce positioned errors.
+- [x] `__proto__`/`constructor` lookups render nothing.
