@@ -3990,3 +3990,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Plan-text gap, not a code defect: mutation M2 (CSP call removed from host-frame.middleware.ts) also fails G3, because the sweep's Host check (invariant-sweep.ts lines 625 to 627) lives in the same middleware. The plan's M2 expectation named only G4.
 - Criteria 6 and 7 stay unticked (the Navigator's decision, option A, 2026-11-15). Criteria 1 to 5 and 8 are ticked on the passing tests.
 - Code rejections of SAU-08: 0.
+
+## 2026-11-15 — PST-08 — Revision (reviser, READY): unit reword and open points settled
+
+- **Reword (R1), unit line 22 of `units/PST-08-entity-resolution.md`:** the error codes `PROJECT_ENTITY_NOT_FOUND` and `PROJECT_ENTITY_DUPLICATE` are removed from the decision text; the typed errors for unknown and duplicate IDs stay. Reason: the published contract allows only `code: z.enum(['unknown','duplicate'])` (`packages/contracts/src/project-store/entities.ts` line 43), and the done unit PST-01 says the same. Not protected: no criterion, no module decision, no code on main, and no other plan uses the strict form. The note in the unit file records the old text.
+- **Open point 2 (front-matter rule):** settled by the Navigator decision at line 3466 above. The API rule is PLT-20 D10 with BOM removal, and the Shell follows the API rule.
+- **Open point 3 (manifest scope):** settled in the plan. The manifest lists every regular file under `entities/` and `sources/`; only `.md` entries are entity candidates.
+- **Review parts:** one part (steps 1 to 14; tests E1 to E5, X1 to X3).
