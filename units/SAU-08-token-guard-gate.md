@@ -18,14 +18,14 @@ Merging this **closes Setup & auth `phase:token-guard`**.
 - Verify the phase checklist end to end.
 
 ## Acceptance criteria (the `phase:token-guard` checklist)
-- [ ] Token lifecycle (create, keep on restart, regenerate on delete → old cookies 401).
-- [ ] Handshake cookie attributes and clean redirect; wrong token page.
-- [ ] 401 for every non-public route without a cookie; Host 403 except `/healthz`; Origin 403 matrix.
-- [ ] No `Access-Control-*`; `frame-ancestors 'none'` everywhere.
-- [ ] Fresh status incomplete → `complete` after Continue; only `setupAuth` changed.
+- [x] Token lifecycle (create, keep on restart, regenerate on delete → old cookies 401).
+- [x] Handshake cookie attributes and clean redirect; wrong token page.
+- [x] 401 for every non-public route without a cookie; Host 403 except `/healthz`; Origin 403 matrix.
+- [x] No `Access-Control-*`; `frame-ancestors 'none'` everywhere.
+- [x] Fresh status incomplete → `complete` after Continue; only `setupAuth` changed.
 - [ ] `Secure` matrix recorded; attributes match.
 - [ ] Both invariant tests pass in CI.
-- [ ] The e2e setup step passes.
+- [x] The e2e setup step passes.
 
 **Walking skeleton (M1) done when:** the author types "summarize my outline" and gets a correct answer with visible tool calls. This phase's share: the author reaches the chat only through the setup URL.
 
