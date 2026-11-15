@@ -359,7 +359,11 @@ it('C6: the request has the system prompt, the project summary and the enabled t
       const summary = String(first.messages[1].content);
       expect(summary).toContain('Project: Book (genre pack: nonfiction).');
       expect(summary).toContain('sources (1 file)');
-      expect(toolNamesOf(first)).toEqual(['list_files', 'read_file']);
+      expect(toolNamesOf(first)).toEqual([
+        'list_files',
+        'read_file',
+        'search_notes',
+      ]);
 
       // With research on, the offered tools are still the project family's: no research tool exists at M1.
       const put = await post(h, AGENT_SETTINGS_ROUTE, {
@@ -370,7 +374,11 @@ it('C6: the request has the system prompt, the project summary and the enabled t
       await readUntilEnded(stream);
       const records = chatBodies(await recordsOf(h.mock, 'text'));
       expect(records).toHaveLength(2);
-      expect(toolNamesOf(records[1])).toEqual(['list_files', 'read_file']);
+      expect(toolNamesOf(records[1])).toEqual([
+        'list_files',
+        'read_file',
+        'search_notes',
+      ]);
     } finally {
       await stream.close();
     }
