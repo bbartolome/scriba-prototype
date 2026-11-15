@@ -4395,3 +4395,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Criterion 1 ticked. Criterion 2 unticked by fallback B (Navigator decision, session ff79c6c9652849e1a58334562bd17059, option A); the cause is recorded in plans/MPR-08.md section 9.
 - Status commit on the unit branch, then fast-forward of main to e346569. The unit branch is deleted and its worktree removed.
 - Now available: AGL-03 (its blocker MPR-08 is done). A scout must run again.
+
+## 2026-11-15 — AGL-03 — Sonnet code review (one part): APPROVED; merged to main (orchestrator)
+
+- Patch id of the approved code (`git diff main...unit/AGL-03 -- . ':!plans' ':!units' | git patch-id --stable`, code head 0154edf, on b556f7f): f8b2eba33cf91eb0a1dae571ab9acbab8efb7522. Unchanged on the branch head before merge.
+- Orchestrator checks on the branch head: npm ci, lint, test (86 files, 275 API tests), build all exit 0. Fresh-clone checks by the implementer also exit 0.
+- Criteria 1 to 6 ticked. Plan set to done. Fast-forward of main to 13b505a. Branch and worktree removed.
+- Now available: AGL-04, AGL-05, AGL-10 (blocker AGL-03 done). AGL-10 has a plan (planned) and needs an implementer.
