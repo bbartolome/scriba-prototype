@@ -4108,3 +4108,8 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Tests: criteria 1 to 4 and the `refusals` and `theme is dropped and never stored` tests pass in `apps/api/test/setup-flow-api.test.ts` (reviewer ran the file: 6 of 6). Mutations M1 to M6 were run by the implementer (each reverted).
 - Differences: `apps/api/dist` must be built before the guard and section tests pass (a plan omission, not a code change); `savePreferences` parses the stored and the merged section before reading and writing (the write uses the raw merged value, so the stored bytes are as specified).
 - Code rejections of SAU-09: 0.
+
+## 2026-11-15 — SAU-09 — Failed check: rebase onto main conflicts in apps/api/test/invariant-sweep.ts
+
+- **Report (orchestrator, rebase of unit/SAU-09 head 9d480d2 onto main 9fb084b, which includes TRG-02's merge):** the rebase stops at the first pick, 9d480d2 (feat(SAU-09)), with a conflict in `apps/api/test/invariant-sweep.ts`. TRG-02 added its two FIXTURE_PATHS entries on main. The rebase was aborted; the branch is unchanged at 9d480d2.
+- **Action:** a new implementer does the rebase and resolves the conflict as the plan's merge rule says (FIXTURE_PATHS keeps main's entries, TRG-02's entries and SAU-09's entry, each once), commits to `unit/SAU-09`, and reports. The patch id is calculated again after the rebase. If it changes, new reviewers are started for the one part, as prompt.md step 3 item 5 requires.
