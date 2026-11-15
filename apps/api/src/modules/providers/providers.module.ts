@@ -16,6 +16,14 @@ export {
   type ResolutionInput,
   type ResolvedModel,
 } from './providers.resolution';
+export { streamChat } from './client';
+export type {
+  ChatMessage,
+  ChatRequest,
+  StreamEvent,
+  ToolCall,
+  ToolSchema,
+} from './client';
 
 const PROVIDERS_SECTION_REGISTRATION = 'PROVIDERS_SECTION_REGISTRATION';
 

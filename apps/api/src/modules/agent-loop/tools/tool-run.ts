@@ -69,6 +69,11 @@ export class ToolRun {
     }
   }
 
+  // The family of an offered tool, or undefined for a name that is not offered in this run.
+  familyOf(name: string): AgentToolFamily | undefined {
+    return this.offered.get(name)?.definition.family;
+  }
+
   // The function schemas the model is offered: the enabled tools that are not withdrawn (S13).
   schemas(): ToolFunctionSchema[] {
     return [...this.offered.values()]

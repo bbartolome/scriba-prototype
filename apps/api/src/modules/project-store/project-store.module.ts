@@ -22,6 +22,7 @@ export { FilesService } from './files.service';
 export { EntitiesService } from './entities.service';
 export { EntityManifest } from './entity-manifest';
 export { SearchService } from './search.service';
+export { ProjectsService } from './projects.service';
 export type { ResolvedProjectPath } from './path-safety';
 
 const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
@@ -58,6 +59,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
   ],
   exports: [
     ProjectStoreService,
+    ProjectsService,
     FilesService,
     EntitiesService,
     EntityManifest,

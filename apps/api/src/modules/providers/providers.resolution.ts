@@ -38,12 +38,16 @@ export class ModelResolver {
     private readonly secrets: SecretsStore,
   ) {}
 
+  // Whether a choice exists and names a stored provider. It makes no network call, so a caller can refuse a start
+  // before any listing (the loop's no-provider check). It agrees with resolve on the two NOT_CONFIGURED throws.
+  hasChoice(input: ResolutionInput): boolean {
+    const choice = this.choiceOf(input);
+    return choice !== null && this.registry.get(choice.providerId) !== undefined;
+  }
+
   // The order: project override, app default, the provider's own model, then the first model the provider lists.
   async resolve(input: ResolutionInput): Promise<ResolvedModel> {
-    const choice =
-      (input.projectId === undefined
-        ? undefined
-        : this.projectChoice(input.projectId)) ?? this.registry.appDefault();
+    const choice = this.choiceOf(input);
     if (choice === null) {
       throw coded(
         PROVIDER_ERROR_CODES.NOT_CONFIGURED,
@@ -92,6 +96,15 @@ export class ModelResolver {
       model: '',
     });
     return [...ids].sort();
+  }
+
+  // The project's override when it has one, else the app default. Shared by resolve and hasChoice.
+  private choiceOf(input: ResolutionInput): ModelChoice | null {
+    return (
+      (input.projectId === undefined
+        ? undefined
+        : this.projectChoice(input.projectId)) ?? this.registry.appDefault()
+    );
   }
 
   // MPR-12 replaces this with the per-project override. Until then no project has one, so every project id gets
