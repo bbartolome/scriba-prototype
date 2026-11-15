@@ -214,7 +214,32 @@ it('L1: appendLog refuses paths outside logs/, works for a non-active ok project
   );
   try {
     await withFilesKit(fixture.library, async (app) => {
-      // (1) Control, first so that logs/ does not exist yet: two lines, one folder, one file.
+      // (1) The prefix check, first, while logs/ does NOT exist, so that only the prefix check can refuse these paths.
+      expect(existsSync(join(book, 'logs'))).toBe(false);
+      for (const path of [
+        'sources/a.log',
+        'sources/logs.txt',
+        'logsx/a.log',
+        'logs',
+      ]) {
+        const reply = await kitPost(app.baseUrl, 'append-log', {
+          projectId: 'book',
+          path,
+          line: 'x',
+        });
+        expect(reply.status).toBe(400);
+        expect(kitCode(reply)).toBe('PROJECT_PATH_INVALID');
+      }
+      for (const created of [
+        join(book, 'sources', 'a.log'),
+        join(book, 'sources', 'logs.txt'),
+        join(book, 'logsx'),
+        join(book, 'logs'),
+      ]) {
+        expect(existsSync(created)).toBe(false);
+      }
+
+      // (2) Control, after step (1) and still before logs/ exists: two lines, one folder, one file.
       const one = await kitPost(app.baseUrl, 'append-log', {
         projectId: 'book',
         path: 'logs/./run.log',
@@ -232,7 +257,7 @@ it('L1: appendLog refuses paths outside logs/, works for a non-active ok project
         'one\ntwo\n',
       );
 
-      // (2) Paths outside logs/ are refused, and so is a link out of logs/.
+      // (3) With logs/ there now: paths outside logs/ are refused, and so is a link out of logs/.
       for (const path of ['sources/a.log', 'logs/../x.log', 'logs']) {
         const reply = await kitPost(app.baseUrl, 'append-log', {
           projectId: 'book',
@@ -254,7 +279,7 @@ it('L1: appendLog refuses paths outside logs/, works for a non-active ok project
         '# Outline\n',
       );
 
-      // (3) A project that is ok but not active accepts the line.
+      // (4) A project that is ok but not active accepts the line.
       const other = await kitPost(app.baseUrl, 'append-log', {
         projectId: 'other',
         path: 'logs/other.log',
