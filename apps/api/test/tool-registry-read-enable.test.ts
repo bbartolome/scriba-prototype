@@ -15,6 +15,7 @@ import {
   ACTIVE_PROJECT_ROUTE,
   PROJECT_NEW_ROUTE,
 } from '@bbartolome/scriba-contracts/project-store';
+import { errorBodySchema } from '@bbartolome/scriba-contracts/platform';
 import {
   ENTITY_TYPES_ROUTE,
   FUNCTIONS_ROUTE,
@@ -23,10 +24,13 @@ import {
   TOOL_ENABLED_ROUTE,
   TOOL_ROUTE,
   TOOL_USER_ROUTE,
+  TOOL_VALIDATE_ROUTE,
   functionListSchema,
+  toolArgsInvalidDetailsSchema,
   toolDetailSchema,
   toolListSchema,
   toolSummarySchema,
+  toolValidateResultSchema,
   type ToolSummary,
 } from '@bbartolome/scriba-contracts/tool-registry';
 import { createTestApp, type TestApp } from './create-test-app';
@@ -363,6 +367,56 @@ it('E1: functions follow the active project genre pack and the switch', async ()
       const afterSwitch = functionNames(await get(booted, FUNCTIONS_ROUTE));
       expect(afterSwitch).not.toContain('myth_buster');
       expect(afterSwitch).toContain('cold_open');
+    } finally {
+      await booted.app.close();
+    }
+  } finally {
+    removeFixture(fixture);
+  }
+});
+
+it('T3: params mode ignores pinned port values and required ports', async () => {
+  const fixture = makeFixture();
+  try {
+    const booted = await boot(fixture);
+    try {
+      // The pinned style value is not an entity ID, and the required ports are absent: params mode drops the port
+      // keys before validation, so none of them is checked.
+      const params = await post(
+        booted,
+        toolPath(TOOL_VALIDATE_ROUTE, 'cold_open'),
+        {
+          arguments: { length: 900, styleProfile: 'Not A Ref!!' },
+          mode: 'params',
+        },
+      );
+      expect(params.status).toBe(200);
+      expect(toolValidateResultSchema.parse(json(params)).arguments).toEqual({
+        length: 900,
+      });
+
+      // The same pinned value in full mode, with both required ports supplied, is refused at its own path only.
+      const full = await post(
+        booted,
+        toolPath(TOOL_VALIDATE_ROUTE, 'cold_open'),
+        {
+          arguments: {
+            coreIdea: 'x',
+            person: 'ada',
+            length: 900,
+            styleProfile: 'Not A Ref!!',
+          },
+          mode: 'full',
+        },
+      );
+      expect(full.status).toBe(422);
+      const error = errorBodySchema.parse(json(full)).error;
+      expect(error.code).toBe('TOOL_ARGS_INVALID');
+      expect(
+        toolArgsInvalidDetailsSchema
+          .parse(error.details)
+          .issues.map((issue) => issue.path),
+      ).toEqual(['/styleProfile']);
     } finally {
       await booted.app.close();
     }
