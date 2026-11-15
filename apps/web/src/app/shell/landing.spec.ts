@@ -43,6 +43,13 @@ const incomplete = {
 
 const complete = { ...incomplete, complete: true } satisfies SetupStatus;
 
+/**
+ * The landing's load is a bare promise that `whenStable()` does not track: it imports the setup-auth
+ * contract chunk (zod's CommonJS build), then the router lazy-loads the target route's chunk. A cold
+ * load can pass the 1000 ms default of `vi.waitFor` on a busy machine, so the waits give it more.
+ */
+const LOAD_WAIT = { timeout: 5000 };
+
 let doubles: ShellTestDoubles;
 
 beforeEach(() => {
@@ -65,19 +72,22 @@ describe('landing', () => {
     await RouterTestingHarness.create('/');
     const router = TestBed.inject(Router);
 
-    await vi.waitFor(() => expect(router.url).toBe('/setup'));
+    await vi.waitFor(() => expect(router.url).toBe('/setup'), LOAD_WAIT);
     expect(activeReads()).toBe(0);
 
     doubles.api.respond('GET', SETUP_STATUS_ROUTE, complete);
     doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'a' });
     await router.navigateByUrl('/');
-    await vi.waitFor(() => expect(router.url).toBe('/projects/a/chat'));
+    await vi.waitFor(
+      () => expect(router.url).toBe('/projects/a/chat'),
+      LOAD_WAIT,
+    );
     expect(activeReads()).toBeGreaterThan(0);
 
     doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: null });
     await router.navigateByUrl('/');
-    await vi.waitFor(() => expect(router.url).toBe('/projects'));
-  });
+    await vi.waitFor(() => expect(router.url).toBe('/projects'), LOAD_WAIT);
+  }, 20000);
 
   it('E1 keeps the version and health when the status read fails', async () => {
     doubles.api.fail(
@@ -98,7 +108,7 @@ describe('landing', () => {
       expect(text).toContain('Health: ok');
       const alert = harness.routeNativeElement?.querySelector('[role="alert"]');
       expect(alert?.textContent).toContain('Could not reach the server.');
-    });
+    }, LOAD_WAIT);
     expect(TestBed.inject(Router).url).toBe('/');
-  });
+  }, 10000);
 });
