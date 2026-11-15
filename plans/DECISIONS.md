@@ -4402,3 +4402,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Orchestrator checks on the branch head: npm ci, lint, test (86 files, 275 API tests), build all exit 0. Fresh-clone checks by the implementer also exit 0.
 - Criteria 1 to 6 ticked. Plan set to done. Fast-forward of main to 13b505a. Branch and worktree removed.
 - Now available: AGL-04, AGL-05, AGL-10 (blocker AGL-03 done). AGL-10 has a plan (planned) and needs an implementer.
+
+## 2026-11-15 — AGL-10 — PLAN DOES NOT WORK (implementer, branch unit/AGL-10, test commit 2436b40)
+
+- Step: 7 (the full API suite, `npm test -w @bbartolome/scriba-api`).
+- Cause: two existing tests assert the exact offered project-family tools, and search_notes now joins that family: apps/api/test/agent-loop-tools.test.ts AC3 (AGL-02, line 299) expects [list_files], and apps/api/test/agent-loop-run.test.ts C6 (AGL-03, line 362) expects [list_files, read_file]. Neither file is in the plan. The plan does not name them as affected.
+- Result: 275 passed, 2 failed of 277. The two new criteria (AC1, AC2) pass.
+- Source edits (tool-types.ts, builtin-tools.ts, agent-tools.service.ts) are uncommitted in the worktree; they are not reverted. The plan must name the two tests as changed, or decide otherwise.
+- Plan goes back to draft for an Opus reviser.

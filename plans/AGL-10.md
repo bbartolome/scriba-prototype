@@ -1,6 +1,6 @@
 ---
 id: AGL-10
-status: planned
+status: draft
 title: search_notes project tool
 unit: units/AGL-10-search-notes.md
 base: main at d787da3, working tree clean (revised twice; drafted at a04eb7d); runnable only once AGL-03 is on main
