@@ -22,6 +22,6 @@ The agent lists and reads real files (stories 3, 13); malformed calls get readab
 - **`list_files`** `{path?, recursive?}` and **`read_file`** `{path}` call the Project store file API (in-process provider) with **project-relative paths only**; path safety is the Project store's. Refusals (e.g. a path outside the project) come back as readable tool errors.
 
 ## Acceptance criteria (through the composed app and mock server once AGL-03 exists; the dispatcher is tested through a test-only HTTP harness until then)
-- [ ] A path outside the project is refused with a readable error.
-- [ ] Unparseable JSON arguments and schema violations produce the readable format.
-- [ ] Two readable errors, then the tool is withdrawn on the third consecutive invalid call; a valid call in between resets the count.
+- [x] A path outside the project is refused with a readable error.
+- [x] Unparseable JSON arguments and schema violations produce the readable format.
+- [x] Two readable errors, then the tool is withdrawn on the third consecutive invalid call; a valid call in between resets the count.

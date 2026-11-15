@@ -1,6 +1,6 @@
 ---
 id: AGL-02
-status: planned
+status: done
 title: Built-in tool framework (Ajv, readable errors, two retries, withdrawal) and list_files / read_file
 unit: units/AGL-02-tool-framework-file-reads.md
 revision: 2
