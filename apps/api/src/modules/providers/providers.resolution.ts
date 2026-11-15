@@ -42,7 +42,9 @@ export class ModelResolver {
   // before any listing (the loop's no-provider check). It agrees with resolve on the two NOT_CONFIGURED throws.
   hasChoice(input: ResolutionInput): boolean {
     const choice = this.choiceOf(input);
-    return choice !== null && this.registry.get(choice.providerId) !== undefined;
+    return (
+      choice !== null && this.registry.get(choice.providerId) !== undefined
+    );
   }
 
   // The order: project override, app default, the provider's own model, then the first model the provider lists.

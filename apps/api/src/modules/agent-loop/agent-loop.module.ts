@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { PlatformModule, SettingsService } from '../platform/platform.module';
 import { ProjectStoreModule } from '../project-store/project-store.module';
+import { ProvidersModule } from '../providers/providers.module';
+import { AgentRunsController } from './agent-runs.controller';
+import { AgentRunsService } from './agent-runs.service';
 import { AgentSettingsController } from './agent-settings.controller';
 import { AGENT_SETTINGS_SECTION_DEF } from './agent-settings.section';
 import { AgentSettingsService } from './agent-settings.service';
@@ -22,11 +25,11 @@ export type {
 
 const AGENT_SETTINGS_REGISTRATION = 'AGENT_SETTINGS_REGISTRATION';
 
-// Agent loop: the agent section of settings.yaml, its settings API, and the tool dispatcher. The loop itself lands in
-// later units.
+// Agent loop: the agent section of settings.yaml, its settings API, the tool dispatcher, and the run loop with its
+// start and stop commands. Transcripts, history and grounding land in later units.
 @Module({
-  imports: [PlatformModule, ProjectStoreModule],
-  controllers: [AgentSettingsController],
+  imports: [PlatformModule, ProjectStoreModule, ProvidersModule],
+  controllers: [AgentSettingsController, AgentRunsController],
   providers: [
     {
       provide: AGENT_SETTINGS_REGISTRATION,
@@ -38,6 +41,7 @@ const AGENT_SETTINGS_REGISTRATION = 'AGENT_SETTINGS_REGISTRATION';
     },
     AgentSettingsService,
     AgentToolsService,
+    AgentRunsService,
   ],
   exports: [AgentSettingsService, AgentToolsService],
 })
