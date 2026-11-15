@@ -4121,3 +4121,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Criteria: 1 (T1 to T4) and 2 (T9, the DOM seam at 390 by 844) pass; 15 of 15 tests in the two new specs (reviewer ran them). Criterion 3 is not in this unit: it is PST-34 (commit 7fa462c).
 - Gates (implementer's report): lint, test (web 262 tests) and build exit 0; the lazy-chunk check holds.
 - Code rejections of PST-10: 0.
+
+## 2026-11-15 — SAU-10 — Navigator decision: which unit renders the compose-version warning on /setup: option (a), SAU-11
+
+- **Decision (Navigator, session `7d6658850b5b4ec58fdffa036d4b6997`, `set_plan`, option (a)):** SAU-11 (the wizard shell) renders the compose-version warning on `/setup`, from SAU-10's `GET /api/setup-auth/status`, for the `mismatch` and `unknown` states, with SAU-10's re-run-the-installer one-liner. It is hidden for `ok`. SAU-11 gains one decision with this text and one acceptance criterion: "Component test (fake API): compose-version warning shown for mismatch/unknown with the one-liner; hidden for ok."
+- **Unit change, to be applied by a reviser (not by the orchestrator):** `units/SAU-11-wizard-shell-routing.md`, one decision and one criterion added as above. The Navigator's decision is the source of the added criterion (only the Navigator can change a criterion).
+- **Reason (Navigator):** `plans/SAU-06.md` line 134 (a done plan) assigns the display to SAU-11 ("SAU-10 produces it; SAU-11 and SAU-15 show it"). SAU-11 owns the `/setup` page and has a fake-API test pattern. Option (b) would widen SAU-10's API-only scope and edit the `/setup` page that SAU-11 rebuilds. Option (c) adds a unit for one warning component. SAU-16 line 24 stays the e2e leg of this behaviour.
+- **Checked by the orchestrator:** `units/SAU-11-wizard-shell-routing.md` has no decision or criterion about the warning (its criteria are lines 22 to 24). SAU-11 has no `plans/SAU-11.md` and no `unit/SAU-11` branch, so it is not in the pipeline. `units/SAU-15-*.md` line 26 already has the settings-page warning criterion.
