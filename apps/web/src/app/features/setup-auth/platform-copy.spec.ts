@@ -5,7 +5,8 @@ import {
 import { describe, expect, it } from 'vitest';
 import { VERSION_PATH, versionInfoCopy } from './platform-copy';
 
-// The samples of shell/platform-copies.spec.ts, plus a negative composeVersion.
+// The samples of shell/platform-copies.spec.ts, plus a negative composeVersion. `z.number().int()`
+// accepts negatives, so the negative sample is accepted by both the contract and the copy.
 const accepted: unknown[] = [
   {
     version: '1.2.3',
@@ -18,6 +19,12 @@ const accepted: unknown[] = [
     revision: 'abc1234',
     builtAt: '2026-11-14T00:00:00Z',
     composeVersion: 0,
+  },
+  {
+    version: '1.2.3',
+    revision: 'abc1234',
+    builtAt: '2026-11-14T00:00:00Z',
+    composeVersion: -1,
   },
 ];
 
@@ -33,12 +40,6 @@ const refused: unknown[] = [
     revision: 'abc1234',
     builtAt: '2026-11-14T00:00:00Z',
     composeVersion: 1.5,
-  },
-  {
-    version: '1.2.3',
-    revision: 'abc1234',
-    builtAt: '2026-11-14T00:00:00Z',
-    composeVersion: -1,
   },
   {
     version: '1.2.3',
