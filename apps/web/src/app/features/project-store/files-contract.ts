@@ -60,7 +60,10 @@ export const fileListCopy: ResponseSchema<FileList> = {
     for (const item of entries) {
       const entry = entryOf(item);
       if (entry === undefined) {
-        return { success: false, error: 'an entry does not match fileEntrySchema' };
+        return {
+          success: false,
+          error: 'an entry does not match fileEntrySchema',
+        };
       }
       parsed.push(entry);
     }
