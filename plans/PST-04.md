@@ -1,6 +1,6 @@
 ---
 id: PST-04
-status: planned
+status: done
 title: One active project — persistence, activation, switching, not-active check
 module: project-store
 ---

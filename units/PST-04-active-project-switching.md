@@ -25,7 +25,7 @@ Exactly one active project, remembered across restarts and identical on every de
 - `onProjectSwitched` is part of the exported provider.
 
 ## Acceptance criteria
-- [ ] Activating persists to `settings.yaml`; a restarted app (new `create-test-app` on the same temp library) reports the same active id.
-- [ ] Switching calls registered hooks before `project-switched` is observed on `/events`, with correct `{from, to}`.
-- [ ] A `too-new` project cannot be activated (`PROJECT_SCHEMA_TOO_NEW`); an `invalid` one fails `PROJECT_INVALID`.
-- [ ] A request naming a non-active project fails `PROJECT_NOT_ACTIVE`; with none active, `PROJECT_NO_ACTIVE`.
+- [x] Activating persists to `settings.yaml`; a restarted app (new `create-test-app` on the same temp library) reports the same active id.
+- [x] Switching calls registered hooks before `project-switched` is observed on `/events`, with correct `{from, to}`.
+- [x] A `too-new` project cannot be activated (`PROJECT_SCHEMA_TOO_NEW`); an `invalid` one fails `PROJECT_INVALID`.
+- [x] A request naming a non-active project fails `PROJECT_NOT_ACTIVE`; with none active, `PROJECT_NO_ACTIVE`.
