@@ -1,14 +1,16 @@
 ---
 id: AGL-02
-status: draft
+status: planned
 title: Built-in tool framework (Ajv, readable errors, two retries, withdrawal) and list_files / read_file
 unit: units/AGL-02-tool-framework-file-reads.md
-revision: 1
-base: main at 303c14c, working tree clean
+revision: 2
+base: main at 813cd28, working tree clean
 ---
 # AGL-02 plan - built-in tool framework and file reads
 
 Agent loop, `phase:file-tools-chat`, M1. Unit `units/AGL-02-tool-framework-file-reads.md`: front matter at lines 2 to 9 (`blocked_by` line 7, `parallel_with` line 8, `unblocks` line 9), Decisions at lines 17 to 22, acceptance criteria at lines 24 to 27.
+
+Revision 2 (reviser, Opus), checked at `main` `813cd28`. Revision 1 was the planner's draft. Section 6 records how each open point of revision 1 is settled; none is left for the Navigator. Section 10 holds the review parts.
 
 Tags: **checked** means the planner read the file and line, or confirmed it by grep, ls or git. **assumed** means a belief not checked here (section 9). This plan was written from the local checkout on `main` only. Nothing was built, installed, run, committed or changed except this file.
 
@@ -16,7 +18,7 @@ Tags: **checked** means the planner read the file and line, or confirmed it by g
 
 - AGL-02 adds an in-process tool dispatcher to the Agent loop module and two read-only built-in tools, `list_files` and `read_file`. They call the Project store's `FilesService` (checked). It adds no route to the composed app, no contract and no dependency: `ajv` 8.20.0 is already in `apps/api/package.json` line 16 (checked).
 - Both blockers are on `main`. PST-12 is done (`plans/PST-12.md` line 3; commits `4989d44` and `377a83c`). AGL-01 is done (`plans/AGL-01.md` line 3; the slice is in `packages/contracts/src/agent-loop/`). The parallel units AGL-06 and AGL-07 are done too.
-- The unit leaves several behaviours open: whether refusals count as invalid calls, the third answer, what unexpected failures do, and which format registry errors use. Section 1b fixes each one for this plan. Section 6 lists the ones the Navigator should confirm.
+- The unit leaves several behaviours open: whether refusals count as invalid calls, the third answer, what unexpected failures do, and which format registry errors use. Section 1b fixes each one for this plan. Section 6 records why each is settled by the unit files or is a small choice of this plan; no point is open for the Navigator.
 - Tests use a test-only HTTP harness, which is the unit's own seam until AGL-03 exists. No draft or planned plan changes a file this plan changes (section 7).
 
 ## 1. Decisions this plan follows
@@ -41,7 +43,7 @@ Tags: **checked** means the planner read the file and line, or confirmed it by g
 
 ### 1b. Small decisions this plan makes
 
-These are choices the unit does not settle. Section 6 names the ones to confirm.
+These are choices the unit does not settle in words. Section 6 gives the source or the reason for each one.
 
 - **S1. Ajv setup.** One Ajv instance in the service with `allErrors` and `strict`, no `coerceTypes` and no `useDefaults`. A string `"yes"` for a boolean is refused and nothing is coerced. Both built-in schemas set `additionalProperties: false` (O7).
 - **S2. Issue wording for built-in issues.** Registry issues keep the wording they bring. Built-in issues use:
@@ -96,7 +98,7 @@ Not changed (checked against the plans in section 7): `packages/contracts/**` (A
 
 ## 3. Procedure
 
-0. **Preconditions.** `git status --short` prints nothing (checked: the tree is clean). `grep -n '^status:' plans/PST-12.md plans/AGL-01.md plans/AGL-06.md` prints `status: done` for each. `apps/api/node_modules/ajv` is present; if not, run `npm ci` at the root (expected: exit 0). Expected: all three hold.
+0. **Preconditions.** `git status --short` prints nothing (checked: the tree is clean). `grep -n '^status:' plans/PST-12.md plans/AGL-01.md plans/AGL-06.md` prints `status: done` for each. `node_modules/ajv/package.json` is present at the repository root (checked: npm workspaces hoist `ajv`, and `apps/api/node_modules/ajv` does not exist); if not, run `npm ci` at the root (expected: exit 0). Expected: all three hold.
 1. **Red first.** Write `agent-loop-tools.kit.ts` and `agent-loop-tools.test.ts` with the tests of section 4 and their exact strings. Run `npx vitest run test/agent-loop-tools.test.ts` in `apps/api`. Expected: the run fails, because the agent-tools service and the tools do not exist yet. Commit the two files only: `git add` both paths, then `git commit -m "feat(AGL-02): add failing tool tests (AC1 to AC3)" -- <both paths>`. AGL-06 used the same red-first commit (`8a58dce`).
 2. **Renderer.** Write `tools/tool-types.ts` and `tools/readable-error.ts` (S2, S3, S5, S17, D13). Expected: neither file imports anything outside `agent-loop/tools/` except the contract types.
 3. **Built-in tools.** Write `tools/builtin-tools.ts` (S1, S11, S12, S16). Expected: the `path` argument is the only argument of `read_file`, and `list_files` has `path` and `recursive`, both optional.
@@ -180,24 +182,26 @@ Case 2, one run:
 | Unit | What it needs from AGL-02 | What AGL-02 provides | Agreement |
 |---|---|---|---|
 | **AGL-03** loop core (`blocked_by` line 7) | Schemas of the enabled families in each request (its criterion, "only the enabled families' tools"); one call at a time in order (its Step bullet, line 22); `tool-call-args` from `{arguments, valid}`; a result or an error from `outcome`. | `AgentToolsService.startRun`, `ToolRun.schemas()`, `ToolRun.dispatch()`. | AGL-03 creates one `ToolRun` per agent run and passes `runId`, `projectId` and the families from the settings. It sends each schema in the client's tool list unchanged (S13). The tool message to the model is `modelText` for a result and `message` for an error. Retries count as model steps (D5). AGL-03 owns the events and the `AGENT_*` codes. |
-| **AGL-08** file-tools-chat gate (`blocked_by` line 7) | The `list_files` and `read_file` cards with their summaries (demo line 27); AC1 to AC3 "pass on `main`" (criterion line 22). | The summaries (S11) and the tests of section 4. | The AGL-02 tests stay in the repo as written. AGL-08 runs them in its gate (O5). |
+| **AGL-08** file-tools-chat gate (`blocked_by` line 7) | The `list_files` and `read_file` cards with their summaries (demo line 27); AC1 to AC3 "pass on `main`" (criterion line 22). | The summaries (S11) and the tests of section 4. | The AGL-02 tests stay in the repo as written. AGL-08 owns the re-run of AC1 to AC3 through the composed app and the mock (O5, section 6): its criterion line 22 names "outside-path refusal" and "malformed-turn withdrawal", and its `blocked_by` (line 7) holds AGL-03 and PLT-13. |
 | **AGL-10** `search_notes` (`blocked_by` line 7) | A built-in `search_notes` with its reserved name, family `project`, and readable errors for invalid arguments (its criteria). | The reserved names, the renderer and `builtinTools(files)`. | AGL-10 adds one definition to the list in `builtin-tools.ts`, with a schema under S1. Its handler throws `ToolArgumentError` for bad input (S17). No other AGL-02 file changes. |
 | **AGL-12** write overlay (`blocked_by` line 7; decisions lines 18 to 21) | `write_file` and `edit_file` as built-ins. `read_file` must see the run overlay. The captured base. `edit_file` with zero or two matches gives two distinct readable errors, which count (S7 (d)). | `ToolRun` is per agent run and reaches handlers as `ctx.run`. | AGL-12 keeps the overlay on the `ToolRun`. It changes the `read_file` handler and adds two definitions in `builtin-tools.ts`. The captured base is the on-disk text on the first read or write, read through `FilesService.read`. |
 | **AGL-22** `fetch_page` (`blocked_by` line 7; decisions lines 18 to 21) | An async handler that can be aborted (`ctx.signal`). A family `research`, offered only when research is on. Untrusted marking in the tool result. Refusals as readable errors. | `dispatch` is async (S15); `signal` is passed through; `modelText` (S10); the `enabledFamilies` argument of `startRun`. | AGL-22 adds one definition with family `research`. Its refusals are `ModuleError` or `ToolArgumentError`, both counted under S7. |
-| **AGL-09** narrative tools (blocked by AGL-08 and TRG-12, not AGL-02; line 20 applies the AGL-02 policy) | Registry definitions added to a run, and registry errors as readable errors. | Renderer (D13) and `ToolArgumentError` (S17). | TRG-12 (not yet planned) must return the registry's `issues` in its error details, not only its `message` (O3). AGL-09 wraps them in `ToolArgumentError`. |
+| **AGL-09** narrative tools (blocked by AGL-08 and TRG-12, not AGL-02; line 20 applies the AGL-02 policy) | Registry definitions added to a run, and registry errors as readable errors. | Renderer (D13) and `ToolArgumentError` (S17). | The registry's `TOOL_ARGS_INVALID` already carries `details: {issues}` (contract `toolArgsInvalidDetailsSchema`, `packages/contracts/src/tool-registry/errors.ts` lines 63 to 66; `validate.ts` line 243 builds it), so TRG-12 needs nothing new. AGL-09 wraps `details.issues` in `ToolArgumentError`; for an entity error with no issues it makes one issue from the message (O3, section 6). |
 | **AGL-01** contract (done) | Reserved names, families, `toolCallErrorDataSchema`. | Uses them unchanged. The meaning of `attempt` is fixed here (S6). | No change to the contract. |
 | **AGL-06** settings and **AGL-07** chat panel (done, parallel) | AGL-06: the families are set from the agent settings at run start (AGL-03). AGL-07: the card shows the attempt and the withdrawn marker. | None needed. | No change. |
 
-## 6. Open points
+## 6. Open points, settled in revision 2
 
-- **O1 (Navigator, confirm).** Refusals count as invalid calls (S7 (c)). The unit names only unknown entity IDs and edit mismatches (line 21). Default: every Project store refusal counts, so a loop of `../` or missing files is withdrawn after three calls and does not run to the step cap. The alternative counts argument-shape failures only. The default stands unless the Navigator says otherwise.
-- **O2 (Navigator, confirm).** The third answer. Default: the readable lines, the expected summary and then the unit's sentence (S6). The alternative is the sentence alone, which the unit's wording (line 21) could be read to mean.
-- **O3 (Navigator, confirm).** Format of registry errors. The unit's format (`<path>: <what>`, plus an expected line) differs from the text TRG-02 shipped: `Arguments for the tool "<name>" are not valid:`, then `- <field>: <message>.` lines and an unknown-fields line (`apps/api/src/modules/tool-registry/validate.ts` lines 220 to 245; `plans/TRG-02.md` lines 48 to 49). This plan renders built-in and registry errors from the structured issues (D13), so the model sees one format, and TRG-02's text stays on the registry's own Try panel. AGL-09 and TRG-12 must pass `issues`, not only the message. If TRG-02's text must reach the model, S2 changes.
-- **O4 (Navigator, confirm).** Unexpected exceptions do not count (S7). The unit's Why says "a tool that keeps failing is withdrawn" (line 15), but its Decisions count invalid calls (line 21). Default: only invalid calls count, as the Decisions say. A failing tool stays bounded by the step cap.
-- **O5 (orchestrator).** Where AC1 to AC3 re-run once AGL-03 exists. The unit says "through the composed app and mock server once AGL-03 exists" (line 24) but names no owner. AGL-03's criteria (after line 30) do not test withdrawal, and AGL-08's criterion (line 22) needs AC1 to AC3 to pass on `main`. Default: the harness tests stay; AGL-03 adds one composed mock test for the malformed-turn withdrawal; AGL-08 runs both.
-- **O6 (Navigator).** No cap on what `read_file` returns to the model. The Project store refuses files over 5 MiB (`files.service.ts` line 52, and `FILE_SIZE_CAP_BYTES` in `packages/contracts/src/project-store/constants.ts` line 23), so a large file goes to the model whole, and `list_files` with `recursive` is unbounded. Default: no cap in AGL-02. Context trimming (AGL-04) or a later unit can decide.
-- **O7 (Navigator).** Two choices not in the unit: `additionalProperties: false` (S1) and an empty argument string counted as `{}` (S4). Each is a one-line change, in `builtin-tools.ts` and in the parse step of `tool-run.ts`.
-- **O8 (Navigator).** The attempt values of the two answers that are not counted: 1 for a call that is not offered (S8), and 3 for a call to a withdrawn tool (S6). The contract needs an integer of at least 1, so these are the values that fit.
+No point is left for the Navigator. A point goes to the Navigator only when the unit files, the module files and `plans/DECISIONS.md` give no answer and the options affect other units or are expensive to change (`prompt.md`, section "Navigator"). `plans/DECISIONS.md` has no entry for AGL-02 (checked by grep).
+
+- **O1 (settled by the unit files).** Refusals count as invalid calls (S7 (c)). Sources: unit line 22 says refusals "come back as readable tool errors"; unit line 20 says that readable text is "shown on the card with the attempt number", so every readable error has an attempt in the count; unit line 21 already counts errors of argument values, not only of shape ("Unknown entity IDs and edit-text mismatches count as validation failures"); `units/AGL-09-narrative-tools.md` line 20 counts "Project store unknown-ID errors" as retries under the AGL-02 policy; unit line 15 says "a tool that keeps failing is withdrawn". A Project store refusal is the same class as an unknown ID: the argument value names something the store refuses. So a loop of `../` or missing files is withdrawn after three consecutive calls. The contract also needs `attempt` at least 1 on every `tool-call-error` (`events.ts` line 50).
+- **O2 (small choice of this plan).** The third answer is the readable lines, the expected summary, then `This tool is unavailable for the rest of this agent run.` (S6). Unit line 21 says to "answer" the sentence; it does not say to drop the readable lines, and unit line 20 says the readable text is the tool result. No other unit reads this text; a change is one line in `tool-run.ts`.
+- **O3 (settled by the unit and the contract).** Registry errors use the unit's format, rendered from structured issues. Sources: unit line 20 fixes one format "built-in and registry tools alike"; `modules/agent-loop.md` line 53 asks for "the same readable-error format" for both, which one renderer gives; the published contract already carries the issues of `TOOL_ARGS_INVALID` as `details: {issues}` (`packages/contracts/src/tool-registry/errors.ts` lines 63 to 66), and TRG-02's `validate.ts` line 243 fills them. TRG-02's own text (`validate.ts` lines 219 to 249) stays the registry's HTTP error message; this plan does not change it. No new requirement falls on TRG-12: its criterion (line 38) already returns `TOOL_ARGS_INVALID` from the same validation. AGL-09 (its line 20) renders `details.issues`, and for an entity error, whose details carry no issues, one issue at the empty path with the error's message. AGL-02 itself renders built-in issues only; the registry path is AGL-09's.
+- **O4 (small choice of this plan).** An unexpected exception (neither a `ModuleError` nor a `ToolArgumentError`) does not count and does not reset (S7). Unit line 21 counts "invalid calls"; an internal fault is not an invalid call by the model. The step cap (unit line 21, AGL-03 line 23) still bounds a tool that keeps failing. AGL-22's cut-offs (its line 25: "a readable error") are refusals it throws as `ModuleError` or `ToolArgumentError`, so they count under S7.
+- **O5 (settled by AGL-08).** AGL-08 owns the re-run of AC1 to AC3 through the composed app and the mock server. Sources: `units/AGL-08-file-tools-chat-gate.md` line 22 names "outside-path refusal" and "malformed-turn withdrawal" among the criteria (AGL-02 to AGL-07) that must pass on `main`; a "turn" is a scripted mock turn (`modules/agent-loop.md` line 62 lists the "malformed arguments" turn on the primary seam); AGL-08's `blocked_by` (line 7) holds AGL-03 and PLT-13, so the composed loop and the mock exist when it is planned. AGL-03's criteria (lines 31 to 36) do not name withdrawal, and adding a criterion or a scope item to AGL-03 is not one of the reviser's four actions, so AGL-03 is not changed. The AGL-02 harness tests stay on `main`; AGL-08's planner adds the two scripted turns (an outside path, three malformed calls) through the composed app. No unit change.
+- **O6 (small choice of this plan).** No cap on what `read_file` or a recursive `list_files` returns. The Project store refuses files over 5 MiB (`files.service.ts` line 52). No criterion of AGL-02 needs a cap, and context trimming is AGL-04's (`modules/agent-loop.md` line 21).
+- **O7 (small choice of this plan).** `additionalProperties: false` (S1) and an empty argument string read as `{}` (S4). AC2 case e tests the first. Each is one line.
+- **O8 (small choice of this plan).** Attempt values of the answers that are not counted: 1 for a call that is not offered (S8), 3 for a call to a withdrawn tool (S6). The contract needs an integer of at least 1 (`events.ts` line 50).
 
 ## 7. Shared files with draft and planned plans
 
@@ -266,16 +270,25 @@ Test kit:
 - `project-store-path-safety.kit.ts`: line 28 (the outside folder), line 50 (`symlinkSync`).
 - `project-store-active.kit.ts`: `activeKitModule`, a test kit with an `api/project-store-test` controller and no guard (the precedent for the harness).
 
+Revision 2 (reviser), re-checked at `813cd28`: unit lines 15 and 18 to 27; `modules/agent-loop.md` lines 21, 53 and 62; AGL-03 lines 7 and 23 to 36; AGL-08 lines 7 and 22; AGL-09 line 20; TRG-12 line 38; `packages/contracts/src/tool-registry/errors.ts` lines 56 to 66; `validate.ts` lines 220 and 243; `events.ts` line 50; `files.service.ts` lines 48 to 55, 232 to 269 and 525 to 532; `path-safety.ts` lines 21 to 33 and 123 to 145; the test kit lines of section 4; `grep -l '^status: \(draft\|planned\)' plans/*.md` gives GRR-01, MPR-08, TRG-06 and this file; no `plans/AGL-03.md` or `plans/AGL-08.md`; `plans/DECISIONS.md` has no AGL-02 entry.
+
 Other plans and git:
 - `plans/AGL-01.md` line 123 (the fixed `attempt` meaning is left to AGL-02). `plans/PST-12.md` line 3 (`status: done`). `plans/AGL-06.md` `status: done`; commit `8a58dce` (red-first precedent). `plans/DECISIONS.md` line 2900 (the mutation-check lesson). `plans/QUEUE.md` line 2 (AGL-02: available).
 - Git: HEAD `303c14c`; `git status --short` prints nothing; PST-12 commits `4989d44` and `377a83c` are on `main`.
 
 ## 9. Assumed (not checked by this plan)
 
-- The dependencies are installed in this checkout (`apps/api/node_modules`). Step 0 covers the case where they are not.
+- The dependencies are installed in this checkout (root `node_modules`; `node_modules/ajv/package.json` is present, checked in revision 2). Step 0 covers the case where they are not.
 - Ajv 8.20.0 in strict mode accepts the `description` keyword and the schema forms of S1. The TRG-02 scratch run (`plans/TRG-02.md` section 7a) found that only `x-` keywords are rejected; that run was not repeated here.
 - The symlink in AC1 resolves outside the project as `path-safety.ts` says. This is the same case as `project-store-path-safety.kit.ts` line 50. No test was run.
 - With `modules` set and the default static root, `createTestApp` works for a test module without a guard, as `activeKitModule` does.
 - `npx vitest run` in `apps/api` runs the test file. `npm test -w @bbartolome/scriba-api` runs the build first (`apps/api/package.json`, `test` script).
 - Provider behaviour for an empty argument string (S4) and the shape of the mock's tool calls are not checked. No fixture covers them in AGL-02.
 - The implementer's Node version matches the root `engines` field (`>=26 <27`).
+
+## 10. Review parts
+
+Each step of section 3 and each test of section 4 is in exactly one part. Review part 1 before part 2; the test file of step 1 runs whole at step 6, because every test goes through the harness and both read tools.
+
+- **Part 1: dispatcher, readable errors and counts.** Steps 0 (preconditions), 1 (red tests and the harness kit), 2 (types and renderer), 4 (`ToolRun`: dispatch, counts, withdrawal) and 5 (service and module wiring). Tests: AC2 (`AC2: unparseable JSON and schema violations produce the readable format`) and AC3 (`AC3: a tool is withdrawn on the third consecutive invalid call, and a valid call resets the count`).
+- **Part 2: the two read tools and the checks.** Steps 3 (`list_files` and `read_file` on `FilesService`), 6 (the three tests), 7 (full API suite), 8 (lint and format), 9 (source commit), 10 (mutation checks M1 to M6) and 11 (changed paths). Test: AC1 (`AC1: a path outside the project is refused with a readable error, and nothing outside is shown`).
