@@ -4067,3 +4067,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Mutation results (implementer's report, on the feature commit before the lint fix; the lint fix does not change behaviour): (a) U1 fails at step 5; (b) D1 fails; (c) L1 fails at its step (1), the case run while logs/ does not exist; (d) H1 fails; (e) D3 fails; (f) H2 and H3 fail; (g) H2 fails; (h) D2 fails.
 - Gates: npm run build, npm test (API 210 tests) and npm run lint exit 0 at the root and in the fresh clone. 21 of 21 PST-07 tests pass.
 - Code rejections of PST-07: 0.
+
+## 2026-11-15 — PST-09 — Sonnet code review (two parts): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/PST-09 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 1bb3246): 9f4b739339399aa73a103ec83d598a3fd36e3784.
+- Part 1 (steps 0 to 5; C1 P1 to P6, K1, K2, K3; the file list of plan section 2): APPROVED. Part 2 (steps 6 to 9; C3 journey step, C2 E2 at 390 by 844, K4 lint, step 8 build and lazy-chunk check): APPROVED.
+- Implementer's gates on 1bb3246 (report): lint exit 0; root test exit 0 (contracts 223, api 210, web 247, packs 1, e2e 12); web build exit 0; `npm run e2e` 4 passed.
+- Code rejections of PST-09: 0.
