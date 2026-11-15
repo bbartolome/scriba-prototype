@@ -39,7 +39,7 @@ interface SettingsOptions {
 // The providers section of one mock provider. Its model is set, so the mock records only chat requests.
 function providersSection(
   baseURL: string,
-  retries = PROVIDER_DEFAULTS.retries,
+  retries: number = PROVIDER_DEFAULTS.retries,
 ): unknown {
   return {
     schemaVersion: 1,
