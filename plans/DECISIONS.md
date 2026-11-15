@@ -4367,3 +4367,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 2 (steps 10 to 12, tests T1, T2): APPROVED. T2 follows revision 3; three e2e runs pass (T1 and T2).
 - Part 3 (steps 13 to 19, tests T4, T5): APPROVED. Spike note committed, 4 verdict rows; root build, test and lint pass; fresh clone passes.
 - Code rejections: 1 (the rebase, a step not done). The rebase should not change the code, so the approvals of parts 2 and 3 are re-checked on the new patch id by the same review.
+
+## 2026-11-15 — TRG-05 — Sonnet code review (three parts): APPROVED after the rebase
+
+- Patch id of the approved code (`git diff main...unit/TRG-05 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 356c41f before the status commit, code head 467ed3b): 3a023525bc9dad716cd77159827de216880ca909. The rebase onto main (4638318) did not change the patch id.
+- Part 1 (steps 0 to 9): APPROVED on the rebased head. Part 2 (steps 10 to 12): APPROVED. Part 3 (steps 13 to 19): APPROVED.
+- Final checks on the rebased head: lint, test (web 82 + 49 files; API tool-registry-api; packs; e2e) and build all exit 0.
+- Code rejections: 0 after the rebase.
