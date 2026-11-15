@@ -1,8 +1,12 @@
 import type {
   AppDefault,
+  ConnectionTestError,
+  ConnectionTestResult,
+  ConnectionTestStage,
   ModelList,
   Preset,
   PresetList,
+  ProviderErrorCode,
   ProviderList,
   ProviderRead,
 } from '@bbartolome/scriba-contracts/providers';
@@ -286,3 +290,120 @@ export const emptyBodyCopy: ResponseSchema<null> = {
       : { success: false, error: 'A 204 has no body.' };
   },
 };
+
+/** `POST /api/providers/test` (`CONNECTION_TEST_ROUTE`). The form sends it through the store. */
+export const CONNECTION_TEST_PATH = '/api/providers/test';
+
+/** The ten provider error codes as a literal tuple (`PROVIDER_ERROR_CODE_VALUES`). */
+export const PROVIDER_ERROR_CODE_NAMES = [
+  'PROVIDER_UNREACHABLE',
+  'PROVIDER_UNAUTHORIZED',
+  'PROVIDER_MODEL_NOT_FOUND',
+  'PROVIDER_TIMEOUT',
+  'PROVIDER_RATE_LIMITED',
+  'PROVIDER_BAD_RESPONSE',
+  'PROVIDER_ABORTED',
+  'PROVIDER_NOT_CONFIGURED',
+  'PROVIDER_DEFAULT_IN_USE',
+  'PROVIDER_NOT_FOUND',
+] as const;
+
+/** The three stages of a connection test, in order (`CONNECTION_TEST_STAGES`). */
+const CONNECTION_TEST_STAGE_NAMES = ['reach', 'list', 'chat'] as const;
+
+function isStage(value: unknown): value is ConnectionTestStage {
+  return CONNECTION_TEST_STAGE_NAMES.some((stage) => stage === value);
+}
+
+function isErrorCode(value: unknown): value is ProviderErrorCode {
+  return PROVIDER_ERROR_CODE_NAMES.some((code) => code === value);
+}
+
+function readConnectionTestError(
+  value: unknown,
+): ConnectionTestError | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const { code, message, hint } = value;
+  if (!isErrorCode(code) || !isString(message)) {
+    return undefined;
+  }
+  const error: ConnectionTestError = { code, message };
+  if (hint !== undefined) {
+    if (!isString(hint)) {
+      return undefined;
+    }
+    error.hint = hint;
+  }
+  return error;
+}
+
+function readConnectionTestResult(
+  value: unknown,
+): ConnectionTestResult | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const { ok, stage, latencyMs, modelCount, error } = value;
+  const wait = finiteNumber(latencyMs);
+  if (typeof ok !== 'boolean' || !isStage(stage) || wait === undefined) {
+    return undefined;
+  }
+  if (wait < 0) {
+    return undefined;
+  }
+  const result: ConnectionTestResult = { ok, stage, latencyMs: wait };
+  if (modelCount !== undefined) {
+    const count = integerAtLeast(modelCount, 0);
+    if (count === undefined) {
+      return undefined;
+    }
+    result.modelCount = count;
+  }
+  if (error !== undefined) {
+    const parsed = readConnectionTestError(error);
+    if (parsed === undefined) {
+      return undefined;
+    }
+    result.error = parsed;
+  }
+  return result;
+}
+
+/** Response of `POST /api/providers/test` (`connectionTestResultSchema`). */
+export const connectionTestResultCopy: ResponseSchema<ConnectionTestResult> =
+  guard(readConnectionTestResult);
+
+/**
+ * Whether a provider is Ollama, by the server's rule (`isOllamaProvider`, providers.resolution.ts lines
+ * 114 to 120; MPR-10 unit line 16): its baseURL uses port 11434, or its id starts with `ollama`. The id
+ * covers a provider made from the Ollama preset, whose `presetId` is not stored. An unparsable URL is not
+ * Ollama. The form passes the typed text, so the URL may be unparsable.
+ */
+export function isOllamaProvider(config: {
+  id?: string;
+  baseURL: string;
+}): boolean {
+  let port: string;
+  try {
+    port = new URL(config.baseURL).port;
+  } catch {
+    return false;
+  }
+  return (
+    port === '11434' ||
+    (config.id !== undefined && config.id.startsWith('ollama'))
+  );
+}
+
+/**
+ * The context-length note under the context field (MPR-10 D6): the Ollama preset's first hint, then one
+ * sentence with the number from the installer (PLT-17 D18).
+ */
+export const OLLAMA_CONTEXT_NOTE =
+  'Context length is set in Ollama, not in Scriba. Start Ollama with OLLAMA_CONTEXT_LENGTH=64000 or higher.';
+
+/** The pull note under the model picker when the list is empty (MPR-10 D6): the Ollama preset's pull line. */
+export const OLLAMA_PULL_NOTE =
+  'Pull a model on the host with `ollama pull <model>`.';
