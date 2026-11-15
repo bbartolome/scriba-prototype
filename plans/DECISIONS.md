@@ -4156,3 +4156,8 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Files changed: exactly the six paths of the plan's section 2. The one shared file, `apps/api/test/invariant-sweep.ts`, keeps both of main's tool-registry entries and adds the setup-auth entry once.
 - Tests: criteria 1 to 4, `refusals` and `theme is dropped and never stored` pass (reviewer ran three files: 12 tests). Gates on 9724e28 (orchestrator): lint, test (node 75 pass) and build exit 0.
 - Code rejections: 0.
+
+## 2026-11-15 — SAU-09 — Failed check: rebase onto main conflicts in apps/api/src/modules/setup-auth/setup-status.service.ts
+
+- **Report (orchestrator, rebase of unit/SAU-09 head 9724e28 onto main 0295fb0, which includes SAU-10's merge):** the rebase stops with a conflict in `apps/api/src/modules/setup-auth/setup-status.service.ts`. SAU-10 changed `statusBody` (a required `compose` parameter, passed by both callers); SAU-09 changed the same function (the access precedence and the `steps` writes). The plan's merge rule (`plans/SAU-09.md`, its merge rule with SAU-10) keeps both changes: `statusBody` takes this unit's steps expression and SAU-10's `compose` expression, and both units' new methods are kept.
+- **Action:** the rebase is aborted (the branch is unchanged at 9724e28). A new implementer resolves the conflict by that rule, runs the gates, and reports the new patch id. The patch id must then be reviewed again (prompt.md step 3 item 5).
