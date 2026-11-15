@@ -31,7 +31,7 @@ import {
 import { dataOf, openSse, type OpenSse } from './sse';
 import { backupEntries, settingsFilePath } from './settings.kit';
 
-// Every test builds its own temp library and removes it. Nothing here reads examples/.
+// Every test builds its own temp library and removes it. Nothing here reads the sample projects.
 
 function readSettings(library: string): string {
   return readFileSync(settingsFilePath(library), 'utf8');
