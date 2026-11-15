@@ -9,11 +9,10 @@ import {
   DEFAULT_GENRE_PACK,
   PROJECT_ERROR_CODES,
   PROJECT_ERROR_STATUS,
-  projectsSectionSchema,
   type NewProjectRequest,
   type ProjectSummary,
 } from '@bbartolome/scriba-contracts/project-store';
-import { ModuleError, SettingsService } from '../platform/platform.module';
+import { ModuleError } from '../platform/platform.module';
 import { writeFileAtomic } from './atomic-write';
 import {
   discoverProjects,
@@ -32,7 +31,7 @@ import { ProjectStoreService } from './project-store.service';
 const PROJECT_YAML = 'project.yaml';
 
 // Every message of the project list and its commands. Fixed strings only; no input value is echoed.
-const PROJECT_MESSAGES = {
+export const PROJECT_MESSAGES = {
   NO_FOLDER_NAME:
     'A folder name cannot be made from this title. Give a folder name.',
   EXISTS: 'A folder with that name already exists in the library.',
@@ -46,17 +45,11 @@ const PROJECT_MESSAGES = {
 // The project list, New and Import. Every file access goes through the Project store's path check.
 @Injectable()
 export class ProjectsService {
-  constructor(
-    private readonly store: ProjectStoreService,
-    private readonly settings: SettingsService,
-  ) {}
+  constructor(private readonly store: ProjectStoreService) {}
 
-  // The id of the active project from the projects section, or null when none is set (S11).
+  // The id of the active project, read from the Project store (S11).
   activeId(): string | null {
-    const section = projectsSectionSchema.safeParse(
-      this.settings.read('projects'),
-    );
-    return section.success ? section.data.active : null;
+    return this.store.activeId();
   }
 
   discover(): DiscoveredProject[] {

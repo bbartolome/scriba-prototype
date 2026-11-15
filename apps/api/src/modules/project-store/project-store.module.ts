@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PlatformModule, SettingsService } from '../platform/platform.module';
+import { ActiveProjectController } from './active-project.controller';
+import { ActiveProjectService } from './active-project.service';
 import { PROJECTS_SECTION_DEF } from './project-store.section';
 import { ProjectStoreService } from './project-store.service';
 import { ProjectsController } from './projects.controller';
@@ -15,7 +17,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
 // path-check provider.
 @Module({
   imports: [PlatformModule],
-  controllers: [ProjectsController],
+  controllers: [ProjectsController, ActiveProjectController],
   providers: [
     {
       provide: PROJECT_STORE_SECTION_REGISTRATION,
@@ -27,6 +29,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     },
     ProjectStoreService,
     ProjectsService,
+    ActiveProjectService,
   ],
   exports: [ProjectStoreService],
 })
