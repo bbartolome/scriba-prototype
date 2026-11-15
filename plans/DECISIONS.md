@@ -4276,3 +4276,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 1 (copies, steps 0-3, P3): APPROVED. Part 2 (UI, steps 4-10, C1, C2, E1): APPROVED. C1 and C2 pass; E1 and P3 pass; web 42 files / 311 tests.
 - Implementer differences judged acceptable: the copy key is `testing` (D11 and the section 2 key list; D3 names `testingButton`, so the plan contradicts itself); `testHeading` is in the key list; the modelCount wording matches C1's "3 models listed."; the saved-provider note sits above the action row (D1 "above the button"); the spec-only glob for the folder run; prettier formatting commit.
 - Code rejections: 0.
+
+## 2026-11-15 — AGL-10 — Navigator decision: test seam for criterion 1
+
+- **Decision (Navigator, session d7484d0c3c21484d913089ae0bad89b1, option B):** AGL-10 gains AGL-03 in `blocked_by` (unit front matter). Both criteria are scripted turns through the composed app with Platform's mock OpenAI server (the module's default seam). The AGL-02 test-only HTTP kit is not used for AGL-10. Options A (kit call counts as the scripted turn) and C (split criterion 1 into AGL-26) were rejected.
+- **Reason:** AGL-10's criteria heading has no seam parenthetical, so `units/README.md` line 57 gives the module default, `modules/agent-loop.md` line 62. The kit allowance exists only in AGL-02's own heading (`units/AGL-02-tool-framework-file-reads.md` line 24, "until AGL-03 exists"), so it cannot be borrowed. AGL-03 is not on main: it has no plan, and its `blocked_by` (line 7) names MPR-08, AGL-06 and SAU-08. AGL-10 therefore waits for AGL-03.
+- **Effect:** AGL-10 is not available until AGL-03 is on main. AGL-03 waits on MPR-08, which waits on the owner's manual check (see the MPR-08 entries above). The AGL-10 plan (`plans/AGL-10.md`, status draft) must be revised to the composed-app seam; its open point 1 is closed by this decision.
+- **Unit change to apply:** `units/AGL-10-search-notes.md` line 7 gains AGL-03; the `unblocks` line of `units/AGL-03-loop-core.md` gains AGL-10 so the two stay exact inverses.
