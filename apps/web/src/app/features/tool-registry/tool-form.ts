@@ -21,6 +21,7 @@ import type {
   ToolArgsIssue,
   ValueType,
 } from '@bbartolome/scriba-contracts/tool-registry';
+import { EntityPicker } from './entity-picker';
 
 /** The layout the form draws: every field, or the port rows and parameters of a canvas node. */
 export type ToolFormLayout = 'form' | 'node-body';
@@ -126,11 +127,6 @@ function textOf(value: unknown): string {
   return value === undefined || value === null ? '' : String(value);
 }
 
-/** The ids of a picker's value, as read-only text: a list is joined with commas. */
-function idsOf(value: unknown): string {
-  return Array.isArray(value) ? value.map(textOf).join(', ') : textOf(value);
-}
-
 /**
  * The segments of a JSON Pointer, unescaped as validate.ts does (`~1` is `/`, then `~0` is `~`).
  * A path that is empty, or is not a pointer, has no segments: it names the whole set.
@@ -152,12 +148,12 @@ function itemPrefixOf(segment: string): string {
  * The tool form (TRG-03): the arguments of one tool as typed controls in the form layout, or as the
  * port rows and parameters of a canvas node in the node-body layout. The control of each field is the
  * one the server derived; this component never chooses it from `valueType`. It never validates: the
- * `issues` are the server's, shown next to their fields. The pickers are TRG-04's: here they show their
- * ids as read-only text.
+ * `issues` are the server's, shown next to their fields. The pickers are EntityPicker's (TRG-04).
  */
 @Component({
   selector: 'app-tool-form',
   imports: [
+    EntityPicker,
     MatButton,
     MatFormField,
     MatInput,
@@ -206,12 +202,6 @@ function itemPrefixOf(segment: string): string {
 
     .field-title {
       margin: 0;
-    }
-
-    .picker-slot {
-      min-height: 44px;
-      padding: 8px 0;
-      overflow-wrap: anywhere;
     }
 
     .range {
@@ -290,19 +280,12 @@ function itemPrefixOf(segment: string): string {
         >
           @switch (view.kind) {
             @case ('picker') {
-              <p class="field-title">
-                {{ view.field.title }}
-                @if (view.field.required) {
-                  <span class="mark" aria-hidden="true">*</span>
-                }
-              </p>
-              <div
-                class="picker-slot"
-                [attr.data-control]="view.field.control"
-                [attr.aria-describedby]="describedBy(view) || null"
-              >
-                {{ idsOf(valueOf(view.key)) }}
-              </div>
+              <app-entity-picker
+                [field]="view.field"
+                [describedBy]="describedBy(view)"
+                [value]="valueOf(view.key)"
+                (valueChange)="write(view.key, $event)"
+              />
             }
             @case ('list') {
               <fieldset>
@@ -513,7 +496,6 @@ export class ToolForm implements OnInit {
   readonly submitted = output<ToolArguments>();
 
   protected readonly textOf = textOf;
-  protected readonly idsOf = idsOf;
   private readonly uid = `tool-form-${++formCount}`;
 
   /** The rendered fields: every field in the form layout, the parameters in the node-body layout. */
@@ -686,7 +668,7 @@ export class ToolForm implements OnInit {
   }
 
   /** Sets one key of the value, or removes it when the next value is undefined. */
-  private write(key: string, next: unknown): void {
+  protected write(key: string, next: unknown): void {
     const current: ToolArguments = { ...this.value() };
     if (next === undefined) {
       delete current[key];

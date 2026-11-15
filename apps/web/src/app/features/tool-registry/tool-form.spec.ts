@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type {
   FormDescriptor,
@@ -7,8 +7,30 @@ import type {
   ToolArgsIssue,
 } from '@bbartolome/scriba-contracts/tool-registry';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createShellTestDoubles } from '../../shell/testing/test-doubles';
+import { Subject, map } from 'rxjs';
+import { parseResponse } from '../../shell/api-client';
+import {
+  createShellTestDoubles,
+  type ShellTestDoubles,
+} from '../../shell/testing/test-doubles';
 import { ToolForm, type ToolFormLayout } from './tool-registry.routes';
+
+// The paths the pickers read for the project p1 (the active project of the default answers).
+const ACTIVE_PATH = '/api/project-store/active';
+const ENTITIES_PATH = '/api/project-store/projects/p1/entities';
+const FILE_PATH = '/api/project-store/projects/p1/file';
+
+const HASH = `sha256:${'0'.repeat(64)}`;
+
+/** The file read of project.yaml with the given content. */
+function projectYaml(content: string) {
+  return {
+    path: 'project.yaml',
+    content,
+    hash: HASH,
+    mtime: '2026-11-15T10:00:00Z',
+  };
+}
 
 /** One field as the merged emitter writes it: every key present, the optional ones only when set. */
 function field(
@@ -237,10 +259,17 @@ interface Setup {
   value?: Record<string, unknown>;
 }
 
+let doubles: ShellTestDoubles;
+
 beforeEach(() => {
-  // The Shell's fakes, as the module's UI seam names them. The component does no I/O, so no test drives them.
-  const doubles = createShellTestDoubles();
+  // The Shell's fakes, as the module's UI seam names them. The pickers read the active project, its entity
+  // list and its project.yaml through the fake; these are the default answers, and a test that needs
+  // others registers them before it renders.
+  doubles = createShellTestDoubles();
   TestBed.configureTestingModule({ providers: [...doubles.providers] });
+  doubles.api.respond('GET', ACTIVE_PATH, { active: 'p1' });
+  doubles.api.respond('GET', ENTITIES_PATH, { entities: [], invalid: [] });
+  doubles.api.respond('GET', FILE_PATH, projectYaml('title: Book\n'));
 });
 
 /** Renders the host with the given inputs and lets the first render settle. */
@@ -335,7 +364,7 @@ describe('ToolForm, form layout', () => {
     elementOf(root, 'section[data-key="length"] input[type="range"]');
     elementOf(root, 'section[data-key="count"] input[type="number"]');
     elementOf(root, 'section[data-key="moody"] mat-slide-toggle');
-    elementOf(root, 'section[data-key="person"] .picker-slot');
+    elementOf(root, 'section[data-key="person"] select');
 
     const tagItems = inputsOf(sectionOf(root, 'tags'));
     expect(tagItems.map((input) => input.type)).toEqual(['text']);
@@ -447,23 +476,22 @@ describe('ToolForm, form layout', () => {
     const host = fixture.componentInstance;
 
     expect(
-      elementOf(
-        root,
-        'section[data-key="person"] .picker-slot[data-control="entity-picker"]',
-      ).textContent,
-    ).toContain('ada');
-    const entitySlot = elementOf(
-      root,
-      'section[data-key="entityIds"] .picker-slot[data-control="entity-picker"]',
-    );
-    expect(entitySlot.textContent).toContain('ada');
-    expect(entitySlot.textContent).toContain('bob');
+      elementOf<HTMLSelectElement>(root, 'section[data-key="person"] select')
+        .value,
+    ).toBe('ada');
     expect(
-      elementOf(
+      [
+        ...root.querySelectorAll<HTMLElement>(
+          'section[data-key="entityIds"] [data-id]',
+        ),
+      ].map((chip) => chip.dataset['id']),
+    ).toEqual(['ada', 'bob']);
+    expect(
+      elementOf<HTMLSelectElement>(
         root,
-        'section[data-key="styleProfile"] .picker-slot[data-control="style-picker"]',
-      ).textContent,
-    ).toContain('house-style');
+        'section[data-key="styleProfile"] select',
+      ).value,
+    ).toBe('house-style');
 
     // The only value added is the length default (D6): the picker values are unchanged.
     buttonLabelled(root, 'Submit').click();
@@ -519,7 +547,7 @@ describe('ToolForm, form layout', () => {
       'Item 2: expected an entity ID (lower-case letters, digits and hyphens), received "Ada Lovelace"',
     );
     expect(
-      elementOf<HTMLElement>(entities, '.picker-slot').getAttribute(
+      elementOf<HTMLElement>(entities, 'select').getAttribute(
         'aria-describedby',
       ),
     ).toContain(entityIssue.id);
@@ -665,5 +693,200 @@ describe('ToolForm, node-body layout', () => {
       'Moment',
       'Output',
     ]);
+  });
+});
+
+// The picker fixture (TRG-04): a single person field, a list of people, and the style field.
+const PICKER_FORM: FormDescriptor = {
+  fields: [
+    field('person', {
+      title: 'Person',
+      control: 'entity-picker',
+      valueType: 'string',
+      elementType: 'entity',
+      entityKinds: ['person'],
+    }),
+    field('people', {
+      title: 'People',
+      control: 'entity-picker',
+      valueType: 'string',
+      elementType: 'entity',
+      list: true,
+      entityKinds: ['person'],
+    }),
+    field('styleProfile', {
+      title: 'Style profile',
+      control: 'style-picker',
+      valueType: 'string',
+      elementType: 'style',
+    }),
+  ],
+};
+
+/** A mixed-type list: two people, a place, a claim and a style profile, and one invalid file. */
+const MIXED_LIST = {
+  entities: [
+    {
+      id: 'ada',
+      type: 'person',
+      path: 'entities/people/ada.md',
+      title: 'Ada Lovelace',
+    },
+    { id: 'bob', type: 'person', path: 'entities/people/bob.md' },
+    { id: 'london', type: 'place', path: 'entities/places/london.md' },
+    { id: 'claim-one', type: 'claim', path: 'entities/claims/one.md' },
+    {
+      id: 'house-style',
+      type: 'style-profile',
+      path: 'styles/house.md',
+      title: 'House style',
+    },
+  ],
+  invalid: [
+    {
+      path: 'entities/people/broken.md',
+      reason: 'The front matter is not YAML.',
+    },
+  ],
+};
+
+/** A list of two style profiles and one person. */
+const STYLE_LIST = {
+  entities: [
+    {
+      id: 'house-style',
+      type: 'style-profile',
+      path: 'styles/house.md',
+      title: 'House style',
+    },
+    { id: 'plain', type: 'style-profile', path: 'styles/plain.md' },
+    { id: 'ada', type: 'person', path: 'entities/people/ada.md' },
+  ],
+  invalid: [],
+};
+
+/** The option values of a section's select, the empty option included. */
+function optionValuesOf(scope: ParentNode): string[] {
+  const select = elementOf<HTMLSelectElement>(scope, 'select');
+  return [...select.options].map((option) => option.value);
+}
+
+/** The ids of a section's chips, in order. */
+function chipIdsOf(scope: ParentNode): (string | undefined)[] {
+  return [...scope.querySelectorAll<HTMLElement>('[data-id]')].map(
+    (chip) => chip.dataset['id'],
+  );
+}
+
+describe('EntityPicker', () => {
+  it('AC1 the entity picker offers only the kinds of its field', async () => {
+    doubles.api.respond('GET', ENTITIES_PATH, MIXED_LIST);
+    const fixture = await render({ form: PICKER_FORM, value: {} });
+    const root = rootOf(fixture);
+    const person = sectionOf(root, 'person');
+
+    const select = elementOf<HTMLSelectElement>(person, 'select');
+    expect([...select.options].map((option) => option.value)).toEqual([
+      '',
+      'ada',
+      'bob',
+    ]);
+    expect(
+      [...select.options].map((option) => option.textContent.trim()),
+    ).toEqual(['None', 'Ada Lovelace', 'bob']);
+    for (const id of ['london', 'claim-one', 'house-style', 'broken']) {
+      expect(person.innerHTML).not.toContain(id);
+    }
+  });
+
+  it('AC2a a list field accepts several entities and renders one chip per value', async () => {
+    doubles.api.respond('GET', ENTITIES_PATH, MIXED_LIST);
+    const fixture = await render({
+      form: PICKER_FORM,
+      value: { people: ['ada'] },
+    });
+    const root = rootOf(fixture);
+    const host = fixture.componentInstance;
+    const people = sectionOf(root, 'people');
+    expect(chipIdsOf(people)).toEqual(['ada']);
+
+    edit(elementOf<HTMLSelectElement>(people, 'select'), 'bob', 'change');
+    await settle(fixture);
+
+    expect(host.value['people']).toEqual(['ada', 'bob']);
+    expect(chipIdsOf(people)).toEqual(['ada', 'bob']);
+    expect(people.textContent).not.toContain('ada, bob');
+  });
+
+  it('AC3 the style picker preselects the project style profile', async () => {
+    doubles.api.respond('GET', ENTITIES_PATH, STYLE_LIST);
+    doubles.api.respond(
+      'GET',
+      FILE_PATH,
+      projectYaml('title: Book\nstyleProfile: house-style\n'),
+    );
+    const fixture = await render({ form: PICKER_FORM, value: {} });
+    const root = rootOf(fixture);
+    const host = fixture.componentInstance;
+
+    const style = sectionOf(root, 'styleProfile');
+    expect(optionValuesOf(style)).toEqual(['', 'house-style', 'plain']);
+    expect(elementOf<HTMLSelectElement>(style, 'select').value).toBe(
+      'house-style',
+    );
+    expect(host.value).toEqual({ styleProfile: 'house-style' });
+
+    buttonLabelled(root, 'Submit').click();
+    await settle(fixture);
+    expect(host.submitted).toEqual({ styleProfile: 'house-style' });
+  });
+
+  it('X2 re-filters the options when the field changes its kinds', async () => {
+    doubles.api.respond('GET', ENTITIES_PATH, MIXED_LIST);
+    const fixture = await render({ form: PICKER_FORM, value: {} });
+    const root = rootOf(fixture);
+    expect(optionValuesOf(sectionOf(root, 'person'))).toEqual([
+      '',
+      'ada',
+      'bob',
+    ]);
+
+    fixture.componentInstance.form = {
+      fields: PICKER_FORM.fields.map((candidate) =>
+        candidate.key === 'person'
+          ? { ...candidate, entityKinds: ['place'] }
+          : candidate,
+      ),
+    };
+    // The host is OnPush and its form is a plain property: its view is marked before the new form renders.
+    fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+    await settle(fixture);
+
+    expect(optionValuesOf(sectionOf(root, 'person'))).toEqual(['', 'london']);
+  });
+
+  it('X4 keeps a value the host holds when the file read answers later', async () => {
+    doubles.api.respond('GET', ENTITIES_PATH, STYLE_LIST);
+    const answer = new Subject<unknown>();
+    const get = doubles.api.get.bind(doubles.api);
+    doubles.api.get = (path, schema, params) =>
+      path === FILE_PATH
+        ? answer.pipe(map((body) => parseResponse(path, schema, body)))
+        : get(path, schema, params);
+
+    const fixture = await render({
+      form: PICKER_FORM,
+      value: { styleProfile: 'plain' },
+    });
+    answer.next(projectYaml('styleProfile: house-style\n'));
+    await settle(fixture);
+
+    expect(fixture.componentInstance.value).toEqual({ styleProfile: 'plain' });
+    expect(
+      elementOf<HTMLSelectElement>(
+        sectionOf(rootOf(fixture), 'styleProfile'),
+        'select',
+      ).value,
+    ).toBe('plain');
   });
 });
