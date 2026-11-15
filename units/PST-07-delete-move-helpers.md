@@ -6,7 +6,7 @@ phase: phase:files
 milestone: M1
 blocked_by: [PST-06]
 parallel_with: [PST-08, PST-09, PST-10, PST-11]
-unblocks: [PST-12, "Model providers project override API (MPR-12)"]
+unblocks: [PST-12]
 ---
 
 # PST-07 — delete, move and in-process helpers
@@ -21,6 +21,8 @@ Consumers: Graph runner (graph delete/rename, run logs), Compile & export (snaps
   - `appendLog(projectId, path, line)`: appends one line to a file under `logs/` (path safety applies; path must be inside `logs/`). **Allowed for any `ok` project** (a run stopped by a switch can finish its log). Publishes nothing.
   - `stateDir(projectId, owner)`: returns the absolute path of `<project>/.scriba/<owner>/` (owner is a module slug), creating it if needed. Only that module reads/writes there with plain `fs`.
 - Claims artefacts are written with `write` under `logs/` (by the Agent loop).
+- **MPR-12** depends on PST-07 only through PST-12's gate (`"Project store phase:files (PST-12; file reads, updateProjectYaml from PST-07)"` in its `blocked_by`), so `unblocks` names PST-12 only.
+  - Reworded by revision of PST-07 on 2026-11-15. The old text was: "unblocks: [PST-12, MPR-12]". See plans/DECISIONS.md.
 
 ## Acceptance criteria
 - [ ] `delete` and `move` work on single files, refuse folders, reserved and unsafe paths; `move` refuses an existing target.
