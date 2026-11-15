@@ -26,9 +26,9 @@ Customised copies win over built-ins (17); host-side user-pack edits show up wit
 - Replaces TRG-02's fixture source.
 
 ## Acceptance criteria (fixture packs)
-- [ ] The list includes core, genre and user tools; a user file with a built-in's name replaces it; deleting that file restores the built-in.
-- [ ] A user file with a newer `schemaVersion` is listed as refused and the other tools still load.
-- [ ] A file added to the user pack on the host appears in the next list without a restart.
-- [ ] An invalid user copy falls back to the built-in with a warning; an invalid user-only tool is listed but not offered.
-- [ ] An entity-type schema with a one-level array-of-objects field loads; its per-kind validator accepts/rejects front-matter fixtures.
-- [ ] A project with `genrePack: nonfiction` is offered core + nonfiction + user tools only.
+- [x] The list includes core, genre and user tools; a user file with a built-in's name replaces it; deleting that file restores the built-in.
+- [x] A user file with a newer `schemaVersion` is listed as refused and the other tools still load.
+- [x] A file added to the user pack on the host appears in the next list without a restart.
+- [x] An invalid user copy falls back to the built-in with a warning; an invalid user-only tool is listed but not offered.
+- [x] An entity-type schema with a one-level array-of-objects field loads; its per-kind validator accepts/rejects front-matter fixtures.
+- [x] A project with `genrePack: nonfiction` is offered core + nonfiction + user tools only.

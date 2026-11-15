@@ -1,6 +1,6 @@
 ---
 id: TRG-06
-status: planned
+status: done
 ---
 # TRG-06 plan — pack loader, user-pack manifest, schemaVersion, entity types and the catalog service
 
