@@ -38,7 +38,9 @@ const refusedLists: unknown[] = [
     ],
   },
   {
-    entries: [{ path: 'a', kind: 'file', size: 0, mtime: '2026-11-14T09:00:00' }],
+    entries: [
+      { path: 'a', kind: 'file', size: 0, mtime: '2026-11-14T09:00:00' },
+    ],
   },
   { entries: 'drafts' },
 ];

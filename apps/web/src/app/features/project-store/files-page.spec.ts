@@ -64,7 +64,9 @@ function render(
 ): Promise<RouterTestingHarness> {
   TestBed.configureTestingModule({
     providers: [
-      provideRouter([{ path: 'projects/:projectId/files', children: filesRoutes }]),
+      provideRouter([
+        { path: 'projects/:projectId/files', children: filesRoutes },
+      ]),
       provideMarkdown({
         sanitize: { provide: SANITIZE, useValue: SecurityContext.HTML },
       }),
@@ -144,11 +146,7 @@ describe('FilesPage', () => {
   it('T2 ?path= opens that file and marks its row as the current page', async () => {
     const doubles = createShellTestDoubles();
     doubles.api.respond('GET', LIST, { entries: TREE });
-    doubles.api.respond(
-      'GET',
-      READ,
-      read('sources/outline.md', OUTLINE),
-    );
+    doubles.api.respond('GET', READ, read('sources/outline.md', OUTLINE));
 
     const harness = await render(
       doubles,
@@ -283,11 +281,7 @@ describe('FilesPage', () => {
     async (status, code, message) => {
       const doubles = createShellTestDoubles();
       doubles.api.respond('GET', LIST, { entries: TREE });
-      doubles.api.fail(
-        'GET',
-        READ,
-        new ApiError(status, code, message),
-      );
+      doubles.api.fail('GET', READ, new ApiError(status, code, message));
 
       const harness = await render(
         doubles,
@@ -340,9 +334,9 @@ describe('FilesPage', () => {
     await settle(harness);
 
     expect(doubles.api.requests.length).toBeGreaterThan(0);
-    expect(doubles.api.requests.every((request) => request.method === 'GET')).toBe(
-      true,
-    );
+    expect(
+      doubles.api.requests.every((request) => request.method === 'GET'),
+    ).toBe(true);
   });
 
   it('T11 the nav at 390 by 844 links the page as Files', async () => {
@@ -352,7 +346,9 @@ describe('FilesPage', () => {
     doubles.api.respond('GET', LIST, { entries: TREE });
     TestBed.configureTestingModule({
       providers: [
-        provideRouter([{ path: 'projects/:projectId', children: PROJECT_ROUTES }]),
+        provideRouter([
+          { path: 'projects/:projectId', children: PROJECT_ROUTES },
+        ]),
         provideMarkdown({
           sanitize: { provide: SANITIZE, useValue: SecurityContext.HTML },
         }),
