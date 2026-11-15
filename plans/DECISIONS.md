@@ -4161,3 +4161,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 
 - **Report (orchestrator, rebase of unit/SAU-09 head 9724e28 onto main 0295fb0, which includes SAU-10's merge):** the rebase stops with a conflict in `apps/api/src/modules/setup-auth/setup-status.service.ts`. SAU-10 changed `statusBody` (a required `compose` parameter, passed by both callers); SAU-09 changed the same function (the access precedence and the `steps` writes). The plan's merge rule (`plans/SAU-09.md`, its merge rule with SAU-10) keeps both changes: `statusBody` takes this unit's steps expression and SAU-10's `compose` expression, and both units' new methods are kept.
 - **Action:** the rebase is aborted (the branch is unchanged at 9724e28). A new implementer resolves the conflict by that rule, runs the gates, and reports the new patch id. The patch id must then be reviewed again (prompt.md step 3 item 5).
+
+## 2026-11-15 — SAU-09 — Sonnet code review after the rebase onto SAU-10 (one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SAU-09 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 3b2f5ff, rebased onto main afb51f1): 6c35bc728ab2048128eaf16e544e3ce9c6d47357.
+- The conflict resolution in `setup-status.service.ts` follows the merge rule of `plans/SAU-09.md` and `plans/SAU-10.md`: `statusBody` takes SAU-10's `compose`; all four call sites pass it (the `setStep` call added one argument). The access precedence (D3) and `continueSetup` (the only writer of `complete`) are unchanged.
+- Files changed: exactly the six paths of the plan's section 2.
+- Tests: criteria 1 to 4, `refusals` and `theme is dropped and never stored` pass (reviewer ran four files: 16 tests); `tsc --noEmit` clean. Gates (implementer's report on 3b2f5ff): lint, test (75 pass) and build exit 0.
+- Code rejections: 0.
