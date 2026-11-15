@@ -15,5 +15,5 @@ unblocks: [AGL-11, AGL-16]
 - `search_notes {query, limit?, scope?}` calls the Project store search contract (`query → ranked passages {path, offset, snippet, score}`) in-process on the bound project, and returns passages as the tool result (project-relative paths).
 
 ## Acceptance criteria
-- [ ] A scripted turn calling `search_notes` gets ranked passages from a temp project's `sources/`, with `drafts/` never present.
-- [ ] Invalid arguments get the readable error.
+- [x] A scripted turn calling `search_notes` gets ranked passages from a temp project's `sources/`, with `drafts/` never present.
+- [x] Invalid arguments get the readable error.

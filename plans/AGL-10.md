@@ -1,6 +1,6 @@
 ---
 id: AGL-10
-status: planned
+status: done
 title: search_notes project tool
 unit: units/AGL-10-search-notes.md
 base: main at 53bda67 (AGL-03 merged at 13b505a), working tree clean (revised three times; drafted at a04eb7d); the branch unit/AGL-10 exists with test commit 2436b40
