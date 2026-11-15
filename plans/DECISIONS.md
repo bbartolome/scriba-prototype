@@ -4024,3 +4024,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Decision (Navigator, session `74b9c36bbaa14f72bbc4f657b25a613d`, option a):** T2 (`plans/MPR-08.md` section 4.2) satisfies the module's real-model rule. Add an additive transitional note after `modules/providers.md` line 46: "Until AGL-25 exists, the MPR-08 T2 procedure (plans/MPR-08.md section 4.2) serves as the providers module's real-model check." Line 46 is not rewritten; AGL-25 remains the eventual canonical check. No second check is required.
 - **Reason:** line 46 is a principle in the Testing principles list. It requires a real model, not CI. T2 meets both parts. The named vehicle is blocked by AGL-08, so it is a forward reference. Inventing another check would add scope the spec does not require.
 - **Note for the MPR-08 reviser:** the module note is a change of a module file. It is made in the MPR-08 revision (as the module file's additive note), not by the orchestrator.
+
+## 2026-11-15 — MPR-08 — Sonnet code review (one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/MPR-08 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 8975e06): 315ffc056b0fda24ec2199f6fabee2bb2c61b8b9.
+- Files changed: exactly apps/api/test/providers-gate.test.ts (new). G1, G2, G3 and the T1 gate run (13 files, 68 tests, 25 of 25 rows) pass. Each negative assertion in G2 has its control.
+- Prerequisite, not a defect: the API test run needs the contracts build first (`npm run build -w @bbartolome/scriba-contracts`). Plan steps 2 and 7 already run the build through `npm test`.
+- Criterion 2 (T2) is not run and the box stays unticked. Per the Navigator decision N1 (line above, option A), the unit stays in the pipeline until the owner records a T2 pass on the Mac. The branch is held and not merged to main.
