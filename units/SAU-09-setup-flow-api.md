@@ -22,7 +22,7 @@ Skip any step but the token (26); re-runs show previous answers (31) and never o
 - **Idempotent re-runs:** every write is a field-level merge; nothing is ever deleted, reset or re-seeded.
 
 ## Acceptance criteria
-- [ ] Each step can be set `done`/`skipped`; `complete` can be set with providers and preferences skipped.
-- [ ] A preferences POST with only `defaultGenrePack` leaves `authorName` and every other `settings.yaml` byte unchanged outside that field.
-- [ ] The preferences reader returns stored values in-process.
-- [ ] GETs are side-effect free.
+- [x] Each step can be set `done`/`skipped`; `complete` can be set with providers and preferences skipped.
+- [x] A preferences POST with only `defaultGenrePack` leaves `authorName` and every other `settings.yaml` byte unchanged outside that field.
+- [x] The preferences reader returns stored values in-process.
+- [x] GETs are side-effect free.

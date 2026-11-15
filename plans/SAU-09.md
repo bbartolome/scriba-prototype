@@ -1,6 +1,6 @@
 ---
 id: SAU-09
-status: planned
+status: done
 ---
 # SAU-09 plan — Setup-flow API: steps, preferences and the preferences reader
 
