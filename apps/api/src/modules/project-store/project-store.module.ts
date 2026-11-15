@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { PlatformModule, SettingsService } from '../platform/platform.module';
 import { ActiveProjectController } from './active-project.controller';
 import { ActiveProjectService } from './active-project.service';
+import { FilesController } from './files.controller';
+import { FilesService } from './files.service';
 import { PROJECTS_SECTION_DEF } from './project-store.section';
 import { ProjectStoreService } from './project-store.service';
 import { ProjectsController } from './projects.controller';
@@ -11,6 +13,7 @@ import { SamplesService } from './samples.service';
 
 // Modules outside project-store import these from this entry file only.
 export { ProjectStoreService } from './project-store.service';
+export { FilesService } from './files.service';
 export type { ResolvedProjectPath } from './path-safety';
 
 const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
@@ -19,7 +22,12 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
 // path-check provider.
 @Module({
   imports: [PlatformModule],
-  controllers: [ProjectsController, ActiveProjectController, SamplesController],
+  controllers: [
+    ProjectsController,
+    ActiveProjectController,
+    SamplesController,
+    FilesController,
+  ],
   providers: [
     {
       provide: PROJECT_STORE_SECTION_REGISTRATION,
@@ -33,7 +41,8 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     ProjectsService,
     ActiveProjectService,
     SamplesService,
+    FilesService,
   ],
-  exports: [ProjectStoreService],
+  exports: [ProjectStoreService, FilesService],
 })
 export class ProjectStoreModule {}
