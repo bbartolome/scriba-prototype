@@ -117,8 +117,8 @@ const signOutCopy: ResponseSchema<null> = {
           Replace a leaked token: delete
           <code>~/Books/.scriba/setup-token</code> and run
           <code>docker compose restart</code> in the install folder. Scriba
-          makes a new token and rewrites the setup URL, and every existing
-          cookie stops working.
+          makes a new token and rewrites <code>~/Books/.scriba/setup-url</code>,
+          and every existing cookie stops working.
         </li>
         <li>
           Last resort: stop the stack with <code>docker compose stop</code>,
