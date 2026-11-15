@@ -25,7 +25,7 @@ One declaration drives the agent's function, the form and the canvas node (stori
 - **Fixture-backed** `GET /api/tool-registry/tools/:name` and `POST …/tools/:name/validate` serving a **registry-owned cold-open fixture** (a test fixture, not Genre packs content); the loader replaces the fixture source in TRG-06.
 
 ## Acceptance criteria
-- [ ] `GET /tools/cold_open` (fixture) returns the three views; the function schema contains no key starting with `x-` and passes Ajv's draft-07 meta-schema; form and port descriptors match the fixture's declared fields and order.
-- [ ] Missing required fields and wrong enum values return `TOOL_ARGS_INVALID` whose message names each bad field with expected and received; unknown fields list the allowed fields.
-- [ ] A valid validate returns defaults applied and the tagged entity IDs.
-- [ ] No coercion: `"3"` for an integer field is rejected.
+- [x] `GET /tools/cold_open` (fixture) returns the three views; the function schema contains no key starting with `x-` and passes Ajv's draft-07 meta-schema; form and port descriptors match the fixture's declared fields and order.
+- [x] Missing required fields and wrong enum values return `TOOL_ARGS_INVALID` whose message names each bad field with expected and received; unknown fields list the allowed fields.
+- [x] A valid validate returns defaults applied and the tagged entity IDs.
+- [x] No coercion: `"3"` for an integer field is rejected.

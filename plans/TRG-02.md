@@ -1,6 +1,6 @@
 ---
 id: TRG-02
-status: planned
+status: done
 ---
 # TRG-02 plan — emission of the three views, Ajv full validate and the fixture-backed tool read
 
