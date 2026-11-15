@@ -8,11 +8,12 @@ import {
   requireContracts,
 } from './lib.mjs';
 import * as m1 from './m1.mjs';
+import * as graph from './graph.mjs';
 
-// The examples check (PLT-20, M1 layer). PLT-21 and PLT-22 append their layer modules to LAYERS.
+// The examples check (PLT-20, M1 layer; PLT-21, graph layer). PLT-22 appends its layer module to LAYERS.
 // Usage: node scripts/examples-check/index.mjs [--root <dir>]
 // Exit 0: passed. Exit 1: issues, one stderr line each. Exit 2: usage, or the contracts cannot load.
-export const LAYERS = [m1];
+export const LAYERS = [m1, graph];
 
 const SCRIPT_ROOT = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -33,11 +34,13 @@ export function main(argv = process.argv.slice(2)) {
   }
 
   let contracts;
+  let graphRunner;
   try {
     contracts = requireContracts(SCRIPT_ROOT);
+    graphRunner = requireContracts(SCRIPT_ROOT, 'graph-runner');
   } catch {
     process.stderr.write(
-      'examples check: cannot load @bbartolome/scriba-contracts/project-store; run npm run build -w @bbartolome/scriba-contracts\n',
+      'examples check: cannot load @bbartolome/scriba-contracts/project-store or @bbartolome/scriba-contracts/graph-runner; run npm run build -w @bbartolome/scriba-contracts\n',
     );
     return 2;
   }
@@ -48,6 +51,7 @@ export function main(argv = process.argv.slice(2)) {
     examplesDir,
     samples: discoverSamples(examplesDir),
     contracts,
+    graphRunner,
     yaml: { parse },
     stats: { projectYaml: 0, entityFiles: 0, testFiles: 0 },
   };

@@ -7,11 +7,12 @@ import { parse } from 'yaml';
 
 // The contracts are resolved from apps/api, the workspace that declares them, and always from the
 // repository the script lives in, never from --root: the test trees have no apps/api folder.
-export function requireContracts(scriptRoot) {
+// subpath is an export of @bbartolome/scriba-contracts (PLT-21 loads 'graph-runner').
+export function requireContracts(scriptRoot, subpath = 'project-store') {
   const fromApi = createRequire(
     join(scriptRoot, 'apps', 'api', 'package.json'),
   );
-  return fromApi('@bbartolome/scriba-contracts/project-store');
+  return fromApi(`@bbartolome/scriba-contracts/${subpath}`);
 }
 
 // Lists every entry under dir with its lstat kind: 'file', 'dir', 'symlink' or 'other', sorted by
