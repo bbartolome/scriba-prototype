@@ -18,8 +18,8 @@ Merging this **closes Tool registry `phase:form-renderer`**.
 - A short **spike note** (in `docs/adr/` or the module docs) recording any hint the workhorse needed that the vocabulary lacks. Any vocabulary change is made through expand–contract in `/tool-registry` **before** `phase:loader-validation` closes (lint builds on it).
 
 ## Acceptance criteria (spike: one workhorse tool rendered end to end)
-- [ ] In the running dev app, one API response for the cold-open fixture drives both a full form and a node body; the node body shows typed ports for the `entity`, `text` and `style` fields marked as ports, and the remaining controls as `params`.
-- [ ] The entity picker offers only entities of the fixture's kind (e.g. `person`) and accepts a dropped entity chip.
-- [ ] Submitting sends the arguments to `validate`: missing required fields and wrong enum values show readable messages inline; a valid submit shows the arguments with defaults applied.
-- [ ] The emitted function schema has no `x-` key and passes the draft-07 meta-schema.
-- [ ] The spike note is committed.
+- [x] In the running dev app, one API response for the cold-open fixture drives both a full form and a node body; the node body shows typed ports for the `entity`, `text` and `style` fields marked as ports, and the remaining controls as `params`.
+- [x] The entity picker offers only entities of the fixture's kind (e.g. `person`) and accepts a dropped entity chip.
+- [x] Submitting sends the arguments to `validate`: missing required fields and wrong enum values show readable messages inline; a valid submit shows the arguments with defaults applied.
+- [x] The emitted function schema has no `x-` key and passes the draft-07 meta-schema.
+- [x] The spike note is committed.
