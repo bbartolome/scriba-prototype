@@ -1,7 +1,7 @@
-import { rmSync } from 'node:fs';
+import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
-import { Injectable } from '@nestjs/common';
+import { Injectable, type OnApplicationBootstrap } from '@nestjs/common';
 import {
   PROJECT_ERROR_CODES,
   PROJECT_ERROR_STATUS,
@@ -47,7 +47,7 @@ function deleteFile(db: DatabaseSync, path: string): void {
 // The FTS5 keyword search of a project's sources/ and entities/ (P9 to P16). The index is disposable: it is
 // brought up to date with the disk before each query and when a project is activated, and rebuilt on request.
 @Injectable()
-export class SearchService {
+export class SearchService implements OnApplicationBootstrap {
   constructor(
     private readonly store: ProjectStoreService,
     private readonly projects: ProjectsService,
@@ -64,6 +64,31 @@ export class SearchService {
         // Ignored on purpose: see the comment above.
       }
     });
+  }
+
+  // The startup prune (P12). Every entry of the index folder whose name is not the index name of a library entry
+  // (its .db file or the .db-journal) is removed. Nothing is removed when the library cannot be read.
+  onApplicationBootstrap(): void {
+    const folder = join(this.store.libraryRoot, '.scriba', 'index');
+    if (!existsSync(folder)) return;
+    let kept: Set<string>;
+    try {
+      kept = new Set(
+        readdirSync(this.store.libraryRoot)
+          .filter((name) => !name.startsWith('.'))
+          .flatMap((name) => {
+            const file = indexFileName(name);
+            return [file, `${file}-journal`];
+          }),
+      );
+    } catch {
+      return;
+    }
+    for (const entry of readdirSync(folder)) {
+      if (!kept.has(entry)) {
+        rmSync(join(folder, entry), { recursive: true, force: true });
+      }
+    }
   }
 
   // The ranked passages of a query, best first (P10). A project that is not active is refused (S12).
