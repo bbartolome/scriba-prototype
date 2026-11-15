@@ -25,8 +25,12 @@ export class ToolArgumentError extends Error {
 }
 
 export interface ToolSchemaProperty {
-  type: 'string' | 'boolean' | 'number' | 'integer';
+  type: 'string' | 'boolean' | 'number' | 'integer' | 'array';
   description: string;
+  // For an array property: the type of each item, and the values an item may take.
+  items?: { type: 'string'; enum: readonly string[] };
+  minimum?: number;
+  minLength?: number;
 }
 
 // The JSON Schema of a tool's arguments. Extra keys are refused (S1).

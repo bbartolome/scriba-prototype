@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import Ajv from 'ajv';
 import type { AgentToolFamily } from '@bbartolome/scriba-contracts/agent-loop';
-import { FilesService } from '../project-store/project-store.module';
+import {
+  FilesService,
+  SearchService,
+} from '../project-store/project-store.module';
 import { builtinTools } from './tools/builtin-tools';
 import { ToolRun } from './tools/tool-run';
 import type { CompiledTool } from './tools/tool-types';
@@ -18,10 +21,10 @@ export interface StartRunOptions {
 export class AgentToolsService {
   private readonly tools: CompiledTool[];
 
-  constructor(files: FilesService) {
+  constructor(files: FilesService, search: SearchService) {
     // No coercion and no defaults: a string "yes" for a boolean is refused, and nothing is filled in (S1, D14).
     const ajv = new Ajv({ allErrors: true, strict: true });
-    this.tools = builtinTools(files).map((definition) => ({
+    this.tools = builtinTools(files, search).map((definition) => ({
       definition,
       validate: ajv.compile(definition.schema),
     }));
