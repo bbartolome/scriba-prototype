@@ -4046,3 +4046,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Reword (R1), unit `units/PST-07-delete-move-helpers.md`:** the front matter `unblocks` is `[PST-12]` (was `[PST-12, "Model providers project override API (MPR-12)"]`). The Decisions section gains a line that MPR-12 depends on PST-07 only through PST-12's gate, with the note "Reworded by revision of PST-07 on 2026-11-15". Reason: decision 7 of the Navigator (above). The acceptance criteria are unchanged.
 - **Plan:** `plans/PST-07.md` is revised for decisions 1 to 7 (section 0 of the plan), adds test H3 (mixed line endings), and is `status: planned`.
 - **Point 8 (links under delete and move, plan P2):** not covered by the Navigator decision above. The plan keeps P2 (the link itself is acted on, not its target) and records it as the planner's choice, tested in D3. Open for a Navigator ruling if it needs one.
+
+## 2026-11-15 — PST-07 — PLAN DOES NOT WORK at step 7 (mutation c): L1 does not catch a missing logs/ prefix check
+
+- **Report (implementer, branch `unit/PST-07`, commit 9511958):** mutation (c) (remove the `logs/` prefix check in `appendLog`, P11 step 4) leaves L1 passing (21 of 21). Cause: L1 creates `logs/` in its control step (1) before step (2) sends `sources/a.log`. With `logs/` present, P11 step 5 (the real location must lie inside `realpath(logs)`) refuses the path on its own, so P11 step 4 is never exercised. A probe with no `logs/` folder shows `appendLog('book', 'sources/a.log', 'x')` returns 200 and creates the file.
+- **Second finding:** mutation (a) (write before the schema check) is expected by the plan to fail H1, but H1 has no invalid-patch case. U1 step (5) catches it. The mutation is detected, but the named test is wrong.
+- **State of the branch:** `516f3fc` (red tests) and `9511958` (feature). Gates (step 8), scope (step 9) and the fresh clone (step 10) not run. Mutations (d) to (h) not run.
+- **Action:** the plan goes back to `status: draft`. A new reviser corrects the plan: the L1 case with `logs/` absent and a non-`logs/` path, and the mutation (a) expectation. A new implementer continues from the branch commits.
