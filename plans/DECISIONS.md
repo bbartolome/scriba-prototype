@@ -4313,3 +4313,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - `entity-picker.ts` is a TRG-04 file, read-only for TRG-05 (plan section 2). The defect is outside the unit.
 - The branch is based on 4dbe960; main is at 46602ba (TRG-09 is on main). The rebase is still to do.
 - Plan returns to draft for an Opus reviser.
+
+## 2026-11-15 — SAU-11 — Sonnet code review: REWORK (part 1, the wizard in Vitest; part 2, APPROVED)
+
+- Patch id reviewed (`git diff main...unit/SAU-11 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 298d227): 645dbf746878a10bd929e193b4c943ba7794a416.
+- Part 2 (steps 13 to 18, Playwright): APPROVED. Full e2e suite passes (6 tests); the step 13 click without `exact: true` is accepted (exact would break P10's line count; the label is unique on the page).
+- Part 1 (steps 0 to 12, Vitest): REWORK.
+  1. M3 is not caught by W2, which plan section 3 step 11 requires ("M3: the compose warning is shown for ok. Expected: W2 fails"). `setup-page.ts` wraps `<app-compose-warning>` in `@if (loaded.compose.state !== 'ok')`, and `compose-warning.ts` also renders nothing for ok, so the two gates are redundant. Correction: remove the `@if` wrapper in `apps/web/src/app/features/setup-auth/setup-page.ts` and render `<app-compose-warning [compose]="loaded.compose" />` once the status is loaded. Then re-run M3 by making the component's ok case return text, confirm W2 fails, revert the mutation, run prettier and lint, and commit the fix on unit/SAU-11 with the unit id in the message. The part 1 commit is f772004.
+- Other part 1 items were judged acceptable: the cherry-pick instead of rebase (same patch id); step 5 not done with compose-warning.ts from SAU-15; step 1 baseline not recorded; the landing C1 flake under mutation only.
+- Code rejections: 1 (item 1 above). After the fix, reviewers start again for all parts.
