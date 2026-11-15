@@ -3920,3 +3920,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Build size +5.43 kB over I0: reported, not a stop (plan step 5).
 - Mutation M11 (remove [disabled] on Continue) not caught by X4: the page's own busy guard blocks the second POST; not a plan or criterion failure.
 - Code rejections of SAU-06: 0.
+
+## 2026-11-15 — AGL-07 — Sonnet code review (part 1 and part 2): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/AGL-07 -- . ':!plans' ':!units' | git patch-id --stable`, base bc6ed1a): 965198da6bc2b0837863570e051a42594870e0d8. Both part reviewers gave this patch id.
+- Part 1 (contract copies, route entry, gates; test X1): approved. The route file and the app.routes.ts edit landed in the page commit ab4d948, not in 27e3379; accepted.
+- Part 2 (view state and page; tests T1 to T4 and X2 to X7): approved.
+- Notes, not blocking: D14 also disables New conversation and the conversation buttons while a run is active; the settings save shows a notice for an invalid step cap (D13 does not state it).
+- Code rejections of AGL-07: 0.
