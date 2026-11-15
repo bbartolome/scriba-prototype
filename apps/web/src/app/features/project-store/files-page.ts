@@ -1,4 +1,13 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  afterRenderEffect,
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { FileEntry } from '@bbartolome/scriba-contracts/project-store';
@@ -22,6 +31,7 @@ import {
 } from '../../shell';
 import { projectFilePath, readCopy } from '../../shell/project-store-copies';
 import { fileListCopy, projectFilesPath } from './files-contract';
+import { SearchPanel } from './search-panel';
 
 /** One row of the tree: a file or a directory. `depth` is the number of parent directories. */
 interface Row {
@@ -93,6 +103,13 @@ function failureMessage(error: unknown): string {
   return error instanceof ApiError ? error.message : 'The request failed.';
 }
 
+/** The `offset` query parameter (a search result's passage) when it is an integer >= 0, else undefined. */
+function offsetOf(value: string | null): number | undefined {
+  if (value === null || !/^\d+$/.test(value)) return undefined;
+  const offset = Number(value);
+  return Number.isSafeInteger(offset) ? offset : undefined;
+}
+
 function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
   return source.pipe(
     map((value): Outcome<T> => ({ ok: true, value })),
@@ -109,7 +126,7 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
  * its path or a tick arrives.
  */
 @Component({
-  imports: [MarkdownPreview, RouterLink],
+  imports: [MarkdownPreview, RouterLink, SearchPanel],
   selector: 'app-files-page',
   styles: `
     :host {
@@ -143,12 +160,21 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
     }
 
     .preview {
+      position: relative;
       flex: 2 1 20rem;
       min-width: 0;
+    }
+
+    .anchor {
+      position: absolute;
+      left: 0;
+      width: 0;
+      height: 0;
     }
   `,
   template: `
     <h2>Files</h2>
+    <app-search-panel />
     @if (listFailure(); as message) {
       <p role="alert">{{ message }}</p>
     }
@@ -178,6 +204,12 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
         }
         @if (content() !== undefined) {
           <app-markdown-preview [content]="content() ?? ''" />
+          <span
+            #anchor
+            class="anchor"
+            aria-hidden="true"
+            [style.top.%]="anchorTop()"
+          ></span>
         }
       </section>
     </div>
@@ -200,6 +232,23 @@ export class FilesPage {
   protected readonly selected = signal<string | undefined>(undefined);
   protected readonly content = signal<string | undefined>(undefined);
   protected readonly fileFailure = signal<string | undefined>(undefined);
+
+  /** The `offset` of a search result, if any: the passage the file was opened for. */
+  protected readonly offset = signal<number | undefined>(undefined);
+
+  /** The zero-size mark in the preview at the offset's place, scrolled to once per request. */
+  private readonly anchor = viewChild<ElementRef<HTMLElement>>('anchor');
+  private scrolledFor: string | undefined;
+
+  /** The mark's place, as a percentage of the content: the offset's share of its length. */
+  protected readonly anchorTop = computed(() => {
+    const offset = this.offset();
+    const text = this.content();
+    if (offset === undefined || text === undefined || text.length === 0) {
+      return 0;
+    }
+    return Math.min(100, (offset / text.length) * 100);
+  });
 
   private readonly listReads = new Subject<void>();
   private readonly fileReads = new Subject<string | undefined>();
@@ -305,6 +354,37 @@ export class FilesPage {
         this.fileFailure.set(undefined);
         this.fileReads.next(path);
       });
+
+    // The passage of a search result: a tree link drops the offset, so its file is shown at the top.
+    this.route.queryParamMap
+      .pipe(
+        map((params) => offsetOf(params.get('offset'))),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((offset) => {
+        this.offset.set(offset);
+        this.scrolledFor = undefined;
+      });
+
+    // Once the file of a search result shows, its mark scrolls into view, once per request.
+    afterRenderEffect(() => {
+      const path = this.selected();
+      const offset = this.offset();
+      const element = this.anchor()?.nativeElement;
+      if (
+        path === undefined ||
+        offset === undefined ||
+        this.content() === undefined ||
+        element === undefined
+      ) {
+        return;
+      }
+      const key = `${path}#${offset}`;
+      if (key === this.scrolledFor) return;
+      this.scrolledFor = key;
+      element.scrollIntoView({ block: 'center' });
+    });
 
     this.listReads.next();
   }
