@@ -4186,3 +4186,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Criterion 26's propose part is PST-15's by the criterion's own wording; not part of this approval.
 - Not run: plan step 5 (mutation checks M1 to M3). The plan requires no code from them; the evidence that F1 to F3 catch regressions is missing. The implementer's edit to `apps/api/src/modules/project-store/path-safety.ts` was denied by the permission classifier.
 - Code rejections: 0.
+
+## 2026-11-15 — TRG-06 — Sonnet code review (two parts): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/TRG-06 -- . ':!plans' ':!units' | git patch-id --stable`, branch head e8c9c68, based on main 377a83c): a397c37507dcb4cf3194f400f4c4c3467b3864b7.
+- Part 1 (commit f59cab2: packs.ts, the catalog wiring, the built-in loader and the user-pack scan): APPROVED, patch id 87806c78. Part 2 (commit e8c9c68: entity-types.ts, claim.yaml, the entity validator): APPROVED, patch id 9260b849.
+- Files changed: exactly the section 2 paths of the plan. Plans and units are not changed by the code.
+- Tests: AC1 to AC6 and E1 to E7 pass; the TRG-02 regression tests (tool-registry-api.test.ts) pass after the one env line. The reviewers ran the loader and API test files (20 tests).
+- Implementer differences, judged acceptable: checkTool takes a `label` argument; scanUserTools returns a UserPackScan object; LoadedTool moved to packs.ts; entity-types.ts has its own yaml-listing helper (about 10 lines, identical behaviour to packs.ts, kept local because packs.ts is outside part 2's file list; a later cleanup can share it); list() without genrePack returns every origin; entityValidator returns undefined for an unknown kind.
+- Code rejections: 0.
