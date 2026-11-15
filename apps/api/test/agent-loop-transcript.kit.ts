@@ -75,6 +75,9 @@ export interface Harness {
   fixture: ProjectsLibrary;
   scenario: string;
   close: () => Promise<void>;
+  // Closes the current app and boots a new one on the same library, as after an API restart. `app` and `cookie` are
+  // replaced; `close` then closes the new app.
+  restart: () => Promise<void>;
 }
 
 // One mock scenario file, one library with `book` active, and the composed app with a session cookie.
@@ -93,6 +96,7 @@ export async function openHarness(options: HarnessOptions): Promise<Harness> {
   });
   let fixture: ProjectsLibrary | undefined;
   let app: TestApp | undefined;
+  let harness: Harness | undefined;
   const close = async (): Promise<void> => {
     try {
       await app?.close();
@@ -102,19 +106,31 @@ export async function openHarness(options: HarnessOptions): Promise<Harness> {
       fixture?.remove();
     }
   };
+  const restart = async (): Promise<void> => {
+    if (fixture === undefined || harness === undefined) {
+      throw new Error('The harness is not open.');
+    }
+    await app?.close();
+    app = undefined;
+    app = await createTestApp({ libraryDir: fixture.library });
+    harness.app = app;
+    harness.cookie = await sessionCookie(app, fixture.library);
+  };
   try {
     fixture = buildProjectsLibrary({ settings });
     options.prepare?.(fixture);
     app = await createTestApp({ libraryDir: fixture.library });
     const cookie = await sessionCookie(app, fixture.library);
-    return {
+    harness = {
       app,
       cookie,
       mock,
       fixture,
       scenario: options.scenario,
       close,
+      restart,
     };
+    return harness;
   } catch (error) {
     await close();
     throw error;
