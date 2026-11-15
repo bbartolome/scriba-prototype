@@ -3968,3 +3968,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Why this stance:** the 2026-11-14 SAU-06 entry (line 3401) says `shell/` belongs to SHL, and the unwrap is a separate fix with no unit yet. Option (a), SAU-08 taking the fix, would make a Setup & auth unit edit Shell code and breach the rule that reviser actions cannot add another module's code fix. Option (c), leaving SAU-08 blocked with no unit, leaves a verified one-line defect unowned, which holds `phase:token-guard`, its ten downstream units and M1.
 - **Verified by the Navigator and the orchestrator:** `contract-chunks.ts` line 12 has no unwrap; `grep` of `apps/web/src` finds exactly two runtime contract loaders, and only `contract-chunks.ts` is affected. `SHL-08` is done (`plans/SHL-08.md` line 3). The id `SHL-21` is free (units hold SHL-01 to SHL-20).
 - **Not yet done:** SHL-21's unit file, its plan, and the `blocked_by` change in `units/SAU-08-token-guard-gate.md` are held. The orchestrator was told not to pick up a new unit, so SAU-08 stays in the pipeline, blocked on this decision, until SHL-21 is created.
+
+## 2026-11-15 — PST-06 — Sonnet code review (two parts): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/PST-06 -- . ':!plans' ':!units' | git patch-id --stable`, base 0431818): 3ce75f6c0035c5956963b3aafe5c93b07bffc0db. Both part reviewers gave this patch id.
+- Part 1 (surfaces, list, read; criteria 3 and 8; X2 to X4): approved. Part 2 (write, edit, atomicity, project.yaml, too-new, events; criteria 1, 2, 4, 5, 6 and 7; X1): approved.
+- Files changed: exactly the paths of the plan's section 2. The kit also exports two helpers (`isUtcTimestamp`, `entryPaths`) that the plan does not name; they are harmless helpers in a listed file.
+- Code rejections of PST-06: 0.
