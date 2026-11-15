@@ -187,7 +187,9 @@ export class ProvidersStore {
    * Tests a stored provider by id, or a draft config, with the typed key if any. The reply is not
    * stored: no signal changes and no list is read (MPR-10 D3, D10).
    */
-  testConnection(body: ConnectionTestRequest): Observable<ConnectionTestResult> {
+  testConnection(
+    body: ConnectionTestRequest,
+  ): Observable<ConnectionTestResult> {
     return this.api.post(CONNECTION_TEST_PATH, body, connectionTestResultCopy);
   }
 

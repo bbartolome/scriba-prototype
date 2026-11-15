@@ -30,7 +30,8 @@ const CONTEXT_NOTE =
   'Context length is set in Ollama, not in Scriba. Start Ollama with OLLAMA_CONTEXT_LENGTH=64000 or higher.';
 const CONTEXT_SENTENCE = 'Context length is set in Ollama, not in Scriba.';
 const PULL_NOTE = 'Pull a model on the host with `ollama pull <model>`.';
-const EMPTY_LIST = 'The provider listed no models. Type the model name instead.';
+const EMPTY_LIST =
+  'The provider listed no models. Type the model name instead.';
 const HINT_UNAUTHORIZED =
   'The provider rejected the key. Check the key. If the key is right, the account may be out of credit.';
 const HINT_MODEL_UNKNOWN =

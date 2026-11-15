@@ -277,9 +277,7 @@ describe('providers copies', () => {
     }
     for (const fixture of refused) {
       expect(connectionTestResultCopy.safeParse(fixture).success).toBe(false);
-      expect(connectionTestResultSchema.safeParse(fixture).success).toBe(
-        false,
-      );
+      expect(connectionTestResultSchema.safeParse(fixture).success).toBe(false);
     }
 
     // The notes are the Ollama preset's own sentences, so the text has one source.
@@ -296,9 +294,15 @@ describe('providers copies', () => {
     // The rule rows: the server's table (providers-resolution.test.ts lines 371 to 390) and the preset.
     const rows: [{ id: string; baseURL: string }, boolean][] = [
       [{ id: 'ollama', baseURL: 'http://host.docker.internal:11434/v1' }, true],
-      [{ id: 'local-llm', baseURL: 'http://host.docker.internal:11434/v1' }, true],
+      [
+        { id: 'local-llm', baseURL: 'http://host.docker.internal:11434/v1' },
+        true,
+      ],
       [{ id: 'ollama-lab', baseURL: 'http://127.0.0.1:1234/v1' }, true],
-      [{ id: 'lm-studio', baseURL: 'http://host.docker.internal:1234/v1' }, false],
+      [
+        { id: 'lm-studio', baseURL: 'http://host.docker.internal:1234/v1' },
+        false,
+      ],
       [{ id: 'openrouter', baseURL: 'https://openrouter.ai/api/v1' }, false],
     ];
     for (const [config, expected] of rows) {
