@@ -4195,3 +4195,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Tests: AC1 to AC6 and E1 to E7 pass; the TRG-02 regression tests (tool-registry-api.test.ts) pass after the one env line. The reviewers ran the loader and API test files (20 tests).
 - Implementer differences, judged acceptable: checkTool takes a `label` argument; scanUserTools returns a UserPackScan object; LoadedTool moved to packs.ts; entity-types.ts has its own yaml-listing helper (about 10 lines, identical behaviour to packs.ts, kept local because packs.ts is outside part 2's file list; a later cleanup can share it); list() without genrePack returns every origin; entityValidator returns undefined for an unknown kind.
 - Code rejections: 0.
+
+## 2026-11-15 — AGL-02 — Sonnet code review (two parts): APPROVED
+
+- Patch id of the approved code (`git diff 7975ab0...unit/AGL-02 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 9af9c90, red-first commit 5d017aa): b0b19b321c2559dccef2ead0660e5debdcbddfe9.
+- Files changed: exactly the eight section 2 paths of the plan (agent-loop.module.ts, agent-tools.service.ts, tools/tool-types.ts, tools/readable-error.ts, tools/builtin-tools.ts, tools/tool-run.ts, test/agent-loop-tools.kit.ts, test/agent-loop-tools.test.ts).
+- Tests: AC1 (refusals through the Project store, with no secret text or outside path in any reply), AC2 (cases a to f, readable format), AC3 (withdrawal on the third consecutive invalid call; a valid call resets the count) pass. Reviewers ran the file (3 of 3) and the full API suite (78 files, 234 tests) passed for the implementer.
+- Plan wording to fix later (no code change): S9 says `valid` is true when the arguments pass the schema, but AC1 case 1 requires `valid: false` for a refusal whose arguments pass the schema, and S8 gives `valid: false` for a call that is not offered. The implemented reading is `valid: false` for every call counted as invalid and for calls not offered; `valid: true` for a successful call, for a withdrawn-tool call whose arguments pass the schema, and for an unexpected exception (O4). AGL-03 and any later consumer must not read `valid` alone as "arguments failed the schema". S9 should be reworded to say so by a later reviser or the Navigator.
+- Mutation checks M1 to M6 were run by the implementer and each was caught by a test; the tree was restored after each.
+- Code rejections: 0.
