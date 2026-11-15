@@ -8,6 +8,15 @@
   flex: 1 1 auto;
 }
 
+/* On a phone the toolbar wraps, so the connection label and the theme toggle keep their size. */
+mat-toolbar[data-device='phone'] {
+  flex-wrap: wrap;
+  height: auto;
+  min-height: 56px;
+  padding-block: 8px;
+  row-gap: 4px;
+}
+
 .layout {
   display: flex;
   flex: 1 1 auto;
