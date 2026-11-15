@@ -1,6 +1,6 @@
 ---
 id: PST-09
-status: planned
+status: done
 ---
 # PST-09 plan - Project picker UI, nav slot and the e2e "project from sample" step
 

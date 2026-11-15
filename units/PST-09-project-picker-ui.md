@@ -26,6 +26,6 @@ UI work can start against a fake API built from the PST-01 contract types as soo
 - **Extends Platform's e2e** (PLT-13): turns on the "project from sample" step — start from the nonfiction sample through the picker and land in the project. If `phase:test-harness` hasn't closed yet, add the step in the first PR after it closes.
 
 ## Acceptance criteria
-- [ ] Component tests (Angular Vitest, fake API/SSE): list with each status, New, Import with an error shown verbatim, Start from sample, switching, and an external `project-switched` updating the active marker.
-- [ ] Narrow (phone) viewport test: all actions reachable.
-- [ ] The e2e "project from sample" step passes against the real nonfiction sample.
+- [x] Component tests (Angular Vitest, fake API/SSE): list with each status, New, Import with an error shown verbatim, Start from sample, switching, and an external `project-switched` updating the active marker.
+- [x] Narrow (phone) viewport test: all actions reachable.
+- [x] The e2e "project from sample" step passes against the real nonfiction sample.
