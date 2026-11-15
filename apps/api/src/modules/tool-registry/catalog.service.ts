@@ -35,9 +35,13 @@ import {
   type ToolEntry,
   type UserPackScan,
 } from './packs';
+import {
+  ToolSwitchesService,
+  type ToolSwitches,
+} from './tool-switches.service';
 import { validateArguments } from './validate';
 
-// Called with the names that a refresh changed, once per change.
+// Called with the names that a refresh or a toggle changed, once per change.
 export type CatalogListener = (names: string[]) => void;
 
 // One row of the list: the entry, and the built-in pack a user copy overrides.
@@ -61,12 +65,31 @@ function offeredOrigins(genrePack: string | undefined): Set<ToolOrigin> {
   return origins;
 }
 
-// The switch of a tool. TRG-06 reads the spec's own value; TRG-09 adds the project's override here.
-function isEnabled(tool: LoadedTool): boolean {
-  return tool.spec.enabled;
+function notFound(message: string): ModuleError {
+  return new ModuleError(
+    TOOL_ERROR_CODES.NOT_FOUND,
+    TOOL_ERROR_STATUS.TOOL_NOT_FOUND,
+    message,
+  );
 }
 
-function summaryOf({ entry, overrides }: Row): ToolSummary {
+// The effective switch of a valid tool: the author's override when the section has one for it, else the spec's
+// `enabled` default. Object.hasOwn, so a name that is an Object property is not read from the prototype.
+function enabledWith(tool: LoadedTool, switches: ToolSwitches): boolean {
+  const { name } = tool.spec;
+  return Object.hasOwn(switches, name) ? switches[name] : tool.spec.enabled;
+}
+
+// The switch of an entry as a toggle compares it. An invalid entry has no spec, so its default is false.
+function switchOf(entry: ToolEntry, switches: ToolSwitches): boolean {
+  if (entry.valid) return enabledWith(entry.tool, switches);
+  return Object.hasOwn(switches, entry.name) ? switches[entry.name] : false;
+}
+
+function summaryOf(
+  { entry, overrides }: Row,
+  switches: ToolSwitches,
+): ToolSummary {
   const shadow = overrides === undefined ? {} : { overrides };
   const common = {
     name: entry.name,
@@ -88,7 +111,7 @@ function summaryOf({ entry, overrides }: Row): ToolSummary {
     ...common,
     description: entry.tool.spec.description,
     output: entry.tool.spec.output,
-    enabled: isEnabled(entry.tool),
+    enabled: enabledWith(entry.tool, switches),
   };
 }
 
@@ -102,7 +125,10 @@ export class CatalogService {
   private userScan: UserPackScan;
   private readonly listeners: CatalogListener[] = [];
 
-  constructor(@Inject(SCRIBA_ENV) env: ScribaEnv) {
+  constructor(
+    @Inject(SCRIBA_ENV) env: ScribaEnv,
+    private readonly toolSwitches: ToolSwitchesService,
+  ) {
     this.builtins = new Map(
       readBuiltinTools(env.SCRIBA_PACKS_DIR).map(
         (entry): [string, ToolEntry] => [entry.name, entry],
@@ -117,13 +143,11 @@ export class CatalogService {
   refresh(): string[] {
     const scan = scanUserTools(this.userFolder, this.userScan);
     this.userScan = scan;
-    if (scan.changed.length > 0) {
-      for (const listener of this.listeners) listener(scan.changed);
-    }
+    if (scan.changed.length > 0) this.notify(scan.changed);
     return scan.changed;
   }
 
-  // Registers a listener for the names that a refresh changes.
+  // Registers a listener for the names that a refresh or a toggle changes.
   onChange(listener: CatalogListener): void {
     this.listeners.push(listener);
   }
@@ -135,33 +159,57 @@ export class CatalogService {
       query.genrePack === undefined
         ? undefined
         : offeredOrigins(query.genrePack);
+    const switches = this.toolSwitches.overrides();
     return {
       tools: this.rows()
         .filter((row) => origins === undefined || origins.has(row.entry.origin))
-        .map(summaryOf),
+        .map((row) => summaryOf(row, switches)),
     };
   }
 
-  // The detail of one tool. For an invalid effective tool, spec and views are null. Lint is TRG-07's, so empty here.
+  // The detail of the effective tool. For an invalid effective tool, spec and views are null.
   detail(name: string): ToolDetail {
     this.refresh();
-    const entry = this.resolve(name);
-    if (!entry.valid) {
-      return {
-        spec: null,
-        source: entry.source,
-        origin: entry.origin,
-        lint: [],
-        views: null,
-      };
+    return this.detailOf(this.resolve(name));
+  }
+
+  // The detail of the built-in original of a tool. TOOL_NOT_FOUND when no built-in pack defines it.
+  builtinDetail(name: string): ToolDetail {
+    this.refresh();
+    const entry = this.builtins.get(name);
+    if (entry === undefined) {
+      throw notFound(`No built-in tool named "${name}".`);
     }
-    return {
-      spec: entry.tool.spec,
-      source: entry.source,
-      origin: entry.origin,
-      lint: [],
-      views: entry.tool.views,
-    };
+    return this.detailOf(entry);
+  }
+
+  // The detail of the user copy of a tool, valid or not. TOOL_NOT_FOUND when the user pack has no copy.
+  userDetail(name: string): ToolDetail {
+    this.refresh();
+    const entry = this.userScan.entries.get(name);
+    if (entry === undefined) {
+      throw notFound(`No user copy of the tool "${name}".`);
+    }
+    return this.detailOf(entry);
+  }
+
+  // The entry of a tool, with its author's switch. Toggling to the spec's default removes the override (C1); any
+  // other value is written. A toggle that leaves the switch as it is writes nothing and notifies nobody (C3).
+  // An invalid entry keeps its key, since it has no spec default (C9). Answers the effective summary.
+  setEnabled(name: string, enabled: boolean): ToolSummary {
+    this.refresh();
+    const entry = this.resolve(name);
+    const switches = this.toolSwitches.overrides();
+    if (switchOf(entry, switches) !== enabled) {
+      if (entry.valid && enabled === entry.tool.spec.enabled) {
+        delete switches[name];
+      } else {
+        switches[name] = enabled;
+      }
+      this.toolSwitches.save(switches);
+      this.notify([name]);
+    }
+    return summaryOf(this.rowOf(entry), switches);
   }
 
   // The loaded tool, or TOOL_NOT_FOUND, or TOOL_INVALID for an invalid effective tool.
@@ -175,13 +223,24 @@ export class CatalogService {
     return this.entry(name).views.ports;
   }
 
+  // The effective switch of a valid tool: the author's override, else the spec's default. TRG-12 refuses a disabled
+  // tool with this, not with spec.enabled.
+  enabledOf(tool: LoadedTool): boolean {
+    return enabledWith(tool, this.toolSwitches.overrides());
+  }
+
   // The model function schemas of the enabled, valid tools offered to a project with this genre pack.
   functions(genrePack?: string): FunctionList {
     this.refresh();
     const origins = offeredOrigins(genrePack);
+    const switches = this.toolSwitches.overrides();
     const functions: FunctionList['functions'] = [];
     for (const { entry } of this.rows()) {
-      if (entry.valid && isEnabled(entry.tool) && origins.has(entry.origin)) {
+      if (
+        entry.valid &&
+        enabledWith(entry.tool, switches) &&
+        origins.has(entry.origin)
+      ) {
         functions.push(entry.tool.views.functionSchema);
       }
     }
@@ -208,6 +267,11 @@ export class CatalogService {
     return entry === undefined ? undefined : entityValidatorOf(entry);
   }
 
+  // Calls each listener with the names that changed.
+  private notify(names: string[]): void {
+    for (const listener of this.listeners) listener(names);
+  }
+
   // The entry a name resolves to: a valid user copy, else the built-in, else an invalid user copy alone.
   private resolve(name: string): ToolEntry {
     const user = this.userScan.entries.get(name);
@@ -215,11 +279,7 @@ export class CatalogService {
     const builtin = this.builtins.get(name);
     if (builtin !== undefined) return builtin;
     if (user !== undefined) return user;
-    throw new ModuleError(
-      TOOL_ERROR_CODES.NOT_FOUND,
-      TOOL_ERROR_STATUS.TOOL_NOT_FOUND,
-      `No tool named "${name}".`,
-    );
+    throw notFound(`No tool named "${name}".`);
   }
 
   // The loaded tool a name resolves to, without a refresh. TOOL_INVALID when that entry is invalid.
@@ -235,6 +295,38 @@ export class CatalogService {
     return entry.tool;
   }
 
+  // The detail of one entry. For an invalid entry, spec and views are null. Lint is TRG-07's, so empty here.
+  private detailOf(entry: ToolEntry): ToolDetail {
+    if (!entry.valid) {
+      return {
+        spec: null,
+        source: entry.source,
+        origin: entry.origin,
+        lint: [],
+        views: null,
+      };
+    }
+    return {
+      spec: entry.tool.spec,
+      source: entry.source,
+      origin: entry.origin,
+      lint: [],
+      views: entry.tool.views,
+    };
+  }
+
+  // The row of an entry. A user copy names the built-in pack it overrides, when there is one.
+  private rowOf(entry: ToolEntry): Row {
+    const builtin = this.builtins.get(entry.name);
+    const overrides =
+      entry.origin === 'user' &&
+      builtin !== undefined &&
+      isBuiltinOrigin(builtin.origin)
+        ? builtin.origin
+        : undefined;
+    return { entry, overrides };
+  }
+
   // One row per effective tool. A valid user copy shadows its built-in; an invalid user copy is listed beside it.
   private rows(): Row[] {
     const names = new Set([
@@ -245,18 +337,12 @@ export class CatalogService {
     for (const name of [...names].sort()) {
       const builtin = this.builtins.get(name);
       const user = this.userScan.entries.get(name);
-      const overrides =
-        builtin !== undefined && isBuiltinOrigin(builtin.origin)
-          ? builtin.origin
-          : undefined;
       if (user?.valid) {
-        rows.push({ entry: user, overrides });
+        rows.push(this.rowOf(user));
         continue;
       }
-      if (builtin !== undefined) {
-        rows.push({ entry: builtin, overrides: undefined });
-      }
-      if (user !== undefined) rows.push({ entry: user, overrides });
+      if (builtin !== undefined) rows.push(this.rowOf(builtin));
+      if (user !== undefined) rows.push(this.rowOf(user));
     }
     return rows;
   }
