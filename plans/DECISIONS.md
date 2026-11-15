@@ -3982,3 +3982,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Files changed: exactly the two files of the plan (contract-chunks.ts, the one-line unwrap with `async`; contract-chunks.spec.ts, new). The spec mocks each shape with its own vi.doMock inside the test, and afterEach calls vi.doUnmock.
 - Red commit a3ca77a (spec only) before the fix commit 740f88c (loader only).
 - Code rejections of SHL-21: 0.
+
+## 2026-11-15 — SAU-08 — Sonnet code review (two parts): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SAU-08 -- . ':!plans' ':!units' | git patch-id --stable`, base 80975f7): 5025f122b0382202d073bedfc10479095ef0bd27.
+- Part 1 (the gate tests G1 to G6 and the two invariant files unchanged): approved. Part 2 (the e2e setup step, criterion 8, assertions (a) to (g), the other four steps pending): approved.
+- Plan-text gap, not a code defect: mutation M2 (CSP call removed from host-frame.middleware.ts) also fails G3, because the sweep's Host check (invariant-sweep.ts lines 625 to 627) lives in the same middleware. The plan's M2 expectation named only G4.
+- Criteria 6 and 7 stay unticked (the Navigator's decision, option A, 2026-11-15). Criteria 1 to 5 and 8 are ticked on the passing tests.
+- Code rejections of SAU-08: 0.
