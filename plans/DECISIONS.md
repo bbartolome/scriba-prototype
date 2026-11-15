@@ -4337,3 +4337,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - The implementer's `git rebase main` failed twice with "Your local changes to the following files would be overwritten by merge" (apps/web/src/app/app.routes.ts and tool-registry.routes.ts, then one file). `git status` showed only the untracked e2e spec, and the three-way merge with `git merge-tree` was clean. `git rebase --abort` and `git update-index --refresh` did not clear it.
 - The orchestrator rebuilt the branch from main with `git checkout -B unit/TRG-05 main` and `git cherry-pick a4ef55c`, with a backup branch `unit/TRG-05-backup` at a4ef55c. Result: d81b721. Patch id 83f32966e2fcbf1addf6334421428497e471c35e, equal to the old branch's.
 - The rest of step 2 (`npm ci`) runs next. Plan step 2 is otherwise satisfied: the branch holds only the TRG-05 commit above main.
+
+## 2026-11-15 — SAU-11 — REWORK could not be done with the plan: PLAN DOES NOT WORK (implementer of the rework, branch head 298d227)
+
+- Step: the first rework item (remove the `@if (loaded.compose.state !== 'ok')` wrapper in setup-page.ts, then M3 per plan section 3 step 11).
+- Cause: once the wrapper is removed, `<app-compose-warning>` exists as a host element for ok too. W2's ok check (`setup-page.spec.ts`, `expectWarning(harness, false)`, lines 571-572 and 586-589) requires zero `app-compose-warning` elements, so W2 fails on the clean code (5 s timeout in `settle()`, spec lines 123-134). M3 changes only compose-warning.ts, so under the current W2 it cannot fail W2 without also failing clean.
+- Evidence: candidate without mutation: setup-page + landing 1 failed | 13 passed (W2); full web suite 1 failed | 318 passed. M3 with the wrapper in place: 14 passed (not caught). Baseline 298d227: 14 passed.
+- Options for the reviser: (A) keep the unconditional render and change W2's ok check to test the text (no `code`, no warning paragraph) rather than the element count; this edits the spec, which the plan does not list for this fix. (B) keep the wrapper and change M3's target to the page gate (`loaded.compose.state !== 'ok'` replaced by `true`); this changes the plan's M3 definition.
+- Plan returns to draft for an Opus reviser. Branch unit/SAU-11 stays at 298d227 (the candidate was reverted; nothing committed).
