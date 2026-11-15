@@ -1,6 +1,6 @@
 ---
 id: AGL-05
-status: planned
+status: done
 unit: units/AGL-05-current-run-state.md
 ---
 # AGL-05 plan — Current-run-state endpoint and seq-based reconcile

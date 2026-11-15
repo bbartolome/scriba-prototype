@@ -20,6 +20,6 @@ A phone that slept catches up (48); two devices show the same agent run live (49
 - State is held in memory for the active and the most recent agent run; after an API restart it is rebuilt from the latest transcript (a transcript without `run-end` reports `stopped`).
 
 ## Acceptance criteria
-- [ ] Mid-run, current-run-state returns the same text and cards a live subscriber has accumulated, with the right `lastSeq`.
-- [ ] After a restart, the last agent run is reported from its transcript.
-- [ ] The GET is side-effect free.
+- [x] Mid-run, current-run-state returns the same text and cards a live subscriber has accumulated, with the right `lastSeq`.
+- [x] After a restart, the last agent run is reported from its transcript.
+- [x] The GET is side-effect free.
