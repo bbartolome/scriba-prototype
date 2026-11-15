@@ -1,6 +1,6 @@
 ---
 id: PST-10
-status: planned
+status: done
 ---
 # PST-10 plan — Files UI: tree, Markdown preview, read-only files until the editor lands
 

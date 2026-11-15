@@ -20,6 +20,6 @@ unblocks: [PST-12, PST-14, PST-21, PST-34]
 - Draft version history UI is PST-21; the search box is PST-14.
 
 ## Acceptance criteria
-- [ ] Component tests: tree renders from list, `?path=` opens that file, preview renders Markdown, a `files-changed` event refreshes the tree.
-- [ ] Phone viewport: read-only preview, no editor.
+- [x] Component tests: tree renders from list, `?path=` opens that file, preview renders Markdown, a `files-changed` event refreshes the tree.
+- [x] Phone viewport: read-only preview, no editor.
 - Moved to PST-34 by revision on 2026-11-15.
