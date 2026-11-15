@@ -4,12 +4,12 @@ title: Editor saving — debounce, explicit save, one follow-up, save state, con
 module: shell
 phase: phase:editor
 milestone: M3
-status: draft
+status: planned
 ---
 
 # SHL-14 plan — editor saving: debounce, explicit save, one follow-up, save state, conflict, leave guards
 
-Unit: SHL-14 (module shell, phase:editor, M3; `units/SHL-14-editor-saving.md`). Revision 1, status `draft`: written by the planner, not yet revised by Opus. Base: `main` at `6829135`. The first read was at `ebdfe3a`. Between the two, `main` gained `0631497` and `6829135`, which change only `plans/DECISIONS.md` and `plans/QUEUE.md` (`git diff --stat ebdfe3a 6829135`), so no file of section 2 moved. The blocker SHL-13 is merged (`7cc7601` feat, `02eadc0` docs; `plans/SHL-13.md` line 3 says `status: done`). This plan is therefore written against the merged `apps/web/src/app/shell/markdown-editor.ts` and `markdown-document.ts`, not against the SHL-13 plan's drafts. This plan writes no code and changes only `plans/SHL-14.md`.
+Unit: SHL-14 (module shell, phase:editor, M3; `units/SHL-14-editor-saving.md`). Revision 2, status `planned`: written by the planner (revision 1, commit `9cf0218`) and corrected by the Opus reviser; the reviser's corrections are listed in section 11. Base of the facts: `main` at `6829135`; at the revision `main` is at `9cf0218`, and `git diff --stat 6829135 9cf0218` lists only `apps/api/**` and `units/AGL-02-*` (AGL-02, now done) and `plans/AGL-02.md` and this file, so no file of section 2 moved. The first read was at `ebdfe3a`. Between the two, `main` gained `0631497` and `6829135`, which change only `plans/DECISIONS.md` and `plans/QUEUE.md` (`git diff --stat ebdfe3a 6829135`), so no file of section 2 moved. The blocker SHL-13 is merged (`7cc7601` feat, `02eadc0` docs; `plans/SHL-13.md` line 3 says `status: done`). This plan is therefore written against the merged `apps/web/src/app/shell/markdown-editor.ts` and `markdown-document.ts`, not against the SHL-13 plan's drafts. This plan writes no code and changes only `plans/SHL-14.md`.
 
 Tags: **[checked]** means read in this session, with file and line in section 7a. **[assumed]** means a belief listed in section 7b; a step of section 3 tests it. **[decision]** means a choice made here, with its source. Line numbers are those at `6829135`.
 
@@ -25,23 +25,23 @@ Tags: **[checked]** means read in this session, with file and line in section 7a
 
 **D4. One write in flight; one follow-up.** A trigger that arrives during a write sets one pending mark, `explicit` or `automatic`; a second trigger only keeps the stronger mark. When the write ends: a failure sends nothing and clears the mark (D6). A success sends one follow-up with the text at that moment when the mark is `explicit`, or when the mark is `automatic` and the text differs from what was saved. Otherwise nothing is sent. Source: unit line 19 ("One save in flight; later edits coalesce into one follow-up save"). [decision]
 
-**D5. Base hash.** Each write sends `baseHash`, the hash of the last read or the last successful write. The returned `hash` becomes the next base. Sources: unit line 20; `packages/contracts/src/project-store/files.ts` lines 42 to 46 (`fileWriteSchema`); `apps/api/src/modules/project-store/files.service.ts` lines 284 to 287 (a base that does not match gives `PROJECT_WRITE_CONFLICT`). [checked]
+**D5. Base hash.** Each write sends `baseHash`, the hash of the last read or the last successful write. The returned `hash` becomes the next base. Sources: unit line 20; `packages/contracts/src/project-store/files.ts` lines 42 to 46 (`fileWriteSchema`); `apps/api/src/modules/project-store/files.service.ts` lines 283 to 287 (a base that does not match gives `PROJECT_WRITE_CONFLICT`). [checked]
 
 **D6. Errors.** A write error whose code is `PROJECT_WRITE_CONFLICT` (`packages/contracts/src/project-store/errors.ts` line 13; HTTP 409 at line 66) gives `conflict`. Any other error gives `failed`. The text is kept. There is no automatic retry. A later edit (after its debounce) or an explicit Save tries again. Unit line 21. [decision]
 
-**D7. Conflict.** While the state is `conflict`, automatic triggers do not write, and an edit does not arm the debounce. An explicit Save still sends, with the same base. The server refuses it while the file differs from that base, so nothing is overwritten. Edits do not clear `conflict` or `failed`; only a successful write does. Unit line 21 ("never overwrites") is the source. The suspension and the explicit exception are this plan's reading (open point 3). [decision]
+**D7. Conflict.** While the state is `conflict`, automatic triggers do not write, and an edit does not arm the debounce. An explicit Save still sends, with the same base. The server refuses it while the file differs from that base, so nothing is overwritten. Edits do not clear `conflict` or `failed`; only a successful write does. SHL-14 adds no way to resolve a conflict (no reload, no merge, no overwrite). Sources: unit line 21 ("`conflict` state; never overwrites"), which holds because the base changes only on a successful write (D5) and the server refuses a stale base (`files.service.ts` lines 283 to 287); PST-34 line 22 needs only that the warning shows and the text is kept. The suspension keeps the `conflict` status and the alert on screen: an automatic retry would set `saving` and clear the alert (`markdown-editor.ts` lines 134 and 135) on every pause, so the warning PST-34 needs would flicker away. No unit and no line of `modules/shell.md` names a resolution, so none is added (open point 3, settled). [decision]
 
 **D8. States.** An edit moves `saved` to `unsaved`. It leaves `failed`, `conflict` and `saving` as they are. A send sets `saving`. A success sets `unsaved` when the text differs from the sent text, otherwise `saved`. A failure sets `failed` or `conflict`. Unit line 26 gives the transitions. The SHL-13 rule at `markdown-editor.ts` lines 228 to 230 (an edit sets `unsaved` unless saving) is changed by this decision. [decision]
 
 **D9. Save button.** It is disabled only when the editor is read-only. SHL-13 also disabled it while saving (line 77). Clicks during a write are accepted and coalesce (D4). Sources: unit line 25; `plans/SHL-13.md` line 158, which says SHL-14 removes that disable. [decision]
 
-**D10. Leave guard.** `unsavedTextGuard`, a `CanDeactivateFn` exported by the Shell, asks every registered editor with unsaved text to flush (D11). If every flush ends saved, the navigation goes on with no prompt. Otherwise `window.confirm` asks, and Cancel keeps the page. Sources: unit line 19 ("before route leave" is a save trigger) and line 22 (a `canDeactivate` guard). The reading of unit line 27 is open point 1. [decision]
+**D10. Leave guard.** `unsavedTextGuard`, a `CanDeactivateFn` exported by the Shell, asks every registered editor with unsaved text to flush (D11). If every flush ends saved, the navigation goes on with no prompt. Otherwise `window.confirm` asks, and Cancel keeps the page. Sources: unit line 19 ("before route leave" is a save trigger) and line 22 (a `canDeactivate` guard that warns about *unsaved* text). Criterion 3 (line 27) is read with these two decisions: the leave save of line 19 runs first, and the prompt comes before the leave completes whenever the text is still unsaved after it (open point 1, settled from the unit text). [decision]
 
-**D11. Flush.** `flush()` returns an observable of one boolean. It resolves `true` at once when no text is unsaved. It resolves `false` at once when the editor cannot save: read-only with unsaved text, or state `conflict`. Otherwise it starts a write, or joins the one in flight, and resolves when the editor settles (no write in flight and none pending): `true` when the state is `saved`, `false` otherwise. It subscribes to the settled signal before it starts the write, because the fake client answers inside the call and the settle could happen before the subscription. [decision]
+**D11. Flush.** `flush()` returns an observable of one boolean. It resolves `true` at once when no text is unsaved. It resolves `false` at once when the editor cannot save: read-only with unsaved text, or state `conflict`. Otherwise it clears the debounce timer and starts a write, or joins the one in flight, and resolves when the editor settles (no write in flight and none pending): `true` when the state is `saved`, `false` otherwise. It subscribes to the settled signal before it starts the write, because the fake client answers inside the call and the settle could happen before the subscription. [decision]
 
 **D12. Unload.** The editor calls `preventDefault` on `beforeunload` while it has unsaved text: the text differs from the saved text, or a write is in flight, or a follow-up is pending. Sources: unit lines 22 and 27. [decision]
 
-**D13. Reference change.** A changed reference with unsaved text flushes the old file first. The new file is read only after that flush has saved. If the flush does not save, the old file stays open and the error line says so. Writes use the reference that the open text was loaded with, kept in a new field `loaded`, never the current input, so a text cannot reach a path it did not come from. Source: `plans/SHL-13.md` decision 12 (line 38) and open point 5 (line 174), which give this case to SHL-14. [decision]
+**D13. Reference change.** A changed reference with unsaved text flushes the old file first. The new file is read only after that flush has saved. If the flush does not save, the editor asks the same prompt as the guard (`confirmUnsavedLeave`, D21): OK reads the new file and drops the old text; Cancel keeps the old file open with its state and error line. Without the prompt a file in `conflict` could never be left by a reference change (D11 gives `false` at once), and PST-34 changes the file through `?path=`, a query-parameter change on which the router does not run `canDeactivate` by default; so this is the "navigating away" of criterion 3 inside one route. Writes use the reference that the open text was loaded with, kept in a new field `loaded`, never the current input, so a text cannot reach a path it did not come from. Source: `plans/SHL-13.md` decision 12 (line 38) and open point 5 (line 174), which give this case to SHL-14. [decision]
 
 **D14. Destroy.** The debounce timer is cleared, and the editor unregisters from the registry (D10) first. An in-flight write is not cancelled. After the destroy its result changes no output and no view. The reason: a write cut off by a teardown may or may not reach the disk, and a route leave already waits for it through the guard. Sources: this plan; `units/SHL-05-breakpoint-gate-nav.md` line 20 ("an open view is not torn down", which protects unsaved editor text). [decision]
 
@@ -49,7 +49,7 @@ Tags: **[checked]** means read in this session, with file and line in section 7a
 
 **D16. Blur.** A `focusout` whose `relatedTarget` is outside the host element is an automatic trigger. Focus that moves to the Save button, or to any element inside the component, is not. Source: unit line 19 ("on blur"). [decision]
 
-**D17. Save mode.** The component gains an input `saveMode` of the type `SaveMode = 'direct'`, with default `'direct'`. Automatic triggers are allowed only when the value is `'direct'`. The Navigator's decision (`plans/DECISIONS.md` line 3629) says that SHL-14 adds the save-mode input that unit SHL-13 line 18 names. No unit names a second mode (open point 2). [decision]
+**D17. Save mode.** The component gains an input `saveMode` of the exported type `SaveMode = 'direct'`, with default `'direct'`. It has one value, and no code branches on it (a test on a one-value type is always true and would be dead code). Sources: the Navigator's decision (`plans/DECISIONS.md` line 3629) says SHL-14 adds the save-mode input that `units/SHL-13-editor-wrapper-lossless.md` line 18 names; the only mode any text names is direct save: SHL-14 line 18 ("straight through the Project store file API (`write`), not through pending changes"), `modules/shell.md` line 101 ("the author's own typing saves straight to the file"), `units/README.md` line 134, and PST-34 lines 15 and 22 ("direct save"). SHL-16 (the other editor-like component) does not save; it emits text for the accept request (`units/SHL-16-editable-merge-view.md` line 20). A unit that names a second mode adds the value and its branch (open point 2, settled). [decision]
 
 **D18. Unchanged from SHL-13.** The text is sent as `documentText(state)` (`sliceDoc`). The line separator and the BOM are set as SHL-13 set them (`markdown-document.ts`, 28 lines: `dominantLineSeparator` at line 10, `documentExtensions` at line 18, `documentText` at line 26). The write body is `{path, content, baseHash}`. The eighteen tests of `markdown-editor.spec.ts` stay unedited and pass. Sources: `plans/SHL-13.md` decisions 6 to 11; unit SHL-13 lines 18 to 25. [decision]
 
@@ -57,7 +57,7 @@ Tags: **[checked]** means read in this session, with file and line in section 7a
 
 **D20. No new package.** `@angular/router` (`apps/web/package.json` line 19) and rxjs are already used. [checked]
 
-**D21. The prompt is `window.confirm`.** Its text is the code stage's to word, and the test checks only that a prompt was asked (open point 5). [decision]
+**D21. The prompt is `window.confirm`.** One function, `confirmUnsavedLeave(): boolean` in `unsaved-text.ts`, calls it; the guard (D10) and the reference change (D13) both use it. Its text is the code stage's to word, and the tests check only that a prompt was asked (open point 5). [decision]
 
 ## 2. Files to create or change
 
@@ -67,7 +67,7 @@ Facts used here: `markdown-editor.ts` is 254 lines; its `EditorReference` interf
 
 | File | Content | Decisions |
 |---|---|---|
-| `apps/web/src/app/shell/unsaved-text.ts` | `export interface UnsavedSource { hasUnsavedText(): boolean; flush(): Observable<boolean>; }`. `@Injectable({providedIn: 'root'}) export class UnsavedTextRegistry` with `register(source): () => void` (returns the unregister function) and `unsaved(): UnsavedSource[]`. `export const unsavedTextGuard: CanDeactivateFn<unknown>`: `true` when `unsaved()` is empty; otherwise `forkJoin` of the flushes, and `true` when all are `true`, else `window.confirm(...)`. Imports `@angular/router` and rxjs only: no CodeMirror import and no contract import. | 10, 11, 21 |
+| `apps/web/src/app/shell/unsaved-text.ts` | `export interface UnsavedSource { hasUnsavedText(): boolean; flush(): Observable<boolean>; }`. `@Injectable({providedIn: 'root'}) export class UnsavedTextRegistry` with `register(source): () => void` (returns the unregister function) and `unsaved(): UnsavedSource[]`. `export function confirmUnsavedLeave(): boolean` (calls `window.confirm`, D21). `export const unsavedTextGuard: CanDeactivateFn<unknown>`: `true` when `unsaved()` is empty; otherwise `forkJoin` of the flushes, and `true` when all are `true`, else `confirmUnsavedLeave()`. Imports `@angular/router` and rxjs only: no CodeMirror import and no contract import. | 10, 11, 13, 21 |
 | `apps/web/src/app/shell/unsaved-text.spec.ts` | Four tests (section 4: T3.1 to T3.4). Each renders a route that holds the editor and carries `canDeactivate: [unsavedTextGuard]`. Imports `MarkdownEditor` and `unsavedTextGuard` from `./index` (the feature's seam), `FakeApiClient` from `./testing/test-doubles`, `API_CLIENT` from `./tokens`, and `RouterTestingHarness` from `@angular/router/testing`. | 10, 12, 19 |
 
 ### 2b. Changed files
@@ -75,18 +75,19 @@ Facts used here: `markdown-editor.ts` is 254 lines; its `EditorReference` interf
 | File | Change | Lines at writing | Decisions |
 |---|---|---|---|
 | `apps/web/src/app/shell/markdown-editor.ts` | See the list below. | 254 | 1 to 9, 11 to 17 |
-| `apps/web/src/app/shell/markdown-editor.spec.ts` | Add an optional `client` argument to `render` (the 18 tests call it unchanged), add the spec-local `HoldingApiClient` (a subclass of `FakeApiClient` whose `post` records the request and returns a `Subject`), and append a new `describe('MarkdownEditor saving', …)` after line 257 with the fourteen `it` blocks of section 4 (T1.1 to T2.3, T4.1, E1 to E3). The eighteen existing tests are not edited. | 257 | 19 |
+| `apps/web/src/app/shell/markdown-editor.spec.ts` | Add an optional `client` argument to `render` (the 18 tests call it unchanged), add the spec-local `HoldingApiClient` (a subclass of `FakeApiClient` whose `post` records the request in `requests` and returns a `Subject`, piped through the exported `parseResponse` of `api-client.ts` line 38 so a held body is parsed as the real client parses it), and append a new `describe('MarkdownEditor saving', …)` after line 257 with the fourteen `it` blocks of section 4 (T1.1 to T2.3, T4.1, E1 to E3). The eighteen existing tests are not edited. | 257 | 19 |
 | `apps/web/src/app/shell/index.ts` | Append one line after line 20: `export { unsavedTextGuard } from './unsaved-text';`. Keep every existing line. | 20 | 10 |
 
 Changes inside `markdown-editor.ts`:
-- A constant `SAVE_DEBOUNCE_MS = 1500`, an exported type `SaveMode = 'direct'`, and an input `saveMode = input<SaveMode>('direct')` (D17).
+- A constant `SAVE_DEBOUNCE_MS = 1500`, an exported type `SaveMode = 'direct'`, and an input `saveMode = input<SaveMode>('direct')`, read by no branch (D17).
 - Fields: `timer` (the debounce handle), `pending` (`'explicit' | 'automatic' | undefined`), `loaded` (the `EditorReference` of the open text), `settled` (a `Subject<void>`), and a `destroyed` flag (D4, D11, D13, D14).
 - `save()` (lines 123 to 152) becomes `requestSave(explicit: boolean)` and a `send()`. The early return on `saving` (lines 125 to 131) goes. The success handler (lines 143 to 150) follows D4 and D8. The error handler (line 151) calls `reportError`, which also clears `pending` (D6).
 - `onDocumentChange` (lines 222 to 231): when the editor is not read-only and the state is not `conflict`, it restarts the debounce; the state rule is D8.
 - `load()` (lines 155 to 175): when the view holds unsaved text and the reference differs, it flushes first (D13). The view creation moves to a `loadNow(reference)`, which sets `loaded`.
 - `onDestroy` (lines 115 to 119): clears the timer, unregisters, sets `destroyed`, keeps `saveSub` (D14), and unsubscribes `loadSub` as now.
 - Constructor: registers the editor's `UnsavedSource` with `UnsavedTextRegistry`. Host metadata: `(keydown)`, `(focusout)` and `(window:beforeunload)` (D12, D15, D16).
-- `flush()` (D11).
+- `flush()` (D11). `requestSave(true)` and `flush()` clear the debounce timer.
+- The reference change (D13) imports `confirmUnsavedLeave` from `./unsaved-text`.
 - The template's button binding (line 77) becomes `[disabled]="readOnly()"` (D9).
 - Not changed: `STATUS_TEXT` (lines 46 to 53), `readOnlyExtensions` (lines 54 to 56), `isWriteConflict` (lines 58 to 60), `createView` (lines 177 to 189), `applyReadOnly` (lines 191 to 195), `editorExtensions` (lines 197 to 220).
 
@@ -159,8 +160,8 @@ Extra tests, from the decisions (not criteria):
 
 | Test | Pass condition |
 |---|---|
-| **E1** `a reference change saves the old file first, then reads the new one` (D13): respond the read of `drafts/ch02.md` first; insert in `drafts/ch01.md`; change the host's `reference` and call `detectChanges`. | `api.requests` is `[GET ch01 with params, POST ch01, GET ch02 with params]`, in that order. |
-| **E2** `a reference change whose save fails keeps the old file, and the next save writes to it` (D13): fail the POST; insert; change the reference: no GET for `ch02`; the alert shows the message. Respond a success; click Save. | The last POST's body has `path` `drafts/ch01.md` and `baseHash` `READ_HASH`. Control M10 fails it. |
+| **E1** `a reference change saves the old file first, then reads the new one` (D13): the one canned read answers both GETs (the fake keys canned answers by method and path, not by params, `test-doubles.ts` lines 48 to 51 and 90); insert in `drafts/ch01.md`; change the host's `reference` and call `detectChanges`. | `api.requests` is `[GET ch01 with params, POST ch01, GET ch02 with params]`, in that order. |
+| **E2** `a reference change whose save fails asks; Cancel keeps the old file, and the next save writes to it` (D13): fail the POST; insert; spy `window.confirm` to return `false`; change the reference: `confirm` was called once; no GET for `ch02`; the alert shows the message. Respond a success; click Save. | `confirm` was called once, and the last POST's body has `path` `drafts/ch01.md` and `baseHash` `READ_HASH`. Controls M10 and M13 fail it. |
 | **E3** `destroying the editor cancels a pending debounce` (D14): insert; `fixture.destroy()`; advance 1500 ms. | No POST after the destroy. Control M8 fails it. (SHL-13's tests leave armed timers behind; this test also guards them.) |
 
 Controls (section 3, step 7). Each row is one mutation; the last column is the test that must fail.
@@ -178,6 +179,8 @@ Controls (section 3, step 7). Each row is one mutation; the last column is the t
 | M9 | `flush()` returns `true` at once, without waiting for the write. | T3.1 |
 | M10 | Writes use the current `reference` input, not `loaded`. | E2 |
 | M11 | An edit sets `unsaved` over `failed`. | T2.2 |
+| M12 | No suspension in `conflict`: an edit arms the debounce as in any other state. | T2.3 |
+| M13 | A reference change whose flush fails keeps the old file without asking. | E2 |
 
 Each control is reverted before the next. Each control is also run against the eighteen SHL-13 tests, and any failure among them is recorded with the control.
 
@@ -186,16 +189,17 @@ Each control is reverted before the next. Each control is also run against the e
 - **SHL-13 (merged; changed here).** Three SHL-13 rules change: the Save button's saving disable (D9), the edit rule (D8), and the reference rule (D13). The `save()` method is replaced. The eighteen SHL-13 tests are not edited and pass. The read-only test (`markdown-editor.spec.ts` lines 204 to 211) still finds the button disabled, because D9 keeps the read-only disable. The round-trip fixtures and the line model are untouched (D18).
 - **SHL-15 (layout, parallel; no plan yet).** Its rules, to be written into its plan: (a) it must not remove `<app-markdown-editor>` from the DOM while text is unsaved. A phone's edit/preview toggle hides the editor with CSS, or flushes first. Removing it with `@if` destroys the open text (D14), and `units/SHL-05-breakpoint-gate-nav.md` line 20 settles that an open view is not torn down. (b) It keeps the inputs `reference` and `saveMode` and the outputs unchanged. (c) It adds its markup outside the first `button` and the `role="status"` and `role="alert"` lines; the first `button` stays the Save button, which the SHL-13 spec selects. (d) Its tests go into its own `describe` after the SHL-14 block.
 - **SHL-16 (merge view, parallel; no plan yet).** It does not use the editor or the registry. No change.
-- **PST-34 (files editor adoption, `units/PST-34-files-editor-adoption.md`, no plan yet).** Its plan must: (a) attach `canDeactivate: [unsavedTextGuard]` to the route entry whose page hosts the editor (`filesRoutes` in `apps/web/src/app/features/project-store/project-store.routes.ts`, a PST-34 file), importing the guard from the Shell entry; (b) pass `reference` as `{projectId, path}` (the `EditorReference` interface, `markdown-editor.ts` line 38); (c) show its write-conflict warning through the `conflict` status line and the alert of D6 and D8, which keep the author's text (D7); a separate warning text is its own choice; (d) keep the phone page without the editor, as `features/project-store/files-page.spec.ts` line 313 requires.
+- **PST-34 (files editor adoption, `units/PST-34-files-editor-adoption.md`, no plan yet).** Its plan must: (a) attach `canDeactivate: [unsavedTextGuard]` to the route entry whose page hosts the editor (`filesRoutes` in `apps/web/src/app/features/project-store/project-store.routes.ts`, a PST-34 file), importing the guard from the Shell entry; (b) pass `reference` as `{projectId, path}` (the `EditorReference` interface, `markdown-editor.ts` line 38); (c) show its write-conflict warning through the `conflict` status line and the alert of D6 and D8, which keep the author's text and stay on screen because automatic writes are suspended in `conflict` (D7); a separate warning text is its own choice; (e) change the open file through the `reference` input (the `?path=` change), which flushes and, if the flush fails, prompts (D13); the route guard does not run on a query-parameter change; (d) keep the phone page without the editor, as `features/project-store/files-page.spec.ts` line 313 requires.
 - **PST-10 (done).** Unchanged. Its page renders no editor on `main` (`features/project-store/files-page.ts` line 20 imports `MarkdownPreview` only).
 - **SHL-19 (polish gate).** Its automated check of the editor (unit line 21) finds the status as `role="status"` (a polite live region), the alert as `role="alert"`, and the button named "Save". The leave prompt is the browser's `window.confirm` (open point 5). Its M7 byte check (`units/SHL-19-polish-gate.md` line 25) depends on D18 only.
+- **SHL-18 (shortcuts; not blocked by SHL-14, `units/SHL-18-polish-about-shortcuts.md` line 7).** Its criterion "trigger save in the editor" (line 21) can document the editor's Ctrl/Cmd-S of D15. No change to SHL-14 is needed for it; a page-wide shortcut, if SHL-18 wants one, is SHL-18's.
 - **"Compile & export manuscript editing"** (quoted in `unblocks`, `units/SHL-14-editor-saving.md` line 9). No unit id names it, so it is informative only (`units/README.md`, blocker notation). It would use the same component and guard.
 
 ## 6. Open points
 
-1. **[NAVIGATOR] The reading of criterion 3 (D10, tests T3.1 and T3.2).** The default: the leave guard flushes first, and prompts only when the flush does not save. This reading keeps the unit's "before route leave" save (unit line 19), so a text is saved before a prompt. The literal reading, "unsaved text prompts first" whenever the text is unsaved, conflicts with line 19: a confirmed leave would then discard text that line 19 says is saved before the route leave. A third option (C) is a dialog with three choices (Save and leave, Leave without saving, Stay). It meets the literal wording, and it needs a Material dialog and an accessibility check in SHL-19. The default is option A. Owner: Navigator.
-2. **[NAVIGATOR] The save-mode input has one value (D17).** `plans/DECISIONS.md` line 3629 says SHL-14 adds the input; no unit names a second mode, so the input has one value and one branch. The plan adds it as the Navigator asked. If the Navigator wants a second mode, a unit must name it first. If the Navigator wants no input, line 3629 needs amending. Owner: Navigator.
-3. **[NAVIGATOR] Conflict rules (D7).** The plan suspends automatic writes while `conflict` and keeps the explicit Save, which sends the same base and is refused while the file differs. No unit names a way to resolve a conflict (reload, keep the author's text, overwrite); PST-34's criterion needs only the warning. Owner: Navigator, to confirm the explicit-save rule; the resolution belongs to a later unit.
+1. **Settled (reviser): the reading of criterion 3 (D10, tests T3.1 and T3.2).** Flush first, then prompt only when the text is still unsaved. Source: the unit's own decisions. Line 19 makes "before route leave" a save trigger, and line 22 says the guard and the prompt "warn about unsaved text"; after the leave save succeeds the text is no longer unsaved, so no warning is due. "Prompts first" in line 27 means before the leave completes. The literal reading (prompt whenever text is unsaved at the click) would drop the line-19 save on a confirmed leave. A three-choice dialog is named by no unit. Not a Navigator point.
+2. **Settled (reviser): the save-mode input has one value, `'direct'`, and no branch (D17).** Sources: `plans/DECISIONS.md` line 3629 (SHL-14 adds the input); SHL-14 line 18, `modules/shell.md` line 101, `units/README.md` line 134 and PST-34 lines 15 and 22 name direct save only; SHL-16 line 20 does not save. Not a Navigator point.
+3. **Settled (reviser): conflict rules (D7).** Automatic writes are suspended in `conflict`; an explicit Save sends the same base; SHL-14 adds no resolution. Sources: SHL-14 line 21 needs only the state and no overwrite; PST-34 line 22 needs only the warning and the kept text; no unit and no line of `modules/shell.md` names a resolution. Not a Navigator point.
 4. **Debounce value (D2).** 1500 ms exactly, where the unit says "~1.5 s idle". Tests at 1499 and 1500 ms pin it. Owner: planner (default), Navigator may change it.
 5. **The prompt is `window.confirm` (D21).** It needs no new component. SHL-19's accessibility pass may want a dialog instead. Owner: SHL-19.
 6. **An in-flight write and a destroyed editor (D14), and SHL-15's constraint (section 5 (a)).** The plan keeps an in-flight write alive after a destroy. SHL-15 must keep the editor rendered while text is unsaved. Owner: SHL-15's plan.
@@ -226,7 +230,7 @@ Each control is reverted before the next. Each control is also run against the e
 - **F15.** `apps/web/src/app/shell/active-project-guard.ts`: the only guard in the Shell, a `CanActivateFn` that reads `API_CLIENT` through `inject`. No `canDeactivate` exists in `apps/web/src`. [checked]
 - **F16.** `vi.useFakeTimers()` is used at `apps/web/src/app/shell/sse-client.spec.ts` line 95; `RouterTestingHarness` is imported at `apps/web/src/app/shell/project-route.spec.ts` line 4. [checked]
 - **F17.** Versions in the root `node_modules`: `@angular/core` and `@angular/router` 22.2.5, `vitest` 5.1.0, `rxjs` 7.8.2. `apps/web/package.json` lines 20 to 25 pin six `@codemirror` packages, `merge` among them (`state` 6.7.6, `view` 6.43.15). `@codemirror/view` and `@codemirror/state` are not installed in the root or in `apps/web` `node_modules` in this checkout (both were looked for). [checked]
-- **F18.** Draft and planned plans: `plans/AGL-02.md` (planned), `plans/GRR-01.md` (draft) and `plans/MPR-08.md` (planned) are the only plans with `status: draft` or `planned`. A grep for `apps/web`, `shell/`, `markdown-editor`, `index.ts`, `test-doubles` and `project-store-copies` finds none of them in a file of section 2. The branches `unit/AGL-02` and `unit/MPR-08` have no diff under `apps/web` against `main`. [checked]
+- **F18.** Draft and planned plans: at `6829135`, `plans/AGL-02.md` (planned), `plans/GRR-01.md` (draft) and `plans/MPR-08.md` (planned) were the only plans with `status: draft` or `planned`; at `9cf0218` AGL-02 is done, and GRR-01 and MPR-08 remain (reviser, `grep -l '^status: \(draft\|planned\)' plans/*.md`). A grep for `apps/web`, `shell/`, `markdown-editor`, `index.ts`, `test-doubles` and `project-store-copies` finds none of them in a file of section 2. The branches `unit/AGL-02` and `unit/MPR-08` have no diff under `apps/web` against `main`. [checked]
 - **F19.** `plans/DECISIONS.md`: line 3625 (the Navigator's decisions on SHL-13 open points 1, 3, 6 and 7); line 3629 (open point 6: SHL-14 adds the save-mode input); lines 4080 to 4091 (the PST-10 split into PST-34); lines 1084 to 1086 (the Shell ships no runtime zod). [checked]
 - **F20.** `units/PST-34-files-editor-adoption.md`: line 7 (`blocked_by` names SHL-14), line 15 (direct save through `write` with `baseHash`), line 22 (the criterion). `units/SHL-05-breakpoint-gate-nav.md` line 20. `units/SHL-15-editor-layout-touch.md` line 19. `units/SHL-19-polish-gate.md` lines 21 and 25. `units/README.md` lines 134 and 136. [checked]
 - **F21.** `plans/SHL-13.md`: line 18 (decision 2, inputs), line 38 (decision 12, reference change), line 158 (section 5: SHL-14 removes the saving disable), line 171 (open point 2, paste), line 174 (open point 5, reload). [checked]
@@ -256,6 +260,31 @@ Each control is reverted before the next. Each control is also run against the e
 
 - One new file, `unsaved-text.ts` (the registry and the `unsavedTextGuard`), with its spec; one export line in `shell/index.ts`.
 - `MarkdownEditor` gains: a 1500 ms debounce; explicit, blur and leave triggers; one write in flight with one follow-up; `failed` and `conflict` kept until a write succeeds; the Save button enabled while saving; the beforeunload prompt; the reference-change flush; and the `saveMode` input (one value).
-- Nineteen new test cases: fifteen in `markdown-editor.spec.ts` (criteria 1 to 4 and three extras) and four in `unsaved-text.spec.ts` (criterion 3 and one control), with eleven controls, M1 to M11.
+- Nineteen new test cases: fifteen in `markdown-editor.spec.ts` (criteria 1 to 4 and three extras) and four in `unsaved-text.spec.ts` (criterion 3 and one control), with thirteen controls, M1 to M13.
 - The eighteen SHL-13 tests stay unedited and pass.
 - Two commits on `unit/SHL-14` in the implementation stage. This plan changes only `plans/SHL-14.md`.
+
+## 10. Review parts
+
+Each step of section 3 and each test of section 4 is in exactly one part.
+
+**Part 1: base, tests first, the registry and the guard, the barrel.** Steps 0, 1, 2, 3 and 5. Tests: T3.1, T3.2 and T3.4 (`unsaved-text.spec.ts`; criterion 3, route leave and the clean control). Decisions: D10, D11 (as the guard uses it), D19, D20, D21. The reviewer of this part also checks that the code changes only the files of section 2 (2a, 2b) and none of section 2d.
+
+**Part 2: the editor's saving, the checks and the record.** Steps 4, 6, 7, 8, 9, 10, 11 and 12. Tests: T1.1, T1.2, T1.3, T1.4, T1.5a, T1.5b, T1.6 (criterion 1); T2.1, T2.2, T2.3 (criterion 2); T3.3 (criterion 3, closing the tab); T4.1 (criterion 4); E1, E2, E3; controls M1 to M13. Decisions: D1 to D9, D11 to D18.
+
+## 11. Corrections by the reviser (revision 2)
+
+- Open points 1, 2 and 3 settled from the unit text, the module file and `plans/DECISIONS.md` (section 6); none needs the Navigator.
+- D7: sources and the reason for the suspension (the warning PST-34 needs stays on screen) added; no resolution in SHL-14.
+- D10: criterion 3 read with unit lines 19 and 22.
+- D13: a reference change whose flush fails now asks the prompt (OK reads the new file, Cancel keeps the old one). Without it a file in `conflict` could not be left inside one route, and PST-34's `?path=` change does not run the route guard. E2 changed to spy the prompt; control M13 added.
+- D17: the one-value `saveMode` input has no branch (dead code removed); sources named.
+- D21: one function, `confirmUnsavedLeave`, used by the guard and by D13; section 2a lists it.
+- D11 and section 2b: an explicit save and a flush clear the debounce timer.
+- Control M12 added for D7.
+- E1: the fake answers by method and path, not by params, so one canned read answers both GETs.
+- `HoldingApiClient` parses a held body with `parseResponse` (`api-client.ts` line 38).
+- D5: `files.service.ts` lines 283 to 287 (the `if` begins at line 283).
+- Section 5: PST-34 rule (e) for the `?path=` change; a note on SHL-18's save shortcut.
+- F18 and the header: base at `9cf0218`; AGL-02 is done.
+- No unit file changed.
