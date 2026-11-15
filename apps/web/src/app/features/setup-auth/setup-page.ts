@@ -86,21 +86,20 @@ export class SetupPage {
   }
 
   private async load(): Promise<void> {
-    let contract: SetupAuthContract;
+    // The initial read is inside the try: a synchronous throw of the read reaches the alert line.
     try {
-      contract = await loadSetupAuthContract();
+      const contract = await loadSetupAuthContract();
+      this.contract = contract;
+      this.api
+        .get(contract.IDENTITY_ROUTE, contract.identitySchema)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (who) => this.identity.set(who),
+          error: (error: unknown) => this.fail(error),
+        });
     } catch (error: unknown) {
       this.failure.set(messageOf(error));
-      return;
     }
-    this.contract = contract;
-    this.api
-      .get(contract.IDENTITY_ROUTE, contract.identitySchema)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (who) => this.identity.set(who),
-        error: (error: unknown) => this.fail(error),
-      });
   }
 
   /** Shows the state an error calls for: the sign-in notice, a tailnet explanation or a message. */
