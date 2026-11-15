@@ -112,5 +112,18 @@ export const APP_ROUTES: Routes = withDeviceGate([
         (feature) => feature.projectsRoutes,
       ),
   },
+  {
+    path: 'tools',
+    pathMatch: 'full',
+    data: {
+      scope: 'app',
+      minDeviceClass: 'phone',
+      nav: { label: 'Tools', icon: 'build', order: 40 },
+    } satisfies ShellRouteData,
+    loadChildren: () =>
+      import('./features/tool-registry/tool-registry.routes').then(
+        (feature) => feature.toolsRoutes,
+      ),
+  },
   { path: '**', component: NotFoundPage },
 ]);
