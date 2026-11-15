@@ -173,6 +173,17 @@ function chatBodies(records: MockOpenAIRecord[]): ChatBody[] {
   return records.map((record) => record.body as ChatBody);
 }
 
+// The content of every tool message in one request, in order.
+function toolContents(body: ChatBody): string[] {
+  return body.messages
+    .filter((message) => message.role === 'tool')
+    .map((message) => String(message.content));
+}
+
+const READ_SUMMARY =
+  'Expected arguments for read_file: path (string, required).';
+const WITHDRAWN = 'This tool is unavailable for the rest of this agent run.';
+
 const LIST_THEN_READ_THEN_TEXT = [
   {
     match: { endpoint: 'chat', turnIndex: 0 },
@@ -412,6 +423,114 @@ it('S4: a persistent 503 with retries 0 ends the run error with a readable messa
       expect(message.length).toBeGreaterThan(0);
       expect(message).not.toContain('PROVIDER_ABORTED');
       expect(await recordsOf(h.mock, 'unavailable')).toHaveLength(1);
+    } finally {
+      await stream.close();
+    }
+  } finally {
+    await h.close();
+  }
+});
+
+it('R1: a read outside the project is refused, and the outside file never reaches the model', async () => {
+  const h = await openHarness(
+    'outside',
+    [
+      {
+        match: { endpoint: 'chat', turnIndex: 0 },
+        reply: {
+          kind: 'toolCalls',
+          calls: [
+            {
+              name: 'read_file',
+              argumentChunks: ['{"path":"../outward/secret.md"}'],
+            },
+          ],
+        },
+      },
+      {
+        match: { endpoint: 'chat', turnIndex: 1 },
+        reply: { kind: 'stream', deltas: ['I could not read that file.'] },
+      },
+    ],
+    (url) => ({ providerBaseURL: url }),
+  );
+  try {
+    writeFileSync(join(h.fixture.outside, 'secret.md'), 'SECRET-OUTSIDE\n');
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
+    try {
+      await startRun(h, { intent: 'Read the secret outside the project' });
+      const events = await readUntilEnded(stream);
+      expect(events[events.length - 1]).toMatchObject({
+        type: 'run-ended',
+        data: { reason: 'completed' },
+      });
+
+      const records = await recordsOf(h.mock, 'outside');
+      expect(records.map((record) => record.step)).toEqual([0, 1]);
+      const [, second] = chatBodies(records);
+      expect(toolContents(second)).toEqual([
+        `path: The path must not contain a ".." segment.\n${READ_SUMMARY}`,
+      ]);
+      const everything = JSON.stringify(records);
+      expect(everything).not.toContain('SECRET-OUTSIDE');
+      expect(everything).not.toContain(h.fixture.outside);
+    } finally {
+      await stream.close();
+    }
+  } finally {
+    await h.close();
+  }
+});
+
+it('W1: a third malformed read withdraws read_file from the next request', async () => {
+  const readWith = (turnIndex: number, args: string) => ({
+    match: { endpoint: 'chat', turnIndex },
+    reply: {
+      kind: 'toolCalls',
+      calls: [{ name: 'read_file', argumentChunks: [args] }],
+    },
+  });
+  const h = await openHarness(
+    'withdraw',
+    [
+      readWith(0, '{"path": '),
+      readWith(1, '{}'),
+      readWith(2, '{"path": 3}'),
+      {
+        match: { endpoint: 'chat', turnIndex: 3 },
+        reply: { kind: 'stream', deltas: ['I will use list_files instead.'] },
+      },
+    ],
+    (url) => ({ providerBaseURL: url }),
+  );
+  try {
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
+    try {
+      await startRun(h, { intent: 'Read until read_file is withdrawn' });
+      const events = await readUntilEnded(stream);
+      expect(events[events.length - 1]).toMatchObject({
+        type: 'run-ended',
+        data: { reason: 'completed' },
+      });
+
+      const records = await recordsOf(h.mock, 'withdraw');
+      expect(records).toHaveLength(4);
+      const bodies = chatBodies(records);
+      expect(toolContents(bodies[1])).toEqual([
+        `arguments: is not valid JSON\n${READ_SUMMARY}`,
+      ]);
+      expect(toolContents(bodies[2])).toEqual([
+        `arguments: is not valid JSON\n${READ_SUMMARY}`,
+        `path: is required\n${READ_SUMMARY}`,
+      ]);
+      expect(toolContents(bodies[3])).toEqual([
+        `arguments: is not valid JSON\n${READ_SUMMARY}`,
+        `path: is required\n${READ_SUMMARY}`,
+        `path: must be a string\n${READ_SUMMARY}\n${WITHDRAWN}`,
+      ]);
+      expect(toolNamesOf(bodies[2])).toContain('read_file');
+      expect(toolNamesOf(bodies[3])).not.toContain('read_file');
+      expect(toolNamesOf(bodies[3])).toContain('list_files');
     } finally {
       await stream.close();
     }
