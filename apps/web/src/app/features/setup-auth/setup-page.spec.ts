@@ -52,6 +52,9 @@ const complete = {
 const LOOPBACK_TEXT = 'Signed in from this computer (loopback).';
 const TAILNET_TEXT = 'Signed in over the tailnet as ada@example.com.';
 const IN_TEXT = "You're in.";
+// SAU-10 units/SAU-10-compose-version-status.md line 21: the re-run-the-installer one-liner.
+const COMPOSE_ONE_LINER =
+  'docker run --rm -e SETUP=true bbartolome/scriba | bash';
 const SIGN_IN_COMMANDS = [
   'cat ~/Books/.scriba/setup-url',
   'docker compose logs scriba',
@@ -99,8 +102,21 @@ function codeTexts(root: HTMLElement): string[] {
   return [...root.querySelectorAll('code')].map((c) => c.textContent.trim());
 }
 
-function continueButton(root: HTMLElement): HTMLButtonElement | null {
-  return root.querySelector('button');
+/** The button whose trimmed text is `text`, or null. */
+function buttonNamed(
+  root: HTMLElement,
+  text: string,
+): HTMLButtonElement | null {
+  return (
+    [...root.querySelectorAll('button')].find(
+      (button) => button.textContent.trim() === text,
+    ) ?? null
+  );
+}
+
+/** The wizard's list items, each as `title: state`. */
+function stepItems(root: HTMLElement): string[] {
+  return [...root.querySelectorAll('li')].map((li) => li.textContent.trim());
 }
 
 /** Runs a check until it passes, with change detection before each try. */
@@ -117,7 +133,7 @@ async function settle(
   );
 }
 
-/** Reads of the landing, which Continue navigates to. */
+/** Reads of the landing, which Skip the rest navigates to. */
 function respondLanding(doubles: ShellTestDoubles): void {
   doubles.api.respond('GET', VERSION_ROUTE, version);
   doubles.api.respond('GET', HEALTHZ_ROUTE, healthy);
@@ -126,57 +142,60 @@ function respondLanding(doubles: ShellTestDoubles): void {
 }
 
 describe('C1 setup page with the fake API', () => {
-  it('C1a shows the loopback identity, "You\'re in." and Continue', async () => {
+  it('C1a shows the loopback identity, "You\'re in." and the Next and Skip the rest buttons', async () => {
     const doubles = createShellTestDoubles();
     doubles.api.respond(
       'GET',
       IDENTITY_ROUTE,
       SETUP_AUTH_EXAMPLES.identityLoopback,
     );
+    doubles.api.respond('GET', SETUP_STATUS_ROUTE, SETUP_AUTH_EXAMPLES.setupStatus);
 
     const harness = await renderSetup(doubles.providers);
 
     await settle(harness, (root) => {
       expect(paragraphs(root)).toContain(LOOPBACK_TEXT);
       expect(paragraphs(root)).toContain(IN_TEXT);
-      expect(buttonTexts(root)).toEqual(['Continue']);
+      expect(buttonTexts(root)).toEqual(['Next', 'Skip the rest']);
     });
   });
 
-  it('C1a shows the tailnet identity, "You\'re in." and Continue', async () => {
+  it('C1a shows the tailnet identity, "You\'re in." and the Next and Skip the rest buttons', async () => {
     const doubles = createShellTestDoubles();
     doubles.api.respond(
       'GET',
       IDENTITY_ROUTE,
       SETUP_AUTH_EXAMPLES.identityTailnet,
     );
+    doubles.api.respond('GET', SETUP_STATUS_ROUTE, SETUP_AUTH_EXAMPLES.setupStatus);
 
     const harness = await renderSetup(doubles.providers);
 
     await settle(harness, (root) => {
       expect(paragraphs(root)).toContain(TAILNET_TEXT);
       expect(paragraphs(root)).toContain(IN_TEXT);
-      expect(buttonTexts(root)).toEqual(['Continue']);
+      expect(buttonTexts(root)).toEqual(['Next', 'Skip the rest']);
     });
   });
 
-  it('C1b Continue posts and navigates to the landing', async () => {
+  it('C1b Skip the rest posts and navigates to the landing', async () => {
     const doubles = createShellTestDoubles();
     doubles.api.respond(
       'GET',
       IDENTITY_ROUTE,
       SETUP_AUTH_EXAMPLES.identityLoopback,
     );
+    doubles.api.respond('GET', SETUP_STATUS_ROUTE, SETUP_AUTH_EXAMPLES.setupStatus);
     doubles.api.respond('POST', SETUP_CONTINUE_ROUTE, complete);
     respondLanding(doubles);
 
     const harness = await renderSetup(doubles.providers);
     const router = TestBed.inject(Router);
     await settle(harness, (root) =>
-      expect(buttonTexts(root)).toEqual(['Continue']),
+      expect(buttonTexts(root)).toEqual(['Next', 'Skip the rest']),
     );
 
-    continueButton(rootOf(harness))?.click();
+    buttonNamed(rootOf(harness), 'Skip the rest')?.click();
 
     expect(doubles.api.requests).toContainEqual({
       method: 'POST',
@@ -265,13 +284,14 @@ class HeldPostClient extends FakeApiClient {
 }
 
 describe('setup page extra tests', () => {
-  it('X1 a failed Continue keeps the page, the identity and an enabled button, and shows the message', async () => {
+  it('X1 a failed Skip the rest keeps the page, the identity and an enabled button, and shows the message', async () => {
     const doubles = createShellTestDoubles();
     doubles.api.respond(
       'GET',
       IDENTITY_ROUTE,
       SETUP_AUTH_EXAMPLES.identityLoopback,
     );
+    doubles.api.respond('GET', SETUP_STATUS_ROUTE, SETUP_AUTH_EXAMPLES.setupStatus);
     doubles.api.fail(
       'POST',
       SETUP_CONTINUE_ROUTE,
@@ -285,10 +305,10 @@ describe('setup page extra tests', () => {
     const harness = await renderSetup(doubles.providers);
     const router = TestBed.inject(Router);
     await settle(harness, (root) =>
-      expect(buttonTexts(root)).toEqual(['Continue']),
+      expect(buttonTexts(root)).toEqual(['Next', 'Skip the rest']),
     );
 
-    continueButton(rootOf(harness))?.click();
+    buttonNamed(rootOf(harness), 'Skip the rest')?.click();
 
     await settle(harness, (root) => {
       const alert = root.querySelector('[role="alert"]');
@@ -296,7 +316,7 @@ describe('setup page extra tests', () => {
         'The server sent an unexpected response.',
       );
       expect(paragraphs(root)).toContain(LOOPBACK_TEXT);
-      expect(continueButton(root)?.disabled).toBe(false);
+      expect(buttonNamed(root, 'Skip the rest')?.disabled).toBe(false);
     });
     expect(router.url).toBe('/setup');
   });
@@ -339,20 +359,21 @@ describe('setup page extra tests', () => {
     expect(entry?.loadChildren).toBeDefined();
   });
 
-  it('X4 a second Continue before the answer sends no second POST, and an error answer re-enables the button', async () => {
+  it('X4 a second Skip the rest before the answer sends no second POST, and an error answer re-enables the button', async () => {
     const doubles = createShellTestDoubles();
     const api = new HeldPostClient();
     api.respond('GET', IDENTITY_ROUTE, SETUP_AUTH_EXAMPLES.identityLoopback);
+    api.respond('GET', SETUP_STATUS_ROUTE, SETUP_AUTH_EXAMPLES.setupStatus);
 
     const harness = await renderSetup([
       ...doubles.providers,
       { provide: API_CLIENT, useValue: api },
     ]);
     await settle(harness, (root) =>
-      expect(buttonTexts(root)).toEqual(['Continue']),
+      expect(buttonTexts(root)).toEqual(['Next', 'Skip the rest']),
     );
 
-    const button = continueButton(rootOf(harness));
+    const button = buttonNamed(rootOf(harness), 'Skip the rest');
     button?.click();
     button?.click();
 
@@ -367,7 +388,192 @@ describe('setup page extra tests', () => {
     );
 
     await settle(harness, (root) =>
-      expect(continueButton(root)?.disabled).toBe(false),
+      expect(buttonNamed(root, 'Skip the rest')?.disabled).toBe(false),
     );
+  });
+});
+
+describe('W wizard with the fake API', () => {
+  const TAILSCALE_STEP_PATH = '/api/setup-auth/steps/tailscale';
+
+  const fresh = {
+    steps: {
+      access: 'done',
+      tailscale: 'pending',
+      providers: 'pending',
+      preferences: 'pending',
+      firstProject: 'pending',
+    },
+    complete: false,
+    compose: SETUP_AUTH_EXAMPLES.composeOk,
+  } satisfies SetupStatus;
+
+  const afterSkip = {
+    ...fresh,
+    steps: { ...fresh.steps, tailscale: 'skipped' },
+  } satisfies SetupStatus;
+
+  const continued = {
+    steps: {
+      access: 'done',
+      tailscale: 'skipped',
+      providers: 'skipped',
+      preferences: 'skipped',
+      firstProject: 'skipped',
+    },
+    complete: true,
+    compose: SETUP_AUTH_EXAMPLES.composeOk,
+  } satisfies SetupStatus;
+
+  const rerunDone = {
+    ...continued,
+    steps: { ...continued.steps, tailscale: 'done' },
+  } satisfies SetupStatus;
+
+  it('W1 the wizard shows the five steps in order, skips a step, completes, and on re-run shows the stored states and finishes a skipped step', async () => {
+    const doubles = createShellTestDoubles();
+    doubles.api.respond(
+      'GET',
+      IDENTITY_ROUTE,
+      SETUP_AUTH_EXAMPLES.identityLoopback,
+    );
+    doubles.api.respond('GET', SETUP_STATUS_ROUTE, fresh);
+
+    const harness = await renderSetup(doubles.providers);
+    const router = TestBed.inject(Router);
+
+    await settle(harness, (root) => {
+      expect(stepItems(root)).toEqual([
+        'Access: done',
+        'Tailscale: pending',
+        'Model providers: pending',
+        'Preferences: pending',
+        'First project: pending',
+      ]);
+      expect(paragraphs(root)).toContain(LOOPBACK_TEXT);
+      expect(paragraphs(root)).toContain(IN_TEXT);
+      expect(buttonTexts(root)).toEqual(['Next', 'Skip the rest']);
+    });
+
+    buttonNamed(rootOf(harness), 'Next')?.click();
+    await settle(harness, (root) => {
+      expect(paragraphs(root)).toContain('Tailscale is unavailable.');
+      expect(buttonTexts(root)).toEqual([
+        'Mark done',
+        'Skip',
+        'Next',
+        'Skip the rest',
+      ]);
+    });
+    expect(doubles.api.requests.filter((r) => r.method === 'POST')).toEqual(
+      [],
+    );
+
+    doubles.api.respond('POST', TAILSCALE_STEP_PATH, afterSkip);
+    buttonNamed(rootOf(harness), 'Skip')?.click();
+    await settle(harness, (root) => {
+      expect(paragraphs(root)).toContain(
+        'Model providers are not set up yet.',
+      );
+      expect(stepItems(root)[1]).toBe('Tailscale: skipped');
+    });
+    expect(doubles.api.requests).toContainEqual({
+      method: 'POST',
+      path: TAILSCALE_STEP_PATH,
+      body: { state: 'skipped' },
+    });
+
+    doubles.api.respond('POST', SETUP_CONTINUE_ROUTE, continued);
+    respondLanding(doubles);
+    buttonNamed(rootOf(harness), 'Skip the rest')?.click();
+    expect(doubles.api.requests).toContainEqual({
+      method: 'POST',
+      path: SETUP_CONTINUE_ROUTE,
+      body: {},
+    });
+    await vi.waitFor(() => expect(router.url).toBe('/projects/a/chat'), {
+      timeout: 5000,
+    });
+
+    doubles.api.respond('GET', SETUP_STATUS_ROUTE, continued);
+    await harness.navigateByUrl('/setup');
+    await settle(harness, (root) => {
+      expect(stepItems(root)).toEqual([
+        'Access: done',
+        'Tailscale: skipped',
+        'Model providers: skipped',
+        'Preferences: skipped',
+        'First project: skipped',
+      ]);
+      expect(paragraphs(root)).toContain(LOOPBACK_TEXT);
+      expect(buttonTexts(root)).toEqual(['Next', 'Skip the rest']);
+    });
+
+    doubles.api.respond('POST', TAILSCALE_STEP_PATH, rerunDone);
+    buttonNamed(rootOf(harness), 'Next')?.click();
+    await settle(harness, (root) =>
+      expect(buttonTexts(root)).toEqual([
+        'Mark done',
+        'Skip',
+        'Next',
+        'Skip the rest',
+      ]),
+    );
+    buttonNamed(rootOf(harness), 'Mark done')?.click();
+    await settle(harness, (root) =>
+      expect(stepItems(root)[1]).toBe('Tailscale: done'),
+    );
+    expect(doubles.api.requests).toContainEqual({
+      method: 'POST',
+      path: TAILSCALE_STEP_PATH,
+      body: { state: 'done' },
+    });
+  });
+
+  it('W2 the compose warning shows the one-liner for mismatch and unknown, and not for ok', async () => {
+    const doubles = createShellTestDoubles();
+    doubles.api.respond(
+      'GET',
+      IDENTITY_ROUTE,
+      SETUP_AUTH_EXAMPLES.identityLoopback,
+    );
+
+    const setCompose = (compose: unknown): void =>
+      doubles.api.respond('GET', SETUP_STATUS_ROUTE, {
+        ...SETUP_AUTH_EXAMPLES.setupStatus,
+        compose,
+      });
+
+    /** Waits for the list, then checks the warning: one for mismatch and unknown, none for ok. */
+    const expectWarning = async (
+      harness: RouterTestingHarness,
+      warned: boolean,
+    ): Promise<void> => {
+      await settle(harness, (root) => {
+        expect(stepItems(root)).toHaveLength(5);
+        const warnings = root.querySelectorAll('app-compose-warning');
+        if (warned) {
+          expect(warnings).toHaveLength(1);
+          expect(codeTexts(root)).toEqual([COMPOSE_ONE_LINER]);
+        } else {
+          expect(warnings).toHaveLength(0);
+          expect(codeTexts(root)).toEqual([]);
+        }
+      });
+    };
+
+    setCompose(SETUP_AUTH_EXAMPLES.composeMismatch);
+    const harness = await renderSetup(doubles.providers);
+    await expectWarning(harness, true);
+
+    setCompose(SETUP_AUTH_EXAMPLES.composeUnknown);
+    await harness.navigateByUrl('/no-such-page');
+    await harness.navigateByUrl('/setup');
+    await expectWarning(harness, true);
+
+    setCompose(SETUP_AUTH_EXAMPLES.composeOk);
+    await harness.navigateByUrl('/no-such-page');
+    await harness.navigateByUrl('/setup');
+    await expectWarning(harness, false);
   });
 });
