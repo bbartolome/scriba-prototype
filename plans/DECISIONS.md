@@ -4374,3 +4374,17 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 1 (steps 0 to 9): APPROVED on the rebased head. Part 2 (steps 10 to 12): APPROVED. Part 3 (steps 13 to 19): APPROVED.
 - Final checks on the rebased head: lint, test (web 82 + 49 files; API tool-registry-api; packs; e2e) and build all exit 0.
 - Code rejections: 0 after the rebase.
+
+## 2026-11-15 — MPR-08 — Navigator decision (session ff79c6c9652849e1a58334562bd17059): fallback B applied now (option A)
+
+- **Decision (Navigator, session ff79c6c9652849e1a58334562bd17059, option A):** the owner cannot run T2 in this unattended session, so the pre-authorized fallback B applies. MPR-08 completes with criterion 2 (units/MPR-08-client-gate.md line 23) unticked and the cause recorded. The owner may still run T2 later to tick it. AGL-03 becomes available once MPR-08 is on main.
+- **Reason:** the earlier decision (session 74b9c36bbaa14f72bbc4f657b25a613d, option A) names this condition. Checked: modules/providers.md line 47 already holds the transitional T2 note; units/AGL-03-loop-core.md blocked_by names MPR-08.
+- **Not yet done:** the merge of unit/MPR-08 (rebase, checks, the unit and plan changes on the unit branch, fast-forward of main). Approved patch id still 315ffc056b0fda24ec2199f6fabee2bb2c61b8b9 at head 8975e06.
+
+## 2026-11-15 — GRR-01 — Step 3 failed check: npm test on the rebased branch (orchestrator)
+
+- The rebase of unit/GRR-01 onto main ae06185 is clean and gives head ce6019e (one commit). Lint passes; npm ci was run.
+- `npm test` FAILS in apps/web: `apps/web/src/app/shell/landing.spec.ts` > "C1 routes by setup status and active project": expected '/' to be '/setup' (landing.spec.ts:68). The spec and landing.ts come from SHL-08 (commits c864e58 and d187c23, on main). GRR-01 does not change apps/web (`git diff main...unit/GRR-01 --stat -- apps/web` is empty).
+- Not checked: whether the spec also fails on main (a run on main could not start: its node_modules does not resolve @codemirror/state). The failure is therefore not yet shown to be caused by GRR-01, and it is not shown to exist on main.
+- Result: GRR-01 is held. The branch and worktree stay (`/Users/bbartolome/workspace/scriba-prototype-wt/GRR-01`). Build and patch-id check are not run. Criterion 5 still needs a decision (CI on a pushed main is not possible here).
+- Open for the user: the SHL-08 failing spec on main (see also the SHL-08 defect noted in the handoff memory).
