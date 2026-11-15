@@ -4298,3 +4298,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 1 (steps 1-10; T1, T2, T4, E1): APPROVED. Part 2 (steps 11-15; T3): APPROVED. 6 files / 35 tests pass in the Part 1 gate; root build, test and lint exit 0.
 - Judged acceptable: the literal mutation of enabledOf passes all tests because the routes use the private helper enabledWith; the implementer's mutation of enabledWith fails T1, E1 and T2, so the check's intent is met. Three commits instead of one (commit-per-part).
 - Code rejections: 0.
+
+## 2026-11-15 — PST-14 — Sonnet code review (one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/PST-14 -- . ':!plans' ':!units' | git patch-id --stable`, branch head b2876ec): 90c2bb68e307772b5a2bb7f53db6e44f76036af6.
+- Part 1 (steps 1 to 11; tests K1, T1, T2, T3): APPROVED. The six changed paths are exactly the plan's section 2 list. Full web suite 44 files / 314 tests pass; T3 phone e2e passes.
+- Accepted differences: debounce via timer(250) and switchMap instead of debounceTime(250) (same behaviour); lint fix commit 59e98c3; mutation checks (a) to (c) and the whole-branch gates are steps, not acceptance tests, and were not run by the implementer.
+- Code rejections: 0.
