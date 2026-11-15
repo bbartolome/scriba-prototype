@@ -4141,3 +4141,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Basis:** the Navigator's decision (only the Navigator can change a criterion). The reviser applied it and did not use the YAGNI actions.
 - **Downstream:** SAU-15 (line 26) and SAU-16 (line 24) already name the warning and need no change. SAU-11 has no plan and no branch.
 - **SAU-10 plan:** the reviser confirmed that its plan needs no change of scope (SAU-10 ships no UI); the plan's open point 2 is decided by this entry.
+
+## 2026-11-15 — SAU-10 — Sonnet code review (one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SAU-10 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 6b7e77f): db2b8a3d042e33f68fc8d78b8b04cded4b0c2c83.
+- Files changed: exactly the three paths of the plan's section 2 (`compose-status.ts` new, `setup-status.service.ts` edited, the new test file). Contracts, module file, controller and env are untouched.
+- Merge rule with SAU-09 holds: `statusBody` takes `compose` as a required parameter, and both calls pass it.
+- Tests: T1 to T3, X1 and X2 pass (reviewer ran the new file with the existing setup-auth suites: 15 tests).
+- Code rejections of SAU-10: 0.
