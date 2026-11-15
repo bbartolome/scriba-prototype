@@ -20,6 +20,8 @@ import { buildProjectSummary } from './agent-prompt';
 import { AgentRun } from './agent-run';
 import { AgentSettingsService } from './agent-settings.service';
 import { AgentToolsService } from './agent-tools.service';
+import { AgentTranscriptsService } from './transcript-reader';
+import { TranscriptWriter, transcriptPathOf } from './transcript-writer';
 
 // The runs of one project: the active one, and the most recent one that ended (D2).
 interface ProjectSlots {
@@ -44,6 +46,7 @@ export class AgentRunsService {
     private readonly settings: AgentSettingsService,
     private readonly tools: AgentToolsService,
     private readonly events: EventsPublisher,
+    private readonly transcripts: AgentTranscriptsService,
   ) {
     // Registered once. The handler never throws: a throw would fail the switch (PST-04 D8 and D9).
     this.store.onProjectSwitched((event) => this.onProjectSwitched(event));
@@ -75,9 +78,18 @@ export class AgentRunsService {
 
     const runId = randomUUID();
     const conversationId = body.conversationId ?? randomUUID();
+    const startedAt = new Date();
     const enabledFamilies: AgentToolFamily[] = settings.research.enabled
       ? ['project', 'research']
       : ['project'];
+    const transcript = new TranscriptWriter({
+      files: this.files,
+      projectId,
+      path: transcriptPathOf(startedAt, runId),
+      runId,
+      conversationId,
+      libraryRoot: this.store.libraryRoot,
+    });
     const run = new AgentRun(
       {
         runId,
@@ -87,12 +99,14 @@ export class AgentRunsService {
         cap: settings.stepCap,
         enabledFamilies,
         tools: this.tools.startRun({ runId, projectId, enabledFamilies }),
+        transcript,
       },
       {
         resolver: this.resolver,
         events: this.events,
         summarize: (id) => buildProjectSummary(this.projects, this.files, id),
         released: (ended) => this.release(ended),
+        transcripts: this.transcripts,
       },
     );
     this.slotOf(projectId).active = run;

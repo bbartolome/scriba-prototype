@@ -14,6 +14,9 @@ import {
   type ToolCall,
 } from '../providers/providers.module';
 import { AGENT_SYSTEM_PROMPT } from './agent-prompt';
+import { replayTurns, trimHistory } from './conversation-history';
+import type { AgentTranscriptsService } from './transcript-reader';
+import type { TranscriptWriter } from './transcript-writer';
 import type { ToolRun } from './tools/tool-run';
 
 // The message of a run that failed for a reason other than a module's own error (D3).
@@ -30,15 +33,18 @@ export interface AgentRunInit {
   cap: number;
   enabledFamilies: AgentToolFamily[];
   tools: ToolRun;
+  // The run's transcript, from the same call sites as the stream (D4, D5).
+  transcript: TranscriptWriter;
 }
 
-// What a run takes from the module: the resolver, the event publisher, the project summary, and the release of its
-// slot. A run holds no Nest code.
+// What a run takes from the module: the resolver, the event publisher, the project summary, the release of its slot,
+// and the transcripts the history is rebuilt from. A run holds no Nest code.
 export interface AgentRunDeps {
   resolver: ModelResolver;
   events: EventsPublisher;
   summarize: (projectId: string) => string;
   released: (run: AgentRun) => void;
+  transcripts: AgentTranscriptsService;
 }
 
 // One model call's reply: the text it streamed and the tool calls it asked for.
@@ -84,7 +90,7 @@ function hintOf(details: unknown): string | undefined {
 }
 
 // One agent run: its state, its loop, and its single emit (D2, D3, D6 to D9, D13). The registry starts it, stops it and
-// reads its state. The loop is the only place events leave a run.
+// reads its state. The loop is the only place events leave a run, and the transcript lines come from the same calls.
 export class AgentRun {
   readonly runId: string;
   readonly projectId: string;
@@ -96,6 +102,10 @@ export class AgentRun {
   private readonly intent: string;
   private readonly tools: ToolRun;
   private readonly deps: AgentRunDeps;
+  private readonly transcript: TranscriptWriter;
+  // The text of the model call in progress, not yet written to the transcript (D9).
+  private stepText = '';
+  private intentWritten = false;
 
   constructor(init: AgentRunInit, deps: AgentRunDeps) {
     this.runId = init.runId;
@@ -103,6 +113,7 @@ export class AgentRun {
     this.enabledFamilies = init.enabledFamilies;
     this.intent = init.intent;
     this.tools = init.tools;
+    this.transcript = init.transcript;
     this.deps = deps;
     this.state = {
       runId: init.runId,
@@ -140,11 +151,27 @@ export class AgentRun {
         this.deps.resolver.resolve({ projectId: this.projectId }),
         this.controller.signal,
       );
+      // The key is known from here on, so the transcript can replace it (D4, D7).
+      if (resolved !== ABORTED) this.transcript.setKey(resolved.key);
+      this.writeIntent();
       if (resolved === ABORTED) return this.finish('stopped');
       this.target = resolved;
-      const system: ChatMessage[] = [
+      // The finished turns of this conversation, trimmed to the provider's context size (D10, D11, D16). The run's own
+      // transcript is unfinished, so it is never among them (D17).
+      const history = trimHistory(
+        replayTurns(
+          this.deps.transcripts.finishedRuns(
+            this.projectId,
+            this.state.conversationId,
+            this.runId,
+          ),
+        ),
+        resolved.contextSize,
+      );
+      const preamble: ChatMessage[] = [
         { role: 'system', content: AGENT_SYSTEM_PROMPT },
         { role: 'system', content: this.deps.summarize(this.projectId) },
+        ...history,
         { role: 'user', content: this.intent },
       ];
       // The run's own assistant and tool messages, in order, after the intent (D10 (5)).
@@ -152,7 +179,8 @@ export class AgentRun {
       for (;;) {
         if (this.controller.signal.aborted) return this.finish('stopped');
         this.state.step += 1;
-        const reply = await this.askModel(resolved, [...system, ...turn]);
+        this.writeStep();
+        const reply = await this.askModel(resolved, [...preamble, ...turn]);
         if (this.controller.signal.aborted) return this.finish('stopped');
         if (reply.calls.length === 0) return this.finish('completed');
         if (this.state.step >= this.state.cap) {
@@ -178,6 +206,7 @@ export class AgentRun {
   }
 
   // One model call. Text deltas are published as they arrive; tool calls are collected with the loop's own ids (D8).
+  // The call's text is written to the transcript when the call ends (D4).
   private async askModel(
     target: ResolvedModel,
     messages: ChatMessage[],
@@ -189,6 +218,7 @@ export class AgentRun {
     };
     let text = '';
     const calls: ToolCall[] = [];
+    this.stepText = '';
     for await (const event of streamChat(target, request)) {
       if (event.type === 'text-delta') {
         text += event.text;
@@ -201,10 +231,12 @@ export class AgentRun {
         });
       }
     }
+    this.writeStepText();
     return { text, calls };
   }
 
-  // One tool call (D8). An offered name gets its card events; any call is answered to the model.
+  // One tool call (D8). An offered name gets its card events; any call is answered to the model. The call's lines are
+  // written after its events (D4).
   private async runCall(call: ToolCall): Promise<ChatMessage> {
     const callId = call.id;
     const family = this.tools.familyOf(call.name);
@@ -237,24 +269,82 @@ export class AgentRun {
         });
       }
     }
+    this.transcript.append('tool-call', this.state.lastSeq, {
+      step: this.state.step,
+      callId,
+      name: call.name,
+      ...(family === undefined ? {} : { family }),
+      arguments: result.arguments,
+      rawArguments: call.arguments,
+      valid: result.valid,
+    });
+    if (outcome.kind === 'result') {
+      this.transcript.append('tool-result', this.state.lastSeq, {
+        step: this.state.step,
+        callId,
+        summary: outcome.summary,
+        output: outcome.output,
+        modelText: outcome.modelText,
+      });
+    } else {
+      this.transcript.append('tool-error', this.state.lastSeq, {
+        step: this.state.step,
+        callId,
+        message: outcome.message,
+        attempt: outcome.attempt,
+        ...(outcome.withdrawn === true ? { withdrawn: true } : {}),
+      });
+    }
     const content =
       outcome.kind === 'result' ? outcome.modelText : outcome.message;
     return { role: 'tool', toolCallId: callId, content };
   }
 
-  // Ends the run: marks it ended, releases its slot, then publishes run-ended (D3). A requested end wins over the
-  // reason the loop reached, because the abort is what the loop saw.
+  // Ends the run: marks it ended, releases its slot, then publishes run-ended (D3), then writes run-end (D4). A
+  // requested end wins over the reason the loop reached, because the abort is what the loop saw. The transcript is
+  // completed first, so a run that ends mid-call keeps the text it had.
   private finish(reason: AgentRunEndReason, message?: string): void {
     if (this.state.status === 'ended') return;
+    this.writeIntent();
+    this.writeStepText();
     const ended = this.requestedEnd ?? reason;
     this.state.status = 'ended';
     this.state.reason = ended;
     this.deps.released(this);
-    this.emit('run-ended', {
+    const data = {
       reason: ended,
       pendingChangeIds: [],
       ...(ended === 'error' && message !== undefined ? { message } : {}),
+    };
+    this.emit('run-ended', data);
+    this.transcript.append('run-end', this.state.lastSeq, data);
+  }
+
+  // The intent line, once (D4). It is written after the resolve has settled, so the key is known when it is scrubbed.
+  private writeIntent(): void {
+    if (this.intentWritten) return;
+    this.intentWritten = true;
+    this.transcript.append('intent', this.state.lastSeq, {
+      intent: this.intent,
     });
+  }
+
+  // The step line, before each model call (D4).
+  private writeStep(): void {
+    this.transcript.append('step', this.state.lastSeq, {
+      step: this.state.step,
+      cap: this.state.cap,
+    });
+  }
+
+  // The text of the model call, if it produced any; the buffer is then empty (D4, D9).
+  private writeStepText(): void {
+    if (this.stepText === '') return;
+    this.transcript.append('assistant-text', this.state.lastSeq, {
+      step: this.state.step,
+      text: this.stepText,
+    });
+    this.stepText = '';
   }
 
   // The one place an event leaves the loop (D9): it assigns the seq, updates the state, and publishes.
@@ -272,7 +362,9 @@ export class AgentRun {
   // The state each event leaves behind: the assistant text and the tool-call cards (D2).
   private apply(type: string, data: Record<string, unknown>): void {
     if (type === 'token-delta') {
-      this.state.assistantText += String(data.text);
+      const text = String(data.text);
+      this.state.assistantText += text;
+      this.stepText += text;
       return;
     }
     if (type === 'tool-call-started') {

@@ -72,6 +72,9 @@ interface Fixture {
 // The providers entries use no-such-provider, so the sweep never reaches a stored provider.
 export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   [SPA_FALLBACK_TEMPLATE]: { path: '/spa-probe-path' },
+  '/api/agent-loop/conversations/:conversationId': {
+    path: '/api/agent-loop/conversations/no-such-conversation',
+  },
   '/api/providers/:id/update': {
     path: '/api/providers/no-such-provider/update',
   },
