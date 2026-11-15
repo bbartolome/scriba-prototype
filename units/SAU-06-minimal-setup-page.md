@@ -17,5 +17,5 @@ unblocks: [SAU-08, SAU-11, SAU-15]
 - **Sign-in notice** for 401s (the Shell's API client routes 401s here): on loopback, explains how to get in with the command `cat ~/Books/.scriba/setup-url` (and `docker compose logs scriba`); on the tailnet, explains identity and allowlist failures by error code.
 
 ## Acceptance criteria
-- [ ] Component tests (fake API): identity shown; Continue posts and navigates; a 401 shows the loopback sign-in notice with the command; tailnet error codes show their explanations.
-- [ ] Phone viewport renders all of it.
+- [x] Component tests (fake API): identity shown; Continue posts and navigates; a 401 shows the loopback sign-in notice with the command; tailnet error codes show their explanations.
+- [x] Phone viewport renders all of it.
