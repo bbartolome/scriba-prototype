@@ -1,6 +1,6 @@
 ---
 id: SAU-15
-status: planned
+status: done
 unit: units/SAU-15-settings-page.md
 ---
 # SAU-15 plan — Settings page and user-facing recovery documentation

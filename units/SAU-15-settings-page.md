@@ -23,5 +23,5 @@ unblocks: [SAU-16, SAU-20]
 - The docs state plainly that the app can control tailscaled through the shared socket (accepted for a single owner).
 
 ## Acceptance criteria
-- [ ] Component tests: identity variants, versions, warning shown for `mismatch`/`unknown` with the one-liner and hidden for `ok`, re-run setup navigates to `/setup`, sign out posts.
-- [ ] User docs contain the recovery steps above.
+- [x] Component tests: identity variants, versions, warning shown for `mismatch`/`unknown` with the one-liner and hidden for `ok`, re-run setup navigates to `/setup`, sign out posts.
+- [x] User docs contain the recovery steps above.
