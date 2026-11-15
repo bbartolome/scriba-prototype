@@ -19,7 +19,8 @@ Callers turn entity IDs into files and contents in one call (story 46); pickers 
   - In `entities/`: must have YAML front matter with a `type`; otherwise listed as an invalid entity (with a reason) and not resolvable.
   - In `sources/`: may have no front matter (type `source`); front matter without `type` is also `source`.
 - Front matter parsed with the generic base `{id?, type, links?}`; unknown keys pass through. Pack-specific schemas are the Tool registry's business; this module reads only the base.
-- **Resolution:** front-matter `id` wins; no `id` → file stem. An effective ID not matching `^[a-z0-9][a-z0-9-]*$` makes the file an invalid entity. Returns `{id, type, path, content}` per ID, plus typed errors for unknown IDs (`PROJECT_ENTITY_NOT_FOUND`) and duplicates (`PROJECT_ENTITY_DUPLICATE`, listing paths — never guessed).
+- **Resolution:** front-matter `id` wins; no `id` → file stem. An effective ID not matching `^[a-z0-9][a-z0-9-]*$` makes the file an invalid entity. Returns `{id, type, path, content}` per ID, plus typed errors for unknown IDs and duplicates (duplicates listing paths — never guessed).
+  - Reworded by revision of PST-08 on 2026-11-15. The old text was: "Returns `{id, type, path, content}` per ID, plus typed errors for unknown IDs (`PROJECT_ENTITY_NOT_FOUND`) and duplicates (`PROJECT_ENTITY_DUPLICATE`, listing paths — never guessed)." See plans/DECISIONS.md.
 - **Entity list** (filterable by `type`): `{id, type, path, title?}` (title from `title` or `name` front matter) plus invalid entities with reasons.
 - Both are **GETs** (resolution takes `ids` as a repeated query parameter) and are on the provider.
 - The ID→path map is rebuilt from a **`(path, mtime, size)` manifest** of `entities/` and `sources/`, diffed against disk on each request, so host edits are picked up. Build the manifest as a reusable component; search (PST-13) reuses it.
