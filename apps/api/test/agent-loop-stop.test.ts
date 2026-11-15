@@ -10,12 +10,16 @@ import {
   agentStartResponseSchema,
   type AgentLoopEvent,
 } from '@bbartolome/scriba-contracts/agent-loop';
-import { EVENTS_ROUTE } from '@bbartolome/scriba-contracts/platform';
 import { ACTIVE_PROJECT_ROUTE } from '@bbartolome/scriba-contracts/project-store';
 import { PROVIDER_DEFAULTS } from '@bbartolome/scriba-contracts/providers';
 import { createTestApp, type TestApp } from './create-test-app';
 import { send, sessionCookie, type Reply } from './guard-request';
-import { LOOPBACK_HOST, LOOPBACK_ORIGIN } from './invariant-sweep';
+import {
+  LOOPBACK_HOST,
+  LOOPBACK_ORIGIN,
+  observeEvents,
+  type Observer,
+} from './invariant-sweep';
 import {
   buildProjectsLibrary,
   type ProjectsLibrary,
@@ -26,7 +30,7 @@ import {
   type MockOpenAI,
   type MockOpenAIRecord,
 } from './providers-client.kit';
-import { dataOf, openSse, type OpenSse } from './sse';
+import { dataOf } from './sse';
 
 // Every test builds its own temp library, its own mock scenario folder, and its own app, and removes them all.
 
@@ -129,18 +133,20 @@ async function startRun(
   return agentStartResponseSchema.parse(JSON.parse(reply.body));
 }
 
-// The agent-loop events of the stream, parsed with the contract, up to and including the next run-ended.
-async function readUntilEnded(stream: OpenSse): Promise<AgentLoopEvent[]> {
+// The agent-loop events read from the stream, each parsed with the contract, up to and including a run-ended.
+async function readUntilEnded(stream: Observer): Promise<AgentLoopEvent[]> {
   const events: AgentLoopEvent[] = [];
-  for (;;) {
-    const block = await stream.next(5000);
-    if (!block.includes('data: ')) continue;
-    const envelope: unknown = JSON.parse(dataOf(block));
-    if ((envelope as { module?: unknown }).module !== 'agent-loop') continue;
-    const event = agentLoopEventSchema.parse(envelope);
-    events.push(event);
-    if (event.type === 'run-ended') return events;
+  const deadline = Date.now() + 5000;
+  while (!events.some((event) => event.type === 'run-ended')) {
+    if (Date.now() > deadline) throw new Error('No run-ended within 5 s.');
+    for (const block of await stream.take(20)) {
+      const envelope: unknown = JSON.parse(dataOf(block));
+      if ((envelope as { module?: unknown }).module === 'agent-loop') {
+        events.push(agentLoopEventSchema.parse(envelope));
+      }
+    }
   }
+  return events;
 }
 
 // Every envelope of the stream, in order, until `done` says the list so far is enough.
@@ -151,14 +157,16 @@ interface Envelope {
 }
 
 async function readEnvelopesUntil(
-  stream: OpenSse,
+  stream: Observer,
   done: (seen: Envelope[]) => boolean,
 ): Promise<Envelope[]> {
   const seen: Envelope[] = [];
+  const deadline = Date.now() + 5000;
   while (!done(seen)) {
-    const block = await stream.next(5000);
-    if (!block.includes('data: ')) continue;
-    seen.push(JSON.parse(dataOf(block)) as Envelope);
+    if (Date.now() > deadline) throw new Error('Event not seen within 5 s.');
+    for (const block of await stream.take(20)) {
+      seen.push(JSON.parse(dataOf(block)) as Envelope);
+    }
   }
   return seen;
 }
@@ -191,9 +199,7 @@ async function waitForClosed(h: Harness, scenario: string): Promise<boolean> {
 it('C3: stop ends a run within one second and the mock sees the abort', async () => {
   const h = await openHarness('stall', STALL_STEPS);
   try {
-    const stream = await openSse(`${h.app.baseUrl}${EVENTS_ROUTE}`, {
-      cookie: h.cookie,
-    });
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
     try {
       const { runId } = await startRun(h, { intent: 'Summarize my outline' });
       expect((await waitForRecords(h, 'stall', 1)).length).toBe(1);
@@ -211,7 +217,7 @@ it('C3: stop ends a run within one second and the mock sees the abort', async ()
       });
       expect(await waitForClosed(h, 'stall')).toBe(true);
     } finally {
-      await stream.cancel();
+      await stream.close();
     }
   } finally {
     await h.close();
@@ -227,9 +233,7 @@ it('C5: switching the active project ends the run with project-switched', async 
       join(other, 'project.yaml'),
       'schemaVersion: 1\ntitle: Other\ngenrePack: nonfiction\n',
     );
-    const stream = await openSse(`${h.app.baseUrl}${EVENTS_ROUTE}`, {
-      cookie: h.cookie,
-    });
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
     try {
       await startRun(h, { intent: 'Summarize my outline' });
       expect((await waitForRecords(h, 'stall', 1)).length).toBe(1);
@@ -261,7 +265,7 @@ it('C5: switching the active project ends the run with project-switched', async 
       );
       expect(await waitForClosed(h, 'stall')).toBe(true);
     } finally {
-      await stream.cancel();
+      await stream.close();
     }
   } finally {
     await h.close();
@@ -271,9 +275,7 @@ it('C5: switching the active project ends the run with project-switched', async 
 it('S1: a second stop is a no-op, and a stop of an unknown run gives AGENT_RUN_NOT_FOUND', async () => {
   const h = await openHarness('stall', STALL_STEPS);
   try {
-    const stream = await openSse(`${h.app.baseUrl}${EVENTS_ROUTE}`, {
-      cookie: h.cookie,
-    });
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
     try {
       const { runId } = await startRun(h, { intent: 'Summarize my outline' });
       expect((await waitForRecords(h, 'stall', 1)).length).toBe(1);
@@ -288,7 +290,7 @@ it('S1: a second stop is a no-op, and a stop of an unknown run gives AGENT_RUN_N
       const again = await post(h, AGENT_RUN_STOP_ROUTE, { runId });
       expect(again.status).toBe(200);
       expect(JSON.parse(again.body)).toEqual({});
-      await expect(stream.next(500)).rejects.toThrow();
+      expect(await stream.take(500)).toEqual([]);
 
       const unknown = await post(h, AGENT_RUN_STOP_ROUTE, {
         runId: 'no-such-run',
@@ -298,7 +300,7 @@ it('S1: a second stop is a no-op, and a stop of an unknown run gives AGENT_RUN_N
         error: { code: 'AGENT_RUN_NOT_FOUND' },
       });
     } finally {
-      await stream.cancel();
+      await stream.close();
     }
   } finally {
     await h.close();

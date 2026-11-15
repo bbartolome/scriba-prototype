@@ -10,11 +10,15 @@ import {
   agentStartResponseSchema,
   type AgentLoopEvent,
 } from '@bbartolome/scriba-contracts/agent-loop';
-import { EVENTS_ROUTE } from '@bbartolome/scriba-contracts/platform';
 import { PROVIDER_DEFAULTS } from '@bbartolome/scriba-contracts/providers';
 import { createTestApp, type TestApp } from './create-test-app';
 import { send, sessionCookie, type Reply } from './guard-request';
-import { LOOPBACK_HOST, LOOPBACK_ORIGIN } from './invariant-sweep';
+import {
+  LOOPBACK_HOST,
+  LOOPBACK_ORIGIN,
+  observeEvents,
+  type Observer,
+} from './invariant-sweep';
 import {
   buildProjectsLibrary,
   type ProjectsLibrary,
@@ -25,7 +29,7 @@ import {
   type MockOpenAI,
   type MockOpenAIRecord,
 } from './providers-client.kit';
-import { dataOf, openSse, type OpenSse } from './sse';
+import { dataOf } from './sse';
 
 // Every test builds its own temp library, its own mock scenario folder, and its own app, and removes them all.
 
@@ -132,18 +136,20 @@ async function startRun(
   return agentStartResponseSchema.parse(JSON.parse(reply.body));
 }
 
-// The agent-loop events of the stream, parsed with the contract, up to and including the next run-ended.
-async function readUntilEnded(stream: OpenSse): Promise<AgentLoopEvent[]> {
+// The agent-loop events read from the stream, each parsed with the contract, up to and including a run-ended.
+async function readUntilEnded(stream: Observer): Promise<AgentLoopEvent[]> {
   const events: AgentLoopEvent[] = [];
-  for (;;) {
-    const block = await stream.next(5000);
-    if (!block.includes('data: ')) continue;
-    const envelope: unknown = JSON.parse(dataOf(block));
-    if ((envelope as { module?: unknown }).module !== 'agent-loop') continue;
-    const event = agentLoopEventSchema.parse(envelope);
-    events.push(event);
-    if (event.type === 'run-ended') return events;
+  const deadline = Date.now() + 5000;
+  while (!events.some((event) => event.type === 'run-ended')) {
+    if (Date.now() > deadline) throw new Error('No run-ended within 5 s.');
+    for (const block of await stream.take(20)) {
+      const envelope: unknown = JSON.parse(dataOf(block));
+      if ((envelope as { module?: unknown }).module === 'agent-loop') {
+        events.push(agentLoopEventSchema.parse(envelope));
+      }
+    }
   }
+  return events;
 }
 
 // The chat requests the mock has received, as the tests read them.
@@ -198,9 +204,7 @@ it('C1: a list, read and text turn ends completed', async () => {
     providerBaseURL: url,
   }));
   try {
-    const stream = await openSse(`${h.app.baseUrl}${EVENTS_ROUTE}`, {
-      cookie: h.cookie,
-    });
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
     try {
       await startRun(h, { intent: 'Summarize my outline' });
       const events = await readUntilEnded(stream);
@@ -271,7 +275,7 @@ it('C1: a list, read and text turn ends completed', async () => {
         .map((message) => message.tool_call_id);
       expect(toolCallIds).toEqual([firstCall, secondCall]);
     } finally {
-      await stream.cancel();
+      await stream.close();
     }
   } finally {
     await h.close();
@@ -293,9 +297,7 @@ it('C2: a looping mock ends at step 12 and Continue starts a fresh cap', async (
     (url) => ({ providerBaseURL: url }),
   );
   try {
-    const stream = await openSse(`${h.app.baseUrl}${EVENTS_ROUTE}`, {
-      cookie: h.cookie,
-    });
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
     try {
       const first = await startRun(h, { intent: 'List things forever' });
       const events = await readUntilEnded(stream);
@@ -323,7 +325,7 @@ it('C2: a looping mock ends at step 12 and Continue starts a fresh cap', async (
       });
       expect(await recordsOf(h.mock, 'loop')).toHaveLength(24);
     } finally {
-      await stream.cancel();
+      await stream.close();
     }
   } finally {
     await h.close();
@@ -342,9 +344,7 @@ it('C6: the request has the system prompt, the project summary and the enabled t
     (url) => ({ providerBaseURL: url }),
   );
   try {
-    const stream = await openSse(`${h.app.baseUrl}${EVENTS_ROUTE}`, {
-      cookie: h.cookie,
-    });
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
     try {
       await startRun(h, { intent: 'Say done' });
       await readUntilEnded(stream);
@@ -372,7 +372,7 @@ it('C6: the request has the system prompt, the project summary and the enabled t
       expect(records).toHaveLength(2);
       expect(toolNamesOf(records[1])).toEqual(['list_files', 'read_file']);
     } finally {
-      await stream.cancel();
+      await stream.close();
     }
   } finally {
     await h.close();
@@ -391,9 +391,7 @@ it('S4: a persistent 503 with retries 0 ends the run error with a readable messa
     (url) => ({ providerBaseURL: url, providers: providersSection(url, 0) }),
   );
   try {
-    const stream = await openSse(`${h.app.baseUrl}${EVENTS_ROUTE}`, {
-      cookie: h.cookie,
-    });
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
     try {
       await startRun(h, { intent: 'Hello' });
       const events = await readUntilEnded(stream);
@@ -407,7 +405,7 @@ it('S4: a persistent 503 with retries 0 ends the run error with a readable messa
       expect(message).not.toContain('PROVIDER_ABORTED');
       expect(await recordsOf(h.mock, 'unavailable')).toHaveLength(1);
     } finally {
-      await stream.cancel();
+      await stream.close();
     }
   } finally {
     await h.close();

@@ -8,11 +8,15 @@ import {
   AGENT_RUN_STOP_ROUTE,
   agentStartResponseSchema,
 } from '@bbartolome/scriba-contracts/agent-loop';
-import { EVENTS_ROUTE } from '@bbartolome/scriba-contracts/platform';
 import { PROVIDER_DEFAULTS } from '@bbartolome/scriba-contracts/providers';
 import { createTestApp, type TestApp } from './create-test-app';
 import { send, sessionCookie, type Reply } from './guard-request';
-import { LOOPBACK_HOST, LOOPBACK_ORIGIN } from './invariant-sweep';
+import {
+  LOOPBACK_HOST,
+  LOOPBACK_ORIGIN,
+  observeEvents,
+  type Observer,
+} from './invariant-sweep';
 import {
   buildProjectsLibrary,
   type ProjectsLibrary,
@@ -22,7 +26,6 @@ import {
   startMockOpenAI,
   type MockOpenAI,
 } from './providers-client.kit';
-import { dataOf, openSse, type OpenSse } from './sse';
 
 // Every test builds its own temp library, its own mock scenario folder, and its own app, and removes them all.
 
@@ -123,13 +126,9 @@ function codeOf(reply: Reply): string {
   return (JSON.parse(reply.body) as { error: { code: string } }).error.code;
 }
 
-// The events stream, opened before a start, with its first block (hello) read.
-async function openEvents(h: Harness): Promise<OpenSse> {
-  const stream = await openSse(`${h.app.baseUrl}${EVENTS_ROUTE}`, {
-    cookie: h.cookie,
-  });
-  await stream.next(2000);
-  return stream;
+// The events stream, opened before a start. observeEvents has read the hello block already.
+function openEvents(h: Harness): Promise<Observer> {
+  return observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
 }
 
 it('C4: a second start gets AGENT_RUN_ACTIVE and no provider gets AGENT_NO_PROVIDER', async () => {
@@ -164,10 +163,10 @@ it('C4: a second start gets AGENT_RUN_ACTIVE and no provider gets AGENT_NO_PROVI
       const refused = await post(bare, AGENT_RUNS_ROUTE, { intent: 'Hello' });
       expect(refused.status).toBe(409);
       expect(codeOf(refused)).toBe('AGENT_NO_PROVIDER');
-      await expect(stream.next(300)).rejects.toThrow();
+      expect(await stream.take(300)).toEqual([]);
       expect(await recordsOf(bare.mock, 'stall')).toEqual([]);
     } finally {
-      await stream.cancel();
+      await stream.close();
     }
   } finally {
     await bare.close();
@@ -185,10 +184,10 @@ it('S2: an invalid stored agent section gives 400 and no run starts', async () =
       const reply = await post(h, AGENT_RUNS_ROUTE, { intent: 'Hello' });
       expect(reply.status).toBe(400);
       expect(codeOf(reply)).toBe('PLATFORM_VALIDATION_FAILED');
-      await expect(stream.next(300)).rejects.toThrow();
+      expect(await stream.take(300)).toEqual([]);
       expect(await recordsOf(h.mock, 'stall')).toEqual([]);
     } finally {
-      await stream.cancel();
+      await stream.close();
     }
   } finally {
     await h.close();
