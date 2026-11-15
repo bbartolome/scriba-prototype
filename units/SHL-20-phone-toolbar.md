@@ -29,4 +29,4 @@ The review of Setup & auth's phone check (SAU-06, its C2, check (iv)) found the 
 - Not in scope: the nav (SHL-05), the notices and banner area (SHL-04, SHL-06), the wording of the labels and any new toolbar item.
 
 ## Acceptance criteria (test seam: Playwright e2e at 390 by 844)
-- [ ] At 390 by 844, with the connection label showing ("Reconnecting" or "Connection lost, retrying"), the page does not scroll sideways, and the heading, the label and the theme toggle are each fully inside the viewport.
+- [x] At 390 by 844, with the connection label showing ("Reconnecting" or "Connection lost, retrying"), the page does not scroll sideways, and the heading, the label and the theme toggle are each fully inside the viewport.

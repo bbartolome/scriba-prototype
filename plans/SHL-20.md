@@ -1,6 +1,6 @@
 ---
 id: SHL-20
-status: planned
+status: done
 title: Toolbar fits a 390 px phone with the connection label showing
 module: shell
 ---
