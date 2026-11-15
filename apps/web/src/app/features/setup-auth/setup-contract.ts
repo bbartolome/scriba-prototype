@@ -1,8 +1,8 @@
 /**
- * Loads the setup-auth values the setup page uses: the identity route and its schema, the Continue
- * route, the landing path and the error codes. The load is dynamic, so zod's CommonJS build stays
- * in its own chunk, out of the initial bundle. This is the only file of the feature that refers to
- * the contract at run time.
+ * Loads the setup-auth values the setup page uses: the identity route and its schema, the status
+ * and step routes, the Continue route, the landing path and the error codes. The load is dynamic, so
+ * zod's CommonJS build stays in its own chunk, out of the initial bundle. This is the only file of
+ * the feature that refers to the contract at run time.
  *
  * The contract is CommonJS. In the production build its dynamic import has only `default`; under
  * Vitest it has the named exports. The values are read from `default` when there is one.
@@ -15,6 +15,8 @@ export async function loadSetupAuthContract(): Promise<
     SetupAuthModule,
     | 'IDENTITY_ROUTE'
     | 'identitySchema'
+    | 'SETUP_STATUS_ROUTE'
+    | 'SETUP_STEP_ROUTE'
     | 'SETUP_CONTINUE_ROUTE'
     | 'setupStatusSchema'
     | 'LANDING_PATH'

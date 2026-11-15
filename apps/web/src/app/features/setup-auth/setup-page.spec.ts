@@ -149,7 +149,11 @@ describe('C1 setup page with the fake API', () => {
       IDENTITY_ROUTE,
       SETUP_AUTH_EXAMPLES.identityLoopback,
     );
-    doubles.api.respond('GET', SETUP_STATUS_ROUTE, SETUP_AUTH_EXAMPLES.setupStatus);
+    doubles.api.respond(
+      'GET',
+      SETUP_STATUS_ROUTE,
+      SETUP_AUTH_EXAMPLES.setupStatus,
+    );
 
     const harness = await renderSetup(doubles.providers);
 
@@ -167,7 +171,11 @@ describe('C1 setup page with the fake API', () => {
       IDENTITY_ROUTE,
       SETUP_AUTH_EXAMPLES.identityTailnet,
     );
-    doubles.api.respond('GET', SETUP_STATUS_ROUTE, SETUP_AUTH_EXAMPLES.setupStatus);
+    doubles.api.respond(
+      'GET',
+      SETUP_STATUS_ROUTE,
+      SETUP_AUTH_EXAMPLES.setupStatus,
+    );
 
     const harness = await renderSetup(doubles.providers);
 
@@ -185,7 +193,11 @@ describe('C1 setup page with the fake API', () => {
       IDENTITY_ROUTE,
       SETUP_AUTH_EXAMPLES.identityLoopback,
     );
-    doubles.api.respond('GET', SETUP_STATUS_ROUTE, SETUP_AUTH_EXAMPLES.setupStatus);
+    doubles.api.respond(
+      'GET',
+      SETUP_STATUS_ROUTE,
+      SETUP_AUTH_EXAMPLES.setupStatus,
+    );
     doubles.api.respond('POST', SETUP_CONTINUE_ROUTE, complete);
     respondLanding(doubles);
 
@@ -291,7 +303,11 @@ describe('setup page extra tests', () => {
       IDENTITY_ROUTE,
       SETUP_AUTH_EXAMPLES.identityLoopback,
     );
-    doubles.api.respond('GET', SETUP_STATUS_ROUTE, SETUP_AUTH_EXAMPLES.setupStatus);
+    doubles.api.respond(
+      'GET',
+      SETUP_STATUS_ROUTE,
+      SETUP_AUTH_EXAMPLES.setupStatus,
+    );
     doubles.api.fail(
       'POST',
       SETUP_CONTINUE_ROUTE,
@@ -465,16 +481,12 @@ describe('W wizard with the fake API', () => {
         'Skip the rest',
       ]);
     });
-    expect(doubles.api.requests.filter((r) => r.method === 'POST')).toEqual(
-      [],
-    );
+    expect(doubles.api.requests.filter((r) => r.method === 'POST')).toEqual([]);
 
     doubles.api.respond('POST', TAILSCALE_STEP_PATH, afterSkip);
     buttonNamed(rootOf(harness), 'Skip')?.click();
     await settle(harness, (root) => {
-      expect(paragraphs(root)).toContain(
-        'Model providers are not set up yet.',
-      );
+      expect(paragraphs(root)).toContain('Model providers are not set up yet.');
       expect(stepItems(root)[1]).toBe('Tailscale: skipped');
     });
     expect(doubles.api.requests).toContainEqual({
