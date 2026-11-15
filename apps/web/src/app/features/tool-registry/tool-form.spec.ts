@@ -1,5 +1,11 @@
+import {
+  CdkDropList,
+  type CdkDrag,
+  type CdkDragDrop,
+} from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import type {
   FormDescriptor,
   FormField,
@@ -889,4 +895,81 @@ describe('EntityPicker', () => {
       ).value,
     ).toBe('plain');
   });
+
+  it('AC2b a dropped chip of the right kind is added, and a submit emits it', async () => {
+    doubles.api.respond('GET', ENTITIES_PATH, MIXED_LIST);
+    const fixture = await render({
+      form: PICKER_FORM,
+      value: { people: ['ada'] },
+    });
+    const root = rootOf(fixture);
+    const host = fixture.componentInstance;
+
+    dropChip(fixture, 'people', { id: 'cy', type: 'person' });
+    await settle(fixture);
+
+    expect(host.value['people']).toEqual(['ada', 'cy']);
+    expect(chipIdsOf(sectionOf(root, 'people'))).toEqual(['ada', 'cy']);
+
+    buttonLabelled(root, 'Submit').click();
+    await settle(fixture);
+    expect(host.submitted).toEqual({ people: ['ada', 'cy'] });
+  });
+
+  it('AC2c a dropped chip of the wrong kind is refused, and the reason shows', async () => {
+    doubles.api.respond('GET', ENTITIES_PATH, MIXED_LIST);
+    const fixture = await render({
+      form: PICKER_FORM,
+      value: { people: ['ada'] },
+    });
+    const host = fixture.componentInstance;
+    const people = sectionOf(rootOf(fixture), 'people');
+    const before = structuredClone(host.value);
+
+    // The enter predicate refuses the chip: the reason shows before any drop reaches the list.
+    const london = { id: 'london', type: 'place' };
+    const picker = dropListOf(fixture, 'people');
+    expect(picker.enterPredicate(dragOf(london), picker)).toBe(false);
+    await settle(fixture);
+    expect(reasonOf(people)).toBe('A place cannot go here.');
+
+    // A drop that reaches the handler is checked again, and refused the same way.
+    dropChip(fixture, 'people', london);
+    await settle(fixture);
+
+    expect(host.value).toEqual(before);
+    expect(reasonOf(people)).toBe('A place cannot go here.');
+  });
 });
+
+/** The CDK drop list of a section's picker. */
+function dropListOf(fixture: ComponentFixture<Host>, key: string): CdkDropList {
+  const section = must(
+    fixture.debugElement.query(By.css(`section[data-key="${key}"]`)),
+    `section ${key}`,
+  );
+  return section.query(By.directive(CdkDropList)).injector.get(CdkDropList);
+}
+
+/**
+ * Drops a chip on a section's picker by emitting the drop list's drop, as a real gesture would emit it:
+ * jsdom has no layout, so no pointer gesture is simulated (GRR-12 and GRR-15 check that in a browser).
+ */
+function dropChip(
+  fixture: ComponentFixture<Host>,
+  key: string,
+  chip: { id: string; type: string },
+): void {
+  const event = { item: { data: chip } } as unknown as CdkDragDrop<unknown>;
+  dropListOf(fixture, key).dropped.emit(event);
+}
+
+/** A drag as the enter predicate receives it: its payload is the chip. */
+function dragOf(chip: { id: string; type: string }): CdkDrag {
+  return { data: chip } as unknown as CdkDrag;
+}
+
+/** The one-line reason a section shows (role status). */
+function reasonOf(scope: ParentNode): string {
+  return elementOf(scope, '[role="status"]').textContent.trim();
+}

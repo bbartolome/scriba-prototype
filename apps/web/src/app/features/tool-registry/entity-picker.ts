@@ -1,4 +1,9 @@
 import {
+  CdkDropList,
+  type CdkDrag,
+  type CdkDragDrop,
+} from '@angular/cdk/drag-drop';
+import {
   Component,
   computed,
   DestroyRef,
@@ -78,16 +83,25 @@ function labelOf(entity: EntityItem): string {
   return entity.title ? entity.title : entity.id;
 }
 
+/** The one-line reason a chip is refused with: its kind, or no kind when the payload is malformed (P16). */
+function refusalOf(chip: unknown): string {
+  return isChip(chip)
+    ? `A ${chip.type} cannot go here.`
+    : 'That cannot go here.';
+}
+
 /**
  * The entity picker (TRG-04): one control for an entity field or a style field. It lists the active
  * project's entities of the field's kinds, read from the Project store, and holds entity ids: one id
  * for a scalar field, an array of ids for a list field, as chips. A style picker lists the style
  * profiles and preselects the project's `styleProfile` from project.yaml when the field has no value.
- * It never validates and never resolves an id to its contents: the server's issues are ToolForm's.
+ * A chip dragged onto it (a CDK drag) is accepted when its kind fits the field, and refused with a
+ * one-line reason when it does not. It never validates and never resolves an id to its contents: the
+ * server's issues are ToolForm's.
  */
 @Component({
   selector: 'app-entity-picker',
-  imports: [MatButton, MatFormField, MatInput, MatLabel],
+  imports: [CdkDropList, MatButton, MatFormField, MatInput, MatLabel],
   styles: `
     :host {
       display: block;
@@ -123,72 +137,85 @@ function labelOf(entity: EntityItem): string {
       margin-left: 2px;
     }
 
-    .note {
+    .note,
+    .reason {
       margin: 0;
       font-size: 12px;
     }
+
+    .reason {
+      font-weight: 600;
+    }
   `,
   template: `
-    @if (isList()) {
-      <fieldset>
-        <legend>
-          {{ field().title }}
-          @if (field().required) {
-            <span class="mark" aria-hidden="true">*</span>
-          }
-        </legend>
-        <ul class="chips">
-          @for (id of ids(); track $index; let position = $index) {
-            <li class="chip" [attr.data-id]="id">
-              <span>{{ labelOf(id) }}</span>
-              <button matButton type="button" (click)="removeAt(position)">
-                Remove
-              </button>
-            </li>
-          }
-        </ul>
+    <div
+      cdkDropList
+      [cdkDropListSortingDisabled]="true"
+      [cdkDropListEnterPredicate]="admits"
+      (cdkDropListDropped)="drop($event)"
+    >
+      @if (isList()) {
+        <fieldset>
+          <legend>
+            {{ field().title }}
+            @if (field().required) {
+              <span class="mark" aria-hidden="true">*</span>
+            }
+          </legend>
+          <ul class="chips">
+            @for (id of ids(); track $index; let position = $index) {
+              <li class="chip" [attr.data-id]="id">
+                <span>{{ labelOf(id) }}</span>
+                <button matButton type="button" (click)="removeAt(position)">
+                  Remove
+                </button>
+              </li>
+            }
+          </ul>
+          <mat-form-field [hideRequiredMarker]="true">
+            <select
+              matNativeControl
+              [id]="inputId"
+              [attr.aria-label]="'Add to ' + field().title"
+              [attr.aria-describedby]="describedBy() || null"
+              (change)="addPicked($event)"
+            >
+              <option value="">Add an entity</option>
+              @for (choice of addable(); track $index) {
+                <option [value]="choice.id">{{ choice.label }}</option>
+              }
+            </select>
+          </mat-form-field>
+        </fieldset>
+      } @else {
         <mat-form-field [hideRequiredMarker]="true">
+          <mat-label>
+            {{ field().title }}
+            @if (field().required) {
+              <span class="mark" aria-hidden="true">*</span>
+            }
+          </mat-label>
           <select
             matNativeControl
             [id]="inputId"
-            [attr.aria-label]="'Add to ' + field().title"
+            [required]="field().required"
             [attr.aria-describedby]="describedBy() || null"
-            (change)="addPicked($event)"
+            (change)="pickScalar($event)"
           >
-            <option value="">Add an entity</option>
-            @for (choice of addable(); track $index) {
-              <option [value]="choice.id">{{ choice.label }}</option>
+            <option value="" [selected]="scalar() === ''">None</option>
+            @for (choice of options(); track $index) {
+              <option [value]="choice.id" [selected]="choice.id === scalar()">
+                {{ choice.label }}
+              </option>
             }
           </select>
         </mat-form-field>
-      </fieldset>
-    } @else {
-      <mat-form-field [hideRequiredMarker]="true">
-        <mat-label>
-          {{ field().title }}
-          @if (field().required) {
-            <span class="mark" aria-hidden="true">*</span>
-          }
-        </mat-label>
-        <select
-          matNativeControl
-          [id]="inputId"
-          [required]="field().required"
-          [attr.aria-describedby]="describedBy() || null"
-          (change)="pickScalar($event)"
-        >
-          <option value="" [selected]="scalar() === ''">None</option>
-          @for (choice of options(); track $index) {
-            <option [value]="choice.id" [selected]="choice.id === scalar()">
-              {{ choice.label }}
-            </option>
-          }
-        </select>
-      </mat-form-field>
-    }
-    @if (note(); as text) {
-      <p class="note">{{ text }}</p>
-    }
+      }
+      @if (note(); as text) {
+        <p class="note">{{ text }}</p>
+      }
+      <p class="reason" role="status">{{ reason() }}</p>
+    </div>
   `,
 })
 export class EntityPicker implements OnInit {
@@ -205,6 +232,8 @@ export class EntityPicker implements OnInit {
 
   private readonly status = signal<ReadStatus>('loading');
   private readonly entities = signal<readonly EntityItem[]>([]);
+  /** The one-line reason of the last refused chip. Cleared by the next accepted drop or change. */
+  protected readonly reason = signal('');
 
   protected readonly isList = computed(() => this.field().list);
   protected readonly isStyle = computed(
@@ -295,6 +324,37 @@ export class EntityPicker implements OnInit {
   }
 
   /**
+   * The enter predicate of the drop list: a chip the picker refuses does not enter it, so no drop
+   * reaches `drop` for it. The refusal's reason shows here (P16).
+   */
+  protected readonly admits = (drag: CdkDrag): boolean => {
+    const admitted = this.accepts(drag.data);
+    if (!admitted) {
+      this.reason.set(refusalOf(drag.data));
+    }
+    return admitted;
+  };
+
+  /**
+   * A chip dropped on the picker. The kind is checked again, since the drop may come without the enter
+   * predicate (a malformed payload is refused). A list appends the id unless it holds it; a scalar
+   * takes it in place of its value. A refusal leaves the value as it was (P16).
+   */
+  protected drop(event: CdkDragDrop<unknown>): void {
+    const chip: unknown = event.item.data;
+    if (!this.accepts(chip)) {
+      this.reason.set(refusalOf(chip));
+      return;
+    }
+    if (this.isList()) {
+      const held = this.ids();
+      this.commit(held.includes(chip.id) ? held : [...held, chip.id]);
+    } else {
+      this.commit(chip.id);
+    }
+  }
+
+  /**
    * Whether a chip of this kind may land on this picker (P2, P11, P13): a style picker takes the style
    * kind only; any other picker takes its field's kinds, and every kind when the field names none.
    */
@@ -347,7 +407,9 @@ export class EntityPicker implements OnInit {
     this.commit(profile);
   }
 
+  /** Writes one value through the model, and clears the refusal reason: a change is an accepted edit. */
   private commit(next: unknown): void {
+    this.reason.set('');
     this.value.set(next);
   }
 }
