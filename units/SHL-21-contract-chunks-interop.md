@@ -27,4 +27,4 @@ In the production build the dynamic import of the CommonJS contract `@bbartolome
 - Nothing else.
 
 ## Acceptance criteria
-- [ ] The loader returns SETUP_STATUS_ROUTE and setupStatusSchema when the contract module has named exports, and when it has only default (the production build). Test seam: Vitest, the spec mocks the module both ways.
+- [x] The loader returns SETUP_STATUS_ROUTE and setupStatusSchema when the contract module has named exports, and when it has only default (the production build). Test seam: Vitest, the spec mocks the module both ways.

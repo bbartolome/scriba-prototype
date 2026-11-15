@@ -1,6 +1,6 @@
 ---
 id: SHL-21
-status: planned
+status: done
 title: The Shell's setup-status contract loader reads the CommonJS default export
 module: shell
 ---
