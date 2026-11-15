@@ -4007,3 +4007,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Patch id of the approved code (`git diff main...unit/PST-08 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 917349a): a98d7cf23adfa207017a793e664338cccc3988d5.
 - Files changed: exactly the nine paths of the plan's section 2. The E4 rework (commit 917349a) adds the in-place rewrite of carl.md; mutation (e) fails E4 and passes after revert (implementer's report).
 - Code rejections of PST-08: 0 in this review; the earlier REWORK (E4) is addressed.
+
+## 2026-11-15 — MPR-08 — Navigator decision: open point 1 (criterion 2 cannot run here): option A
+
+- **Decision (Navigator, session `74b9c36bbaa14f72bbc4f657b25a613d`, option A):** the owner runs the manual check T2 (`plans/MPR-08.md` section 4.2, steps S1 to S6) on the Mac host before the criterion-2 box (`units/MPR-08-client-gate.md` line 23) is ticked. The unit stays in the pipeline until T2 passes. Fallback B (complete without criterion 2, box unticked, cause recorded) applies only if the owner cannot run T2. Option C (a stand-in server on port 11434) is rejected.
+- **Reason:** criterion 2 needs Ollama on the host, and the owner's Mac has it, so the criterion is satisfiable and is not waived. The SAU-08 precedent (lines 3946 to 3956) waived criteria that need an environment the project lacks; that does not apply here. No other local procedure satisfies criterion 2: Ollama in compose is out of scope (`modules/providers.md` line 53), and the AGL-25 eval script is blocked by AGL-08 (`units/AGL-25-manual-eval-script.md` line 7). Option C does not prove Ollama, and the mock CLI has no port option.
+- **Still open for the Navigator:** point 2 (the reading of "the Agent loop's M1 run") and point 3 (the module's real-model check, `modules/providers.md` line 46). Informative for AGL-03 and TRG-12 planners: `providers.resolution.ts` has no abort signal (lines 17 to 19 and 42).
