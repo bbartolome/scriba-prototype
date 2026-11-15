@@ -10,12 +10,16 @@ import {
   type Type,
 } from '@nestjs/common';
 import {
+  PROJECT_FILE_DELETE_ROUTE,
   PROJECT_FILE_EDIT_ROUTE,
+  PROJECT_FILE_MOVE_ROUTE,
   PROJECT_FILE_ROUTE,
   PROJECT_FILE_WRITE_ROUTE,
   PROJECT_FILES_ROUTE,
+  type FileDelete,
   type FileEdit,
   type FileList,
+  type FileMove,
   type FileWrite,
 } from '@bbartolome/scriba-contracts/project-store';
 import { PlatformModule } from '../src/modules/platform/platform.module';
@@ -134,6 +138,36 @@ export function editFile(
   );
 }
 
+// One POST of the delete route.
+export function deleteFile(
+  app: TestApp,
+  cookie: string,
+  projectId: string,
+  body: FileDelete,
+): Promise<Reply> {
+  return postJson(
+    app,
+    cookie,
+    fileUrl(PROJECT_FILE_DELETE_ROUTE, projectId),
+    body,
+  );
+}
+
+// One POST of the move route.
+export function moveFile(
+  app: TestApp,
+  cookie: string,
+  projectId: string,
+  body: FileMove,
+): Promise<Reply> {
+  return postJson(
+    app,
+    cookie,
+    fileUrl(PROJECT_FILE_MOVE_ROUTE, projectId),
+    body,
+  );
+}
+
 // The entry paths of a list answer, in the order the answer gives them.
 export function entryPaths(reply: Reply): string[] {
   return (JSON.parse(reply.body) as FileList).entries.map(
@@ -200,6 +234,50 @@ export function filesKitModule(): Type<unknown> {
         path: body.path,
         content: 'a'.repeat(body.bytes),
       });
+    }
+
+    @Post('files/delete')
+    @HttpCode(200)
+    delete(
+      @Body() body: { projectId: string; path: string; baseHash?: string },
+    ): unknown {
+      return this.files.delete(body.projectId, {
+        path: body.path,
+        baseHash: body.baseHash,
+      });
+    }
+
+    @Post('files/move')
+    @HttpCode(200)
+    move(@Body() body: FileMove & { projectId: string }): unknown {
+      return this.files.move(body.projectId, { from: body.from, to: body.to });
+    }
+
+    // The patch is passed as it arrives, so a null value removes its key (P7).
+    @Post('files/update-yaml')
+    @HttpCode(200)
+    updateYaml(
+      @Body()
+      body: {
+        projectId: string;
+        patch: Record<string, unknown>;
+      },
+    ): unknown {
+      return this.files.updateProjectYaml(body.projectId, body.patch);
+    }
+
+    @Post('files/append-log')
+    @HttpCode(200)
+    appendLog(
+      @Body() body: { projectId: string; path: string; line: string },
+    ): unknown {
+      return this.files.appendLog(body.projectId, body.path, body.line);
+    }
+
+    @Post('files/state-dir')
+    @HttpCode(200)
+    stateDir(@Body() body: { projectId: string; owner: string }): unknown {
+      return { path: this.files.stateDir(body.projectId, body.owner) };
     }
   }
 
