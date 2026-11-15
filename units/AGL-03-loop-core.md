@@ -28,9 +28,9 @@ Type an intent (1) with a project summary (2), watch tokens stream (4) and cards
 - `run-ended` carries pending change IDs (empty until AGL-12).
 
 ## Acceptance criteria (mock OpenAI server)
-- [ ] A list → read → text turn emits events in `seq` order matching the contract and ends `completed`.
-- [ ] With the mock set to loop, the agent run ends at step 12 with `step-cap-reached` and `run-ended: capped`; Continue starts a new agent run in the same conversation.
-- [ ] Stop ends an agent run within one second of the POST with `run-ended: stopped`; the mock sees the request aborted.
-- [ ] A second start returns `AGENT_RUN_ACTIVE`; no provider returns `AGENT_NO_PROVIDER`.
-- [ ] Switching the active project ends the agent run with `project-switched`.
-- [ ] The mock's received request contains the system prompt, the project summary and only the enabled families' tools.
+- [x] A list → read → text turn emits events in `seq` order matching the contract and ends `completed`.
+- [x] With the mock set to loop, the agent run ends at step 12 with `step-cap-reached` and `run-ended: capped`; Continue starts a new agent run in the same conversation.
+- [x] Stop ends an agent run within one second of the POST with `run-ended: stopped`; the mock sees the request aborted.
+- [x] A second start returns `AGENT_RUN_ACTIVE`; no provider returns `AGENT_NO_PROVIDER`.
+- [x] Switching the active project ends the agent run with `project-switched`.
+- [x] The mock's received request contains the system prompt, the project summary and only the enabled families' tools.

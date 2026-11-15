@@ -1,6 +1,6 @@
 ---
 id: AGL-03
-status: planned
+status: done
 unit: units/AGL-03-loop-core.md
 ---
 # AGL-03 plan — Loop core: start, steps, cap and continue, stop, one active run, project-switch stop, provider errors, events
