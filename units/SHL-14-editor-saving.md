@@ -6,7 +6,7 @@ phase: phase:editor
 milestone: M3
 blocked_by: [SHL-13]
 parallel_with: [SHL-15, SHL-16]
-unblocks: [SHL-19, "Compile & export manuscript editing"]
+unblocks: [SHL-19, "Compile & export manuscript editing", "Project store Files editor adoption (PST-34)"]
 ---
 
 # SHL-14 — Editor saving

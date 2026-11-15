@@ -6,7 +6,7 @@ phase: phase:files
 milestone: M1 (editing at M3 when Shell phase:editor lands)
 blocked_by: [PST-06, "Frontend shell phase:core (SHL-09)", "Frontend shell Markdown preview (SHL-11)"]
 parallel_with: [PST-07, PST-08, PST-09]
-unblocks: [PST-12, PST-14, PST-21]
+unblocks: [PST-12, PST-14, PST-21, PST-34]
 ---
 
 # PST-10 — Files UI
@@ -22,4 +22,4 @@ unblocks: [PST-12, PST-14, PST-21]
 ## Acceptance criteria
 - [ ] Component tests: tree renders from list, `?path=` opens that file, preview renders Markdown, a `files-changed` event refreshes the tree.
 - [ ] Phone viewport: read-only preview, no editor.
-- [ ] When the editor is present: a save sends `baseHash`, and a write-conflict response shows the warning without losing the author's text.
+- Moved to PST-34 by revision on 2026-11-15.

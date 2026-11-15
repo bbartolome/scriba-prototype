@@ -21,6 +21,7 @@ PST-01 contract slice  ══> phase:contract
      ├─ PST-08 entity resolution + entity list + manifest              (needs 04)
      ├─ PST-09 project picker UI + e2e "project from sample"           (needs 03,04,05,11 + Shell phase:core)
      └─ PST-10 files UI (tree, preview, editor, stale-base)            (needs 06 + Shell core/shared-components)
+          └─ PST-34 files editor adoption (direct save, stale-base)     (needs 10 + Shell SHL-14, SHL-15, SHL-16; lands at M3, PST-12 does not wait)
  PST-12 files gate (guard, GET-invariant, demo)  ══> phase:files
  PST-13 FTS5 search (needs 08) ─ PST-14 search box UI (needs 10)  ══> phase:search
  PST-15 propose + pending store + validators (needs 12)

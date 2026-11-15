@@ -6,7 +6,7 @@ phase: phase:editor
 milestone: M3
 blocked_by: [SHL-12]
 parallel_with: [SHL-13, SHL-14, SHL-15]
-unblocks: [SHL-19]
+unblocks: [SHL-19, "Project store Files editor adoption (PST-34)"]
 ---
 
 # SHL-16 — Editable merge view

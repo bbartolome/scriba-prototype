@@ -6,7 +6,7 @@ phase: phase:editor
 milestone: M3
 blocked_by: [SHL-11, SHL-13]
 parallel_with: [SHL-14, SHL-16]
-unblocks: [SHL-19]
+unblocks: [SHL-19, "Project store Files editor adoption (PST-34)"]
 ---
 
 # SHL-15 — Editor layout and touch
