@@ -4031,3 +4031,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Files changed: exactly apps/api/test/providers-gate.test.ts (new). G1, G2, G3 and the T1 gate run (13 files, 68 tests, 25 of 25 rows) pass. Each negative assertion in G2 has its control.
 - Prerequisite, not a defect: the API test run needs the contracts build first (`npm run build -w @bbartolome/scriba-contracts`). Plan steps 2 and 7 already run the build through `npm test`.
 - Criterion 2 (T2) is not run and the box stays unticked. Per the Navigator decision N1 (line above, option A), the unit stays in the pipeline until the owner records a T2 pass on the Mac. The branch is held and not merged to main.
+
+## 2026-11-15 — PST-07 — Navigator decisions (session `cbeb09d2e7564d33a7e24f76595765c2`): the eight open points of the draft plan
+
+- **Points 1 and 2 (option A):** `updateProjectYaml` works through the YAML document API (unit line 20). A removed key takes its leading comment. Byte-identity (unit line 27) holds for the writer's canonical layout with `lineWidth: 0` and the BOM/CRLF framing. The U1 and H2 fixtures use the canonical layout. The plan documents that a non-canonical input is normalized on write.
+- **Point 3 (option C):** mixed LF and CRLF files come out all-CRLF. A test asserts it. The plan documents it in the normalization note.
+- **Point 4 (option A):** `delete` of the root `project.yaml`, `move` from it and `move` onto it give `PROJECT_PATH_RESERVED` (400). Move has no content validation, so a move onto it would install an unvalidated record.
+- **Point 5 (option A):** P10 of the plan is the shared status rule for `appendLog` and, when planned, `propose` (PST-15). Importable gives `PROJECT_NOT_FOUND` with "That folder has no project.yaml yet. Import it first."; invalid gives `PROJECT_INVALID` (422); too-new gives `PROJECT_SCHEMA_TOO_NEW` (409).
+- **Point 6 (option B):** PST-23's backups go to `<project>/.scriba/project-store/backups/<UTC>/<path>`, through `stateDir(projectId, 'project-store')`. The change of PST-23's unit line 23 is made by a reviser of PST-23 when PST-23 is planned. PST-07's `stateDir` is unchanged.
+- **Point 7 (option B):** PST-07's `unblocks` becomes `[PST-12]`. MPR-12 is unchanged; it reaches PST-07 through the quoted gate of PST-12. The change is made by a reviser of PST-07, as a reword of its Decisions section that carries the front-matter correction.
