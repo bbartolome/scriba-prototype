@@ -197,10 +197,7 @@ it('C1: the mid-run state matches what a live subscriber has accumulated', async
       expect(state.cap).toBe(12);
       expect(state.assistantText).toBe('First part. ');
       expect(mirror.assistantText).toBe(state.assistantText);
-      expect(mirror.cards.map((card) => card.status)).toEqual([
-        'done',
-        'done',
-      ]);
+      expect(mirror.cards.map((card) => card.status)).toEqual(['done', 'done']);
       expect(state.cards).toEqual(mirror.cards);
       expect(state.lastSeq).toBe(mirror.lastSeq);
 
@@ -288,9 +285,10 @@ it('C3: the GET changes no file, emits no event and leaves the run running', asy
       expect(snapshotLibrary(h.fixture.library)).toEqual(beforeReads);
       expect(await stream.take(300)).toEqual([]);
       expect(new Set(running).size).toBe(1);
-      expect(agentRunStateSchema.parse(JSON.parse(running[0]))).toMatchObject(
-        { runId: started.runId, status: 'running' },
-      );
+      expect(agentRunStateSchema.parse(JSON.parse(running[0]))).toMatchObject({
+        runId: started.runId,
+        status: 'running',
+      });
       expect(await requestsOf(h)).toHaveLength(1);
 
       const stop = await post(h, AGENT_RUN_STOP_ROUTE, {
@@ -305,9 +303,11 @@ it('C3: the GET changes no file, emits no event and leaves the run running', asy
       const stopped = await currentBodies(h, 2);
       expect(snapshotLibrary(h.fixture.library)).toEqual(endedSnapshot);
       expect(stopped[0]).toBe(stopped[1]);
-      expect(agentRunStateSchema.parse(JSON.parse(stopped[0]))).toMatchObject(
-        { runId: started.runId, status: 'ended', reason: 'stopped' },
-      );
+      expect(agentRunStateSchema.parse(JSON.parse(stopped[0]))).toMatchObject({
+        runId: started.runId,
+        status: 'ended',
+        reason: 'stopped',
+      });
 
       // The same reads after a restart, when the run comes from its transcript.
       await h.restart();
@@ -319,9 +319,9 @@ it('C3: the GET changes no file, emits no event and leaves the run running', asy
         expect(snapshotLibrary(h.fixture.library)).toEqual(restartSnapshot);
         expect(await again.take(300)).toEqual([]);
         expect(rebuilt[0]).toBe(rebuilt[1]);
-        expect(
-          agentRunStateSchema.parse(JSON.parse(rebuilt[0])),
-        ).toMatchObject({ runId: started.runId, status: 'ended', reason: 'stopped' });
+        expect(agentRunStateSchema.parse(JSON.parse(rebuilt[0]))).toMatchObject(
+          { runId: started.runId, status: 'ended', reason: 'stopped' },
+        );
       } finally {
         await again.close();
       }
@@ -382,14 +382,9 @@ it('S2: a transcript without run-end reports stopped from its own lines, and the
       writeFileSync(
         join(folder, fileA),
         [
-          transcriptLine(
-            runA,
-            conversationId,
-            RUN_A_AT,
-            1,
-            'intent',
-            { intent: 'List the project' },
-          ),
+          transcriptLine(runA, conversationId, RUN_A_AT, 1, 'intent', {
+            intent: 'List the project',
+          }),
           transcriptLine(runA, conversationId, RUN_A_AT, 1, 'step', {
             step: 1,
             cap: 12,
