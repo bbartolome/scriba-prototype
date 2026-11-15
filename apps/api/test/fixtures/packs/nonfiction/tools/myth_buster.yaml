@@ -1,0 +1,28 @@
+schemaVersion: 1
+name: myth_buster
+description: Tests the core idea of a nonfiction chapter against common myths.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Claims
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [claim]
+  required: [coreIdea]
+output: draft
+enabled: true
+prompt: |
+  Test the core idea against the common myths.
+
+  Core idea: {{coreIdea}}
+  {{#each entityIds}}{{entity this}}{{/each}}

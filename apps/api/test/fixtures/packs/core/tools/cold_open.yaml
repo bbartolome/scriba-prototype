@@ -1,7 +1,4 @@
-import type { ToolSourceEntry } from './catalog.service';
-
-// The registry-owned cold-open fixture: a test fixture, not Genre packs content. TRG-06 replaces its source.
-export const COLD_OPEN_SOURCE = `schemaVersion: 1
+schemaVersion: 1
 name: cold_open
 description: Drafts the cold open of a chapter from its core idea.
 inputs:
@@ -55,10 +52,3 @@ prompt: |
 
   Core idea: {{coreIdea}}
   {{#each entityIds}}{{entity this}}{{/each}}
-`;
-
-// The fixture as a source of the catalog. The origin is a label: the fixture is registry-owned.
-export const COLD_OPEN_ENTRY: ToolSourceEntry = {
-  origin: 'core',
-  source: COLD_OPEN_SOURCE,
-};

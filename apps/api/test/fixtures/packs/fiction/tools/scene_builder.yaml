@@ -1,0 +1,25 @@
+schemaVersion: 1
+name: scene_builder
+description: Builds a scene from its goal and its setting.
+inputs:
+  type: object
+  properties:
+    goal:
+      type: string
+      title: Goal
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    setting:
+      type: string
+      title: Setting
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [goal]
+output: draft
+enabled: true
+prompt: |
+  Build the scene.
+
+  Goal: {{goal}}
+  Setting: {{setting}}

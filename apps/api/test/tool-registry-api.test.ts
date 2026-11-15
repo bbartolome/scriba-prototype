@@ -1,4 +1,5 @@
 import { rmSync } from 'node:fs';
+import { join } from 'node:path';
 import Ajv from 'ajv';
 import { expect, it } from 'vitest';
 import { errorBodySchema } from '@bbartolome/scriba-contracts/platform';
@@ -13,6 +14,9 @@ import { createTestApp, type TestApp } from './create-test-app';
 import { send, sessionCookie, type Reply } from './guard-request';
 import { LOOPBACK_HOST, LOOPBACK_ORIGIN } from './invariant-sweep';
 import { makeLibrary } from './settings.kit';
+
+// The built-in packs of the fixtures: cold_open is in core.
+const FIXTURE_PACKS = join(__dirname, 'fixtures', 'packs');
 
 // The form fields of the cold-open fixture, as the contract test's coldOpenFields gives them.
 const EXPECTED_FIELDS = [
@@ -151,7 +155,10 @@ async function withApp(
   const library = makeLibrary();
   let app: TestApp | undefined;
   try {
-    app = await createTestApp({ libraryDir: library });
+    app = await createTestApp({
+      libraryDir: library,
+      env: { SCRIBA_PACKS_DIR: FIXTURE_PACKS },
+    });
     const cookie = await sessionCookie(app, library);
     await run(app, cookie);
   } finally {
