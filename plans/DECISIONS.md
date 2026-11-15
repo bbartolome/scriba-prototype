@@ -4466,3 +4466,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Replays: onto f81ae12 (head 41e3f8f), onto aae2d78 (head 41e3f8f), onto 12935c1 (head 00f630b). Each replay was followed by lint, test and build on the new head: all exit 0 (contracts 223 tests, API 291, apps/web 325, packages 1, e2e 12, scripts 76).
 - Step 8 commit on the branch: afd1476 `docs(AGL-05): mark the acceptance criteria and set the plan to done` (criteria C1, C2 and C3 ticked; plan status done). The patch id of the code (`main...unit/AGL-05 -- . ':!plans' ':!units'`) was 16da058c9490395540e5ff6411ea3897579c9ef9 at that point, so the Sonnet approval holds.
 - Merge: `main` fast-forwarded from 12935c1 to afd1476. AGL-05 is `done` on main. The branch `unit/AGL-05` and its worktree were removed.
+
+## 2026-11-15 — AGL-08 — Plan revised (READY), status planned
+
+- Reviser (Opus) replied READY for plans/AGL-08.md (revision 2, base main at e4a436c). No unit change was made, so the YAGNI test was not needed. No point for the Navigator.
+- Settled by the revision: (1) criterion 2 means the six named items, and the full API and web suites run as a regression check; (2) "reload restores state" maps to AGL-05 tests C1 and C2 and AGL-07 test T3; (3) the demo is manual and does not gate the unit, and step 4 uses the existing `long-stream` scenario through a provider added by hand; (4) the "correct answer" is scripted, plus a check that the outline text reached the model, and real-model checks belong to AGL-25; (5) criterion 3 stays unticked until a CI run is seen, with local runs as evidence, following the PLT-13 precedent (plans/PLT-13.md lines 198 and 306); (6) tests R1 and W1 go into agent-loop-run.test.ts, which already holds the harness; (7) the test-timeout fallback stays inside the agent-run step; (8) the app default left on the mock breaks no later spec.
+- Review parts: part 1 is procedure steps 1, 2, 4 and 7 with the six criterion 2 rows; part 2 is steps 3, 5, 6, 8 to 12 with rows C1 and C3.
+- Repository note: `git remote -v` shows an `origin` remote. The plan keeps the no-push rule; nothing was pushed.
