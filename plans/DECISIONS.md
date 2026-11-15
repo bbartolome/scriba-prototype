@@ -4254,3 +4254,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Deviations judged acceptable: the E12 title wording; one extra compile-time test (the z.infer of each exported type); graphErrorCodeSchema as z.enum; the run-log node-status error uses runErrorSchema.
 - Open for the owner: after pushing a main that contains 67494e8, the orchestrator runs step 17 (gh run list / gh run view) and records criterion 5. Until then GRR-01 cannot reach status done.
 - Code rejections: 0.
+
+## 2026-11-15 — TRG-08 — Sonnet code review (one part): APPROVED
+
+- Full-branch patch id of the approved code (`git diff main...unit/TRG-08 -- . ':!plans' ':!units' | git patch-id --stable`, head f1c02ed on base 6355078): 270ed0cd6621e3129fa0de1e5662da00c132d090. The same patch id holds after the rebase onto f0bc635.
+- Scope: template.ts and tool-registry-template.test.ts only. T1-T4 pass (4 of 4 re-run by the reviewer). Purity grep: only the type import from contracts.
+- Deviations judged acceptable: diagnostics sorted by line and column; a bad-argument block is still opened, and an unknown opener (e.g. {{#with}}) reports its closer too (two positioned diagnostics, allowed by C3/C4); an unclosed {{ or comment ends the scan with one diagnostic; AST shape {nodes}; test file prettier-formatted.
+- Code rejections: 0.
