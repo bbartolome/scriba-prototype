@@ -21,4 +21,4 @@ Notice when the install is out of date (story 39): the image updates with `docke
 - The UI warning text includes the exact re-run-the-installer one-liner: `docker run --rm -e SETUP=true bbartolome/scriba | bash`.
 
 ## Acceptance criteria
-- [ ] Unset → `unknown`; older → `mismatch` with both values; equal → `ok`.
+- [x] Unset → `unknown`; older → `mismatch` with both values; equal → `ok`.

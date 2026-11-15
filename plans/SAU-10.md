@@ -1,6 +1,6 @@
 ---
 id: SAU-10
-status: planned
+status: done
 ---
 # SAU-10 plan — Compose-version status
 
