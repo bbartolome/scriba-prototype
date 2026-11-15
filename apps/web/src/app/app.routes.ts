@@ -73,5 +73,18 @@ export const APP_ROUTES: Routes = withDeviceGate([
         (feature) => feature.setupRoutes,
       ),
   },
+  {
+    path: 'projects',
+    pathMatch: 'full',
+    data: {
+      scope: 'app',
+      minDeviceClass: 'phone',
+      nav: { label: 'Projects', icon: 'library_books', order: 20 },
+    } satisfies ShellRouteData,
+    loadChildren: () =>
+      import('./features/project-store/project-store.routes').then(
+        (feature) => feature.projectsRoutes,
+      ),
+  },
   { path: '**', component: NotFoundPage },
 ]);

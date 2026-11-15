@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatToolbar } from '@angular/material/toolbar';
+import { ActiveProjectNav } from './features/project-store/project-store.routes';
 import { AppNav } from './shell/app-nav';
 import { ConnectionStatus } from './shell/connection-status';
 import { DeviceClassService } from './shell/device-class';
@@ -16,6 +17,7 @@ import { ThemeToggle } from './shell/theme-toggle';
     ConnectionStatus,
     NoticeBanners,
     AppNav,
+    ActiveProjectNav,
     ThemeToggle,
   ],
   selector: 'app-root',

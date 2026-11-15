@@ -8,7 +8,8 @@ import { AppNav } from './app-nav';
 import { withDeviceGate } from './device-class';
 import { SseClient } from './sse-client';
 import { restoreMatchMedia, stubMatchMedia } from './testing/match-media';
-import { SSE_CLIENT } from './tokens';
+import { FakeApiClient } from './testing/test-doubles';
+import { API_CLIENT, SSE_CLIENT } from './tokens';
 
 @Component({ template: '<p>probe phone view</p>' })
 class PhoneView {}
@@ -86,6 +87,7 @@ async function render<T>(type: Type<T>): Promise<ComponentFixture<T>> {
     imports: [type],
     providers: [
       { provide: SSE_CLIENT, useClass: SseClient },
+      { provide: API_CLIENT, useValue: new FakeApiClient() },
       provideRouter([...probes, ...APP_ROUTES]),
     ],
   });
