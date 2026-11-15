@@ -3911,3 +3911,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Patch id of the approved code (`git diff main...unit/SHL-20 -- . ':!plans' ':!units' | git patch-id --stable`, base b1a41e6): 66364eec1a6b71353d930508397abe5cc8306775.
 - Criterion (the 390 by 844 check) passes through its e2e test in `e2e/specs/phone-toolbar.e2e.ts`; the reviewer confirmed the changed files are the three the plan lists.
 - Code rejections of SHL-20: 0.
+
+## 2026-11-15 — SAU-06 — Sonnet code review (whole plan, one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SAU-06 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 00cef08 before rebase): a60ca4030074ba6e2b643fca30cadba6bbbc94b0.
+- The plan has no "Review parts" section, so the whole plan was reviewed as one part.
+- Files changed: the plan's section 2 files and the shared files of section 8 (app.routes.ts, setup-auth.routes.ts, setup-contract.ts, setup-contract.spec.ts, setup-page.ts, setup-page.spec.ts, sign-in-notice.ts, e2e/specs/setup-phone.e2e.ts).
+- Build size +5.43 kB over I0: reported, not a stop (plan step 5).
+- Mutation M11 (remove [disabled] on Continue) not caught by X4: the page's own busy guard blocks the second POST; not a plan or criterion failure.
+- Code rejections of SAU-06: 0.
