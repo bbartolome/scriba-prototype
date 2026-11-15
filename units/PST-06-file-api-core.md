@@ -26,11 +26,11 @@ Browse and edit files with direct saves (stories 17–18), refuse stale saves (1
 - Agent and recipe writes are **never** direct; those callers use `propose` (PST-15). `write`/`edit` are for author actions only.
 
 ## Acceptance criteria
-- [ ] Read returns `sha256:` hash; a `write` with a stale `baseHash` fails `PROJECT_WRITE_CONFLICT`; with the current one, it succeeds.
-- [ ] `edit` fails distinctly on zero and on multiple matches.
-- [ ] Files over 5 MB and binary files are refused on read but listed.
-- [ ] An interrupted write leaves either the old or new file (temp+rename verified: no partial content, no stray temp after success).
-- [ ] A `project.yaml` write with comments round-trips them; an invalid one fails validation.
-- [ ] A too-new file is refused for read and write.
-- [ ] `files-changed` arrives on `/events` after write and edit.
-- [ ] Every GET is side-effect free.
+- [x] Read returns `sha256:` hash; a `write` with a stale `baseHash` fails `PROJECT_WRITE_CONFLICT`; with the current one, it succeeds.
+- [x] `edit` fails distinctly on zero and on multiple matches.
+- [x] Files over 5 MB and binary files are refused on read but listed.
+- [x] An interrupted write leaves either the old or new file (temp+rename verified: no partial content, no stray temp after success).
+- [x] A `project.yaml` write with comments round-trips them; an invalid one fails validation.
+- [x] A too-new file is refused for read and write.
+- [x] `files-changed` arrives on `/events` after write and edit.
+- [x] Every GET is side-effect free.

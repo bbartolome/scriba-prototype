@@ -1,6 +1,6 @@
 ---
 id: PST-06
-status: planned
+status: done
 title: File API core — list, read, write (baseHash), edit, atomic writes, schema-too-new refusal
 module: project-store
 ---
