@@ -103,6 +103,7 @@ export class SamplesService {
 
     const doc = parseDocument(text);
     doc.set('title', request.title);
+    const yamlText = doc.toString();
 
     const libraryRoot = this.store.libraryRoot;
     if (!reserveProjectFolder(libraryRoot, request.folderName)) {
@@ -117,7 +118,7 @@ export class SamplesService {
       this.copyTree(sampleRoot, root, '');
       writeFileAtomic(
         this.store.resolvePath(root, PROJECT_YAML).realPath,
-        doc.toString(),
+        yamlText,
       );
     } catch (error) {
       rmSync(root, { recursive: true, force: true });
