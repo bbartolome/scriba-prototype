@@ -4261,3 +4261,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Scope: template.ts and tool-registry-template.test.ts only. T1-T4 pass (4 of 4 re-run by the reviewer). Purity grep: only the type import from contracts.
 - Deviations judged acceptable: diagnostics sorted by line and column; a bad-argument block is still opened, and an unknown opener (e.g. {{#with}}) reports its closer too (two positioned diagnostics, allowed by C3/C4); an unclosed {{ or comment ends the scan with one diagnostic; AST shape {nodes}; test file prettier-formatted.
 - Code rejections: 0.
+
+## 2026-11-15 — PST-13 — Sonnet code review (two parts): APPROVED
+
+- Full-branch patch id of the approved code (`git diff main...unit/PST-13 -- . ':!plans' ':!units' | git patch-id --stable`, head 8c48dc2, plan revision 9cfe5d7): 6e16024a9bb056052ba2d104d8cc06b5f74763d5.
+- Part 1 (steps 1-9; T1-T5): APPROVED. Part 2 (steps 10-14; T6): APPROVED. T1-T6 pass; root build, test and lint pass.
+- Plan correction recorded: the step 9 expectation that mutation (b) fails T3 cannot hold, because the P10 scope clause applies to every query. The reviewer accepts this. The check is: T3 fails when the scope clause is also removed (variant b2), which the implementer confirmed. The walker and indexing exclusion are covered only by PST-08's walker tests (R2).
+- Deviations judged acceptable: the P14 rebuild also deletes the -journal sidecar (consistent with P5); the rebuild route has no test of its own (T1-T6 are one per criterion; the sweeps exercise the route).
+- Code rejections: 0.
