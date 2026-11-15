@@ -1,6 +1,8 @@
 import {
   APP_DEFAULT_ROUTE,
   appDefaultSchema,
+  CONNECTION_TEST_ROUTE,
+  connectionTestResultSchema,
   KEY_CLEAR_ROUTE,
   KEY_SET_ROUTE,
   MODELS_ROUTE,
@@ -9,7 +11,9 @@ import {
   presetListSchema,
   PROVIDER_DEFAULTS,
   PROVIDER_DELETE_ROUTE,
+  PROVIDER_ERROR_CODE_VALUES,
   PROVIDER_ERROR_CODES,
+  PROVIDER_PRESETS,
   PROVIDER_UPDATE_ROUTE,
   PROVIDERS_EXAMPLES,
   PROVIDERS_ROUTE,
@@ -21,17 +25,23 @@ import type { ResponseSchema } from '../../shell/api-client';
 import {
   APP_DEFAULT_PATH,
   appDefaultCopy,
+  CONNECTION_TEST_PATH,
+  connectionTestResultCopy,
   DEFAULT_IN_USE_CODE,
   emptyBodyCopy,
+  isOllamaProvider,
   KEY_CLEAR_PATH,
   KEY_SET_PATH,
   MODELS_PATH,
   modelListCopy,
   NOT_FOUND_CODE,
+  OLLAMA_CONTEXT_NOTE,
+  OLLAMA_PULL_NOTE,
   PRESETS_PATH,
   presetListCopy,
   PROVIDER_DEFAULTS_COPY,
   PROVIDER_DELETE_PATH,
+  PROVIDER_ERROR_CODE_NAMES,
   PROVIDER_UPDATE_PATH,
   PROVIDERS_PATH,
   providerListCopy,
@@ -204,5 +214,95 @@ describe('providers copies', () => {
     expect(emptyBodyCopy.safeParse(null).success).toBe(true);
     expect(emptyBodyCopy.safeParse(undefined).success).toBe(true);
     expect(emptyBodyCopy.safeParse({}).success).toBe(false);
+  });
+
+  it('P3 the connection-test route, the result guard, the error codes, the Ollama notes and the Ollama rule agree with the contract', () => {
+    expect(CONNECTION_TEST_PATH).toBe(CONNECTION_TEST_ROUTE);
+    expect(PROVIDER_ERROR_CODE_NAMES).toEqual(PROVIDER_ERROR_CODE_VALUES);
+
+    const ok = PROVIDERS_EXAMPLES.connectionTestOk;
+    const accepted: unknown[] = [
+      ok,
+      PROVIDERS_EXAMPLES.connectionTestUnreachable,
+      { ok: true, stage: 'chat', latencyMs: 300, modelCount: 0 },
+      {
+        ok: false,
+        stage: 'list',
+        latencyMs: 5,
+        error: {
+          code: 'PROVIDER_UNAUTHORIZED',
+          message: 'The provider rejected the request.',
+        },
+      },
+      { ...ok, extra: 'not in the contract' },
+    ];
+    const refused: unknown[] = [
+      { ...ok, stage: 'stream' },
+      { ...ok, latencyMs: -1 },
+      { ...ok, latencyMs: Number.NaN },
+      { ...ok, modelCount: 1.5 },
+      { ...ok, error: null },
+      {
+        ok: false,
+        stage: 'reach',
+        latencyMs: 1,
+        error: { code: 'PROVIDER_NOPE', message: 'x' },
+      },
+      {
+        ok: false,
+        stage: 'reach',
+        latencyMs: 1,
+        error: { code: 'UNREACHABLE', message: 'x' },
+      },
+      {
+        ok: false,
+        stage: 'reach',
+        latencyMs: 1,
+        error: {
+          code: 'PROVIDER_UNREACHABLE',
+          message: 'x',
+          hint: 3,
+        },
+      },
+      { stage: 'chat', latencyMs: 1 },
+    ];
+    for (const fixture of accepted) {
+      const copyResult = connectionTestResultCopy.safeParse(fixture);
+      const schemaResult = connectionTestResultSchema.safeParse(fixture);
+      expect(copyResult.success).toBe(true);
+      expect(schemaResult.success).toBe(true);
+      if (copyResult.success && schemaResult.success) {
+        expect(copyResult.data).toEqual(schemaResult.data);
+      }
+    }
+    for (const fixture of refused) {
+      expect(connectionTestResultCopy.safeParse(fixture).success).toBe(false);
+      expect(connectionTestResultSchema.safeParse(fixture).success).toBe(
+        false,
+      );
+    }
+
+    // The notes are the Ollama preset's own sentences, so the text has one source.
+    const ollama = PROVIDER_PRESETS.find((preset) => preset.id === 'ollama');
+    const contextHint =
+      ollama?.hints.find((hint) => hint.startsWith('Context length')) ?? '';
+    const pullHint =
+      ollama?.hints.find((hint) => hint.includes('ollama pull')) ?? '';
+    expect(contextHint).not.toBe('');
+    expect(OLLAMA_CONTEXT_NOTE.startsWith(contextHint)).toBe(true);
+    expect(pullHint).not.toBe('');
+    expect(OLLAMA_PULL_NOTE).toBe(pullHint);
+
+    // The rule rows: the server's table (providers-resolution.test.ts lines 371 to 390) and the preset.
+    const rows: [{ id: string; baseURL: string }, boolean][] = [
+      [{ id: 'ollama', baseURL: 'http://host.docker.internal:11434/v1' }, true],
+      [{ id: 'local-llm', baseURL: 'http://host.docker.internal:11434/v1' }, true],
+      [{ id: 'ollama-lab', baseURL: 'http://127.0.0.1:1234/v1' }, true],
+      [{ id: 'lm-studio', baseURL: 'http://host.docker.internal:1234/v1' }, false],
+      [{ id: 'openrouter', baseURL: 'https://openrouter.ai/api/v1' }, false],
+    ];
+    for (const [config, expected] of rows) {
+      expect(isOllamaProvider(config), config.id).toBe(expected);
+    }
   });
 });
