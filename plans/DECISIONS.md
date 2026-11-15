@@ -3942,3 +3942,14 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Files changed: exactly the five paths of the plan's section 2 (samples controller and service, project-store module, the samples kit and test).
 - list() returns the schema-parsed entries (extra keys stripped), as the plan's own algorithm states; the fixture has no extra keys, so C3 holds. The importable branch in start() is unreachable, as the plan states.
 - Code rejections of PST-05: 0.
+
+## 2026-11-15 — SAU-08 — Navigator decision: criteria 6 and 7 stay unticked; the unit is complete without them (option A)
+
+- **Decision (Navigator, session `b356669470274b46bf50e70cf4d4e31c`, option A):** criterion 6 ("`Secure` matrix recorded; attributes match", `units/SAU-08-token-guard-gate.md` line 26) and criterion 7 ("Both invariant tests pass in CI", line 27) stay UNticked. SAU-08 is complete without them. The plan records the causes and the local proxies.
+- **Criterion 6, no local procedure:** the browser half needs Safari, Chrome and Firefox on macOS; the module records the matrix as not run (`modules/setup-auth.md` lines 50 and 54 to 58). A Chromium probe is "optional evidence, not a pass" (module line 62). The attribute half passes locally (test G6, plan step 10), as the attribute half of SAU-03's criterion 6 does.
+- **Criterion 7, no local procedure:** the "in CI" half needs a GitHub Actions run, and the repository has no git remote. Plan steps 9, 11 and 14 are local evidence about the CI run; step 14 says it "does not replace the CI run".
+- **Rejected, option (B):** ticking criterion 7 on a local CI-order run would assert a CI pass that did not happen. It contradicts the in-CI precedents below.
+- **Rejected, option (C):** blocking SAU-08 would hold M1 over criteria that need an environment the project does not have. PLT-11 chose complete-without over blocking.
+- **Precedents:** SAU-03 criterion 6 (lines 1537 to 1539, unticked); PLT-11 criterion 5 (line 602, unticked); PLT-13 criterion 2 runner part (lines 726 to 728, unticked). SAU-07's unit line 22 ("Both tests run in CI against the composed app and pass") is ticked on local runs with no recorded decision. The Navigator treats that as an anomaly and not a precedent, and this decision does not follow it.
+- **Effect:** SAU-08 can become `done` once its code is approved and merged, which unblocks SAU-09, SAU-10, SAU-17, AGL-03, CEX-02, GRR-02, GRR-08, MPR-08, PST-12 and TRG-11. The plan's open points 1 and 2 are to be restated as decided, with the cause (a reviser updates the plan text; the orchestrator does not edit plans).
+- **Reason:** a criterion cannot be weakened. When the Navigator decides a unit is complete without a criterion, the box is not ticked and the cause is recorded in the plan (`prompt.md`, "Criteria that you cannot test").
