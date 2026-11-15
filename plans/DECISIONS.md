@@ -4134,3 +4134,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Report (orchestrator, rebase of unit/SAU-09 head 9d480d2 onto main 33694f7):** the rebase applies 9d480d2 and stops with a conflict in `apps/api/test/invariant-sweep.ts` (FIXTURE_PATHS). Main has TRG-02's two tool-registry entries; the unit adds the `/api/setup-auth/steps/:step` entry. The conflict is the one the plan's merge rule covers (keep every entry of both, each once).
 - **Earlier attempt:** the implementer's run of the same rebase reported "Your local changes ... would be overwritten by merge" and did not reach the conflict. The worktree was clean before and after that run. The orchestrator's retry reached the conflict, as above.
 - **Action:** the rebase is aborted (the branch is unchanged at 9d480d2). A new implementer resolves the conflict by the rule and continues, as the procedure says.
+
+## 2026-11-15 — SAU-11 — Unit change: the /setup compose-warning decision and criterion (commit ba39540, reviser of SAU-10)
+
+- **Change:** one decision and one criterion added to `units/SAU-11-wizard-shell-routing.md`, exactly as the Navigator decision above (the entry dated 2026-11-15, SAU-10, option (a)) gives them. Decision: "Renders the compose-version warning (from SAU-10's GET /api/setup-auth/status) for mismatch and unknown states, using SAU-10's re-run-the-installer one-liner; hidden for ok." Criterion: "Component test (fake API): compose-version warning shown for mismatch/unknown with the one-liner; hidden for ok." Front matter unchanged.
+- **Basis:** the Navigator's decision (only the Navigator can change a criterion). The reviser applied it and did not use the YAGNI actions.
+- **Downstream:** SAU-15 (line 26) and SAU-16 (line 24) already name the warning and need no change. SAU-11 has no plan and no branch.
+- **SAU-10 plan:** the reviser confirmed that its plan needs no change of scope (SAU-10 ships no UI); the plan's open point 2 is decided by this entry.
