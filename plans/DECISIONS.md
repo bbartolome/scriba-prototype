@@ -3975,3 +3975,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 1 (surfaces, list, read; criteria 3 and 8; X2 to X4): approved. Part 2 (write, edit, atomicity, project.yaml, too-new, events; criteria 1, 2, 4, 5, 6 and 7; X1): approved.
 - Files changed: exactly the paths of the plan's section 2. The kit also exports two helpers (`isUtcTimestamp`, `entryPaths`) that the plan does not name; they are harmless helpers in a listed file.
 - Code rejections of PST-06: 0.
+
+## 2026-11-15 — SHL-21 — Sonnet code review (one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SHL-21 -- . ':!plans' ':!units' | git patch-id --stable`, base 2281768): a2e45d9fa2d835753a7382bec70ee8ea838601e0.
+- Files changed: exactly the two files of the plan (contract-chunks.ts, the one-line unwrap with `async`; contract-chunks.spec.ts, new). The spec mocks each shape with its own vi.doMock inside the test, and afterEach calls vi.doUnmock.
+- Red commit a3ca77a (spec only) before the fix commit 740f88c (loader only).
+- Code rejections of SHL-21: 0.
