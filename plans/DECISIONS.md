@@ -4100,3 +4100,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Tests: AC1 to AC4 and E1 to E3 pass (7 tests in `tool-registry-api.test.ts`, the reviewer's targeted run).
 - Note for TRG-07 (not a defect here): `stripExtensions` keeps property names under `properties`, so a property literally named `x-foo` would reach the function schema. A lint rule for it belongs to TRG-07.
 - Code rejections of TRG-02: 0.
+
+## 2026-11-15 — SAU-09 — Sonnet code review (one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SAU-09 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 9d480d2): 76dc00f764f6a3f411ce237df0b2f7bf28c76cb9.
+- Files changed: exactly the six paths of the plan's section 2, in one commit.
+- Tests: criteria 1 to 4 and the `refusals` and `theme is dropped and never stored` tests pass in `apps/api/test/setup-flow-api.test.ts` (reviewer ran the file: 6 of 6). Mutations M1 to M6 were run by the implementer (each reverted).
+- Differences: `apps/api/dist` must be built before the guard and section tests pass (a plan omission, not a code change); `savePreferences` parses the stored and the merged section before reading and writing (the write uses the raw merged value, so the stored bytes are as specified).
+- Code rejections of SAU-09: 0.
