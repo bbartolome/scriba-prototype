@@ -1,13 +1,19 @@
 ---
 id: MPR-08
-status: draft
+status: planned
 unit: units/MPR-08-client-gate.md
 ---
 # MPR-08 plan — Client gate: guard check, secrecy suite, seam test and the M1 model-path check
 
-Unit: MPR-08 (module Model providers, phase:client, M1; blocked by MPR-02 to MPR-07, SAU-08 and PLT-13; unblocks MPR-12, TRG-12 and AGL-03; `units/MPR-08-client-gate.md` lines 7 and 9). Base: `main` at 7e9469d. Every line number below was read at 7e9469d with cat -n, sed, grep or git (section 7). The planner ran only read commands and one probe of `127.0.0.1:11434`; it ran no test, no build and no install. This plan changes no file except itself, writes no code and commits nothing.
+Unit: MPR-08 (module Model providers, phase:client, M1; blocked by MPR-02 to MPR-07, SAU-08 and PLT-13; unblocks MPR-12, TRG-12 and AGL-03; `units/MPR-08-client-gate.md` lines 7 and 9). Base: `main` at 7e9469d. Every line number below was read at 7e9469d with cat -n, sed, grep or git (section 7). The planner ran only read commands and one probe of `127.0.0.1:11434`; it ran no test, no build and no install. Revision 1 was made at `main` 18b4f1b; `git diff --stat 7e9469d 18b4f1b` touches only `plans/DECISIONS.md`, `plans/MPR-08.md` and `plans/QUEUE.md`, so the line numbers of section 7 still hold. The revision changes this plan and adds one line to `modules/providers.md` (section 0, decision N3); the implementer changes only the path of section 2's implementer row. No code is written by the planner or the reviser, and nothing is committed by them.
 
-Each statement is FACT (checked; section 7) or ASSUMED (section 8). Decisions are tagged D1 to D13 in section 1b.
+Each statement is FACT (checked; section 7) or ASSUMED (section 8). Decisions are tagged D1 to D13 in section 1b. Navigator decisions are N1 to N3 in section 0.
+
+## 0. Navigator decisions (2026-11-15, session `74b9c36bbaa14f72bbc4f657b25a613d`)
+
+- **N1 — open point 1: option A.** The owner runs the manual check T2 (section 4.2, steps S1 to S6) on the Mac host before the criterion-2 box (unit line 23) is ticked. The unit stays in the pipeline until T2 passes. Fallback B (the unit is complete without criterion 2, the box stays unticked, the cause is recorded in this plan) applies only if the owner cannot run T2. Option C (a stand-in server on port 11434) is rejected. Source: `plans/DECISIONS.md` line 4011 to 4015.
+- **N2 — open point 2: criterion 2 is the model path only.** The seeded `ollama` provider reaches Ollama on the host through the real compose stack, shown by T2 steps S3 to S6. The Agent loop's chat run ("summarize my outline") is AGL-08's and is not part of this criterion. Reason: the reverse reading is a cycle (MPR-08 → AGL-08 → AGL-03 → MPR-08: AGL-08 is blocked by AGL-03, `units/AGL-08-file-tools-chat-gate.md` line 7; AGL-03 is blocked by MPR-08, `units/AGL-03-loop-core.md` line 7). Source: `plans/DECISIONS.md` lines 4017 to 4020.
+- **N3 — open point 3: T2 meets the module's real-model rule.** `modules/providers.md` gets an additive note after line 46 (now line 47): "Until AGL-25 exists, the MPR-08 T2 procedure (plans/MPR-08.md section 4.2) serves as the providers module's real-model check." Line 46 is not rewritten; AGL-25 remains the eventual canonical check. No second check is required. The note is made by the reviser in this revision, not by the implementer (section 2). Source: `plans/DECISIONS.md` lines 4022 to 4026.
 
 ## 1. Decisions this plan follows
 
@@ -16,8 +22,8 @@ Each statement is FACT (checked; section 7) or ASSUMED (section 8). Decisions ar
 - **What the merge does.** Merging closes Model providers `phase:client`. This unit adds no route, no contract and no client code. Source: unit line 14; `units/README.md` line 91.
 - **Guard.** Every `/api/providers` route sits behind Setup & auth's global guard, and none is `@Public()`. Source: unit line 17; `modules/providers.md` line 33; `plans/MPR-06.md` D16; FACT `providers.controller.ts` (12 handlers, no `@Public`).
 - **Secrecy.** Keys live only in the secrets file. `settings.yaml` holds only `keyRef`. No GET response, no `settings.yaml` byte, no stdout line and no error body carries a key. The mock sees the key in `Authorization` only. Source: unit line 18; `modules/providers.md` line 36; `plans/MPR-06.md` C1; `plans/MPR-07.md` line 176 (its secrecy checks are C2 and E1, and the suite is MPR-08's).
-- **Milestone check.** It is a real-stack check, with Ollama on the host, and not a CI test. Source: unit line 23; `modules/providers.md` line 46 (real-model check is not in CI). Open point 3 covers the module's named owner of that check.
-- **Criteria that the local environment cannot test.** The box stays unticked, the cause is recorded in the plan, and the Navigator decides whether the unit is complete without it. Source: `prompt.md` lines 275 to 281; `plans/DECISIONS.md` lines 3946 to 3956 (SAU-08: criteria 6 and 7 unticked, unit complete).
+- **Milestone check.** It is a real-stack check, with Ollama on the host, and not a CI test. Source: unit line 23; `modules/providers.md` line 46 (real-model check is not in CI) and line 47 (the transitional note of N3: T2 serves as the module's real-model check until AGL-25 exists).
+- **Criteria that the local environment cannot test.** Criterion 2 cannot run on the implementer's machine. Per N1 it is not waived: the owner runs T2 on the Mac host, and the box is ticked only after a recorded pass. Fallback B (box unticked, cause recorded, as for SAU-08 in `plans/DECISIONS.md` lines 3946 to 3956) applies only if the owner cannot run T2. Source: `prompt.md` lines 275 to 281; N1.
 - **Criterion 1 is a set.** It names the criteria of MPR-02 to MPR-07. Those are ticked on main in their unit files. Source: unit line 22; `units/MPR-02…07` acceptance sections.
 - **Test style.** External behaviour only: HTTP responses, the mock's records, files on disk, captured stdout; through the composed app with a temp library and Platform's mock OpenAI server. Source: `units/README.md` line 136; `modules/providers.md` lines 43 to 46.
 - **Demo.** Demo steps 1 to 4 are the model-path check of section 4.2. Step 5 (the chat run) is the Agent loop's. Source: unit lines 25 to 30; `e2e/specs/journey.e2e.ts` lines 72 and 73 (the agent-run step is pending, owner AGL-08).
@@ -41,13 +47,18 @@ Each statement is FACT (checked; section 7) or ASSUMED (section 8). Decisions ar
 
 ## 2. Files to create or change
 
-Only one path changes:
+Two paths change:
 
-| Path | Change | Purpose |
-|---|---|---|
-| `apps/api/test/providers-gate.test.ts` | new | G1 (guard), G2 (secrecy suite), G3 (seam); section 4.3 |
+| Path | Change | Who | Purpose |
+|---|---|---|---|
+| `apps/api/test/providers-gate.test.ts` | new | implementer, on `unit/MPR-08` | G1 (guard), G2 (secrecy suite), G3 (seam); section 4.3 |
+| `modules/providers.md` | one line added after line 46 (new line 47) | reviser, in this revision (committed by the orchestrator with this plan) | N3: "Until AGL-25 exists, the MPR-08 T2 procedure (plans/MPR-08.md section 4.2) serves as the providers module's real-model check." Line 46 is unchanged. |
 
-Must not change: every other file in the repository. In particular: `apps/api/src/**` (the code of MPR-02 to MPR-07); the thirteen existing test files of T1 (section 4.1); `apps/api/test/invariant-sweep.ts` and the other invariant files; the kits (`providers-client.kit.ts`, `providers-resolution.kit.ts`, `secrets.kit.ts`, `settings.kit.ts`, `guard-request.ts`) and `create-test-app.ts`; `e2e/**`; `packages/contracts/**`; `apps/web/**`; `package.json` and `package-lock.json`; `units/**`; `modules/**`; `plans/**` except this plan; `plans/DECISIONS.md`; `prompt.md`.
+The module line is already in the working tree when the implementer starts (it lands on `main` with this plan). The implementer does not edit `modules/providers.md`.
+
+Must not change (implementer): every other file in the repository. In particular: `apps/api/src/**` (the code of MPR-02 to MPR-07); the thirteen existing test files of T1 (section 4.1); `apps/api/test/invariant-sweep.ts` and the other invariant files; the kits (`providers-client.kit.ts`, `providers-resolution.kit.ts`, `secrets.kit.ts`, `settings.kit.ts`, `guard-request.ts`) and `create-test-app.ts`; `e2e/**`; `packages/contracts/**`; `apps/web/**`; `package.json` and `package-lock.json`; `units/**`; `modules/**` (the N3 line is the reviser's, above); `plans/**` except this plan; `plans/DECISIONS.md`; `prompt.md`.
+
+Effect of the module line on other citations: lines 47 to 58 of `modules/providers.md` move to 48 to 59. Done records that cite them by number (`plans/PLT-16.md` line 233, "line 58"; `plans/DECISIONS.md` line 4014, "line 53") were true when written and are not edited. No `draft` or `planned` plan other than this one exists (section 7).
 
 Orchestrator step 8 (`prompt.md` line 168) ticks the criteria in `units/MPR-08-client-gate.md` and sets this plan's status to `done` on the unit branch. Those changes are not the implementer's and are not listed here.
 
@@ -67,7 +78,7 @@ Run from `/Users/bbartolome/workspace/scriba-prototype` on branch `unit/MPR-08`,
 9. **Paths.** `git status --short` shows exactly `?? apps/api/test/providers-gate.test.ts`, and nothing else.
 10. **Commit.** One commit on `unit/MPR-08` with the message `test(MPR-08): gate the providers API with the guard, secrecy and seam tests`. Do not push.
 11. **Fresh clone.** `git clone --branch unit/MPR-08 /Users/bbartolome/workspace/scriba-prototype /tmp/mpr08-fresh` into an empty target. In it: `npm ci && npm run build && npm test && npm run lint`. Expected: each exits 0.
-12. **Criterion 2 (T2) is not run by the implementer.** Record: "not run here: no Ollama on this host (`command -v ollama` prints nothing; `127.0.0.1:11434` did not answer at planning time)". Section 4.2 is the procedure for the owner, on the host with Ollama. The box stays unticked until a recorded pass exists (open point 1).
+12. **Criterion 2 (T2) is not run by the implementer.** Record: "not run here: no Ollama on this host (`command -v ollama` prints nothing; `127.0.0.1:11434` did not answer at planning time); T2 is the owner's (N1)". Section 4.2 is the procedure for the owner, on the Mac host with Ollama. Per N1 the unit stays in the pipeline until the owner records a T2 pass; the box is not ticked before that. Only if the owner cannot run T2 does fallback B apply (box unticked, cause recorded in this plan).
 13. **Record.** Store the Node and npm versions, each command's output, the T1 summary and the G1 to G3 output. A criterion is marked passed only when its row in section 4 has its pass condition met.
 
 ## 4. Acceptance criteria and tests
@@ -131,9 +142,11 @@ Criteria covered by T1: 25 sub-criteria, one test row each.
 
 ### 4.2 Criterion 2 (unit line 23): test T2, the model-path check on the host
 
-Who runs it: the owner, on the Mac host, with Docker Desktop and Ollama installed. Not the implementer (step 12). It runs on the build of `unit/MPR-08`, or on `main` after the merge, since the code is the same.
+Who runs it: the owner, on the Mac host, with Docker Desktop and Ollama installed (N1). Not the implementer (step 12). It runs on the build of `unit/MPR-08` (the code under test is the code on `main`, since this unit adds only a test file). The criterion-2 box is ticked only after the owner's recorded pass (N1).
 
-What it proves: the seeded provider reaches Ollama on the host through the real compose stack, with no provider configured. The Agent loop's chat run ("summarize my outline") is AGL-08's and is not part of this check (open point 2).
+What it proves: the seeded provider reaches Ollama on the host through the real compose stack, with no provider configured. The Agent loop's chat run ("summarize my outline") is AGL-08's and is not part of this check (N2).
+
+This procedure is also the providers module's real-model check until AGL-25 exists (N3; `modules/providers.md` line 47).
 
 Preconditions:
 - Ollama on the host, started as in the unit's demo step 1: `OLLAMA_CONTEXT_LENGTH=64000 OLLAMA_HOST=0.0.0.0 ollama serve`, and `ollama pull <model>`. Record `<model>`.
@@ -153,7 +166,9 @@ Pass condition: S3 to S6 hold. No provider is created, edited or keyed in this c
 
 Note: the Mac leg of `host.docker.internal` was checked in the PLT-16 smoke run (`plans/PLT-16.md` line 213). The Linux leg is deferred under N3 (`plans/DECISIONS.md` line 967; `plans/PLT-16.md` line 216), so this check uses the Mac.
 
-Criteria covered by T2: criterion 2, as read in open point 2.
+If the owner cannot run T2 at all, fallback B of N1 applies: the box stays unticked, and the reviser records criterion 2 and the cause in this section.
+
+Criteria covered by T2: criterion 2, as read in N2 (the model path, S3 to S6).
 
 ### 4.3 Scope tests: new file `apps/api/test/providers-gate.test.ts`
 
@@ -176,18 +191,28 @@ Criteria covered: none (scope items). Tests in the new file: three.
 - **TRG-12 executor (`blocked_by` MPR-08, line 7).** Calls the model through the client with the active project's choice (unit line 26), and wraps provider failures as `TOOL_MODEL_ERROR` (unit line 30). Unchanged by this plan.
 - **MPR-12 project override (`blocked_by` MPR-08, line 7).** Needs the client gate and the Project store. It adds the two project-model routes (`routes.ts` lines 13 to 15). G1 checks the twelve current pairs by presence (D3), so MPR-12's routes do not break it. MPR-12 owns the guard test for its own routes.
 - **AGL-08 chat step and the e2e agent-run step (`e2e/specs/journey.e2e.ts` lines 72 and 73; `global-setup.ts` line 33).** The step configures its provider through the real API, at the mock URL. G3 tests the same route and URL form (D7). MPR-08 writes no e2e file.
-- **AGL-25 manual eval script (`blocked_by` AGL-08, `units/AGL-25-manual-eval-script.md` line 7).** It is the module's named real-model check (`modules/providers.md` line 46). It lands after AGL-08, so it cannot be the check of criterion 2 here (open point 3).
+- **AGL-25 manual eval script (`blocked_by` AGL-08, `units/AGL-25-manual-eval-script.md` line 7).** It is the module's named real-model check (`modules/providers.md` line 46). It lands after AGL-08, so it cannot be the check of criterion 2 here. Until it exists, T2 serves as the module's real-model check (N3; `modules/providers.md` line 47). AGL-25 remains the canonical check; nothing in AGL-25's unit changes.
 - **SAU-08 (token guard, done) and PLT-13 (harness, done).** G1 relies on the guard of SAU-08 (`setup-auth.guard.ts` lines 58 to 73: 401 without a session, 403 for a mutation without the loopback Origin). G2 and G3 rely on the mock harness of PLT-12 and PLT-13 (`startMockOpenAI`).
 - **MPR-09, MPR-10, MPR-11 (settings UI).** No contact: this unit changes no route, no contract and no UI.
 
 ## 6. Open points
 
-1. **Criterion 2 cannot be run in this environment (Navigator).** The implementer cannot run T2: there is no Ollama on this machine, and the stack needs Docker Desktop and the owner's host. The options: (a) the owner runs section 4.2 on the Mac before the coordinator ticks the box, and the unit is complete when it passes; (b) the Navigator decides that the unit is complete without criterion 2, as for SAU-08 (`plans/DECISIONS.md` lines 3946 to 3956): the box stays unticked, the cause is recorded, and `phase:client` closes on criterion 1 and the gate tests; (c) a different local procedure: a stand-in OpenAI-compatible server on host port 11434 in place of Ollama. It would prove the compose path but not Ollama's answer, and the mock CLI has no port option (`e2e/fixtures/mock-openai/cli.mjs` lines 1 to 4), so it needs a change outside this unit. The planner recommends (a), with (b) as the fallback if the owner cannot run it before the merge.
-2. **Criterion 2 reads "the Agent loop's M1 run" (Navigator).** AGL-03 and AGL-08 are blocked by this unit (AGL-03 line 7), so that run cannot exist when MPR-08 merges. The unit's own parenthesis gives the model path to this phase, and the plan reads criterion 2 that way: T2 proves that the seeded provider reaches Ollama through the real API and the compose stack. The Navigator confirms this reading. If it does not, the phase cannot close without AGL-08, which waits for this unit.
-3. **The module's named real-model check (Navigator).** `modules/providers.md` line 46 gives the real-model check to the Agent loop's manual eval script (AGL-25), which is blocked by AGL-08 and so is not available at this unit. T2 is a manual procedure written in this plan. The Navigator confirms that T2 meets the module's rule, or names the other check.
+1. **DECIDED (N1, Navigator, 2026-11-15, `plans/DECISIONS.md` lines 4011 to 4015): option (a).** The owner runs T2 before the box is ticked; the unit stays in the pipeline until T2 passes; (b) only if the owner cannot run T2; (c) rejected. Original text: **Criterion 2 cannot be run in this environment (Navigator).** The implementer cannot run T2: there is no Ollama on this machine, and the stack needs Docker Desktop and the owner's host. The options: (a) the owner runs section 4.2 on the Mac before the coordinator ticks the box, and the unit is complete when it passes; (b) the Navigator decides that the unit is complete without criterion 2, as for SAU-08 (`plans/DECISIONS.md` lines 3946 to 3956): the box stays unticked, the cause is recorded, and `phase:client` closes on criterion 1 and the gate tests; (c) a different local procedure: a stand-in OpenAI-compatible server on host port 11434 in place of Ollama. It would prove the compose path but not Ollama's answer, and the mock CLI has no port option (`e2e/fixtures/mock-openai/cli.mjs` lines 1 to 4), so it needs a change outside this unit. The planner recommends (a), with (b) as the fallback if the owner cannot run it before the merge.
+2. **DECIDED (N2, Navigator, 2026-11-15, `plans/DECISIONS.md` lines 4017 to 4020): the model path only (T2 S3 to S6).** The chat run is AGL-08's; the reverse reading is a cycle. Original text: **Criterion 2 reads "the Agent loop's M1 run" (Navigator).** AGL-03 and AGL-08 are blocked by this unit (AGL-03 line 7), so that run cannot exist when MPR-08 merges. The unit's own parenthesis gives the model path to this phase, and the plan reads criterion 2 that way: T2 proves that the seeded provider reaches Ollama through the real API and the compose stack. The Navigator confirms this reading. If it does not, the phase cannot close without AGL-08, which waits for this unit.
+3. **DECIDED (N3, Navigator, 2026-11-15, `plans/DECISIONS.md` lines 4022 to 4026): T2 meets the rule.** The transitional note is added as `modules/providers.md` line 47 in this revision (section 2); line 46 is unchanged. Original text: **The module's named real-model check (Navigator).** `modules/providers.md` line 46 gives the real-model check to the Agent loop's manual eval script (AGL-25), which is blocked by AGL-08 and so is not available at this unit. T2 is a manual procedure written in this plan. The Navigator confirms that T2 meets the module's rule, or names the other check.
 4. **Abort path through resolve (informative; blocks nothing here).** Section 5, the AGL-03 and TRG-12 bullets. The decision belongs to the AGL-03 and TRG-12 planners, with the coordinator, and to the author of MPR-05's resolver. This plan needs no answer. The Navigator decides whether the question must be settled before those planners start.
 
-No other point needs the Navigator. The choices in section 1b (D1 to D13) are the planner's and are recorded here.
+Open point 4 stays informative and blocks nothing in this unit; the N1 entry of `plans/DECISIONS.md` (line 4015) records it for the AGL-03 and TRG-12 planners. No other point needs the Navigator. The choices in section 1b (D1 to D13) are the planner's and are recorded here.
+
+## Review parts
+
+The plan is small: one part. Each step of section 3 and each test of section 4 is in exactly one part.
+
+### Part 1 — the gate (criteria 1 and 2, scope items)
+
+- Steps: section 3, steps 0 to 13; the file row `apps/api/test/providers-gate.test.ts` of section 2. The `modules/providers.md` row of section 2 is the reviser's (N3) and is checked by this part's reviewer against the DECISIONS text: exactly one line added after line 46, line 46 unchanged.
+- Tests: T1 (criterion 1, section 4.1, 25 rows over thirteen files); T2 (criterion 2, section 4.2, steps S1 to S7, pass on S3 to S6; an owner procedure run on the Mac host, not by the implementer, N1); G1, G2 and G3 (scope items, section 4.3).
+- The reviewer of this part also checks that the implementer's diff changes only `apps/api/test/providers-gate.test.ts`, and that the criterion-2 box is not ticked without the owner's recorded T2 pass.
 
 ## 7. Facts checked (read at 7e9469d)
 
@@ -232,6 +257,7 @@ Each line is FACT, read with cat -n, sed, grep or git at 7e9469d. No test was ru
 - `.prettierignore` lists `/plans/` and `/units/`, so this plan's prose is not checked by Prettier.
 - `.nvmrc` holds `26`, as `plans/MPR-07.md` section 7 records.
 - `units/AGL-03-loop-core.md` lines 20, 22, 33, 34 (AGENT_NO_PROVIDER, the model call, Stop within one second, the criteria). `units/TRG-12-executor.md` lines 26 and 30. `units/MPR-12-project-override-api.md` lines 18, 19 and 27.
+- Revision 1 (read at 18b4f1b): `git diff --stat 7e9469d 18b4f1b` lists only `plans/DECISIONS.md`, `plans/MPR-08.md` and `plans/QUEUE.md`. `plans/DECISIONS.md` lines 4011 to 4026 (N1 to N3). `units/AGL-08-file-tools-chat-gate.md` line 7 (blocked_by includes AGL-03); `units/AGL-25-manual-eval-script.md` line 7 (`blocked_by: [AGL-08]`). `units/MPR-08-client-gate.md` lines 22 and 23 unchanged. `providers.controller.ts`: twelve `@Get`/`@Post` decorators, no `@Public`. `plans/MPR-08.md` is the only plan with `status: draft` or `planned`. `modules/providers.md` lines 47 to 58 were cited by `plans/PLT-16.md` line 233 (line 58) and `plans/DECISIONS.md` line 4014 (line 53).
 - Machine: `uname` prints Linux on aarch64; `command -v docker` prints `/usr/bin/docker`; `command -v ollama` prints nothing; a probe of `127.0.0.1:11434/api/tags` with a 2 s timeout got no answer.
 
 ## 8. Assumed facts (not checked by running anything)
