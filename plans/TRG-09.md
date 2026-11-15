@@ -1,6 +1,6 @@
 ---
 id: TRG-09
-status: planned
+status: done
 ---
 # TRG-09 plan — read endpoints, functions, the enable switch and the params proof
 

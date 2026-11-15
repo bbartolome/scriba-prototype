@@ -20,7 +20,7 @@ Switch a tool off (14), surviving updates (15); the agent gets function schemas 
 - **Enable switch:** the spec's `enabled` is the default; the author's override lives in the `tools` section `{schemaVersion: 1, enabled: {<toolName>: boolean}}` (register the section with Platform's hook; only overridden tools appear). `POST …/tools/:name/enabled {enabled}`. Toggling **never** creates a copy-on-write fork. Disabled tools are left out of function schemas, refused by the executor, still listed and editable, still shown on the canvas (where the Graph runner reports the refusal).
 
 ## Acceptance criteria
-- [ ] Disabling a tool removes it from `GET /functions`; the switch persists across an app restart and a built-in update (replace the fixture pack file).
-- [ ] Toggling writes only the `tools` section and creates no user-pack file.
-- [ ] `params`-mode validate passes a node whose only missing fields are ports, and ignores pinned port values.
-- [ ] GETs are side-effect free.
+- [x] Disabling a tool removes it from `GET /functions`; the switch persists across an app restart and a built-in update (replace the fixture pack file).
+- [x] Toggling writes only the `tools` section and creates no user-pack file.
+- [x] `params`-mode validate passes a node whose only missing fields are ports, and ignores pinned port values.
+- [x] GETs are side-effect free.
