@@ -4388,3 +4388,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Not checked: whether the spec also fails on main (a run on main could not start: its node_modules does not resolve @codemirror/state). The failure is therefore not yet shown to be caused by GRR-01, and it is not shown to exist on main.
 - Result: GRR-01 is held. The branch and worktree stay (`/Users/bbartolome/workspace/scriba-prototype-wt/GRR-01`). Build and patch-id check are not run. Criterion 5 still needs a decision (CI on a pushed main is not possible here).
 - Open for the user: the SHL-08 failing spec on main (see also the SHL-08 defect noted in the handoff memory).
+
+## 2026-11-15 — MPR-08 — Merged to main (orchestrator)
+
+- Approved patch id 315ffc056b0fda24ec2199f6fabee2bb2c61b8b9 held after the rebase onto d372ba7 (head 6941839). Checks on the rebased head: npm ci, lint, test and build all exit 0.
+- Criterion 1 ticked. Criterion 2 unticked by fallback B (Navigator decision, session ff79c6c9652849e1a58334562bd17059, option A); the cause is recorded in plans/MPR-08.md section 9.
+- Status commit on the unit branch, then fast-forward of main to e346569. The unit branch is deleted and its worktree removed.
+- Now available: AGL-03 (its blocker MPR-08 is done). A scout must run again.
