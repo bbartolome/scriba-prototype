@@ -8,16 +8,22 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  fileDeleteSchema,
   fileEditSchema,
   fileListQuerySchema,
+  fileMoveSchema,
   fileWriteSchema,
+  PROJECT_FILE_DELETE_ROUTE,
   PROJECT_FILE_EDIT_ROUTE,
+  PROJECT_FILE_MOVE_ROUTE,
   PROJECT_FILE_ROUTE,
   PROJECT_FILE_WRITE_ROUTE,
   PROJECT_FILES_ROUTE,
+  type FileDelete,
   type FileEdit,
   type FileList,
   type FileListQuery,
+  type FileMove,
   type FileRead,
   type FileWrite,
   type FileWriteResult,
@@ -66,5 +72,23 @@ export class FilesController {
     @Body(new ZodValidationPipe(fileEditSchema)) body: FileEdit,
   ): FileWriteResult {
     return this.files.edit(projectId, body);
+  }
+
+  @Post(PROJECT_FILE_DELETE_ROUTE)
+  @HttpCode(200)
+  delete(
+    @Param('projectId') projectId: string,
+    @Body(new ZodValidationPipe(fileDeleteSchema)) body: FileDelete,
+  ): void {
+    this.files.delete(projectId, body);
+  }
+
+  @Post(PROJECT_FILE_MOVE_ROUTE)
+  @HttpCode(200)
+  move(
+    @Param('projectId') projectId: string,
+    @Body(new ZodValidationPipe(fileMoveSchema)) body: FileMove,
+  ): void {
+    this.files.move(projectId, body);
   }
 }

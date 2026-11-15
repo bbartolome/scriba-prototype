@@ -93,6 +93,12 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/project-store/projects/:projectId/file/edit': {
     path: '/api/project-store/projects/no-such-project/file/edit',
   },
+  '/api/project-store/projects/:projectId/file/delete': {
+    path: '/api/project-store/projects/no-such-project/file/delete',
+  },
+  '/api/project-store/projects/:projectId/file/move': {
+    path: '/api/project-store/projects/no-such-project/file/move',
+  },
   '/api/project-store/projects/:projectId/entities': {
     path: '/api/project-store/projects/no-such-project/entities',
   },

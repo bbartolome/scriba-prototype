@@ -477,7 +477,7 @@ it('H2: updateProjectYaml keeps a BOM, CRLF endings and a long line', async () =
       // (1) A BOM, LF endings and a 90-column line: the BOM and the line survive.
       writeFileSync(
         projectYaml,
-        `﻿${lines('schemaVersion: 1', 'title: Book', LONG_NOTE, 'genrePack: nonfiction')}`,
+        `\uFEFF${lines('schemaVersion: 1', 'title: Book', LONG_NOTE, 'genrePack: nonfiction')}`,
       );
       const bom = await kitPost(app.baseUrl, 'update-yaml', {
         projectId: 'book',
@@ -488,7 +488,7 @@ it('H2: updateProjectYaml keeps a BOM, CRLF endings and a long line', async () =
         Buffer.from([0xef, 0xbb, 0xbf]),
       );
       expect(readFileSync(projectYaml, 'utf8')).toBe(
-        `﻿${lines('schemaVersion: 1', 'title: New', LONG_NOTE, 'genrePack: nonfiction')}`,
+        `\uFEFF${lines('schemaVersion: 1', 'title: New', LONG_NOTE, 'genrePack: nonfiction')}`,
       );
 
       // (2) CRLF endings are kept on every line.

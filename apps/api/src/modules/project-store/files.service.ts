@@ -1,7 +1,23 @@
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { Injectable } from '@nestjs/common';
 import {
+  appendFileSync,
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readdirSync,
+  readFileSync,
+  readSync,
+  realpathSync,
+  renameSync,
+  statSync,
+  unlinkSync,
+} from 'node:fs';
+import { dirname, join, sep } from 'node:path';
+import { Injectable } from '@nestjs/common';
+import { parseDocument } from 'yaml';
+import {
+  MODULE_SLUGS,
   PLATFORM_ERROR_CODES,
   PLATFORM_ERROR_STATUS,
 } from '@bbartolome/scriba-contracts/platform';
@@ -9,16 +25,18 @@ import {
   FILE_SIZE_CAP_BYTES,
   PROJECT_ERROR_CODES,
   PROJECT_ERROR_STATUS,
+  type FileDelete,
   type FileEdit,
   type FileEntry,
   type FileList,
+  type FileMove,
   type FileRead,
   type FileWrite,
   type FileWriteResult,
 } from '@bbartolome/scriba-contracts/project-store';
 import { EventsPublisher, ModuleError } from '../platform/platform.module';
 import { writeFileAtomic } from './atomic-write';
-import type { ResolvedProjectPath } from './path-safety';
+import { fail, PATH_MESSAGES, type ResolvedProjectPath } from './path-safety';
 import type { DiscoveredProject } from './project-discovery';
 import { ProjectStoreService } from './project-store.service';
 import { readYamlState } from './project-yaml';
@@ -38,6 +56,11 @@ const FILE_MESSAGES = {
   EMPTY_OLD: 'The text to replace must not be empty.',
   NOT_A_FILE:
     'The path names a folder, or runs through a file, so no file can be written there.',
+  EXISTS: 'A file or folder already exists at the new path.',
+  NOT_A_PROJECT: 'That folder has no project.yaml yet. Import it first.',
+  LOG_PATH: 'A log line goes only to a file inside logs/.',
+  LINE_BREAK: 'A log line must be one line, with no line break in it.',
+  OWNER: 'The owner must be the slug of a module.',
 } as const;
 
 type ProjectErrorCode =
@@ -140,6 +163,55 @@ function writeText(target: string, text: string): void {
     throw notAFile();
   }
   throw new Error(`The project file could not be written (${failure}).`);
+}
+
+// True when path is the folder itself or lies inside it, at a separator boundary (P11 step 5).
+function isInside(folder: string, path: string): boolean {
+  return path === folder || path.startsWith(folder + sep);
+}
+
+// The folders above file (P5 step 6, P11 step 7). A folder in the way is a path error; any other errno is a plain
+// error with the errno only.
+function mkdirParent(file: string): void {
+  try {
+    mkdirSync(dirname(file), { recursive: true });
+  } catch (error) {
+    const code = errnoOf(error) ?? 'unknown';
+    if (code === 'ENOTDIR' || code === 'EEXIST' || code === 'EISDIR') {
+      throw notAFile();
+    }
+    throw new Error(`The project folder could not be created (${code}).`);
+  }
+}
+
+// True when the last byte of a non-empty file is a line feed. One byte is read (P11 step 8).
+function endsWithLf(file: string): boolean {
+  const size = statSync(file).size;
+  const fd = openSync(file, 'r');
+  try {
+    const last = Buffer.alloc(1);
+    readSync(fd, last, 0, 1, size - 1);
+    return last[0] === 0x0a;
+  } finally {
+    closeSync(fd);
+  }
+}
+
+// The framing the yaml writer does not keep (P9, N2): a BOM that the original began with is put back, and when the
+// original holds CRLF, every line feed of the output becomes CRLF.
+function keepFraming(original: string, text: string): string {
+  const framed = original.includes('\r\n') ? text.replace(/\n/g, '\r\n') : text;
+  return original.startsWith('\uFEFF') ? `\uFEFF${framed}` : framed;
+}
+
+// The unlink of the entry the path names (P3 step 6). Any errno is a plain error with the errno only.
+function removeEntry(entry: string): void {
+  try {
+    unlinkSync(entry);
+  } catch (error) {
+    const code = errnoOf(error) ?? 'unknown';
+    throw new Error(`The project file could not be deleted (${code}).`);
+  }
 }
 
 // The file API of the Project store: list, read, write and edit. Every call runs the active check and the lookup
@@ -245,6 +317,198 @@ export class FilesService {
       target,
       text.slice(0, at) + request.new + text.slice(at + request.old.length),
     );
+  }
+
+  // The delete of one file (P3). The entry is the path as named, so a link is removed and its target is not (P2).
+  // A folder is never deleted; project.yaml at the root is reserved (P4).
+  delete(projectId: string, request: FileDelete): void {
+    const project = this.projectFor(projectId);
+    const target = this.store.resolvePath(project.root, request.path);
+    if (isRootProjectYaml(target.relativePath)) {
+      throw fail(PROJECT_ERROR_CODES.PATH_RESERVED, PATH_MESSAGES.RESERVED);
+    }
+    if (!target.exists || statSync(target.realPath).isDirectory()) {
+      throw refuse(PROJECT_ERROR_CODES.NOT_FOUND, FILE_MESSAGES.NO_FILE);
+    }
+    if (
+      request.baseHash !== undefined &&
+      hashOf(readFileSync(target.realPath)) !== request.baseHash
+    ) {
+      throw refuse(PROJECT_ERROR_CODES.WRITE_CONFLICT, FILE_MESSAGES.CONFLICT);
+    }
+    removeEntry(join(project.root, target.relativePath));
+    this.events.publish({
+      module: 'project-store',
+      type: 'files-changed',
+      data: { projectId: project.id, paths: [target.relativePath] },
+    });
+  }
+
+  // The rename of one file (P5). The entry is renamed as named, so a link keeps its target (P2). A missing parent
+  // folder of the new path is created; an existing file or folder at the new path is refused.
+  move(projectId: string, request: FileMove): void {
+    const project = this.projectFor(projectId);
+    const from = this.store.resolvePath(project.root, request.from);
+    const to = this.store.resolvePath(project.root, request.to);
+    if (
+      isRootProjectYaml(from.relativePath) ||
+      isRootProjectYaml(to.relativePath)
+    ) {
+      throw fail(PROJECT_ERROR_CODES.PATH_RESERVED, PATH_MESSAGES.RESERVED);
+    }
+    if (!from.exists || statSync(from.realPath).isDirectory()) {
+      throw refuse(PROJECT_ERROR_CODES.NOT_FOUND, FILE_MESSAGES.NO_FILE);
+    }
+    if (to.exists) {
+      throw refuse(PROJECT_ERROR_CODES.FILE_EXISTS, FILE_MESSAGES.EXISTS);
+    }
+    mkdirParent(to.realPath);
+    try {
+      renameSync(join(project.root, from.relativePath), to.realPath);
+    } catch (error) {
+      const code = errnoOf(error) ?? 'unknown';
+      if (code === 'ENOTDIR' || code === 'EEXIST' || code === 'EISDIR') {
+        throw notAFile();
+      }
+      throw new Error(`The project file could not be moved (${code}).`);
+    }
+    this.events.publish({
+      module: 'project-store',
+      type: 'files-changed',
+      data: {
+        projectId: project.id,
+        paths: [from.relativePath, to.relativePath],
+      },
+    });
+  }
+
+  // The in-process edit of the root project.yaml (P8, P9). A named top-level key is set, or removed when its value is
+  // null or undefined, through the YAML document API, so comments, key order and the other keys survive. The result
+  // is checked and written by commit, and an invalid one is refused before any write.
+  updateProjectYaml(
+    projectId: string,
+    patch: Record<string, unknown>,
+  ): FileWriteResult {
+    const project = this.projectFor(projectId);
+    const target = this.store.resolvePath(project.root, PROJECT_YAML);
+    const { bytes } = readFileAt(target);
+    const text = decodeText(bytes);
+    if (text === undefined) {
+      throw refuse(PROJECT_ERROR_CODES.NOT_TEXT, FILE_MESSAGES.NOT_TEXT);
+    }
+    if (isTooNewText(text)) throw tooNew();
+    const doc = parseDocument(text);
+    if (doc.errors.length > 0) {
+      const state = readYamlState(text);
+      throw refuse(
+        PROJECT_ERROR_CODES.INVALID,
+        PROJECT_MESSAGES.INVALID,
+        state.status === 'invalid' ? state.issues : undefined,
+      );
+    }
+    for (const [key, value] of Object.entries(patch)) {
+      if (value === null || value === undefined) doc.delete(key);
+      else doc.set(key, value);
+    }
+    return this.commit(
+      project,
+      target,
+      keepFraming(text, doc.toString({ lineWidth: 0 })),
+    );
+  }
+
+  // The in-process append of one line to a file under logs/ (P10, P11). The project must be ok, active or not (S2).
+  // Nothing is published.
+  appendLog(projectId: string, path: string, line: string): void {
+    const project = this.projects.find(projectId);
+    if (project === undefined) {
+      throw refuse(PROJECT_ERROR_CODES.NOT_FOUND, PROJECT_MESSAGES.NOT_FOUND);
+    }
+    const state = project.yaml;
+    switch (state.status) {
+      case 'ok':
+        break;
+      case 'importable':
+        throw refuse(
+          PROJECT_ERROR_CODES.NOT_FOUND,
+          FILE_MESSAGES.NOT_A_PROJECT,
+        );
+      case 'invalid':
+        throw refuse(
+          PROJECT_ERROR_CODES.INVALID,
+          PROJECT_MESSAGES.INVALID,
+          state.issues,
+        );
+      case 'too-new':
+        throw tooNew();
+    }
+    if (/[\r\n]/.test(line)) {
+      throw new ModuleError(
+        PLATFORM_ERROR_CODES.VALIDATION_FAILED,
+        PLATFORM_ERROR_STATUS.PLATFORM_VALIDATION_FAILED,
+        FILE_MESSAGES.LINE_BREAK,
+      );
+    }
+    const target = this.store.resolvePath(project.root, path);
+    if (!target.relativePath.startsWith('logs/')) {
+      throw refuse(PROJECT_ERROR_CODES.PATH_INVALID, FILE_MESSAGES.LOG_PATH);
+    }
+    const logs = join(project.root, 'logs');
+    if (
+      existsSync(logs) &&
+      !isInside(realpathSync.native(logs), target.realPath)
+    ) {
+      throw refuse(PROJECT_ERROR_CODES.PATH_INVALID, FILE_MESSAGES.LOG_PATH);
+    }
+    if (target.exists && statSync(target.realPath).isDirectory()) {
+      throw notAFile();
+    }
+    mkdirParent(target.realPath);
+    const needsBreak =
+      existsSync(target.realPath) &&
+      statSync(target.realPath).size > 0 &&
+      !endsWithLf(target.realPath);
+    try {
+      appendFileSync(target.realPath, `${needsBreak ? '\n' : ''}${line}\n`);
+    } catch (error) {
+      const code = errnoOf(error) ?? 'unknown';
+      if (code === 'ENOTDIR' || code === 'EEXIST' || code === 'EISDIR') {
+        throw notAFile();
+      }
+      throw new Error(`The log line could not be written (${code}).`);
+    }
+  }
+
+  // The metadata folder of one module, .scriba/<owner>/ (P12). The folder is created when missing and checked to lie
+  // inside the project's own .scriba; the file API refuses it (S3). Answers the path as the project names it.
+  stateDir(projectId: string, owner: string): string {
+    const project = this.projectFor(projectId);
+    if (!MODULE_SLUGS.some((slug) => slug === owner)) {
+      throw new ModuleError(
+        PLATFORM_ERROR_CODES.VALIDATION_FAILED,
+        PLATFORM_ERROR_STATUS.PLATFORM_VALIDATION_FAILED,
+        FILE_MESSAGES.OWNER,
+      );
+    }
+    const rootReal = realpathSync.native(project.root);
+    const scriba = join(project.root, '.scriba');
+    if (
+      existsSync(scriba) &&
+      realpathSync.native(scriba) !== join(rootReal, '.scriba')
+    ) {
+      throw fail(PROJECT_ERROR_CODES.PATH_OUTSIDE, PATH_MESSAGES.OUTSIDE);
+    }
+    const folder = join(scriba, owner);
+    try {
+      mkdirSync(folder, { recursive: true });
+    } catch (error) {
+      const code = errnoOf(error) ?? 'unknown';
+      throw new Error(`The project folder could not be created (${code}).`);
+    }
+    if (realpathSync.native(folder) !== join(rootReal, '.scriba', owner)) {
+      throw fail(PROJECT_ERROR_CODES.PATH_OUTSIDE, PATH_MESSAGES.OUTSIDE);
+    }
+    return folder;
   }
 
   // The active check, then the lookup (S2). A project that is not active is refused before the folder is looked up.
