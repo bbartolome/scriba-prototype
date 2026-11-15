@@ -1,6 +1,6 @@
 ---
 id: AGL-04
-status: planned
+status: done
 unit: units/AGL-04-transcripts-history.md
 ---
 # AGL-04 plan — Transcripts, conversation history, context trimming

@@ -22,7 +22,7 @@ Every agent run as a plain-file transcript (44) with project-relative paths and 
 - `logs/` is the source of truth; a run-log index is deferred.
 
 ## Acceptance criteria
-- [ ] A transcript file in `logs/` matches the contract entry schema line by line.
-- [ ] A follow-up start with the same `conversationId` sends the earlier turns to the mock.
-- [ ] With a tiny `contextSize`, the oldest tool results are shortened before turns are dropped; the system prompt and current intent remain.
-- [ ] No transcript line contains an absolute container path or a configured key.
+- [x] A transcript file in `logs/` matches the contract entry schema line by line.
+- [x] A follow-up start with the same `conversationId` sends the earlier turns to the mock.
+- [x] With a tiny `contextSize`, the oldest tool results are shortened before turns are dropped; the system prompt and current intent remain.
+- [x] No transcript line contains an absolute container path or a configured key.
