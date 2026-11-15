@@ -20,7 +20,7 @@ unblocks: [SAU-12, SAU-13, SAU-14, SAU-16, SAU-20]
 - Renders the compose-version warning (from SAU-10's GET /api/setup-auth/status) for mismatch and unknown states, using SAU-10's re-run-the-installer one-liner; hidden for ok.
 
 ## Acceptance criteria
-- [ ] Component tests (fake API): step order, skip, completion, prefilled defaults on re-run.
-- [ ] Landing routing: incomplete → `/setup`; complete → app.
-- [ ] Phone viewport renders and completes the flow.
-- [ ] Component test (fake API): compose-version warning shown for mismatch/unknown with the one-liner; hidden for ok.
+- [x] Component tests (fake API): step order, skip, completion, prefilled defaults on re-run.
+- [x] Landing routing: incomplete → `/setup`; complete → app.
+- [x] Phone viewport renders and completes the flow.
+- [x] Component test (fake API): compose-version warning shown for mismatch/unknown with the one-liner; hidden for ok.

@@ -1,6 +1,6 @@
 ---
 id: SAU-11
-status: planned
+status: done
 unit: units/SAU-11-wizard-shell-routing.md
 ---
 # SAU-11 plan — /setup wizard shell, Access step, skip, completion and the compose warning
