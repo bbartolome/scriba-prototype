@@ -22,7 +22,7 @@ Auto-save after a pause plus save/Cmd-Ctrl-S (25); visible save state (26); warn
 - A `canDeactivate` guard and a `beforeunload` prompt warn about unsaved text.
 
 ## Acceptance criteria
-- [ ] Typing then pausing saves once after the debounce; Cmd/Ctrl-S and the button save at once; saves during an in-flight save coalesce into one follow-up.
-- [ ] State moves `unsaved → saving → saved`; a failed write shows `failed` and keeps the text; a conflict shows `conflict` and doesn't overwrite.
-- [ ] Navigating away or closing the tab with unsaved text prompts first.
-- [ ] The second save carries the hash returned by the first.
+- [x] Typing then pausing saves once after the debounce; Cmd/Ctrl-S and the button save at once; saves during an in-flight save coalesce into one follow-up.
+- [x] State moves `unsaved → saving → saved`; a failed write shows `failed` and keeps the text; a conflict shows `conflict` and doesn't overwrite.
+- [x] Navigating away or closing the tab with unsaved text prompts first.
+- [x] The second save carries the hash returned by the first.

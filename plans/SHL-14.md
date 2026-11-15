@@ -4,7 +4,7 @@ title: Editor saving — debounce, explicit save, one follow-up, save state, con
 module: shell
 phase: phase:editor
 milestone: M3
-status: planned
+status: done
 ---
 
 # SHL-14 plan — editor saving: debounce, explicit save, one follow-up, save state, conflict, leave guards
