@@ -4149,3 +4149,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Merge rule with SAU-09 holds: `statusBody` takes `compose` as a required parameter, and both calls pass it.
 - Tests: T1 to T3, X1 and X2 pass (reviewer ran the new file with the existing setup-auth suites: 15 tests).
 - Code rejections of SAU-10: 0.
+
+## 2026-11-15 — SAU-09 — Sonnet code review again (one part, after the rebase): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/SAU-09 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 9724e28, rebased onto main 0495afc): eafa28ebf684987e84e1b2cc79eace83af6ed655. The earlier approval (76dc00f7) was for 9d480d2 on the old base; the patch id changed with the context of the `invariant-sweep.ts` resolution, so the code was reviewed again.
+- Files changed: exactly the six paths of the plan's section 2. The one shared file, `apps/api/test/invariant-sweep.ts`, keeps both of main's tool-registry entries and adds the setup-auth entry once.
+- Tests: criteria 1 to 4, `refusals` and `theme is dropped and never stored` pass (reviewer ran three files: 12 tests). Gates on 9724e28 (orchestrator): lint, test (node 75 pass) and build exit 0.
+- Code rejections: 0.
