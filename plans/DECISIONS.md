@@ -4269,3 +4269,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Plan correction recorded: the step 9 expectation that mutation (b) fails T3 cannot hold, because the P10 scope clause applies to every query. The reviewer accepts this. The check is: T3 fails when the scope clause is also removed (variant b2), which the implementer confirmed. The walker and indexing exclusion are covered only by PST-08's walker tests (R2).
 - Deviations judged acceptable: the P14 rebuild also deletes the -journal sidecar (consistent with P5); the rebuild route has no test of its own (T1-T6 are one per criterion; the sweeps exercise the route).
 - Code rejections: 0.
+
+## 2026-11-15 — MPR-10 — Sonnet code review (two parts): APPROVED
+
+- Patch id of the approved code (`git diff e30e716...unit/MPR-10 -- . ':!plans' ':!units' | git patch-id --stable`, head cd9489b, plan revision e30e716): 151f2c0972c6d5128eddc897370c36dc7f6032b6.
+- Part 1 (copies, steps 0-3, P3): APPROVED. Part 2 (UI, steps 4-10, C1, C2, E1): APPROVED. C1 and C2 pass; E1 and P3 pass; web 42 files / 311 tests.
+- Implementer differences judged acceptable: the copy key is `testing` (D11 and the section 2 key list; D3 names `testingButton`, so the plan contradicts itself); `testHeading` is in the key list; the modelCount wording matches C1's "3 models listed."; the saved-provider note sits above the action row (D1 "above the button"); the spec-only glob for the folder run; prettier formatting commit.
+- Code rejections: 0.
