@@ -4225,3 +4225,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Checked by the orchestrator (`node_modules/@angular/cdk/types/drag-drop.d.ts`, 22.2.7):** `cdkDropListEnterPredicate`, `cdkDropListDropped`, `cdkDragData` and `CdkDropListGroup` (selector `cdkDropListGroup`) exist. There is no `DragDropGroup` class, so the navigator's term was corrected to `cdkDropListGroup`.
 - **Navigator claims rejected or unverified:** (1) the plan on main did not yet record option (b) (commit f683ed7); a reviser must write section 7, steps 7 and 14, and the AC2b and AC2c rows. (2) GRR-15 and GRR-17 are satisfied by pointer events alone: not verified, no touch or iPad run was done.
 - **Next:** a reviser updates plans/TRG-04.md to record this decision in section 7 and steps 7 and 14, then sets it to planned.
+
+## 2026-11-15 — SHL-14 — Sonnet re-review after REWORK (both parts): APPROVED
+
+- Full-branch patch id of the approved code (`git diff 5111a16...unit/SHL-14 -- . ':!plans' ':!units' | git patch-id --stable`, head 2952c1a, base 5111a16): cb2603a63c1aa0e45c088d4715b9880fee4c0c44.
+- Rework (commit 2952c1a, markdown-editor.spec.ts only): item 1 (M5) added the test "Save stays enabled during a write, and a click during it saves once after the write", which fails under M5 (implementer's report, one failure, the new test). Item 2 (M8): the E3 check asserts the debounce timer count is 0 after destroy. The implementer added one `fixture.detectChanges()` before the destroy, because the literal text (assert 0 directly after destroy) gave 2 on the unmodified editor from framework timers. The reviewer accepted this deviation: the detectChanges does not clear the editor's own timer, so M8 still fails (E3, one failure), and the POST-count check is kept.
+- Tests at head: web suite 40 files, 292 tests passing. markdown-editor.spec.ts 35 of 35.
+- Note (outside this unit): one router spec under the shell glob flaked once on a load-related wait and passed on rerun. Judged unrelated; not part of approval.
+- Controls M12 (accepted as observably equivalent) and step 11 (browser check, not tested) unchanged.
+- Code rejections in the re-review: 0.
