@@ -712,8 +712,8 @@ const PICKER_FORM: FormDescriptor = {
       elementType: 'entity',
       entityKinds: ['person'],
     }),
-    field('people', {
-      title: 'People',
+    field('entityIds', {
+      title: 'Entities',
       control: 'entity-picker',
       valueType: 'string',
       elementType: 'entity',
@@ -809,19 +809,19 @@ describe('EntityPicker', () => {
     doubles.api.respond('GET', ENTITIES_PATH, MIXED_LIST);
     const fixture = await render({
       form: PICKER_FORM,
-      value: { people: ['ada'] },
+      value: { entityIds: ['ada'] },
     });
     const root = rootOf(fixture);
     const host = fixture.componentInstance;
-    const people = sectionOf(root, 'people');
-    expect(chipIdsOf(people)).toEqual(['ada']);
+    const entityIds = sectionOf(root, 'entityIds');
+    expect(chipIdsOf(entityIds)).toEqual(['ada']);
 
-    edit(elementOf<HTMLSelectElement>(people, 'select'), 'bob', 'change');
+    edit(elementOf<HTMLSelectElement>(entityIds, 'select'), 'bob', 'change');
     await settle(fixture);
 
-    expect(host.value['people']).toEqual(['ada', 'bob']);
-    expect(chipIdsOf(people)).toEqual(['ada', 'bob']);
-    expect(people.textContent).not.toContain('ada, bob');
+    expect(host.value['entityIds']).toEqual(['ada', 'bob']);
+    expect(chipIdsOf(entityIds)).toEqual(['ada', 'bob']);
+    expect(entityIds.textContent).not.toContain('ada, bob');
   });
 
   it('AC3 the style picker preselects the project style profile', async () => {
@@ -900,45 +900,45 @@ describe('EntityPicker', () => {
     doubles.api.respond('GET', ENTITIES_PATH, MIXED_LIST);
     const fixture = await render({
       form: PICKER_FORM,
-      value: { people: ['ada'] },
+      value: { entityIds: ['ada'] },
     });
     const root = rootOf(fixture);
     const host = fixture.componentInstance;
 
-    dropChip(fixture, 'people', { id: 'cy', type: 'person' });
+    dropChip(fixture, 'entityIds', { id: 'cy', type: 'person' });
     await settle(fixture);
 
-    expect(host.value['people']).toEqual(['ada', 'cy']);
-    expect(chipIdsOf(sectionOf(root, 'people'))).toEqual(['ada', 'cy']);
+    expect(host.value['entityIds']).toEqual(['ada', 'cy']);
+    expect(chipIdsOf(sectionOf(root, 'entityIds'))).toEqual(['ada', 'cy']);
 
     buttonLabelled(root, 'Submit').click();
     await settle(fixture);
-    expect(host.submitted).toEqual({ people: ['ada', 'cy'] });
+    expect(host.submitted).toEqual({ entityIds: ['ada', 'cy'] });
   });
 
   it('AC2c a dropped chip of the wrong kind is refused, and the reason shows', async () => {
     doubles.api.respond('GET', ENTITIES_PATH, MIXED_LIST);
     const fixture = await render({
       form: PICKER_FORM,
-      value: { people: ['ada'] },
+      value: { entityIds: ['ada'] },
     });
     const host = fixture.componentInstance;
-    const people = sectionOf(rootOf(fixture), 'people');
+    const entityIds = sectionOf(rootOf(fixture), 'entityIds');
     const before = structuredClone(host.value);
 
     // The enter predicate refuses the chip: the reason shows before any drop reaches the list.
     const london = { id: 'london', type: 'place' };
-    const picker = dropListOf(fixture, 'people');
+    const picker = dropListOf(fixture, 'entityIds');
     expect(picker.enterPredicate(dragOf(london), picker)).toBe(false);
     await settle(fixture);
-    expect(reasonOf(people)).toBe('A place cannot go here.');
+    expect(reasonOf(entityIds)).toBe('A place cannot go here.');
 
     // A drop that reaches the handler is checked again, and refused the same way.
-    dropChip(fixture, 'people', london);
+    dropChip(fixture, 'entityIds', london);
     await settle(fixture);
 
     expect(host.value).toEqual(before);
-    expect(reasonOf(people)).toBe('A place cannot go here.');
+    expect(reasonOf(entityIds)).toBe('A place cannot go here.');
   });
 });
 
