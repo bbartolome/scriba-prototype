@@ -4352,3 +4352,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Option A (keep the component's unconditional render and check the text, not the element count) rejected: it weakens W2 and edits the spec and setup-page.ts, which the fix does not list.
 - Cause: SAU-15 created compose-warning.ts first (commit 4238cb3, an ancestor of c0d53a9); SAU-11 adopts it unchanged. The plan text had said SAU-11 creates it.
 - Plan commit d5d595d (status planned). The part 1 review of the M3 run is repeated.
+
+## 2026-11-15 — SAU-11 — Sonnet code review (two parts): APPROVED after the M3 rework run
+
+- Patch id of the approved code (`git diff main...unit/SAU-11 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 298d227): 645dbf746878a10bd929e193b4c943ba7794a416.
+- Part 1 (steps 0 to 12, Vitest): APPROVED. The M3 rework run (revision 2, page gate replaced by `true`) fails only W2; the revert is clean (`git diff` empty); the clean suite passes 47 files / 319 tests.
+- Part 2 (steps 13 to 18, Playwright): APPROVED earlier on the same patch id. Full e2e suite passes (6 tests).
+- Code rejections: 0 (the earlier REWORK item is resolved by plan revision 2, not by a code change).
