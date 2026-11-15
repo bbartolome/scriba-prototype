@@ -66,8 +66,31 @@ test('journey: setup, project from sample, agent run, accept change, manuscript'
   });
 
   // Owner: Project store, M1 (PST-09). Uses the examples folder the harness sets.
-  await test.step('project from sample', () =>
-    pending(testInfo, 'project from sample'));
+  await test.step('project from sample', async () => {
+    const errors: Error[] = [];
+    page.on('pageerror', (error) => errors.push(error));
+    // The Nonfiction card of the picker, found by its name; its form opens with the sample's defaults.
+    const card = page.getByRole('region', { name: 'Nonfiction', exact: true });
+    await card
+      .getByRole('button', { name: 'Start from sample', exact: true })
+      .click();
+    await card.getByLabel('Folder name', { exact: true }).fill('demo-book');
+    await card.getByLabel('Title', { exact: true }).fill('Demo book');
+    await card
+      .getByRole('button', { name: 'Create from sample', exact: true })
+      .click();
+    // The new project is active, and the page lands in it.
+    await expect(page).toHaveURL(/\/projects\/demo-book\/chat$/);
+    const project = join(process.env.SCRIBA_E2E_LIBRARY!, 'demo-book');
+    const yaml = await readFile(join(project, 'project.yaml'), 'utf8');
+    expect(yaml).toMatch(/^title: Demo book$/m);
+    expect(existsSync(join(project, 'sources', 'outline.md'))).toBe(true);
+    expect(existsSync(join(project, 'structure'))).toBe(false);
+    expect(await readFile(join(project, '.gitignore'), 'utf8')).toContain(
+      '.scriba/',
+    );
+    expect(errors).toEqual([]);
+  });
 
   // Owner: Agent loop, M1 (AGL-08). Configures a provider at SCRIBA_E2E_MOCK_URL through the API.
   await test.step('agent run', () => pending(testInfo, 'agent run'));
