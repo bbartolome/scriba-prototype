@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type TestInfo } from '@playwright/test';
 
@@ -30,8 +31,39 @@ test('journey: setup, project from sample, agent run, accept change, manuscript'
     ).toBe(true);
   });
 
-  // Owner: Setup & auth, M1 (SAU-08). Reads setup-url from SCRIBA_E2E_LIBRARY.
-  await test.step('setup', () => pending(testInfo, 'setup'));
+  // Owner: Setup & auth, M1 (SAU-08). Reads setup-url from SCRIBA_E2E_LIBRARY. This step is live.
+  await test.step('setup', async () => {
+    const errors: Error[] = [];
+    page.on('pageerror', (error) => errors.push(error));
+    // The handshake URL the API wrote to the temp library. The browser opens it, as the product does.
+    const setupUrl = (
+      await readFile(
+        join(process.env.SCRIBA_E2E_LIBRARY!, '.scriba', 'setup-url'),
+        'utf8',
+      )
+    ).trim();
+    await page.goto(setupUrl);
+    // The 303 ends on /setup, and the address bar holds no token.
+    expect(page.url()).toBe(new URL('/setup', setupUrl).href);
+    await expect(
+      page.getByText('Signed in from this computer (loopback).'),
+    ).toBeVisible();
+    // The cookie from the handshake keeps the session across a reload.
+    await page.reload();
+    await expect(
+      page.getByText('Signed in from this computer (loopback).'),
+    ).toBeVisible();
+    // Continue is a real POST through the guard's Origin check.
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    // The landing reads complete and leaves /setup.
+    await expect(page).toHaveURL(/\/projects(\/|$)/);
+    const status = await page.request.get('/api/setup-auth/status');
+    expect(status.status()).toBe(200);
+    expect(((await status.json()) as { complete: unknown }).complete).toBe(
+      true,
+    );
+    expect(errors).toEqual([]);
+  });
 
   // Owner: Project store, M1 (PST-09). Uses the examples folder the harness sets.
   await test.step('project from sample', () =>
