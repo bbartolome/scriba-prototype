@@ -4059,3 +4059,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Report (implementer, branch `unit/PST-07`, commit 13dc47e):** the root gate `npm run lint` exits 1. ESLint `preserve-caught-error` flags five plain `throw new Error(...)` inside `catch` blocks in `apps/api/src/modules/project-store/files.service.ts`, at lines 183 (mkdirParent), 213 (removeEntry), 373 (move), 478 (appendLog) and 506 (stateDir). The plan's P3 step 6, P5 step 7, P11 step 8 and P12 step 4 prescribe a plain error with the errno only, and the plan's gates did not check lint. A scratch check (reverted) shows that adding `{ cause: error }` to the five throws makes lint exit 0, and the seven tests of the file still pass.
 - **Results otherwise:** the mutations (a) to (h) behave as the revised plan says; 21 of 21 green; the invariant tests pass; `npm test` exits 0 (210 API tests); `npm run build` exits 0; the fresh clone passes all steps except lint.
 - **Action:** the plan goes back to `status: draft`. A reviser decides the fix in the plan (the `cause` option, which keeps the message errno-only, or another shape that keeps lint green), and adds the lint result to the gates. A new implementer then makes the fix commit on `unit/PST-07`.
+
+## 2026-11-15 — PST-07 — Sonnet code review (one part): APPROVED
+
+- Patch id of the approved code (`git diff main...unit/PST-07 -- . ':!plans' ':!units' | git patch-id --stable`, branch head c07cb64): 32c60e01c99f24b1e398f566da496e495342659b.
+- Files changed: exactly the six paths of the plan's section 2. The lint fix (c07cb64) adds `{ cause: error }` to the five throws; the Prettier wrap is the only other change in those lines.
+- Mutation results (implementer's report, on the feature commit before the lint fix; the lint fix does not change behaviour): (a) U1 fails at step 5; (b) D1 fails; (c) L1 fails at its step (1), the case run while logs/ does not exist; (d) H1 fails; (e) D3 fails; (f) H2 and H3 fail; (g) H2 fails; (h) D2 fails.
+- Gates: npm run build, npm test (API 210 tests) and npm run lint exit 0 at the root and in the fresh clone. 21 of 21 PST-07 tests pass.
+- Code rejections of PST-07: 0.
