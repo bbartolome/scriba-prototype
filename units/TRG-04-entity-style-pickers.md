@@ -20,6 +20,6 @@ Entity inputs list only the right kind (5), allow several (6); the style input d
 - Component tests use the Shell's fake API; the running app uses the real Project store.
 
 ## Acceptance criteria
-- [ ] With a fixture of mixed entity types, the picker offers only entities of the field's kinds.
-- [ ] List fields accept several and render chips; a dropped chip of the right kind is added, a wrong-kind chip is refused.
-- [ ] The style picker preselects the project's style profile.
+- [x] With a fixture of mixed entity types, the picker offers only entities of the field's kinds.
+- [x] List fields accept several and render chips; a dropped chip of the right kind is added, a wrong-kind chip is refused.
+- [x] The style picker preselects the project's style profile.

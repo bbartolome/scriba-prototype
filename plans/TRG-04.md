@@ -1,6 +1,6 @@
 ---
 id: TRG-04
-status: planned
+status: done
 unit: units/TRG-04-entity-style-pickers.md
 module: tool-registry
 phase: phase:form-renderer
