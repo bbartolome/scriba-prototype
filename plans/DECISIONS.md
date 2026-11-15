@@ -4040,3 +4040,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Point 5 (option A):** P10 of the plan is the shared status rule for `appendLog` and, when planned, `propose` (PST-15). Importable gives `PROJECT_NOT_FOUND` with "That folder has no project.yaml yet. Import it first."; invalid gives `PROJECT_INVALID` (422); too-new gives `PROJECT_SCHEMA_TOO_NEW` (409).
 - **Point 6 (option B):** PST-23's backups go to `<project>/.scriba/project-store/backups/<UTC>/<path>`, through `stateDir(projectId, 'project-store')`. The change of PST-23's unit line 23 is made by a reviser of PST-23 when PST-23 is planned. PST-07's `stateDir` is unchanged.
 - **Point 7 (option B):** PST-07's `unblocks` becomes `[PST-12]`. MPR-12 is unchanged; it reaches PST-07 through the quoted gate of PST-12. The change is made by a reviser of PST-07, as a reword of its Decisions section that carries the front-matter correction.
+
+## 2026-11-15 — PST-07 — Revision (reviser, READY): unit reword and plan revised
+
+- **Reword (R1), unit `units/PST-07-delete-move-helpers.md`:** the front matter `unblocks` is `[PST-12]` (was `[PST-12, "Model providers project override API (MPR-12)"]`). The Decisions section gains a line that MPR-12 depends on PST-07 only through PST-12's gate, with the note "Reworded by revision of PST-07 on 2026-11-15". Reason: decision 7 of the Navigator (above). The acceptance criteria are unchanged.
+- **Plan:** `plans/PST-07.md` is revised for decisions 1 to 7 (section 0 of the plan), adds test H3 (mixed line endings), and is `status: planned`.
+- **Point 8 (links under delete and move, plan P2):** not covered by the Navigator decision above. The plan keeps P2 (the link itself is acted on, not its target) and records it as the planner's choice, tested in D3. Open for a Navigator ruling if it needs one.
