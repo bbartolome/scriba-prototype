@@ -87,6 +87,19 @@ export const APP_ROUTES: Routes = withDeviceGate([
       ),
   },
   {
+    path: 'settings',
+    pathMatch: 'full',
+    data: {
+      scope: 'app',
+      minDeviceClass: 'phone',
+      nav: { label: 'Settings', icon: 'settings', order: 90 },
+    } satisfies ShellRouteData,
+    loadChildren: () =>
+      import('./features/setup-auth/setup-auth.routes').then(
+        (feature) => feature.settingsRoutes,
+      ),
+  },
+  {
     path: 'projects',
     pathMatch: 'full',
     data: {

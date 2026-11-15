@@ -25,3 +25,27 @@ export async function loadSetupAuthContract(): Promise<
     await import('@bbartolome/scriba-contracts/setup-auth');
   return mod.default ?? mod;
 }
+
+/**
+ * Loads the setup-auth values the settings page uses: the identity, status, sign-out and
+ * preferences routes and their schemas, the setup path and the error codes. It reads the module the
+ * same way as loadSetupAuthContract.
+ */
+export async function loadSettingsContract(): Promise<
+  Pick<
+    SetupAuthModule,
+    | 'IDENTITY_ROUTE'
+    | 'identitySchema'
+    | 'SETUP_STATUS_ROUTE'
+    | 'setupStatusSchema'
+    | 'SIGN_OUT_ROUTE'
+    | 'PREFERENCES_ROUTE'
+    | 'preferencesSchema'
+    | 'SETUP_PAGE_PATH'
+    | 'SETUP_AUTH_ERROR_CODES'
+  >
+> {
+  const mod: LoadedModule =
+    await import('@bbartolome/scriba-contracts/setup-auth');
+  return mod.default ?? mod;
+}
