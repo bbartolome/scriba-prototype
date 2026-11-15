@@ -57,6 +57,17 @@ A re-run cannot roll back, because it writes the one-liner's own tag. A rollback
 3. Run `docker compose up -d` in the install folder.
 4. Check that `scriba` is healthy with `docker compose ps`.
 
+## Recovery
+
+If you cannot get into Scriba, use the computer that runs it. The setup link is printed there at each start.
+
+1. Re-open the setup URL: `cat ~/Books/.scriba/setup-url`, or find it in `docker compose logs scriba`.
+2. Replace a leaked token: delete `~/Books/.scriba/setup-token`, then run `docker compose restart` in the install folder. Scriba makes a new token and rewrites `~/Books/.scriba/setup-url`, and every existing cookie stops working.
+3. Last resort: stop the stack with `docker compose stop`, then delete the contents of `~/Books/.scriba/` (settings, secrets, search indexes, your own tool packs in `packs/user/`, and the setup token), and start the stack again with `docker compose restart`. Your projects are not touched.
+4. Allowlist locked out a tailnet device: use the Mac and the setup URL.
+
+The paths assume the default library folder `~/Books`. For another folder, use the `.scriba` folder inside the `SCRIBA_LIBRARY` value in `.env`.
+
 ## Adding a module
 
 Each module has a contract slice, an API module and, when it has a screen, a web feature. Follow these steps.
