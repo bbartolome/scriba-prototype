@@ -53,8 +53,8 @@ test('journey: setup, project from sample, agent run, accept change, manuscript'
     await expect(
       page.getByText('Signed in from this computer (loopback).'),
     ).toBeVisible();
-    // Continue is a real POST through the guard's Origin check.
-    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    // Skip the rest is a real POST through the guard's Origin check.
+    await page.getByRole('button', { name: 'Skip the rest' }).click();
     // The landing reads complete and leaves /setup.
     await expect(page).toHaveURL(/\/projects(\/|$)/);
     const status = await page.request.get('/api/setup-auth/status');

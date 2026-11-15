@@ -40,11 +40,20 @@ async function expectPhoneLayout(page: Page): Promise<void> {
   );
 }
 
-function continueButton(page: Page) {
-  return page.getByRole('button', { name: 'Continue', exact: true });
+function nextButton(page: Page) {
+  return page.getByRole('button', { name: 'Next', exact: true });
 }
 
-test('C2 the setup page renders at 390 by 844: the notice, the identity with Continue, the tailnet identity and explanations, and the error lines', async ({
+function skipRestButton(page: Page) {
+  return page.getByRole('button', { name: 'Skip the rest', exact: true });
+}
+
+/** Every button of the wizard. */
+function wizardButtons(page: Page) {
+  return page.locator('app-setup-page button');
+}
+
+test('C2 the setup page renders at 390 by 844: the notice, the identity with its wizard buttons, the tailnet identity and explanations, and the error lines', async ({
   page,
 }) => {
   const errors: Error[] = [];
@@ -76,11 +85,11 @@ test('C2 the setup page renders at 390 by 844: the notice, the identity with Con
       page.locator('code', { hasText: /^docker compose logs scriba$/ }),
     ).toBeVisible();
     await expect(page.getByText("You're in.", { exact: true })).toHaveCount(0);
-    await expect(continueButton(page)).toHaveCount(0);
+    await expect(wizardButtons(page)).toHaveCount(0);
     await expectPhoneLayout(page);
   });
 
-  await test.step('state 2: a session shows the loopback identity with Continue', async () => {
+  await test.step('state 2: a session shows the loopback identity with Next and Skip the rest', async () => {
     const setupUrl = (
       await readFile(
         join(process.env.SCRIBA_E2E_LIBRARY!, '.scriba', 'setup-url'),
@@ -95,12 +104,14 @@ test('C2 the setup page renders at 390 by 844: the notice, the identity with Con
       }),
     ).toBeVisible();
     await expect(page.getByText("You're in.", { exact: true })).toBeVisible();
-    await expect(continueButton(page)).toBeVisible();
-    await expect(page.locator('app-setup-page code')).toHaveCount(0);
+    await expect(nextButton(page)).toBeVisible();
+    await expect(skipRestButton(page)).toBeVisible();
+    // The compose warning may show its one-liner here, so only the sign-in notice has no code.
+    await expect(page.locator('app-sign-in-notice code')).toHaveCount(0);
     await expectPhoneLayout(page);
   });
 
-  await test.step('state 3a: a tailnet identity with a long login and Continue', async () => {
+  await test.step('state 3a: a tailnet identity with a long login and its wizard buttons', async () => {
     await answerIdentity(200, { via: 'tailnet', login: LONG_LOGIN });
     await page.goto('/setup');
     await expect(
@@ -109,7 +120,8 @@ test('C2 the setup page renders at 390 by 844: the notice, the identity with Con
       }),
     ).toBeVisible();
     await expect(page.getByText("You're in.", { exact: true })).toBeVisible();
-    await expect(continueButton(page)).toBeVisible();
+    await expect(nextButton(page)).toBeVisible();
+    await expect(skipRestButton(page)).toBeVisible();
     await expectPhoneLayout(page);
   });
 
@@ -122,7 +134,7 @@ test('C2 the setup page renders at 390 by 844: the notice, the identity with Con
       page.getByText('did not get your Tailscale identity'),
     ).toBeVisible();
     await expect(page.getByText('server text')).toHaveCount(0);
-    await expect(continueButton(page)).toHaveCount(0);
+    await expect(wizardButtons(page)).toHaveCount(0);
     await expectPhoneLayout(page);
   });
 
@@ -133,7 +145,7 @@ test('C2 the setup page renders at 390 by 844: the notice, the identity with Con
     await page.goto('/setup');
     await expect(page.getByText("not on the owner's allowlist")).toBeVisible();
     await expect(page.getByText('server text')).toHaveCount(0);
-    await expect(continueButton(page)).toHaveCount(0);
+    await expect(wizardButtons(page)).toHaveCount(0);
     await expectPhoneLayout(page);
   });
 
@@ -148,11 +160,11 @@ test('C2 the setup page renders at 390 by 844: the notice, the identity with Con
     await expect(page.locator('app-setup-page').getByRole('alert')).toHaveText(
       'The server could not read the identity.',
     );
-    await expect(continueButton(page)).toHaveCount(0);
+    await expect(wizardButtons(page)).toHaveCount(0);
     await expectPhoneLayout(page);
   });
 
-  await test.step('state 4b: a failed Continue shows its message and keeps the identity', async () => {
+  await test.step('state 4b: a failed Skip the rest shows its message and keeps the identity', async () => {
     await answerIdentity(200, { via: 'loopback' });
     let continueCalls = 0;
     await page.route(CONTINUE_ROUTE, (route) => {
@@ -169,9 +181,9 @@ test('C2 the setup page renders at 390 by 844: the notice, the identity with Con
       });
     });
     await page.goto('/setup');
-    await expect(continueButton(page)).toBeVisible();
+    await expect(skipRestButton(page)).toBeVisible();
 
-    await continueButton(page).click();
+    await skipRestButton(page).click();
 
     await expect(page.locator('app-setup-page').getByRole('alert')).toHaveText(
       'The server could not finish setup.',
@@ -183,8 +195,85 @@ test('C2 the setup page renders at 390 by 844: the notice, the identity with Con
       }),
     ).toBeVisible();
     await expect(page.getByText("You're in.", { exact: true })).toBeVisible();
-    await expect(continueButton(page)).toBeEnabled();
+    await expect(skipRestButton(page)).toBeEnabled();
     await expectPhoneLayout(page);
+  });
+
+  expect(errors).toEqual([]);
+});
+
+test('C3 the wizard walks its five steps at 390 by 844 and completes setup', async ({
+  page,
+}) => {
+  const errors: Error[] = [];
+  page.on('pageerror', (error) => errors.push(error));
+
+  // The journey may run first and leave its states in the library, so this test needs no fresh state.
+  const setupUrl = (
+    await readFile(
+      join(process.env.SCRIBA_E2E_LIBRARY!, '.scriba', 'setup-url'),
+      'utf8',
+    )
+  ).trim();
+  await page.goto(setupUrl);
+  await page.goto('/setup');
+
+  await test.step('access: the loopback identity, Next and Skip the rest', async () => {
+    await expect(
+      page.getByText('Signed in from this computer (loopback).', {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(nextButton(page)).toBeVisible();
+    await expect(skipRestButton(page)).toBeVisible();
+    await expectPhoneLayout(page);
+  });
+
+  await test.step('tailscale: Next, then Skip', async () => {
+    await nextButton(page).click();
+    await expect(
+      page.getByText('Tailscale is unavailable.', { exact: true }),
+    ).toBeVisible();
+    await expectPhoneLayout(page);
+    await page.getByRole('button', { name: 'Skip', exact: true }).click();
+    await expect(
+      page.getByText('Model providers are not set up yet.', { exact: true }),
+    ).toBeVisible();
+    await expectPhoneLayout(page);
+  });
+
+  await test.step('providers: Mark done, then Next', async () => {
+    await page.getByRole('button', { name: 'Mark done', exact: true }).click();
+    await expect(
+      page.getByText('Preferences are not set up yet.', { exact: true }),
+    ).toBeVisible();
+    await expectPhoneLayout(page);
+    await nextButton(page).click();
+    await expect(
+      page.getByText('The first project is not set up yet.', { exact: true }),
+    ).toBeVisible();
+    await expectPhoneLayout(page);
+  });
+
+  await test.step('first project: Finish posts continue, leaves /setup, and the status is complete', async () => {
+    const continued = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/setup-auth/continue') &&
+        response.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'Finish', exact: true }).click();
+    expect((await continued).status()).toBe(200);
+    await expect(page).toHaveURL(/\/projects(\/|$)/);
+
+    const status = await page.request.get('/api/setup-auth/status');
+    expect(status.status()).toBe(200);
+    const body = (await status.json()) as {
+      complete: unknown;
+      steps: Record<string, string>;
+    };
+    expect(body.complete).toBe(true);
+    expect(body.steps.tailscale).toBe('skipped');
+    expect(body.steps.providers).toBe('done');
   });
 
   expect(errors).toEqual([]);
