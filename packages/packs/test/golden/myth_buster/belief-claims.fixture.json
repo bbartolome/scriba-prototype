@@ -1,0 +1,35 @@
+{
+  "arguments": {
+    "coreIdea": "Expertise comes from deliberate practice with feedback, not from a fixed number of hours.",
+    "entityIds": ["notes-a"],
+    "styleProfile": "style-a",
+    "belief": "Ten thousand hours of practice make anyone an expert.",
+    "claimIds": ["claim-a", "claim-b"]
+  },
+  "entities": [
+    {
+      "ref": "notes-a",
+      "type": "source",
+      "path": "sources/notes-a.md",
+      "content": "Notes A say that the ten-thousand-hour figure is an average, and that individuals varied within each group."
+    },
+    {
+      "ref": "claim-a",
+      "type": "claim",
+      "path": "entities/claim-a.md",
+      "content": "Claim A says that the hours of practice alone did not predict the level that people reached."
+    },
+    {
+      "ref": "claim-b",
+      "type": "claim",
+      "path": "entities/claim-b.md",
+      "content": "Claim B says that the people who reached the top also practised with a teacher setting the task."
+    },
+    {
+      "ref": "style-a",
+      "type": "style-profile",
+      "path": "entities/style-a.md",
+      "content": "---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the evidence shows, and say where it stops."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Ten thousand hours do not make anyone an expert on their own [@claim-a]."
+        ]
+      }
+    }
+  ]
+}

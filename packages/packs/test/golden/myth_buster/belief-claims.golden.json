@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Write the answer as Markdown prose. Return only the text of the answer, with no preface and no closing remarks."
+    },
+    {
+      "role": "user",
+      "content": "You write a nonfiction passage that states a common belief and takes it apart with evidence.\n\nCore idea: Expertise comes from deliberate practice with feedback, not from a fixed number of hours.\nBelief: Ten thousand hours of practice make anyone an expert.\nLength: 800 words.\nMaterial:\nclaim claim-a (entities/claim-a.md)\nClaim A says that the hours of practice alone did not predict the level that people reached.\nclaim claim-b (entities/claim-b.md)\nClaim B says that the people who reached the top also practised with a teacher setting the task.\nsource notes-a (sources/notes-a.md)\nNotes A say that the ten-thousand-hour figure is an average, and that individuals varied within each group.\nstyle-profile style-a (entities/style-a.md)\n---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the evidence shows, and say where it stops.\n\nSteps:\n1. State the belief fairly: give it in the words above, in the form people most often hold it.\n2. Show why people hold it: say what makes the belief persuasive, using only the material.\n3. Take it apart claim by claim: for each claim in the material, say what the evidence shows and where it stops.\n4. Say what is true instead: end on what the material supports, and tie it to the core idea in plain words.\n\nConstraints:\n- Use only the material above.\n- Cite each factual sentence with its entity or source ID in the form [@id].\n- Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.\n- Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.\n"
+    }
+  ]
+}
