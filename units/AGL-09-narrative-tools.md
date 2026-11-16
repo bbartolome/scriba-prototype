@@ -22,7 +22,7 @@ The agent calls enabled narrative tools (20), disabled ones are hidden (21), ent
 - At this milestone, `draft` outputs are shown in the chat with their provenance; they become pending changes in AGL-13.
 
 ## Acceptance criteria
-- [ ] A disabled tool is absent from the mock's received request.
-- [ ] A narrative call with entity IDs sends resolved contents to the executor and the card shows `sourcesUsed`.
-- [ ] An unknown entity ID returns a readable error and counts as a retry.
-- [ ] Every draft's card and transcript entry carry provenance.
+- [x] A disabled tool is absent from the mock's received request.
+- [x] A narrative call with entity IDs sends resolved contents to the executor and the card shows `sourcesUsed`.
+- [x] An unknown entity ID returns a readable error and counts as a retry.
+- [x] Every draft's card and transcript entry carry provenance.
