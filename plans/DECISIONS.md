@@ -4966,3 +4966,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Implementer's differences, all judged allowed:** the ninth test file in step 3 (b), because the new file matches the filter; prettier on the new file (formatting only); the catalog comment is a `/** */` block that keeps both original sentences.
 - **Checks reported by the implementer (not re-run by the reviewer):** steps 3 (a) to (d), 5, 6 (mutation: `@Public()` on `list` fails G1), 8, 9, 10 and 11 exit 0 on node v26.13.0 and npm 11.20.0. No CI run was observed (agents do not push); E2E was not run (D10).
 - **Next:** step 3 (rebase onto main, three checks, patch id again, marks and status, fast-forward).
+
+## 2026-11-16 — PST-16 — Sonnet code review (two parts, one per commit): APPROVED, patch id 7f54a20ee227c5603a393a7fb2295a4dc32e29c4 (orchestrator record)
+
+- **Result (two Sonnet reviewers, medium; branch `unit/PST-16` at `db3fc3a` on `c43080e`, commits `4ce51ce` (part 1) and `db3fc3a` (part 2)):** both parts APPROVED for the same patch id `7f54a20ee227c5603a393a7fb2295a4dc32e29c4`.
+- **Part 1 (steps 1 and 2, the conflict computation and the list, test A4):** the reviewer checked the list's conflict rules against D4, D9 to D11 and D15 (size check before the read, create and modify disk states, a null base gives base-changed, a path refusal gives target-missing, `detectedAt` kept while the reason is the same, and that the list writes nothing), and test A4 against criterion 4.
+- **Part 2 (steps 3 to 11, tests A1, A2, A3 and A5):** the reviewer compared the commit with steps 3 to 11 and decisions D1 to D22, and found no deviation. The implementer's differences were judged allowed: `conflictOf` as a private method with `conflictReason`; `ownFolder` creating folders one segment at a time; the test file using the kit app (which mounts the controllers without a guard, so A7 holds); a setup file `book/sources/notes.md` in the tests; X4 and X8 dropped, as the plan's revision record says.
+- **Checks reported by the implementer (not re-run by the reviewers):** the gate results of plan section 3 on node v26.13.0 and npm 11.20.0, including the full root gate of part 2 (build of contracts, api test 98 files and 368 tests, api lint, prettier).
+- **Next:** step 3 (rebase onto main, three checks, patch id again, marks and status, fast-forward).
