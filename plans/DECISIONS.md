@@ -4790,3 +4790,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Reviewer (Sonnet, medium), part 1 (the whole unit: steps 0 to 12 of the plan; tests M1, M2, P4 and R1 to R3): APPROVED. It checked the seven code paths of plan section 2 against `git diff --name-only main...unit/MPR-13`, decisions D1 to D14, and the test outputs.
 - Patch id: `45eaa2f186785aafb573b55c19cb0bbd74e9907c` (`git diff main...unit/MPR-13 -- . ':!plans' ':!units' | git patch-id --stable`).
 - Next: step 3 for MPR-13 (rebase onto main, the three checks, patch id again, criteria and plan marks, fast-forward).
+
+## 2026-11-16 — MPR-13 — Rebase, checks, merged to main (orchestrator)
+
+- Rebase of unit/MPR-13 onto main f5ed26e (`git rebase main`; the rescheduled pause was continued with `GIT_EDITOR=true git rebase --continue`, as before). No conflict. Feature commit now c8522be. Patch id unchanged: `45eaa2f186785aafb573b55c19cb0bbd74e9907c`.
+- Checks on c8522be with Node v26.13.0 and npm 11.20.0, in the worktree: `npm run lint` exit 0 (/tmp/mpr13-step3-lint.txt); `npm test` exit 0 (root counts 18/248, 95/342, 56/355, 1/1, 1/12, all passed; /tmp/mpr13-step3-test.txt); `npm run build` exit 0 (/tmp/mpr13-step3-build.txt).
+- Criteria 1 and 2 ticked in units/MPR-13-project-model-panel.md; plan set to `status: done`. Commit 7989826 on unit/MPR-13 (`docs(MPR-13): criteria checked, plan status done`).
+- Fast-forward: main f5ed26e to 7989826 (`git merge --ff-only unit/MPR-13`). History stays linear; the only merge commit on main is the old cf7a8bb (PLT-01).
+- Branch unit/MPR-13 and its worktree removed. MPR-13 unblocks no unit; with it, the phase `project-override` of Model providers is closed.
+- The uncommitted note units/SAU-12-providers-step.md stays in the main working tree, untouched.
