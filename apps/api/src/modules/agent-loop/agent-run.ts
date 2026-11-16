@@ -6,6 +6,10 @@ import type {
   AgentToolFamily,
   DraftProvenance,
 } from '@bbartolome/scriba-contracts/agent-loop';
+import type {
+  PendingChange,
+  ProposeInput,
+} from '@bbartolome/scriba-contracts/project-store';
 import { ModuleError, type EventsPublisher } from '../platform/platform.module';
 import {
   streamChat,
@@ -41,13 +45,23 @@ export interface AgentRunInit {
 }
 
 // What a run takes from the module: the resolver, the event publisher, the project summary, the release of its slot,
-// and the transcripts the history is rebuilt from. A run holds no Nest code.
+// the transcripts the history is rebuilt from, and the Project store's propose and existence check for the writes
+// flushed at run end (AGL-12 P14). A run holds no Nest code.
 export interface AgentRunDeps {
   resolver: ModelResolver;
   events: EventsPublisher;
   summarize: (projectId: string) => string;
   released: (run: AgentRun) => void;
   transcripts: AgentTranscriptsService;
+  propose: (input: ProposeInput) => PendingChange;
+  targetExists: (projectId: string, path: string) => boolean;
+}
+
+// The text of a refusal from the Project store, or the fixed text for any other failure (AGL-12 P10).
+const FILING_FAILED_MESSAGE = 'The change could not be filed.';
+
+function refusalOf(error: unknown): string {
+  return error instanceof ModuleError ? error.message : FILING_FAILED_MESSAGE;
 }
 
 // One model call's reply: the text it streamed and the tool calls it asked for.
@@ -343,17 +357,64 @@ export class AgentRun {
     if (this.state.status === 'ended') return;
     this.writeIntent();
     this.writeStepText();
+    this.flushWrites();
     const ended = this.requestedEnd ?? reason;
     this.state.status = 'ended';
     this.state.reason = ended;
     this.deps.released(this);
     const data = {
       reason: ended,
-      pendingChangeIds: [],
+      pendingChangeIds: [...this.state.pendingChangeIds],
       ...(ended === 'error' && message !== undefined ? { message } : {}),
     };
     this.emit('run-ended', data);
     this.transcript.append('run-end', this.state.lastSeq, data);
+  }
+
+  // Proposes each path the run wrote, once, in the order of the first write (AGL-12 D4, P10). A path the Project store
+  // refuses gets a `pending-change` line with the refusal and does not stop the others. Ids go to the state in order.
+  private flushWrites(): void {
+    for (const entry of this.tools.overlay.entriesInOrder()) {
+      const path = entry.path;
+      try {
+        const base = this.baseFor(path);
+        const change = this.deps.propose({
+          projectId: this.projectId,
+          path,
+          content: entry.content,
+          ...(base === undefined ? {} : { base }),
+          origin: {
+            kind: 'agent-run',
+            runId: this.runId,
+            toolCallId: entry.callId,
+          },
+          ...(entry.provenance === undefined
+            ? {}
+            : { provenance: entry.provenance }),
+        });
+        this.state.pendingChangeIds.push(change.id);
+        this.transcript.append('pending-change', this.state.lastSeq, {
+          path,
+          pendingChangeId: change.id,
+        });
+      } catch (error) {
+        this.transcript.append('pending-change', this.state.lastSeq, {
+          path,
+          refusal: refusalOf(error),
+        });
+      }
+    }
+  }
+
+  // The base to propose against (AGL-12 P11). A captured text is the base. A path that was missing at its first touch
+  // has no base when it is still missing at run end (a create); when the host created it during the run, the base is
+  // the empty text, so the three-way check at accept reports the conflict.
+  private baseFor(path: string): { content: string } | undefined {
+    const captured = this.tools.overlay.baseOf(path);
+    if (typeof captured === 'string') return { content: captured };
+    return this.deps.targetExists(this.projectId, path)
+      ? { content: '' }
+      : undefined;
   }
 
   // The intent line, once (D4). It is written after the resolve has settled, so the key is known when it is scrubbed.

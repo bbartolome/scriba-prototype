@@ -13,6 +13,7 @@ import type { ProjectSwitchedData } from '@bbartolome/scriba-contracts/project-s
 import { EventsPublisher, ModuleError } from '../platform/platform.module';
 import {
   FilesService,
+  PendingService,
   ProjectStoreService,
   ProjectsService,
 } from '../project-store/project-store.module';
@@ -49,6 +50,7 @@ export class AgentRunsService {
     private readonly tools: AgentToolsService,
     private readonly events: EventsPublisher,
     private readonly transcripts: AgentTranscriptsService,
+    private readonly pending: PendingService,
   ) {
     // Registered once. The handler never throws: a throw would fail the switch (PST-04 D8 and D9).
     this.store.onProjectSwitched((event) => this.onProjectSwitched(event));
@@ -109,6 +111,15 @@ export class AgentRunsService {
         summarize: (id) => buildProjectSummary(this.projects, this.files, id),
         released: (ended) => this.release(ended),
         transcripts: this.transcripts,
+        // A write is proposed into its own project, even when the project is no longer active (AGL-12 D4).
+        propose: (input) => this.pending.propose(input),
+        targetExists: (id, path) => {
+          const project = this.projects.find(id);
+          return (
+            project !== undefined &&
+            this.store.resolvePath(project.root, path).exists
+          );
+        },
       },
     );
     this.slotOf(projectId).active = run;

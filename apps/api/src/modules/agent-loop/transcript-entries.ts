@@ -27,7 +27,7 @@ export function cutText(
 
 // The payload of each transcript kind (D2). Each mirrors the stream event of the same name without runId and seq, plus
 // the fields the transcript adds (step, rawArguments, modelText). The contract types `data` as unknown; these are the
-// writer's and the reader's schemas. The grounding and pending-change kinds are not written here (AGL-16, AGL-12).
+// writer's and the reader's schemas. The grounding kind is not written here (AGL-16).
 const step = z.number().int().min(1);
 
 const intentPayloadSchema = z.object({
@@ -81,6 +81,13 @@ const runEndPayloadSchema = z.object({
   message: z.string().optional(),
 });
 
+// One written change (AGL-12 P10): the id when it was filed, or the refusal when the Project store did not file it.
+const pendingChangePayloadSchema = z.object({
+  path: z.string().min(1),
+  pendingChangeId: z.string().min(1).optional(),
+  refusal: z.string().min(1).optional(),
+});
+
 // The payload schema of each kind this module writes and reads.
 export const transcriptPayloadSchemas: Partial<
   Record<AgentTranscriptKind, z.ZodType>
@@ -92,4 +99,5 @@ export const transcriptPayloadSchemas: Partial<
   'tool-result': toolResultPayloadSchema,
   'tool-error': toolErrorPayloadSchema,
   'run-end': runEndPayloadSchema,
+  'pending-change': pendingChangePayloadSchema,
 };
