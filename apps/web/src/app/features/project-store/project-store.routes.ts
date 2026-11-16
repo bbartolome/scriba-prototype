@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+// The guard comes from the Shell's own file, not its barrel: this file is in the initial bundle.
+import { unsavedTextGuard } from '../../shell/unsaved-text';
 
 // The project-store feature's entry file. Other code imports only from here (ESLint boundaries).
 // `projectsRoutes` is the app-level `/projects` route; `ActiveProjectNav` fills the Shell's nav slot.
@@ -12,11 +14,12 @@ export const projectsRoutes: Routes = [
 ];
 
 // `filesRoutes` is the project-scoped `files` route. Its page loads lazily: this file has no static
-// import of the page, so the main bundle does not carry it.
+// import of the page, so the main bundle does not carry it. Leaving the page saves unsaved text first.
 export const filesRoutes: Routes = [
   {
     path: '',
     pathMatch: 'full',
+    canDeactivate: [unsavedTextGuard],
     loadComponent: () =>
       import('./files-page').then((feature) => feature.FilesPage),
   },

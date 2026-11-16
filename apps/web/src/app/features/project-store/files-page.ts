@@ -5,6 +5,7 @@ import {
   DestroyRef,
   ElementRef,
   inject,
+  linkedSignal,
   signal,
   viewChild,
 } from '@angular/core';
@@ -26,6 +27,8 @@ import {
   ActiveProjectSignal,
   API_CLIENT,
   ApiError,
+  DeviceClassService,
+  EditorLayout,
   MarkdownPreview,
   SSE_CLIENT,
 } from '../../shell';
@@ -39,6 +42,15 @@ interface Row {
   readonly name: string;
   readonly depth: number;
   readonly kind: FileEntry['kind'];
+}
+
+/**
+ * The file the editor shows: structurally the Shell's `EditorReference`, which the barrel does not
+ * export. Its `path` is a project-relative path, as `FileReference` is.
+ */
+interface FileTarget {
+  readonly projectId: string;
+  readonly path: string;
 }
 
 /** The answer of a read, or the message to show for its failure. */
@@ -126,7 +138,7 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
  * its path or a tick arrives.
  */
 @Component({
-  imports: [MarkdownPreview, RouterLink, SearchPanel],
+  imports: [EditorLayout, MarkdownPreview, RouterLink, SearchPanel],
   selector: 'app-files-page',
   styles: `
     :host {
@@ -163,6 +175,10 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
       position: relative;
       flex: 2 1 20rem;
       min-width: 0;
+    }
+
+    .editor[hidden] {
+      display: none;
     }
 
     .anchor {
@@ -202,8 +218,15 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
         @if (fileFailure(); as message) {
           <p role="alert">{{ message }}</p>
         }
-        @if (content() !== undefined) {
+        @if (target(); as file) {
+          <div class="editor" [hidden]="!editorShown()">
+            <app-editor-layout [reference]="file" />
+          </div>
+        }
+        @if (!editorShown() && content() !== undefined) {
           <app-markdown-preview [content]="content() ?? ''" />
+        }
+        @if (content() !== undefined) {
           <span
             #anchor
             class="anchor"
@@ -232,6 +255,48 @@ export class FilesPage {
   protected readonly selected = signal<string | undefined>(undefined);
   protected readonly content = signal<string | undefined>(undefined);
   protected readonly fileFailure = signal<string | undefined>(undefined);
+
+  private readonly devices = inject(DeviceClassService);
+  protected readonly phone = computed(
+    () => this.devices.deviceClass() === 'phone',
+  );
+
+  /** The open file for the editor: changes only when the project or the selected file does. */
+  private readonly reference = computed<FileTarget | undefined>(() => {
+    const projectId = this.projectId();
+    const path = this.selected();
+    return projectId === undefined || path === undefined
+      ? undefined
+      : { projectId, path };
+  });
+
+  /**
+   * The file the editor is mounted on. It follows each new file, and keeps the last file when
+   * `?path=` is removed. On a phone it is not mounted until a file is open on a larger class.
+   */
+  protected readonly target = linkedSignal<
+    { reference: FileTarget | undefined; phone: boolean },
+    FileTarget | undefined
+  >({
+    source: () => ({ reference: this.reference(), phone: this.phone() }),
+    computation: (source, previous) => {
+      if (
+        source.reference !== undefined &&
+        (!source.phone || previous?.value !== undefined)
+      ) {
+        return source.reference;
+      }
+      return previous?.value;
+    },
+  });
+
+  /** The editor shows on a larger class, for a selected file that reads. */
+  protected readonly editorShown = computed(
+    () =>
+      !this.phone() &&
+      this.selected() !== undefined &&
+      this.fileFailure() === undefined,
+  );
 
   /** The `offset` of a search result, if any: the passage the file was opened for. */
   protected readonly offset = signal<number | undefined>(undefined);
