@@ -76,7 +76,9 @@ describe('Core gate', () => {
     expect(root.querySelector('h2')?.textContent?.trim()).toBe('Core gate');
     expect(root.querySelector('app-editor-layout')).toBeNull();
 
-    await router.navigateByUrl('/core-gate?projectId=book&path=drafts%2Fch01.md');
+    await router.navigateByUrl(
+      '/core-gate?projectId=book&path=drafts%2Fch01.md',
+    );
     await vi.waitFor(
       () => expect(root.querySelector('app-editor-layout')).not.toBeNull(),
       { timeout: 5000 },

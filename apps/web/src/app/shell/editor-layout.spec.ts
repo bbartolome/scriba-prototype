@@ -54,10 +54,7 @@ async function render(
   });
   await TestBed.configureTestingModule({
     imports: [LayoutHost],
-    providers: [
-      provideRouter([]),
-      { provide: API_CLIENT, useValue: api },
-    ],
+    providers: [provideRouter([]), { provide: API_CLIENT, useValue: api }],
   }).compileComponents();
   const fixture = TestBed.createComponent(LayoutHost);
   fixture.detectChanges();
@@ -155,9 +152,9 @@ describe('EditorLayout', () => {
     expect(toggleButton(fixture, 'Edit').getAttribute('aria-pressed')).toBe(
       'true',
     );
-    expect(
-      toggleButton(fixture, 'Preview').getAttribute('aria-pressed'),
-    ).toBe('false');
+    expect(toggleButton(fixture, 'Preview').getAttribute('aria-pressed')).toBe(
+      'false',
+    );
     expect(section(fixture, 'Preview').hasAttribute('hidden')).toBe(true);
     expect(section(fixture, 'Source').hasAttribute('hidden')).toBe(false);
     expect(el(fixture, 'app-markdown-editor')).not.toBeNull();
@@ -167,9 +164,9 @@ describe('EditorLayout', () => {
     expect(section(fixture, 'Preview').hasAttribute('hidden')).toBe(false);
     expect(section(fixture, 'Source').hasAttribute('hidden')).toBe(true);
     expect(el(fixture, 'app-markdown-editor')).not.toBeNull();
-    expect(
-      toggleButton(fixture, 'Preview').getAttribute('aria-pressed'),
-    ).toBe('true');
+    expect(toggleButton(fixture, 'Preview').getAttribute('aria-pressed')).toBe(
+      'true',
+    );
 
     toggleButton(fixture, 'Edit').click();
     fixture.detectChanges();
