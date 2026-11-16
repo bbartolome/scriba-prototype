@@ -4733,3 +4733,7 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Sonnet reviewers (medium), part 1 and part 2 of plan section 8: both APPROVED `ac89a1cb…`. Neither changed a file. Part 2's R1 rests on the web total (352 passed, exit 0), because the log has no per-file lines. Part 1 could not check the step 12 mutation runs or the step 13 commit shape by reading the diff.
 - Checks on 32ac357: lint exit 0; test exit 0 (web 352 passed, the other workspaces and `scripts/*.test.mjs` passed); build exit 0. Logs in /tmp/sau13-checks/.
 - Next: the phone e2e (plan E1, step 10) is not yet decided; then step 3.8 to 3.10 (marks, plan status done, fast-forward of main).
+
+## 2026-11-16 — SAU-13 — Phone e2e run: setup-phone passes (orchestrator)
+
+- `npx playwright test specs/setup-phone.e2e.ts --trace off` in /Users/bbartolome/workspace/scriba-prototype-wt/SAU-13 at unit/SAU-13 32ac357: C2 and C3 passed (2 passed, exit 0). This is plan E1 (step 10), which was not run before the merge. The log is /tmp/sau13-checks/e2e-phone.log.
