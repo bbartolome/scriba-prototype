@@ -19,3 +19,4 @@ export type {
   ToolCallView,
 } from './tool-call-view';
 export { unsavedTextGuard } from './unsaved-text';
+export { EditorLayout } from './editor-layout';
