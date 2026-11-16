@@ -5159,3 +5159,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Correction.** The entry above says that `entityIds` for GNP-07 lists claim, concept and person. That is wrong: it contradicts GNP-01 line 19. The reworded line 66 covers the `person` input only.
 - **Reason.** `entityIds` means "any entity" (`modules/genre-packs.md` line 61: "Entities and sources to draw from (a list)"). It does not meet the condition "where the input means a definite set of kinds". A per-pack list on a common input would break the identity rule.
 - **Orchestrator check.** Checked against `units/GNP-07-cold-open.md` line 17, `units/GNP-01-packs-scaffold-content-checks.md` line 19 and `modules/genre-packs.md` line 61. Accepted.
+
+## 2026-11-16 — GNP-04 — Sonnet code review: APPROVED, patch id 9e3e493edfed4b02b8949299a96b56018ca3f1c9 (orchestrator record)
+
+- **Result:** one reviewer (the plan has one review part, Part 1) APPROVED, for the patch id above. The check was run on unit/GNP-04 at aba7df9 (based on main 8ef51b4). The reviewer confirmed the 8 paths of plans/GNP-04.md section 2, the propose_graph.yaml text of step 2, the fixtures, the scenario, the goldens (the story golden has no catalogue, the recipe golden has the catalogue line) and the two targeted tests (`npx vitest run test/packs/propose-graph.test.ts`, 2 passed).
+- **Implementer report (COMPLETE):** node v26.13.0, npm 11.20.0. Root build, lint, prettier and test, the packs and e2e suites, `npm run lint:packs` and the golden idempotence check all exit 0 (report of the implementer, not re-run by the reviewer).
+- **Process note:** the code is on four commits (5a46ea4, fe291dc, 624a15a, aba7df9), not the one commit of plans/GNP-04.md step 13. The plan does not forbid several commits; the tree and the patch id are the same. The `--update-goldens` runs executed the whole API suite (a `--` before the file filter); all passed. Both facts are recorded here, not changed.
+- **Orchestrator action:** Step 3 (rebase onto main, the three checks, the patch id again, the checkboxes and status done, the fast-forward) follows.
