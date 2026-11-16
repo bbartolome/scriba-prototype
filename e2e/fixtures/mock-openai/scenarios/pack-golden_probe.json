@@ -1,0 +1,8 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": { "kind": "stream", "deltas": ["Person A and Person B agree."] }
+    }
+  ]
+}

@@ -7,5 +7,12 @@ export default defineConfig({
   test: {
     include: ['test/**/*.test.ts'],
     testTimeout: 20000,
+    // vitest reads `--update-goldens` in the main process only; the test workers
+    // see just this variable, so the golden helper reads it from here.
+    env: {
+      SCRIBA_UPDATE_GOLDENS: process.argv.includes('--update-goldens')
+        ? '1'
+        : '0',
+    },
   },
 });

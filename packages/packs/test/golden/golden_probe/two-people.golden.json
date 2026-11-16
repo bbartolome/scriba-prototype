@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Write the answer as Markdown prose. Return only the text of the answer, with no preface and no closing remarks."
+    },
+    {
+      "role": "user",
+      "content": "Core idea: Engines reward patience. [person person-a (entities/person-a.md)\nPerson A keeps a notebook.] [person person-b (entities/person-b.md)\nPerson B checks the notebook.]"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "arguments": {
+    "coreIdea": "Engines reward patience",
+    "entityIds": ["person-a", "person-b"]
+  },
+  "entities": [
+    {
+      "ref": "person-a",
+      "type": "person",
+      "path": "entities/person-a.md",
+      "content": "Person A keeps a notebook."
+    },
+    {
+      "ref": "person-b",
+      "type": "person",
+      "path": "entities/person-b.md",
+      "content": "Person B checks the notebook."
+    }
+  ]
+}

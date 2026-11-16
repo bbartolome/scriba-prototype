@@ -1,0 +1,24 @@
+schemaVersion: 1
+name: golden_probe
+description: Answer one question from its core idea and the people it names.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [person]
+  required: [coreIdea]
+output: draft
+enabled: true
+prompt: 'Core idea: {{coreIdea}}.{{#each entityIds}} [{{entity this}}]{{/each}}'
