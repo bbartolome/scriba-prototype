@@ -63,7 +63,7 @@ GNP-02 golden-test harness (TRG-12 execute, PLT-12 mock server)
 | `length` | Target length in words (default 800) | no | none (`params` control) |
 | `tone` | Optional tone override for this passage | no | none (`params` control) |
 
-Tools whose output is `entity`, `check` or `graph` take only the subset that makes sense (listed per unit). Entity inputs carry `x-scriba-type: entity` with `x-scriba-entity-kinds` so the form, canvas and Ajv restrict them.
+Tools whose output is `entity`, `check` or `graph` take only the subset that makes sense (listed per unit). Entity inputs carry `x-scriba-type: entity`; where the input means a definite set of kinds, they also carry `x-scriba-entity-kinds` so the form, canvas and Ajv restrict them.
 
 ### Entity types (envelope from the Tool registry)
 `{schemaVersion, kind, title, description, folder, fields}`; `fields` is JSON Schema over front-matter keys added on top of the Project store base (`id`, `type`, `links`), using the tool-input subset plus the one-level array-of-objects extension. Reference fields carry `x-scriba-type: entity` and `x-scriba-entity-kinds`. `description` is one line that also says what the Markdown body holds. `kind` is the front-matter `type` value tools filter by.
