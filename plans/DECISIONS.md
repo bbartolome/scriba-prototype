@@ -5464,3 +5464,13 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Test status:** T1 (`npm run lint:examples`) exits 0. T2 exits 1 at step 8, as above. The root gates and the base comparison were not run.
 - **Uncommitted in the worktree (plan steps 5 and 6):** `e2e/fixtures/mock-openai/scenarios/grounding-claims.json` and `e2e/specs/verdicts-sample.e2e.ts`. They are not committed and are kept for the next implementer, who checks them against the corrected plan.
 - **Decision:** the plan goes back to `status: draft`. A new Opus reviser corrects the cause in the plan, and examines the commits on `unit/AGL-19`. When the plan is `planned` again, a new implementer continues from the commits of the branch.
+
+## 2026-11-16 — AGL-19 — Review (Sonnet, medium), Part P1 (the whole plan): REWORK
+
+- **Branch:** `unit/AGL-19`, two commits on top of main's base 196e0cd: d0d88c1 and 1488be1. Worktree `scriba-prototype-wt/AGL-19`.
+- **Patch id reviewed:** e97cbdd53b047bb7fb943efe88129b3068eaa244 (`git diff main...unit/AGL-19 -- . ':!plans' ':!units' | git patch-id --stable`).
+- **Result:** REWORK by one reviewer, part P1 of 1. Steps 0 to 8, 10 and 11, tests T1 and T2, and the file list all check out. The only open item is step 9.
+- **REWORK list:**
+  1. Step 9 (base comparison) was not run, and the plan does not make it optional.
+     - Problem: Section 3 step 9 says "Run `npm run e2e` on `<base>` and on the branch, and compare the pass and fail list." It gives the reason ("a new project could change another spec") and an Expected result: the only difference is the new test, which runs last. Nothing in the text says "observation only". The branch-only run does not substitute for it. It cannot show that tools-preview:167 also fails on 196e0cd, which the plan expects.
+     - Correction: Run `npm run e2e` on 196e0cd (a second checkout, or the orchestrator runs it) and compare the pass and fail lists with /tmp/agl19-e2e-full.txt. Record the result. If tools-preview.e2e.ts:167 fails on both, approve. If it fails only on the branch, report that.
