@@ -1,7 +1,7 @@
 ---
 id: TRG-11
 title: Loader gate — registry guard test, lint:packs wiring checked, catalog service documented
-status: planned
+status: done
 ---
 # TRG-11 plan — loader-validation gate: guard test for the registry routes, lint:packs check, catalog service documented
 

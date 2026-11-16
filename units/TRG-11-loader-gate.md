@@ -19,5 +19,5 @@ Merging this **closes Tool registry `phase:loader-validation`**.
 - The exported catalog service is documented for the Agent loop and Graph runner.
 
 ## Acceptance criteria (the `phase:loader-validation` checklist)
-- [ ] TRG-06, TRG-07, TRG-09, TRG-10 criteria pass on `main`.
-- [ ] Unauthenticated requests to registry routes are refused.
+- [x] TRG-06, TRG-07, TRG-09, TRG-10 criteria pass on `main`.
+- [x] Unauthenticated requests to registry routes are refused.
