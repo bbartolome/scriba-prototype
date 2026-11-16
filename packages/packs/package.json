@@ -4,7 +4,12 @@
   "private": true,
   "scripts": {
     "build": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run",
+    "test": "npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api && vitest run",
     "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@bbartolome/scriba-contracts": "0.0.0",
+    "@types/node": "^26.6.6",
+    "yaml": "2.9.1"
   }
 }

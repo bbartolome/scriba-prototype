@@ -1,0 +1,19 @@
+schemaVersion: 1
+name: dup_tool
+description: Draft a short passage from the core idea.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+  required: [coreIdea]
+output: draft
+enabled: true
+prompt: |
+  Write a short passage.
+
+  Core idea: {{coreIdea}}
