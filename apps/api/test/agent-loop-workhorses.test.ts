@@ -330,6 +330,8 @@ it.each(WORKHORSE_CASES)(
         const started = await startRun(h, { intent: row.intent });
         const events = await readUntilEnded(stream);
 
+        expect(events.some((event) => event.type === 'run-started')).toBe(true);
+
         const callStarted = events.find(
           (event) => event.type === 'tool-call-started',
         );
