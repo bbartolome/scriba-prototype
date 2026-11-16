@@ -4959,3 +4959,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Checks reported by the implementer (not re-run by the reviewer):** plan steps 1, 2, 5, 6 and 8 exit 0 on node v26.13.0 and npm 11.20.0, including a fresh clone of `unit/SAU-16`. Mutations M1 to M5 were applied and reverted by hand, each with the expected test failing.
 - **Criterion 6 (T6):** not tested, not pushed. Complete without it (DECISIONS 2026-11-16, SAU-16, option A).
 - **Next:** step 3 (rebase onto main, three checks, patch id again, marks and status, fast-forward).
+
+## 2026-11-16 — TRG-11 — Sonnet code review (part 1 of 1, the whole plan): APPROVED, patch id d0a301099371fca856dfa5e80a5458f5e99899a8 (orchestrator record)
+
+- **Result (Sonnet reviewer, medium, part 1 of 1, steps 0 to 14, criteria 1 and 2; branch `unit/TRG-11` at `23354ba` on `eaa994f`):** APPROVED. The reviewer checked that the diff changes only the two files of plan section 2 (`apps/api/src/modules/tool-registry/catalog.service.ts`, comments only; `apps/api/test/tool-registry-loader-gate.test.ts`, new); that every fact of the step 7 comment matches its method body and `tool-registry.module.ts`; and that test G1 names the eleven routes, asserts 401 `AUTH_REQUIRED` without a cookie, asserts the 200 control, and contains no word `examples` (D12).
+- **Implementer's differences, all judged allowed:** the ninth test file in step 3 (b), because the new file matches the filter; prettier on the new file (formatting only); the catalog comment is a `/** */` block that keeps both original sentences.
+- **Checks reported by the implementer (not re-run by the reviewer):** steps 3 (a) to (d), 5, 6 (mutation: `@Public()` on `list` fails G1), 8, 9, 10 and 11 exit 0 on node v26.13.0 and npm 11.20.0. No CI run was observed (agents do not push); E2E was not run (D10).
+- **Next:** step 3 (rebase onto main, three checks, patch id again, marks and status, fast-forward).
