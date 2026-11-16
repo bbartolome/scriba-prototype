@@ -1,11 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { join } from 'node:path';
 import {
   BUILTIN_ORIGINS,
   TOOL_ERROR_CODES,
   TOOL_ERROR_STATUS,
+  TOOL_NAME_PATTERN,
   type BuiltinOrigin,
   type EntityTypeList,
   type FunctionList,
+  type LintResponse,
   type PortDescriptor,
   type ToolDetail,
   type ToolList,
@@ -26,7 +29,7 @@ import {
   type EntityTypeEntry,
   type EntityValidator,
 } from './entity-types';
-import { countsOf } from './lint';
+import { countsOf, lintToolSource } from './lint';
 import {
   emptyUserScan,
   readBuiltinTools,
@@ -40,6 +43,7 @@ import {
   ToolSwitchesService,
   type ToolSwitches,
 } from './tool-switches.service';
+import { removeUserTool, writeUserTool } from './user-pack';
 import { validateArguments } from './validate';
 
 // Called with the names that a refresh or a toggle changed, once per change.
@@ -222,6 +226,60 @@ export class CatalogService {
     return summaryOf(this.rowOf(entry), switches);
   }
 
+  // Lints one tool source, writing nothing. `name` is given when the source is or will be saved under that name, so
+  // the file-name rule runs. The views come back only when there is no error.
+  lint(source: string, name?: string): LintResponse {
+    const { lint, views } = lintToolSource(source, {
+      name,
+      entityKinds: this.kinds,
+    });
+    return { lint, views };
+  }
+
+  // Saves a user copy of a tool under its name, copy-on-write for a built-in. A source with an error is refused with
+  // 422 and nothing is written; warnings do not block. Publishes the name once, through refresh.
+  save(name: string, source: string): ToolDetail {
+    this.requireToolName(name);
+    const { lint } = lintToolSource(source, {
+      name,
+      entityKinds: this.kinds,
+    });
+    const errors = lint.filter((diagnostic) => diagnostic.severity === 'error');
+    if (errors.length > 0) {
+      throw new ModuleError(
+        TOOL_ERROR_CODES.SPEC_LINT_FAILED,
+        TOOL_ERROR_STATUS.TOOL_SPEC_LINT_FAILED,
+        `Tool "${name}" was not saved: its source has ${errors.length} lint error(s).`,
+        { lint },
+      );
+    }
+    writeUserTool(this.userFolder, name, source);
+    // The file has changed, so its manifest mark is dropped: the next scan reparses it even when its size and mtime
+    // are the same as before.
+    this.userScan.marks.delete(join(this.userFolder, `${name}.yaml`));
+    this.refresh();
+    return this.userDetail(name);
+  }
+
+  // Deletes the user file of a tool: a user copy reverts to its built-in, a user-only tool is removed. A name with a
+  // built-in and no user copy is read-only (409); a name with neither is not found (404).
+  delete(name: string): void {
+    this.requireToolName(name);
+    this.refresh();
+    if (!this.userScan.entries.has(name)) {
+      if (this.builtins.has(name)) {
+        throw new ModuleError(
+          TOOL_ERROR_CODES.BUILTIN_READONLY,
+          TOOL_ERROR_STATUS.TOOL_BUILTIN_READONLY,
+          `The built-in tool "${name}" has no user copy to delete.`,
+        );
+      }
+      throw notFound(`No user copy of the tool "${name}".`);
+    }
+    removeUserTool(this.userFolder, name);
+    this.refresh();
+  }
+
   // The loaded tool, or TOOL_NOT_FOUND, or TOOL_INVALID for an invalid effective tool.
   entry(name: string): LoadedTool {
     this.refresh();
@@ -285,6 +343,13 @@ export class CatalogService {
   // Calls each listener with the names that changed.
   private notify(names: string[]): void {
     for (const listener of this.listeners) listener(names);
+  }
+
+  // A route name that is not a tool name is not found, before any file is read or written.
+  private requireToolName(name: string): void {
+    if (!TOOL_NAME_PATTERN.test(name)) {
+      throw notFound(`No tool named "${name}".`);
+    }
   }
 
   // The entry a name resolves to: a valid user copy, else the built-in, else an invalid user copy alone.

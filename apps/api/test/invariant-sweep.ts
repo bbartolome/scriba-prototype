@@ -132,6 +132,12 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/tool-registry/tools/:name/enabled': {
     path: '/api/tool-registry/tools/no-such-tool/enabled',
   },
+  '/api/tool-registry/tools/:name/save': {
+    path: '/api/tool-registry/tools/no-such-tool/save',
+  },
+  '/api/tool-registry/tools/:name/delete': {
+    path: '/api/tool-registry/tools/no-such-tool/delete',
+  },
   '/api/setup-auth/steps/:step': {
     path: '/api/setup-auth/steps/access',
   },
@@ -144,13 +150,20 @@ export const DERIVED_CACHE_PATHS: readonly string[] = ['.scriba/index'];
 // The settings file, compared as its bytes as well as by its fingerprint.
 const SETTINGS_PATH = '.scriba/settings.yaml';
 
-// The events a GET may emit, as module and type pairs, with the reason for each. Empty on main: no GET
-// publishes an event today. A module that needs an entry adds one here with its reason.
+// The events a GET may emit, as module and type pairs, with the reason for each. A module that needs an entry adds
+// one here with its reason.
 export const EVENT_ALLOWLIST: readonly {
   module: string;
   type: string;
   reason: string;
-}[] = [];
+}[] = [
+  {
+    module: 'tool-registry',
+    type: 'catalog-changed',
+    reason:
+      'A GET runs the user-pack re-scan, which publishes a host-side change made outside the app (units TRG-06 line 20 and TRG-10 line 21). The GET itself changes no file.',
+  },
+];
 
 // The window in which a request's events are collected (sweepGetHead).
 export const EVENT_WAIT_MS = 200;
