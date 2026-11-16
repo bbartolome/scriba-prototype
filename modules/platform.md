@@ -20,7 +20,7 @@ PLT-01 workspace
  PLT-14 Dockerfile (needs 11) ─ PLT-15 compose ─ PLT-16 smoke ST-1..3 ─ PLT-17 dispenser/first install ─ PLT-18 update/rollback ─ PLT-19 publish.yml
  PLT-20 examples check M1 layer (needs 13 + Project store phase:contract)
  PLT-21 graph layer (needs 20 + Graph runner phase:contract)
- PLT-22 pack layer (needs 20 + Tool registry phase:loader-validation)
+ PLT-22 pack layer (needs 20 + Tool registry phase:loader-validation + GNP-11)
 ```
 
 ### Parallelism

@@ -4,7 +4,7 @@ title: examples/ check — pack layer (recipe tool refs and params, entity types
 module: platform
 phase: phase:examples-check
 milestone: M2
-blocked_by: [PLT-20, "Tool registry phase:loader-validation (TRG-11)"]
+blocked_by: [PLT-20, "Tool registry phase:loader-validation (TRG-11)", GNP-11]
 parallel_with: [PLT-21]
 unblocks: ["Graph runner sample recipe (GRR-16)"]
 ---
@@ -14,6 +14,7 @@ unblocks: ["Graph runner sample recipe (GRR-16)"]
 Merging this and PLT-21 (in either order) **closes `phase:examples-check`** (later milestones keep extending sample content; the check must keep passing).
 
 ## Decisions
+- Changed by the Navigator's decision on GNP-11 open point 1 (2026-11-16): GNP-11 added to `blocked_by` (line 7). The old text was: `blocked_by: [PLT-20, "Tool registry phase:loader-validation (TRG-11)"]`. See plans/DECISIONS.md.
 - Uses the Tool registry's own loader and Ajv validation through the **pack-lint CLI's library entry point** — no reimplementation.
 - Adds to the PLT-20 check:
   - every recipe tool node names a tool that exists in the built-in packs (`packages/packs`), with params that validate under that tool's JSON Schema in `params` mode;
