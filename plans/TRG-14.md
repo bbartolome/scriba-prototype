@@ -1,6 +1,6 @@
 ---
 id: TRG-14
-status: planned
+status: draft
 ---
 # TRG-14 plan — YAML editor and actions: Source, Compare, Customize, Revert, New, Duplicate, Delete
 
