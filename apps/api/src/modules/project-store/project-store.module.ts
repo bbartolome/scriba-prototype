@@ -7,6 +7,7 @@ import { EntitiesService } from './entities.service';
 import { EntityManifest } from './entity-manifest';
 import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
+import { PendingService } from './pending.service';
 import { PROJECTS_SECTION_DEF } from './project-store.section';
 import { ProjectStoreService } from './project-store.service';
 import { ProjectsController } from './projects.controller';
@@ -22,6 +23,7 @@ export { FilesService } from './files.service';
 export { EntitiesService } from './entities.service';
 export { EntityManifest } from './entity-manifest';
 export { SearchService } from './search.service';
+export { PendingService } from './pending.service';
 export { ProjectsService } from './projects.service';
 export type { ResolvedProjectPath } from './path-safety';
 
@@ -55,6 +57,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     FilesService,
     EntityManifest,
     EntitiesService,
+    PendingService,
     SearchService,
   ],
   exports: [
@@ -63,6 +66,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     FilesService,
     EntitiesService,
     EntityManifest,
+    PendingService,
     SearchService,
   ],
 })

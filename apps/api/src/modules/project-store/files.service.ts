@@ -39,13 +39,14 @@ import { writeFileAtomic } from './atomic-write';
 import { fail, PATH_MESSAGES, type ResolvedProjectPath } from './path-safety';
 import type { DiscoveredProject } from './project-discovery';
 import { ProjectStoreService } from './project-store.service';
+import { requireOkProject } from './project-status';
 import { readYamlState } from './project-yaml';
 import { PROJECT_MESSAGES, ProjectsService } from './projects.service';
 
 const PROJECT_YAML = 'project.yaml';
 
 // Every message of the file API. Fixed strings only; no input value is echoed.
-const FILE_MESSAGES = {
+export const FILE_MESSAGES = {
   NO_FILE: 'No file was found at that path.',
   NO_FOLDER: 'No folder was found at that path.',
   NOT_TEXT: 'The file is not UTF-8 text.',
@@ -57,7 +58,6 @@ const FILE_MESSAGES = {
   NOT_A_FILE:
     'The path names a folder, or runs through a file, so no file can be written there.',
   EXISTS: 'A file or folder already exists at the new path.',
-  NOT_A_PROJECT: 'That folder has no project.yaml yet. Import it first.',
   LOG_PATH: 'A log line goes only to a file inside logs/.',
   LINE_BREAK: 'A log line must be one line, with no line break in it.',
   OWNER: 'The owner must be the slug of a module.',
@@ -67,7 +67,7 @@ type ProjectErrorCode =
   (typeof PROJECT_ERROR_CODES)[keyof typeof PROJECT_ERROR_CODES];
 
 // One refusal: a contract code with its contract status, and a fixed message.
-function refuse(
+export function refuse(
   code: ProjectErrorCode,
   message: string,
   details?: unknown,
@@ -75,7 +75,7 @@ function refuse(
   return new ModuleError(code, PROJECT_ERROR_STATUS[code], message, details);
 }
 
-function notAFile(): ModuleError {
+export function notAFile(): ModuleError {
   return refuse(PROJECT_ERROR_CODES.PATH_INVALID, FILE_MESSAGES.NOT_A_FILE);
 }
 
@@ -84,7 +84,7 @@ function tooNew(): ModuleError {
 }
 
 // The hash of bytes, in the contract's form: sha256: and the lower-case hex digest (S5).
-function hashOf(bytes: Buffer): string {
+export function hashOf(bytes: Buffer): string {
   return `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 }
 
@@ -102,7 +102,7 @@ export function decodeText(bytes: Buffer): string | undefined {
 }
 
 // Only project.yaml at the root has a registered maximum version (P13). PST-23 extends this one function.
-function isRootProjectYaml(relativePath: string): boolean {
+export function isRootProjectYaml(relativePath: string): boolean {
   return relativePath === PROJECT_YAML;
 }
 
@@ -132,7 +132,7 @@ function errnoOf(error: unknown): string | undefined {
 
 // The bytes and mtime of the file at target (P6, steps 3 and 4). A missing path or a non-file is refused, and so is
 // a file over the cap, before any byte is read.
-function readFileAt(target: ResolvedProjectPath): {
+export function readFileAt(target: ResolvedProjectPath): {
   bytes: Buffer;
   mtime: string;
 } {
@@ -426,28 +426,7 @@ export class FilesService {
   // The in-process append of one line to a file under logs/ (P10, P11). The project must be ok, active or not (S2).
   // Nothing is published.
   appendLog(projectId: string, path: string, line: string): void {
-    const project = this.projects.find(projectId);
-    if (project === undefined) {
-      throw refuse(PROJECT_ERROR_CODES.NOT_FOUND, PROJECT_MESSAGES.NOT_FOUND);
-    }
-    const state = project.yaml;
-    switch (state.status) {
-      case 'ok':
-        break;
-      case 'importable':
-        throw refuse(
-          PROJECT_ERROR_CODES.NOT_FOUND,
-          FILE_MESSAGES.NOT_A_PROJECT,
-        );
-      case 'invalid':
-        throw refuse(
-          PROJECT_ERROR_CODES.INVALID,
-          PROJECT_MESSAGES.INVALID,
-          state.issues,
-        );
-      case 'too-new':
-        throw tooNew();
-    }
+    const project = requireOkProject(this.projects.find(projectId));
     if (/[\r\n]/.test(line)) {
       throw new ModuleError(
         PLATFORM_ERROR_CODES.VALIDATION_FAILED,
