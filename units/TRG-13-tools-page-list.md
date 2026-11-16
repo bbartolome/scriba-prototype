@@ -18,5 +18,5 @@ unblocks: [TRG-14, TRG-16, TRG-17]
 - Refreshes on `catalog-changed`.
 
 ## Acceptance criteria
-- [ ] Component tests: grouping, toggle posts `enabled`, invalid tools marked, a `catalog-changed` event refreshes.
-- [ ] On a phone-sized viewport only the list and toggles are reachable.
+- [x] Component tests: grouping, toggle posts `enabled`, invalid tools marked, a `catalog-changed` event refreshes.
+- [x] On a phone-sized viewport only the list and toggles are reachable.

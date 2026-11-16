@@ -1,6 +1,6 @@
 ---
 id: TRG-13
-status: planned
+status: done
 ---
 # TRG-13 plan — Tools list: grouping, enable toggles, phone view, live refresh
 
