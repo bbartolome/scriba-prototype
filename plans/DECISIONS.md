@@ -5199,3 +5199,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Differences from the plan (implementer report):** the `--update-goldens` runs executed the whole API suite (a `--` before the file filter), 396 tests passed, and only the planned goldens changed. The first Edit of `scripts/eval-cases.test.mjs` was refused because the file had not been read; the same edit was then applied. Prettier reformatted `pack-mystery_question.json` (content unchanged).
 - **Not run:** the real-model run of the eval case with a small and a larger local model (plan section 7, point 1). It needs a local model server. The data test covers the criterion as written ("is added to the eval script data"). GNP-12's done-when depends on the run.
 - **Orchestrator action:** Step 3 (rebase onto main, the three checks, the patch id again, the checkboxes and status done, the fast-forward) follows.
+
+## 2026-11-16 — GNP-10 — Revision 1 READY, status planned (orchestrator)
+
+- **Reviser (Opus, medium) at main b718208:** READY. plans/GNP-10.md revised (revision 1), status planned. No unit file changed, so there is no unit change commit. Each statement was checked against the unit, the module, plans/GNP-09.md and the GNP-08 code on main.
+- **Section 3:** re-checked against plans/GNP-09.md at 71c70de and the GNP-08 code at ba67272. Both merge orders with GNP-09 hold. The only shared file is the propose_graph catalogue golden: the unit that goes second regenerates it and adds one line. The AC 3 test is in the new file scripts/eval-case-numbers-to-people.test.mjs (1 test). scripts/eval-cases.test.mjs is not changed and keeps 2 tests in every order.
+- **Free ids GNP-25 to GNP-29:** checked free; none used (no split was needed).
+- **Open, awaiting the Navigator:** the AC 3 reading (a data-only test; the real-model run recorded as not run; the run belongs to GNP-12 done-when) follows plans/GNP-09.md section 8 point 1. It is the same question as GNP-08 AC3 and GNP-09 AC4. Navigator session 8a43a36b415949f89ef1d21f4ea58eca.
+- **Review parts:** Part 1 is the whole plan (steps 0 to 16; tests AC1, AC2, AC3).
