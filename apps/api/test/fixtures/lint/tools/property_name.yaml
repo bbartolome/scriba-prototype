@@ -1,0 +1,19 @@
+schemaVersion: 1
+name: property_name
+description: A fixture tool.
+inputs:
+  type: object
+  properties:
+    topic:
+      type: string
+      title: Topic
+      x-scriba-type: text
+      x-scriba-port: true
+    x-note:
+      type: string
+      title: Note
+  required: [topic]
+output: draft
+enabled: true
+prompt: |
+  Write about {{topic}}.

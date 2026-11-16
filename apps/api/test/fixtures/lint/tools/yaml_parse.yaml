@@ -1,0 +1,16 @@
+schemaVersion: 1
+name: yaml_parse
+description: A fixture tool.
+inputs:
+  type: object
+  properties:
+    topic:
+      type: string
+      title: Topic
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [topic
+output: draft
+enabled: true
+prompt: |
+  Write about {{topic}}.

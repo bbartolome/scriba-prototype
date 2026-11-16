@@ -1,0 +1,10 @@
+schemaVersion: 1
+kind: file-name
+title: File name
+description: A kind whose kind differs from its file name.
+folder: entities
+fields:
+  type: object
+  properties:
+    label:
+      type: string

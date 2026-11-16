@@ -1,0 +1,19 @@
+schemaVersion: 1
+name: template_unused
+description: A fixture tool.
+inputs:
+  type: object
+  properties:
+    topic:
+      type: string
+      title: Topic
+      x-scriba-type: text
+      x-scriba-port: true
+    extra:
+      type: string
+      title: Extra
+  required: [topic, extra]
+output: draft
+enabled: true
+prompt: |
+  Write about {{topic}}.

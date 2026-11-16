@@ -2,3 +2,4 @@
 /modules/
 /plans/
 /package-lock.json
+/apps/api/test/fixtures/lint/

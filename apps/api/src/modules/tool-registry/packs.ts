@@ -13,6 +13,7 @@ import {
   TOOL_SPEC_SCHEMA_VERSION,
   toolSpecSchema,
   type BuiltinOrigin,
+  type LintResult,
   type ToolErrorCode,
   type ToolErrorInfo,
   type ToolOrigin,
@@ -21,6 +22,7 @@ import {
 } from '@bbartolome/scriba-contracts/tool-registry';
 import { BootError } from '../platform/platform.module';
 import { emitViews } from './emit';
+import { lintToolSource } from './lint';
 import { isRecord, ToolSpecError } from './inputs';
 import { compileTool, createAjv, type CompiledTool } from './validate';
 
@@ -39,7 +41,9 @@ export interface LoadedTool {
 }
 
 // One tool file. A file that passes is valid and holds its LoadedTool. A file that does not is listed with its
-// error, and its summary has output null, description '' and enabled false (TRG-01 option A).
+// error, and its summary has output null, description '' and enabled false (TRG-01 option A). A file with a lint
+// error is invalid, but keeps its parsed spec, so its summary keeps its output and its switch (TRG-07 D10).
+// Every entry keeps its lint result (TRG-07 D11).
 export type ToolEntry =
   | {
       valid: true;
@@ -47,6 +51,7 @@ export type ToolEntry =
       origin: ToolOrigin;
       source: string;
       tool: LoadedTool;
+      lint: LintResult;
     }
   | {
       valid: false;
@@ -54,6 +59,8 @@ export type ToolEntry =
       origin: ToolOrigin;
       source: string;
       error: ToolErrorInfo;
+      lint: LintResult;
+      spec: ToolSpec | null;
     };
 
 // The (mtime, size) of one user-pack file, the freshness mark of the manifest.
@@ -173,20 +180,22 @@ function invalidEntry(
   stem: string,
   origin: ToolOrigin,
   source: string,
-  code: ToolErrorCode,
-  message: string,
+  error: ToolErrorInfo,
+  lint: LintResult,
+  spec: ToolSpec | null,
 ): ToolEntry {
-  return {
-    valid: false,
-    name: stem,
-    origin,
-    source,
-    error: { code, message },
-  };
+  return { valid: false, name: stem, origin, source, error, lint, spec };
 }
 
-// Reads and checks one tool file. A file that cannot be read, parsed or checked is an invalid entry, not an error.
-function loadFile(path: string, stem: string, origin: ToolOrigin): ToolEntry {
+// Reads, lints and checks one tool file. A file that cannot be read, parsed or checked is an invalid entry, not an
+// error. The structural checks run after the lint, so the file's lint result is kept on every path. A file with a
+// lint error is invalid with the spec from checkTool; a warning does not invalidate (TRG-07 D10).
+function loadFile(
+  path: string,
+  stem: string,
+  origin: ToolOrigin,
+  entityKinds: ReadonlySet<string>,
+): ToolEntry {
   const label = `${origin}/tools/${stem}${YAML_SUFFIX}`;
   let source: string;
   try {
@@ -196,10 +205,15 @@ function loadFile(path: string, stem: string, origin: ToolOrigin): ToolEntry {
       stem,
       origin,
       '',
-      TOOL_ERROR_CODES.INVALID,
-      `The file "${label}" could not be read: ${reasonOf(error)}.`,
+      {
+        code: TOOL_ERROR_CODES.INVALID,
+        message: `The file "${label}" could not be read: ${reasonOf(error)}.`,
+      },
+      [],
+      null,
     );
   }
+  const { lint } = lintToolSource(source, { name: stem, entityKinds });
   let raw: unknown;
   try {
     raw = parse(source);
@@ -209,25 +223,52 @@ function loadFile(path: string, stem: string, origin: ToolOrigin): ToolEntry {
       stem,
       origin,
       source,
-      TOOL_ERROR_CODES.INVALID,
-      `The file "${label}" is not valid YAML: ${firstLine}.`,
+      {
+        code: TOOL_ERROR_CODES.INVALID,
+        message: `The file "${label}" is not valid YAML: ${firstLine}.`,
+      },
+      lint,
+      null,
     );
   }
+  let checked: ReturnType<typeof checkTool>;
   try {
-    const checked = checkTool(raw, stem, label);
-    return {
-      valid: true,
-      name: stem,
-      origin,
-      source,
-      tool: { ...checked, source, origin },
-    };
+    checked = checkTool(raw, stem, label);
   } catch (error) {
     if (error instanceof ToolFileError) {
-      return invalidEntry(stem, origin, source, error.code, error.message);
+      return invalidEntry(
+        stem,
+        origin,
+        source,
+        { code: error.code, message: error.message },
+        lint,
+        null,
+      );
     }
     throw error;
   }
+  const failed = lint.find((diagnostic) => diagnostic.severity === 'error');
+  if (failed !== undefined) {
+    return invalidEntry(
+      stem,
+      origin,
+      source,
+      {
+        code: TOOL_ERROR_CODES.INVALID,
+        message: `The file "${label}" fails lint: line ${failed.line}: ${failed.message}.`,
+      },
+      lint,
+      checked.spec,
+    );
+  }
+  return {
+    valid: true,
+    name: stem,
+    origin,
+    source,
+    lint,
+    tool: { ...checked, source, origin },
+  };
 }
 
 // The names of the regular `.yaml` files directly in a folder, sorted. A folder that does not exist has none.
@@ -249,26 +290,68 @@ function stemOf(file: string): string {
   return file.slice(0, -YAML_SUFFIX.length);
 }
 
-// Reads the built-in tools of the packs root, once. A pack folder that does not exist is an empty pack. A tool
-// name that two built-in packs define stops boot, naming the tool and both packs.
-export function readBuiltinTools(packsRoot: string): ToolEntry[] {
+// One file of a built-in pack folder. `label` is its path under the packs root, as `core/tools/x.yaml`.
+export interface BuiltinFile {
+  origin: BuiltinOrigin;
+  stem: string;
+  path: string;
+  label: string;
+}
+
+// A file whose stem an earlier built-in pack already owns, with that pack's origin.
+export interface DuplicateBuiltinFile extends BuiltinFile {
+  first: BuiltinOrigin;
+}
+
+// The files of one folder across the built-in packs: the first owner of each stem, and the later duplicates.
+export interface BuiltinFiles {
+  files: BuiltinFile[];
+  duplicates: DuplicateBuiltinFile[];
+}
+
+// Lists the `.yaml` files of `<pack>/<folder>` for each built-in pack, in pack order (TRG-07 step 3). A folder that
+// does not exist is an empty pack. The loaders and the pack-lint library read the packs through this one function.
+export function builtinFiles(packsRoot: string, folder: string): BuiltinFiles {
   const owner = new Map<string, BuiltinOrigin>();
-  const entries: ToolEntry[] = [];
+  const files: BuiltinFile[] = [];
+  const duplicates: DuplicateBuiltinFile[] = [];
   for (const pack of BUILTIN_ORIGINS) {
-    const toolsDir = join(packsRoot, pack, 'tools');
-    for (const file of yamlFilesIn(toolsDir)) {
-      const stem = stemOf(file);
-      const first = owner.get(stem);
-      if (first !== undefined) {
-        throw new BootError(
-          `The tool "${stem}" is defined in two built-in packs, ${first} and ${pack}. Each tool name belongs to one pack (packs root ${packsRoot}).`,
-        );
+    const dir = join(packsRoot, pack, folder);
+    for (const file of yamlFilesIn(dir)) {
+      const entry: BuiltinFile = {
+        origin: pack,
+        stem: stemOf(file),
+        path: join(dir, file),
+        label: `${pack}/${folder}/${file}`,
+      };
+      const first = owner.get(entry.stem);
+      if (first === undefined) {
+        owner.set(entry.stem, pack);
+        files.push(entry);
+      } else {
+        duplicates.push({ ...entry, first });
       }
-      owner.set(stem, pack);
-      entries.push(loadFile(join(toolsDir, file), stem, pack));
     }
   }
-  return entries;
+  return { files, duplicates };
+}
+
+// Reads the built-in tools of the packs root, once. A pack folder that does not exist is an empty pack. A tool
+// name that two built-in packs define stops boot, naming the tool and both packs.
+export function readBuiltinTools(
+  packsRoot: string,
+  entityKinds: ReadonlySet<string>,
+): ToolEntry[] {
+  const { files, duplicates } = builtinFiles(packsRoot, 'tools');
+  const [duplicate] = duplicates;
+  if (duplicate !== undefined) {
+    throw new BootError(
+      `The tool "${duplicate.stem}" is defined in two built-in packs, ${duplicate.first} and ${duplicate.origin}. Each tool name belongs to one pack (packs root ${packsRoot}).`,
+    );
+  }
+  return files.map((file) =>
+    loadFile(file.path, file.stem, file.origin, entityKinds),
+  );
 }
 
 // Scans the user tools folder against the previous scan. A file whose (mtime, size) mark is unchanged keeps its
@@ -276,6 +359,7 @@ export function readBuiltinTools(packsRoot: string): ToolEntry[] {
 export function scanUserTools(
   dir: string,
   previous: UserPackScan,
+  entityKinds: ReadonlySet<string>,
 ): UserPackScan {
   const marks = new Map<string, FileMark>();
   const entries = new Map<string, ToolEntry>();
@@ -303,7 +387,7 @@ export function scanUserTools(
       continue;
     }
     changed.add(stem);
-    entries.set(stem, loadFile(path, stem, 'user'));
+    entries.set(stem, loadFile(path, stem, 'user', entityKinds));
   }
   for (const path of previous.marks.keys()) {
     if (!marks.has(path)) changed.add(stemOf(basename(path)));

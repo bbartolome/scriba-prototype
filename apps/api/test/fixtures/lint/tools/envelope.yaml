@@ -1,0 +1,17 @@
+schemaVersion: 1
+name: envelope
+description: A fixture tool.
+extra: 1
+inputs:
+  type: object
+  properties:
+    topic:
+      type: string
+      title: Topic
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [topic]
+output: draft
+enabled: true
+prompt: |
+  Write about {{topic}}.

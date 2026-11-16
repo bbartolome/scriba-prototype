@@ -1,9 +1,7 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import Ajv, { type ErrorObject, type ValidateFunction } from 'ajv';
 import { parse } from 'yaml';
 import {
-  BUILTIN_ORIGINS,
   ENTITY_TYPE_SCHEMA_VERSION,
   entityTypeSchema,
   type BuiltinOrigin,
@@ -12,6 +10,8 @@ import {
 } from '@bbartolome/scriba-contracts/tool-registry';
 import { BootError } from '../platform/platform.module';
 import { isRecord, stripExtensions } from './inputs';
+import { lintEntityTypeSource } from './lint';
+import { builtinFiles } from './packs';
 
 // The built-in entity types: one YAML per kind in each pack's entity-types folder. A fault in one stops boot,
 // because the entity-type list has no error field to show it (C2).
@@ -35,20 +35,6 @@ export interface EntityCheck {
 }
 
 export type EntityValidator = (frontMatter: unknown) => EntityCheck;
-
-// The names of the regular `.yaml` files directly in a folder, sorted. A folder that does not exist has none.
-function yamlFilesIn(dir: string): string[] {
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir, { withFileTypes: true })
-    .filter(
-      (entry) =>
-        entry.isFile() &&
-        !entry.name.startsWith('.') &&
-        entry.name.endsWith(YAML_SUFFIX),
-    )
-    .map((entry) => entry.name)
-    .sort();
-}
 
 function fault(label: string, message: string): BootError {
   return new BootError(
@@ -217,9 +203,11 @@ function loadEntityType(
   pack: BuiltinOrigin,
 ): EntityTypeEntry {
   const label = `${pack}/entity-types/${stem}${YAML_SUFFIX}`;
+  let source: string;
   let raw: unknown;
   try {
-    raw = parse(readFileSync(path, 'utf8'));
+    source = readFileSync(path, 'utf8');
+    raw = parse(source);
   } catch (error) {
     const reason =
       error instanceof Error ? error.message.split('\n')[0] : String(error);
@@ -252,7 +240,18 @@ function loadEntityType(
     );
   }
   checkFields(spec.fields, label);
-  return { spec, validate: compileFields(spec.fields, label) };
+  const validate = compileFields(spec.fields, label);
+  // The lint runs last, so the faults above keep their messages. An error of lint stops boot (TRG-07 D12).
+  const failed = lintEntityTypeSource(source, { stem }).find(
+    (diagnostic) => diagnostic.severity === 'error',
+  );
+  if (failed !== undefined) {
+    throw fault(
+      label,
+      `line ${failed.line}: ${failed.message} (${failed.rule})`,
+    );
+  }
+  return { spec, validate };
 }
 
 // Reads the built-in entity types of the packs root, once. A pack folder that does not exist is empty. A kind that
@@ -260,23 +259,17 @@ function loadEntityType(
 export function readEntityTypes(
   packsRoot: string,
 ): Map<string, EntityTypeEntry> {
-  const owner = new Map<string, BuiltinOrigin>();
+  const { files, duplicates } = builtinFiles(packsRoot, 'entity-types');
+  const [duplicate] = duplicates;
+  if (duplicate !== undefined) {
+    throw new BootError(
+      `The entity kind "${duplicate.stem}" is defined in two built-in packs, ${duplicate.first} and ${duplicate.origin} (packs root ${packsRoot}).`,
+    );
+  }
   const entries = new Map<string, EntityTypeEntry>();
-  for (const pack of BUILTIN_ORIGINS) {
-    const dir = join(packsRoot, pack, 'entity-types');
-    for (const file of yamlFilesIn(dir)) {
-      const stem = file.slice(0, -YAML_SUFFIX.length);
-      const entry = loadEntityType(join(dir, file), stem, pack);
-      const kind = entry.spec.kind;
-      const first = owner.get(kind);
-      if (first !== undefined) {
-        throw new BootError(
-          `The entity kind "${kind}" is defined in two built-in packs, ${first} and ${pack} (packs root ${packsRoot}).`,
-        );
-      }
-      owner.set(kind, pack);
-      entries.set(kind, entry);
-    }
+  for (const file of files) {
+    const entry = loadEntityType(file.path, file.stem, file.origin);
+    entries.set(entry.spec.kind, entry);
   }
   return entries;
 }

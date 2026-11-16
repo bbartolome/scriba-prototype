@@ -1,0 +1,17 @@
+schemaVersion: 1
+name: additional_properties
+description: A fixture tool.
+inputs:
+  type: object
+  additionalProperties: true
+  properties:
+    topic:
+      type: string
+      title: Topic
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [topic]
+output: draft
+enabled: true
+prompt: |
+  Write about {{topic}}.

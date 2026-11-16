@@ -1,0 +1,11 @@
+schemaVersion: 1
+kind: entity-hint
+title: Entity hint
+description: A kind with a tool-only hint on a field.
+folder: entities
+fields:
+  type: object
+  properties:
+    label:
+      type: string
+      x-scriba-port: true

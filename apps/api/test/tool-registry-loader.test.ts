@@ -320,7 +320,7 @@ it('AC2: a user file with a newer schemaVersion is listed as refused and the oth
           enabled: false,
           origin: 'user',
           valid: false,
-          lintCounts: { errors: 0, warnings: 0 },
+          lintCounts: { errors: 1, warnings: 0 },
           error: expect.objectContaining({
             code: 'TOOL_SCHEMA_VERSION_UNSUPPORTED',
           }),
@@ -416,7 +416,7 @@ it('AC4: an invalid user copy shows the built-in as effective and beside it an i
           origin: 'user',
           overrides: 'core',
           valid: false,
-          lintCounts: { errors: 0, warnings: 0 },
+          lintCounts: { errors: 1, warnings: 3 },
           error: {
             code: 'TOOL_INVALID',
             message: expect.stringContaining('output'),

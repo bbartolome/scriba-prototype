@@ -1,0 +1,13 @@
+schemaVersion: 1
+kind: nested-object
+title: Nested object
+description: A kind with a nested object field.
+folder: entities
+fields:
+  type: object
+  properties:
+    address:
+      type: object
+      properties:
+        street:
+          type: string

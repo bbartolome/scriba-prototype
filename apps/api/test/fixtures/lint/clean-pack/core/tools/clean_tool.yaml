@@ -1,0 +1,17 @@
+schemaVersion: 1
+name: clean_tool
+description: A tool with no fault.
+inputs:
+  type: object
+  properties:
+    topic:
+      type: string
+      title: Topic
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [sample-kind]
+  required: [topic]
+output: draft
+enabled: true
+prompt: |
+  Write about {{topic}}.

@@ -1,0 +1,17 @@
+schemaVersion: 1
+name: entity_kind
+description: A fixture tool.
+inputs:
+  type: object
+  properties:
+    topic:
+      type: string
+      title: Topic
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [no-such-kind]
+  required: [topic]
+output: draft
+enabled: true
+prompt: |
+  Write about {{topic}}.

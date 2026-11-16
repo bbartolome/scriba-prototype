@@ -1,0 +1,17 @@
+schemaVersion: 1
+name: hint_unknown
+description: A fixture tool.
+inputs:
+  type: object
+  properties:
+    topic:
+      type: string
+      title: Topic
+      x-scriba-colour: red
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [topic]
+output: draft
+enabled: true
+prompt: |
+  Write about {{topic}}.

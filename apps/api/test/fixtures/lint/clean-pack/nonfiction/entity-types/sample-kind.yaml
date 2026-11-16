@@ -1,0 +1,10 @@
+schemaVersion: 1
+kind: sample-kind
+title: Sample
+description: A kind with one field.
+folder: entities
+fields:
+  type: object
+  properties:
+    name:
+      type: string

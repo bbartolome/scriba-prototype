@@ -1,0 +1,17 @@
+schemaVersion: 1
+name: control_fit
+description: A fixture tool.
+inputs:
+  type: object
+  properties:
+    topic:
+      type: string
+      title: Topic
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: slider
+  required: [topic]
+output: draft
+enabled: true
+prompt: |
+  Write about {{topic}}.

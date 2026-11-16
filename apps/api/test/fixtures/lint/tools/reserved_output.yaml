@@ -1,0 +1,19 @@
+schemaVersion: 1
+name: reserved_output
+description: A fixture tool.
+inputs:
+  type: object
+  properties:
+    topic:
+      type: string
+      title: Topic
+      x-scriba-type: text
+      x-scriba-port: true
+    output:
+      type: string
+      title: Output
+  required: [topic]
+output: draft
+enabled: true
+prompt: |
+  Write about {{topic}}.

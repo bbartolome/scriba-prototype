@@ -26,6 +26,7 @@ import {
   type EntityTypeEntry,
   type EntityValidator,
 } from './entity-types';
+import { countsOf } from './lint';
 import {
   emptyUserScan,
   readBuiltinTools,
@@ -80,10 +81,11 @@ function enabledWith(tool: LoadedTool, switches: ToolSwitches): boolean {
   return Object.hasOwn(switches, name) ? switches[name] : tool.spec.enabled;
 }
 
-// The switch of an entry as a toggle compares it. An invalid entry has no spec, so its default is false.
+// The switch of an entry as a toggle compares it. An invalid entry without a spec has no default, so it is false.
 function switchOf(entry: ToolEntry, switches: ToolSwitches): boolean {
   if (entry.valid) return enabledWith(entry.tool, switches);
-  return Object.hasOwn(switches, entry.name) ? switches[entry.name] : false;
+  if (Object.hasOwn(switches, entry.name)) return switches[entry.name];
+  return entry.spec?.enabled ?? false;
 }
 
 function summaryOf(
@@ -96,14 +98,19 @@ function summaryOf(
     origin: entry.origin,
     ...shadow,
     valid: entry.valid,
-    lintCounts: { errors: 0, warnings: 0 },
+    lintCounts: countsOf(entry.lint),
   };
   if (!entry.valid) {
+    // An invalid entry keeps its spec when the file parsed, so its output and its switch default come from it.
+    const spec = entry.spec;
+    const override = Object.hasOwn(switches, entry.name)
+      ? switches[entry.name]
+      : undefined;
     return {
       ...common,
-      description: '',
-      output: null,
-      enabled: false,
+      description: spec?.description ?? '',
+      output: spec?.output ?? null,
+      enabled: spec === null ? false : (override ?? spec.enabled),
       error: entry.error,
     };
   }
@@ -121,6 +128,8 @@ function summaryOf(
 export class CatalogService {
   private readonly builtins: Map<string, ToolEntry>;
   private readonly entityEntries: Map<string, EntityTypeEntry>;
+  // The kinds of the loaded built-in entity types. The entity-kind lint reads them.
+  private readonly kinds: ReadonlySet<string>;
   private readonly userFolder: string;
   private userScan: UserPackScan;
   private readonly listeners: CatalogListener[] = [];
@@ -129,19 +138,20 @@ export class CatalogService {
     @Inject(SCRIBA_ENV) env: ScribaEnv,
     private readonly toolSwitches: ToolSwitchesService,
   ) {
+    this.entityEntries = readEntityTypes(env.SCRIBA_PACKS_DIR);
+    this.kinds = new Set(this.entityEntries.keys());
     this.builtins = new Map(
-      readBuiltinTools(env.SCRIBA_PACKS_DIR).map(
+      readBuiltinTools(env.SCRIBA_PACKS_DIR, this.kinds).map(
         (entry): [string, ToolEntry] => [entry.name, entry],
       ),
     );
-    this.entityEntries = readEntityTypes(env.SCRIBA_PACKS_DIR);
     this.userFolder = userToolsDir(env.SCRIBA_BOOKS_DIR);
-    this.userScan = scanUserTools(this.userFolder, emptyUserScan());
+    this.userScan = scanUserTools(this.userFolder, emptyUserScan(), this.kinds);
   }
 
   // Re-scans the user pack when its manifest changed. Calls each listener with the changed names, and returns them.
   refresh(): string[] {
-    const scan = scanUserTools(this.userFolder, this.userScan);
+    const scan = scanUserTools(this.userFolder, this.userScan, this.kinds);
     this.userScan = scan;
     if (scan.changed.length > 0) this.notify(scan.changed);
     return scan.changed;
@@ -253,6 +263,11 @@ export class CatalogService {
     return validateArguments(this.loaded(name), request);
   }
 
+  // The kinds of the loaded built-in entity types. The lint of a tool checks its entity kinds against them.
+  entityKinds(): ReadonlySet<string> {
+    return this.kinds;
+  }
+
   // The built-in entity types, sorted by kind.
   entityTypes(): EntityTypeList {
     const entityTypes = [...this.entityEntries.values()]
@@ -295,14 +310,14 @@ export class CatalogService {
     return entry.tool;
   }
 
-  // The detail of one entry. For an invalid entry, spec and views are null. Lint is TRG-07's, so empty here.
+  // The detail of one entry, with its lint. For an invalid entry, spec and views are null.
   private detailOf(entry: ToolEntry): ToolDetail {
     if (!entry.valid) {
       return {
         spec: null,
         source: entry.source,
         origin: entry.origin,
-        lint: [],
+        lint: entry.lint,
         views: null,
       };
     }
@@ -310,7 +325,7 @@ export class CatalogService {
       spec: entry.tool.spec,
       source: entry.source,
       origin: entry.origin,
-      lint: [],
+      lint: entry.lint,
       views: entry.tool.views,
     };
   }
