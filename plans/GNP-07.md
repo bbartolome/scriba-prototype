@@ -1,6 +1,6 @@
 ---
 id: GNP-07
-status: planned
+status: done
 ---
 # GNP-07 plan — cold_open nonfiction draft tool, golden case and eval case
 
