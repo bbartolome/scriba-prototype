@@ -233,7 +233,7 @@ function isEntityResolution(value: unknown): boolean {
         isRecord(entry) &&
         isFilled(entry['id']) &&
         (entry['code'] === 'unknown' || entry['code'] === 'duplicate') &&
-        isOptional(entry['paths'], Array.isArray)
+        isOptional(entry['paths'], Array.isArray),
     )
   );
 }
