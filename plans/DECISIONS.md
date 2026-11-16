@@ -5127,3 +5127,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Plan inconsistency.** PC6 and T4 disagree. Unit line 19 says "fill an empty style field"; the registry comment at `apps/api/src/modules/tool-registry/emit.ts` says the style field is never required because "callers fill it from the project's profile".
 - **Last good commit:** `49ce239` on `unit/AGL-09` (steps 2 to 8 and the API test file; parent `5f5fea3`). Steps 9 to 12 and the gates were not run. Node v26.13.0, npm 11.20.0.
 - **Orchestrator action:** plan set to `status: draft`; a reviser corrects PC6 or T2 (the reviser may not weaken a criterion or a test). A new implementer continues from `49ce239`.
+
+## 2026-11-16 — AGL-09 — Sonnet code review (part 1 of 2: steps 1, 2, 6, 7, 11, 12 and T1; part 2 of 2: steps 3, 4, 5, 8, 9, 10 and T2, T3, T4, W1, W2): APPROVED, patch id eb7efed87277094315ecd488122bca3f8cb19788 (orchestrator record)
+
+- **Result:** two reviewers, both APPROVED for the same patch id above. The check was run against unit/AGL-09 at 5efc207 (base 5f5fea3). The implementer's COMPLETE report: T1 to T4 pass (`npx vitest run test/agent-loop-narrative.test.ts`, 4 passed); the web specs (W1, W2) pass as part of a 14-test web run; prettier, build, the regression run (11 files, 44 tests), `npm test` and `npm run lint` exit 0. The reviewers did not re-run the gates; they read the code and the tests.
+- **Changes after the first attempt:** PLAN DOES NOT WORK at 49ce239 (PC6, absent style field), recorded above. Plan revision 4 (a68f249) and the fix in 287bb0b.
+- **Files:** the 14 files in plan section 2 and its settled conditional rows; no extra file.
