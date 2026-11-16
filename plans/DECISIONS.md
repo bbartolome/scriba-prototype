@@ -4537,3 +4537,20 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - The reviewer read the plan's steps 0 to 11 and the tests of part 1 against the diff, and checked that the code changes only the nine files of section 2. The reviewer did not re-run tests. Reply: APPROVED for patch id 057d509bcccccb0d4d0b43719c2eade9b6212b4c.
 - Review parts: one part, so one reviewer.
 - Next: step 3 for MPR-12 (rebase onto main, the three checks, patch id again, unit and plan marks, fast-forward). Its base is 5475399, so the rebase is needed.
+
+## 2026-11-16 — MPR-11 — Merged to main (orchestrator)
+
+- Step 3 checks on the rebased branch (base 375037a, head f28d024): `npm run lint` exit 0; `npm test` exit 0 on the rerun (contracts 247, API 293, web 328, scripts 12); `npm run build` exit 0. The first `npm test` (exit 1, three 5000 ms timeouts) is recorded above.
+- Step 7: main moved, so the branch was rebased again with `git rebase --apply main` onto ab99ea8. The rebase changed no code: the patch id is `200d7b05ee396fe8ee281ee1045fa544bc5e7aa3`, as approved.
+- Step 8: `units/MPR-11-providers-route-gate.md`, criteria 1 and 2 ticked; `plans/MPR-11.md` status done. Commit a01e942 on the branch.
+- Step 9: `git merge --ff-only unit/MPR-11` on main, ab99ea8 to a01e942.
+- Step 10 not done: the worktree /Users/bbartolome/workspace/scriba-prototype-wt/MPR-11 and the branch unit/MPR-11 remain. The removal of the worktree was refused by the auto-mode permission check in this session, and it was not retried. The branch is merged into main.
+
+## 2026-11-16 — MPR-12 — Merged to main (orchestrator)
+
+- Step 3, first attempt: `git rebase --apply main` onto a01e942 stopped with "Your local changes ... would be overwritten by merge" for apps/api/src/modules/providers/providers.module.ts, providers.resolution.ts, providers.service.ts and packages/contracts/test/providers.exports.test.ts, then "Patch failed at 0001" in the 3-way fallback. No file of apps/api or packages/contracts changed on main since the base 5475399, so the failure is not a content conflict. The rebase was aborted, and the branch was left at a278416.
+- Replay: HEAD detached at main c976305; `git cherry-pick a278416` applied cleanly and gave cc16117 (one feat commit). Patch id of the replayed diff: `057d509bcccccb0d4d0b43719c2eade9b6212b4c`, unchanged. The branch unit/MPR-12 was moved to cc16117 with `git branch -f`. The old tip a278416 stays in the reflog.
+- Checks on cc16117: `npm run lint` exit 0; `npm test` exit 0 (contracts 248, API 300, web 328, scripts 12); `npm run build` exit 0.
+- Step 8: `units/MPR-12-project-override-api.md`, criteria 1 to 6 ticked; `plans/MPR-12.md` status done. Commit 8e6c0a0 on the branch.
+- Step 9: `git merge --ff-only unit/MPR-12` on main, c976305 to 8e6c0a0.
+- Step 10 not done: the worktree /Users/bbartolome/workspace/scriba-prototype-wt/MPR-12 and the branch unit/MPR-12 remain. The branch is merged into main.
