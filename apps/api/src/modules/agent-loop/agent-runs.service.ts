@@ -21,6 +21,7 @@ import { ModelResolver } from '../providers/providers.module';
 import { buildProjectSummary } from './agent-prompt';
 import { AgentRun } from './agent-run';
 import { AgentSettingsService } from './agent-settings.service';
+import { GroundingEngine } from './grounding-engine';
 import { AgentToolsService } from './agent-tools.service';
 import { AgentTranscriptsService } from './transcript-reader';
 import { runStateOfTranscript } from './transcript-run-state';
@@ -51,6 +52,7 @@ export class AgentRunsService {
     private readonly events: EventsPublisher,
     private readonly transcripts: AgentTranscriptsService,
     private readonly pending: PendingService,
+    private readonly grounding: GroundingEngine,
   ) {
     // Registered once. The handler never throws: a throw would fail the switch (PST-04 D8 and D9).
     this.store.onProjectSwitched((event) => this.onProjectSwitched(event));
@@ -84,8 +86,8 @@ export class AgentRunsService {
     const conversationId = body.conversationId ?? randomUUID();
     const startedAt = new Date();
     const enabledFamilies: AgentToolFamily[] = settings.research.enabled
-      ? ['project', 'narrative', 'research']
-      : ['project', 'narrative'];
+      ? ['project', 'narrative', 'grounding', 'research']
+      : ['project', 'narrative', 'grounding'];
     const transcript = new TranscriptWriter({
       files: this.files,
       projectId,
@@ -120,6 +122,8 @@ export class AgentRunsService {
             this.store.resolvePath(project.root, path).exists
           );
         },
+        // The grounding check of a run (AGL-17). The engine holds the model work; the run holds the events.
+        ground: (input) => this.grounding.check(input),
       },
     );
     this.slotOf(projectId).active = run;

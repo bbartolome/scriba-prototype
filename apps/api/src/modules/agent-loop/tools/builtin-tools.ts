@@ -4,6 +4,7 @@ import {
   type SearchResult,
 } from '@bbartolome/scriba-contracts/project-store';
 import { ModuleError } from '../../platform/platform.module';
+import { summaryOf } from '../grounding-engine';
 import {
   FilesService,
   ProjectsService,
@@ -25,6 +26,10 @@ interface ListFilesArgs {
 }
 
 interface ReadFileArgs {
+  path: string;
+}
+
+interface CheckGroundingArgs {
   path: string;
 }
 
@@ -351,5 +356,60 @@ export function builtinTools(
     },
   };
 
-  return [listFiles, readFile, searchNotes, writeFile, editFile];
+  // The grounding check of a draft, as a tool (AGL-17). The check and its events are the run's; the tool only asks
+  // for it and answers the model with the verdicts.
+  const checkGrounding: ToolDefinition = {
+    name: 'check_grounding',
+    family: 'grounding',
+    description:
+      'Check the claims of a project-relative draft against the sources. Returns each claim with its verdict and the source it cites.',
+    schema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          minLength: 1,
+          description: 'The project-relative path of the draft to check.',
+        },
+      },
+      required: ['path'],
+      additionalProperties: false,
+    },
+    handler: async (ctx, args) => {
+      const input = args as CheckGroundingArgs;
+      const target = targetOf(store, projects, ctx.run.projectId, input.path);
+      const check = ctx.run.groundingCheck;
+      if (check === undefined) {
+        throw new Error('Grounding checks are not available in this run.');
+      }
+      const result = await check(target.relativePath, ctx.signal);
+      const counts = summaryOf(result);
+      const claims = result.claims.map((claim) => ({
+        text: claim.text,
+        verdict: claim.verdict,
+        reason: claim.reason,
+        ...(claim.passage === undefined ? {} : { source: claim.passage.path }),
+      }));
+      return {
+        summary: `Checked ${target.relativePath}: ${counts.supported} supported, ${counts.weak} weak, ${counts.unsupported} unsupported.`,
+        output: counts,
+        modelText: JSON.stringify({
+          targetPath: target.relativePath,
+          supported: counts.supported,
+          weak: counts.weak,
+          unsupported: counts.unsupported,
+          claims,
+        }),
+      };
+    },
+  };
+
+  return [
+    listFiles,
+    readFile,
+    searchNotes,
+    writeFile,
+    editFile,
+    checkGrounding,
+  ];
 }

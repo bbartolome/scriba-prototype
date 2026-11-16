@@ -1,5 +1,9 @@
-import type { AgentToolFamily } from '@bbartolome/scriba-contracts/agent-loop';
+import type {
+  AgentToolFamily,
+  GroundingResult,
+} from '@bbartolome/scriba-contracts/agent-loop';
 import { ModuleError } from '../../platform/platform.module';
+import { GroundingFailure } from '../grounding-engine';
 import {
   expectedSummary,
   issuesFromAjv,
@@ -67,6 +71,11 @@ export class ToolRun {
   readonly projectId: string;
   // The writes and captured bases of this run (AGL-12 D1, D2).
   readonly overlay = new WriteOverlay();
+  // The grounding check of a path, set by the run that owns this dispatcher (AGL-17). Undefined outside a run.
+  groundingCheck?: (
+    path: string,
+    signal?: AbortSignal,
+  ) => Promise<GroundingResult>;
   private readonly offered = new Map<string, CompiledTool>();
   private readonly invalidCounts = new Map<string, number>();
   private readonly withdrawn = new Set<string>();
@@ -162,6 +171,20 @@ export class ToolRun {
         },
       };
     } catch (error) {
+      // A grounding check that gave no result is answered to the model with its readable text. It is not an invalid
+      // call, so it neither counts nor resets (AGL-17).
+      if (error instanceof GroundingFailure) {
+        const count = this.invalidCounts.get(name) ?? 0;
+        return {
+          arguments: parsed.value,
+          valid: true,
+          outcome: {
+            kind: 'error',
+            message: error.message,
+            attempt: Math.max(1, count),
+          },
+        };
+      }
       // A refusal from the Project store is one issue at path `path`. Both built-in tools have one argument, `path`
       // (S18). A handler's own refusal carries its issues (S17).
       if (error instanceof ModuleError) {

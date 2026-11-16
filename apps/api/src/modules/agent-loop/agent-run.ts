@@ -6,6 +6,7 @@ import type {
   AgentToolFamily,
   DiffPreview,
   DraftProvenance,
+  GroundingResult,
 } from '@bbartolome/scriba-contracts/agent-loop';
 import type {
   PendingChange,
@@ -22,6 +23,7 @@ import {
 } from '../providers/providers.module';
 import { AGENT_SYSTEM_PROMPT } from './agent-prompt';
 import { replayTurns, trimHistory } from './conversation-history';
+import { GroundingFailure, type GroundingCheckInput } from './grounding-engine';
 import type { AgentTranscriptsService } from './transcript-reader';
 import type { TranscriptWriter } from './transcript-writer';
 import type { ToolRun } from './tools/tool-run';
@@ -43,11 +45,13 @@ export interface AgentRunInit {
   tools: ToolRun;
   // The run's transcript, from the same call sites as the stream (D4, D5).
   transcript: TranscriptWriter;
+  // The path of an on-demand check run (AGL-17). A run with a checkPath has no model loop: its only step is the check.
+  checkPath?: string;
 }
 
 // What a run takes from the module: the resolver, the event publisher, the project summary, the release of its slot,
-// the transcripts the history is rebuilt from, and the Project store's propose and existence check for the writes
-// flushed at run end (AGL-12 P14). A run holds no Nest code.
+// the transcripts the history is rebuilt from, the Project store's propose and existence check for the writes
+// flushed at run end (AGL-12 P14), and the grounding check (AGL-17). A run holds no Nest code.
 export interface AgentRunDeps {
   resolver: ModelResolver;
   events: EventsPublisher;
@@ -56,6 +60,7 @@ export interface AgentRunDeps {
   transcripts: AgentTranscriptsService;
   propose: (input: ProposeInput) => PendingChange;
   targetExists: (projectId: string, path: string) => boolean;
+  ground: (input: GroundingCheckInput) => Promise<GroundingResult>;
 }
 
 // The text of a refusal from the Project store, or the fixed text for any other failure (AGL-12 P10).
@@ -96,6 +101,8 @@ function untilAborted<T>(
 
 // The message of a failed run: a module's own message, with its hint when it has one (D3).
 function messageOf(error: unknown): string {
+  // A grounding check that gave no result says why, in its own readable text (AGL-17).
+  if (error instanceof GroundingFailure) return error.message;
   if (!(error instanceof ModuleError)) return FAILED_MESSAGE;
   const hint = hintOf(error.details);
   return hint === undefined ? error.message : `${error.message} ${hint}`;
@@ -133,6 +140,9 @@ export class AgentRun {
     this.tools = init.tools;
     this.transcript = init.transcript;
     this.deps = deps;
+    // The dispatcher's check of a path is this run's check, with the run's abort signal unless one is given (AGL-17).
+    this.tools.groundingCheck = (path, signal) =>
+      this.groundOne(path, signal ?? this.controller.signal);
     this.state = {
       runId: init.runId,
       conversationId: init.conversationId,
@@ -382,6 +392,38 @@ export class AgentRun {
     return { role: 'tool', toolCallId: callId, content };
   }
 
+  // One grounding check of a path (AGL-17). It emits grounding-started, runs the engine, then emits grounding-result and
+  // writes the transcript line. A failure is written as a line and rethrown for the caller to answer. The engine's
+  // model calls use the signal, so a stop cancels them.
+  private async groundOne(
+    path: string,
+    signal: AbortSignal,
+  ): Promise<GroundingResult> {
+    this.emit('grounding-started', { targetPath: path });
+    let result: GroundingResult;
+    try {
+      result = await this.deps.ground({
+        projectId: this.projectId,
+        runId: this.runId,
+        targetPath: path,
+        overlay: this.tools.overlay,
+        signal,
+      });
+    } catch (error) {
+      this.transcript.append('grounding', this.state.lastSeq, {
+        targetPath: path,
+        failure: messageOf(error),
+      });
+      throw error;
+    }
+    this.emit('grounding-result', { ...result });
+    this.transcript.append('grounding', this.state.lastSeq, {
+      targetPath: path,
+      result,
+    });
+    return result;
+  }
+
   // Ends the run: marks it ended, releases its slot, then publishes run-ended (D3), then writes run-end (D4). A
   // requested end wins over the reason the loop reached, because the abort is what the loop saw. The transcript is
   // completed first, so a run that ends mid-call keeps the text it had.
@@ -496,6 +538,11 @@ export class AgentRun {
       const text = String(data.text);
       this.state.assistantText += text;
       this.stepText += text;
+      return;
+    }
+    // The result of a grounding check joins the run state, without the event counter (AGL-17).
+    if (type === 'grounding-result') {
+      this.state.groundingResults.push(data as unknown as GroundingResult);
       return;
     }
     if (type === 'tool-call-started') {

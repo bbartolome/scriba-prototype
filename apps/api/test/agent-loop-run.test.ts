@@ -371,6 +371,7 @@ it('C6: the request has the system prompt, the project summary and the enabled t
       expect(summary).toContain('Project: Book (genre pack: nonfiction).');
       expect(summary).toContain('sources (1 file)');
       expect(toolNamesOf(first)).toEqual([
+        'check_grounding',
         'edit_file',
         'list_files',
         'read_file',
@@ -388,6 +389,7 @@ it('C6: the request has the system prompt, the project summary and the enabled t
       const records = chatBodies(await recordsOf(h.mock, 'text'));
       expect(records).toHaveLength(2);
       expect(toolNamesOf(records[1])).toEqual([
+        'check_grounding',
         'edit_file',
         'list_files',
         'read_file',

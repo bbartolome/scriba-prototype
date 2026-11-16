@@ -9,6 +9,7 @@ import {
   type GroundingClaim,
   type GroundingPassage,
   type GroundingResult,
+  type GroundingSummary,
 } from '@bbartolome/scriba-contracts/agent-loop';
 import {
   type ChatMessage,
@@ -48,6 +49,23 @@ export interface GroundingCheckInput {
 // A check that cannot give a result. The message is readable and is shown as it is.
 export class GroundingFailure extends Error {
   override name = 'GroundingFailure';
+}
+
+// The content hash of a checked text: `sha256:` plus the hex SHA-256 of its UTF-8 bytes (the contract's contentHash).
+export function contentHashOf(text: string): string {
+  return `sha256:${createHash('sha256').update(text, 'utf8').digest('hex')}`;
+}
+
+// The counts a pending change carries: the verdicts of the result's claims, and when it was checked.
+export function summaryOf(result: GroundingResult): GroundingSummary {
+  const count = (verdict: GroundingClaim['verdict']): number =>
+    result.claims.filter((claim) => claim.verdict === verdict).length;
+  return {
+    supported: count('supported'),
+    weak: count('weak'),
+    unsupported: count('unsupported'),
+    checkedAt: result.checkedAt,
+  };
 }
 
 // Parses a model reply with the schema. A reply that is not JSON, or does not match, gives undefined.
@@ -123,7 +141,7 @@ export class GroundingEngine {
     const result = groundingResultSchema.parse({
       schemaVersion: GROUNDING_RESULT_SCHEMA_VERSION,
       targetPath: input.targetPath,
-      contentHash: `sha256:${createHash('sha256').update(text, 'utf8').digest('hex')}`,
+      contentHash: contentHashOf(text),
       checkedAt: new Date().toISOString(),
       runId: input.runId,
       claims,

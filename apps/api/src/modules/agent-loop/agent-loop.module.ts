@@ -32,7 +32,7 @@ const AGENT_SETTINGS_REGISTRATION = 'AGENT_SETTINGS_REGISTRATION';
 
 // Agent loop: the agent section of settings.yaml, its settings API, the tool dispatcher, the run loop with its start and
 // stop commands, the run transcripts in logs/agent-runs, and the conversation history rebuilt from them. Grounding: its
-// engine is registered here; the wiring of the checks lands in a later unit.
+// engine is registered here and wired into the runs by AgentRunsService (the checks after drafts, the on-demand run).
 @Module({
   imports: [
     PlatformModule,
