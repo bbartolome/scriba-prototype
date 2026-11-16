@@ -4572,3 +4572,23 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 1 (steps 1, 2, 3, 4, 7, 9, 10; tests P1, P2, P7): APPROVED for the patch id. The reviewer ran P1 and P2 (`providers-step.spec.ts`, 2 of 2) and P7 (`providers-copy.spec.ts`, 3 of 3), each with `ng test --watch=false --include <file>`. The diff changes only the seven section 8 paths.
 - Part 2 (steps 5, 6, 8; tests P3, P4, P5, P6, P8, W1, E1): APPROVED for the patch id. The reviewer ran `setup-page.spec.ts` (17 of 17, covering P3, P4, P5, P6, P8 and W1) and the e2e `setup-phone.e2e.ts` (2 of 2: C2 and C3, C3 being E1). No timeouts in those runs.
 - Next: step 3 for SAU-12 (rebase onto main, the three checks, patch id again, unit and plan marks, fast-forward).
+
+## 2026-11-16 — SAU-12 — Merged to main (orchestrator)
+
+- Step 3, first rebase: `git rebase main` (default backend) stopped in an interactive state, with the first commit listed twice in the todo. `git rebase --abort` restored unit/SAU-12 to 532e232. `git rebase --apply main` onto f6dfa54 then applied both commits without conflict (de1b091, 34ab5f7). Patch id unchanged: `15f3e1a7d6152a9611f3ff1c8fb192c5773717f0`.
+- Checks on 34ab5f7 (Node v26.13.0): `npm run lint` exit 0; `npm test` exit 0 (contracts 248 of 248, API 300 of 300, web 338 of 338, scripts 12 of 12), with no timeouts in this run; `npm run build` exit 0.
+- Step 7: main moved (scout commit e95fe3f, SAU-14 plan commit 7c3f4cd), so the branch was rebased again with `--apply` onto 7c3f4cd, giving b2303fb. The code is unchanged against the tested tree (the diff outside plans/ and units/ is empty), and the patch id is the same.
+- Step 8: `units/SAU-12-providers-step.md`, criteria 1 and 2 ticked (tests P1 and P2 passed in the review); `plans/SAU-12.md` status done. Commit 7dcc072 on the branch.
+- Step 9: `git merge --ff-only unit/SAU-12` on main, 7c3f4cd to 7dcc072.
+- Step 10 not done: the worktree /Users/bbartolome/workspace/scriba-prototype-wt/SAU-12 remains. Its removal was refused by the auto-mode permission check in this session, and it was not retried. The branch unit/SAU-12 remains and is merged into main.
+
+## 2026-11-16 — SAU-14 — Plan revised: READY (orchestrator)
+
+- The Opus reviser replied READY. There were no unit changes, so none are committed. The corrections are in plans/SAU-14.md: the entry checks of F1 and F2 take a merge order with SAU-13 on the base into account; the wait conditions after each Next are explicit; the plan has one review part (steps 0 to 12, tests F1 and F2, F3 to F5, FC1, mutations M1 to M6, and the setup-phone e2e run); the plan records the facts it checked.
+- Status set to planned, commit 7c3f4cd.
+
+## 2026-11-16 — AGL-25 — Rework committed (orchestrator)
+
+- The rework implementer committed fb56238 on unit/AGL-25, `feat(AGL-25): wait for the API's setup URL and live child before sign-in`. Only `scripts/eval-agent/run.mjs` changed, which is item 1 of the REWORK list. The waitForApi readiness check now needs the live child, `<library>/.scriba/setup-url` and `/healthz` 200; the child is checked again before sign-in.
+- The implementer's checks: `npm run lint` exit 0; T1 passed on an idle port 8080 (2853 ms); T2 and T3 passed when each ran alone. M1 was not run (no Ollama on this host).
+- New patch id: `079103303b50048bbd36ff6214db4d29376152d2`. The reviewers have not started on this code yet: the limit stopped new subagents after SAU-12 reached main. The next cycle starts new Sonnet reviewers for both parts (rule 2 of step 2 of prompt.md).
