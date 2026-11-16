@@ -126,8 +126,27 @@ function summaryOf(
   };
 }
 
-// Serves the tools of the built-in packs and of the user pack. Built-ins are read once, at construction. The user
-// pack is checked against its manifest before each read, so a host-side edit shows up without a restart.
+/**
+ * Serves the tools of the built-in packs and of the user pack. Built-ins are read once, at construction. The user
+ * pack is checked against its manifest before each read, so a host-side edit shows up without a restart.
+ *
+ * Consumers. The Agent loop and the Graph runner inject CatalogService from the exports of ToolRegistryModule. They do
+ * not import the other files of the module.
+ *
+ * Read methods for consumers: list, detail, entry, ports, enabledOf, functions, validate, entityTypes,
+ * entityValidator and entityKinds. onChange registers a listener.
+ *
+ * Reads write no file. list, detail, builtinDetail, userDetail, entry (and so ports), functions and validate first
+ * re-scan the user pack. A host-side change found by that re-scan is published to the listeners, which publish
+ * catalog-changed. enabledOf, entityTypes, entityKinds, entityValidator and lint do not re-scan.
+ *
+ * lint, save, delete and setEnabled are the HTTP commands. Consumers do not call them.
+ *
+ * entry and validate throw TOOL_NOT_FOUND for an unknown name and TOOL_INVALID for an invalid effective tool.
+ * validate takes {arguments, mode}; mode "params" drops the port keys before validation.
+ *
+ * enabledOf returns the effective switch of a valid tool: the author's override, else the spec's default.
+ */
 @Injectable()
 export class CatalogService {
   private readonly builtins: Map<string, ToolEntry>;
