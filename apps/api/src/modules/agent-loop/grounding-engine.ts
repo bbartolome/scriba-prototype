@@ -128,6 +128,11 @@ export class GroundingEngine {
       runId: input.runId,
       claims,
     });
+    // The claims artefact: the latest result for this draft, overwritten by each check.
+    this.files.write(input.projectId, {
+      path: `${GROUNDING_ARTEFACT_PATH_PREFIX}${input.targetPath}${GROUNDING_ARTEFACT_PATH_SUFFIX}`,
+      content: `${JSON.stringify(result, null, 2)}\n`,
+    });
     return result;
   }
 
