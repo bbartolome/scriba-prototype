@@ -1,6 +1,6 @@
 ---
 unit: GNP-09
-status: planned
+status: done
 module: genre-packs
 milestone: M2
 blocked_by: [GNP-02, GNP-03, GNP-06]
