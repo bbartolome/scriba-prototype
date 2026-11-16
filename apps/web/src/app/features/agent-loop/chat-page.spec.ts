@@ -62,7 +62,9 @@ function groundingClaim(
     verdict,
     ...(passage === undefined
       ? {}
-      : { passage: { path: passage.path, offset: 0, snippet: passage.snippet } }),
+      : {
+          passage: { path: passage.path, offset: 0, snippet: passage.snippet },
+        }),
     reason: 'Checked against the sources.',
   };
 }
@@ -676,7 +678,9 @@ describe('chat page', () => {
     });
     await settle(harness);
 
-    const chip = page(harness).querySelector<HTMLButtonElement>('app-grounding-chip button');
+    const chip = page(harness).querySelector<HTMLButtonElement>(
+      'app-grounding-chip button',
+    );
     expect(chip?.querySelector('span.summary')?.textContent?.trim()).toBe(
       '1 supported · 1 weak · 1 unsupported',
     );
@@ -692,13 +696,15 @@ describe('chat page', () => {
         ?.getAttribute('aria-expanded'),
     ).toBe('true');
     const badges = Array.from(
-      page(harness).querySelectorAll('app-grounding-chip li.claim [data-verdict]'),
+      page(harness).querySelectorAll(
+        'app-grounding-chip li.claim [data-verdict]',
+      ),
     );
-    expect(badges.map((badge) => badge.querySelector('span.label')?.textContent?.trim())).toEqual([
-      'Supported',
-      'Weak',
-      'Unsupported',
-    ]);
+    expect(
+      badges.map((badge) =>
+        badge.querySelector('span.label')?.textContent?.trim(),
+      ),
+    ).toEqual(['Supported', 'Weak', 'Unsupported']);
     for (const badge of badges) {
       expect(badge.querySelector('mat-icon')?.getAttribute('aria-hidden')).toBe(
         'true',
@@ -732,7 +738,10 @@ describe('chat page', () => {
     });
     await settle(harness);
 
-    const chip = () => page(harness).querySelector<HTMLButtonElement>('app-grounding-chip button');
+    const chip = () =>
+      page(harness).querySelector<HTMLButtonElement>(
+        'app-grounding-chip button',
+      );
     expect(chip()?.querySelector('span.summary')?.textContent?.trim()).toBe(
       '2 supported · 1 weak · 1 unsupported',
     );
@@ -757,7 +766,10 @@ describe('chat page', () => {
       expect(row?.textContent).toContain(snippet);
       const link = row?.querySelector('a');
       expect(link).not.toBeNull();
-      const href = new URL(link?.getAttribute('href') ?? '', 'http://localhost');
+      const href = new URL(
+        link?.getAttribute('href') ?? '',
+        'http://localhost',
+      );
       expect(href.pathname).toBe('/projects/p1/files');
       expect(href.searchParams.get('path')).toBe(path);
     }
@@ -777,7 +789,9 @@ describe('chat page', () => {
     });
     await settle(harness);
     expect(
-      page(harness).querySelector('app-grounding-chip span.summary')?.textContent?.trim(),
+      page(harness)
+        .querySelector('app-grounding-chip span.summary')
+        ?.textContent?.trim(),
     ).toBe('Checking drafts/ch02.md');
 
     push(doubles, 'grounding-result', {
@@ -791,17 +805,23 @@ describe('chat page', () => {
     });
     await settle(harness);
     expect(
-      page(harness).querySelector('app-grounding-chip span.summary')?.textContent?.trim(),
+      page(harness)
+        .querySelector('app-grounding-chip span.summary')
+        ?.textContent?.trim(),
     ).toBe('1 supported · 0 weak · 0 unsupported');
 
     // A second result at seq 2 is at or below the turn's lastSeq (3) and is refused.
     push(doubles, 'grounding-result', {
       seq: 2,
-      ...groundingResult('drafts/ch02.md', [groundingClaim('Other.', 'unsupported')]),
+      ...groundingResult('drafts/ch02.md', [
+        groundingClaim('Other.', 'unsupported'),
+      ]),
     });
     await settle(harness);
     expect(
-      page(harness).querySelector('app-grounding-chip span.summary')?.textContent?.trim(),
+      page(harness)
+        .querySelector('app-grounding-chip span.summary')
+        ?.textContent?.trim(),
     ).toBe('1 supported · 0 weak · 0 unsupported');
   });
 
@@ -823,7 +843,9 @@ describe('chat page', () => {
     const harness = await render(doubles);
 
     expect(
-      page(harness).querySelector('app-grounding-chip span.summary')?.textContent?.trim(),
+      page(harness)
+        .querySelector('app-grounding-chip span.summary')
+        ?.textContent?.trim(),
     ).toBe('0 supported · 1 weak · 0 unsupported');
   });
 
@@ -893,7 +915,9 @@ describe('chat page', () => {
     await settle(harness);
 
     const [first, second] = cards(harness);
-    const chips = Array.from(page(harness).querySelectorAll('app-grounding-chip'));
+    const chips = Array.from(
+      page(harness).querySelectorAll('app-grounding-chip'),
+    );
     expect(chips).toHaveLength(1);
     expect(
       first?.compareDocumentPosition(chips[0] as Element) &
@@ -925,7 +949,9 @@ describe('chat page', () => {
     await settle(harness);
 
     expect(
-      doubles.api.requests.filter((request) => request.path === AGENT_GROUNDING_PATH),
+      doubles.api.requests.filter(
+        (request) => request.path === AGENT_GROUNDING_PATH,
+      ),
     ).toEqual([
       {
         method: 'POST',
@@ -938,9 +964,9 @@ describe('chat page', () => {
       (element) => element.textContent?.trim(),
     );
     expect(intents).toContain('Check grounding: drafts/ch01.md');
-    expect(
-      buttonsNamed(page(harness), 'Check grounding')[0]?.disabled,
-    ).toBe(true);
+    expect(buttonsNamed(page(harness), 'Check grounding')[0]?.disabled).toBe(
+      true,
+    );
   });
 
   it('G6 the check query of the Files link shows a Check grounding button that posts the path', async () => {
@@ -951,7 +977,10 @@ describe('chat page', () => {
     await harness.navigateByUrl('/projects/p1/chat?check=drafts/ch01.md');
     await settle(harness);
 
-    const named = buttonsNamed(page(harness), 'Check grounding: drafts/ch01.md');
+    const named = buttonsNamed(
+      page(harness),
+      'Check grounding: drafts/ch01.md',
+    );
     expect(named).toHaveLength(1);
     expect(requestsTo(doubles, AGENT_GROUNDING_PATH)).toBe(0);
 
@@ -963,7 +992,9 @@ describe('chat page', () => {
     await settle(harness);
 
     expect(
-      doubles.api.requests.filter((request) => request.path === AGENT_GROUNDING_PATH),
+      doubles.api.requests.filter(
+        (request) => request.path === AGENT_GROUNDING_PATH,
+      ),
     ).toEqual([
       {
         method: 'POST',
@@ -975,7 +1006,8 @@ describe('chat page', () => {
     await harness.navigateByUrl('/projects/p1/chat?check=sources/a.md');
     await settle(harness);
     const starts = Array.from(page(harness).querySelectorAll('button')).some(
-      (button) => (button.textContent ?? '').trim().startsWith('Check grounding:'),
+      (button) =>
+        (button.textContent ?? '').trim().startsWith('Check grounding:'),
     );
     expect(starts).toBe(false);
   });

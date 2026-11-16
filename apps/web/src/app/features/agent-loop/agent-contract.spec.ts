@@ -191,7 +191,9 @@ describe('agent contract copies', () => {
         { ...runState, groundingResults: {} },
         {
           ...runState,
-          groundingResults: [{ ...RESULT, claims: [{ ...claim, verdict: 'maybe' }] }],
+          groundingResults: [
+            { ...RESULT, claims: [{ ...claim, verdict: 'maybe' }] },
+          ],
         },
         { ...runState, groundingResults: [{ ...RESULT, targetPath: 3 }] },
         { ...runState, runId: '' },
@@ -391,7 +393,11 @@ describe('agent contract copies', () => {
 
     // The grounding types: a valid sample passes both, and each invalid one fails both.
     const groundingStarted = (data: Record<string, unknown>): unknown =>
-      envelope('grounding-started', { ...RUN, targetPath: 'drafts/ch01.md', ...data });
+      envelope('grounding-started', {
+        ...RUN,
+        targetPath: 'drafts/ch01.md',
+        ...data,
+      });
     const groundingResult = (data: Record<string, unknown>): unknown =>
       envelope('grounding-result', { ...RESULT, seq: 2, ...data });
     const groundingValid: unknown[] = [

@@ -381,13 +381,19 @@ describe('FilesPage', () => {
     const doubles = createShellTestDoubles();
     doubles.api.respond('GET', LIST, { entries: TREE });
     doubles.api.respond('GET', READ, read('drafts/ch1.md', OUTLINE));
-    const harness = await render(doubles, '/projects/p1/files?path=drafts/ch1.md');
+    const harness = await render(
+      doubles,
+      '/projects/p1/files?path=drafts/ch1.md',
+    );
 
     const checks = Array.from(root(harness).querySelectorAll('a.check')).filter(
       (link) => link.textContent?.trim() === 'Check grounding',
     );
     expect(checks).toHaveLength(1);
-    const href = new URL(checks[0]?.getAttribute('href') ?? '', 'http://localhost');
+    const href = new URL(
+      checks[0]?.getAttribute('href') ?? '',
+      'http://localhost',
+    );
     expect(href.pathname).toBe('/projects/p1/chat');
     expect(href.searchParams.get('check')).toBe('drafts/ch1.md');
     expect(
