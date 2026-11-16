@@ -1,6 +1,6 @@
 ---
 id: AGL-09
-status: planned
+status: draft
 ---
 # AGL-09 plan — narrative tools: enabled registry tools as functions, entity resolution, citations, draft provenance
 
