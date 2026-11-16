@@ -4523,3 +4523,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - The reviewer read the plan's steps 0 to 11 and the tests of part 1 against the diff, and checked that the code touches only the six section-2 files. The reviewer did not re-run tests. Reply: APPROVED for patch id 200d7b05ee396fe8ee281ee1045fa544bc5e7aa3.
 - Review parts: one part, so one reviewer.
 - Next: step 3 (rebase onto main, the three checks, the patch id again, unit and plan marks, fast-forward).
+
+## 2026-11-16 — MPR-11 — Failed check, step 3 item 4 (orchestrator)
+
+- Check: `npm test` (the root script) in the MPR-11 worktree, on the branch rebased onto main 136be1c. `npm run lint` and `npm run build` exit 0. `npm test` exit 1: contracts 247 of 247 pass, API 293 of 293 pass, scripts 12 of 12 pass; web 325 of 328 pass. The failures are three tests that time out at 5000 ms: `search-panel.spec.ts` T1, `setup-page.spec.ts` C1b, and `providers-panel.spec.ts` E4. None of these files is in the diff of unit MPR-11, which touches six files. Other subagents ran tests in the same repository at the same time (the MPR-12 and AGL-25 implementers and the SAU-12 implementer).
+- Earlier, the first rebase attempt with the default backend stopped with "Your local changes to the following files would be overwritten by merge" (providers-texts.ts, providers.routes.ts), with no conflict in the content. It was aborted, and the branch was restored to f880284. `git rebase --apply main` replayed the four commits without a conflict; the patch id is unchanged. The branch head before this check is the replayed commit 449fc00.
+- Next: the same three checks on the last commit, after the next rebase onto main. If the same three tests time out again with no load, a new implementer corrects the cause. If they pass, step 3 continues.
