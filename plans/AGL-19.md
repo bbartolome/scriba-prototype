@@ -1,12 +1,12 @@
 ---
 id: AGL-19
-status: draft
+status: planned
 ---
 # AGL-19 plan — grounding-claims draft and its mock turns
 
-Revision 1, planner, from main at `78a6056` (tree clean). Status stays `draft` until the Navigator settles open points 1 to 3 (section 7). The planner changed no file except this one, and ran only read-only checks: no test, lint or e2e run.
+Revision 1, planner, from main at `78a6056` (tree clean). Revision 2, reviser, from main at `058f225` (tree clean; `058f225` adds only this plan to `78a6056`). The reviser settled all open points of section 7 itself; none needs the Navigator. No unit file changed. Neither the planner nor the reviser changed a file except this one, and both ran only read-only checks: no test, lint or e2e run.
 
-AGL-19 adds one draft (chapter 4 of the sample), one line of the outline that names it, and the scripted extract and judge turns that the mock serves for it. Criterion 1 is the examples check. Criterion 2 is an e2e test on the real stack, because no committed unit test may read `examples/` (section 4.1 explains; open point 1 asks the Navigator to confirm the seam).
+AGL-19 adds one draft (chapter 4 of the sample), one line of the outline that names it, and the scripted extract and judge turns that the mock serves for it. Criterion 1 is the examples check. Criterion 2 is an e2e test on the real stack, because no committed unit test may read `examples/` (section 4.1 explains; open point 1 records the decision). The spec's file name must sort after every existing spec (decision D-ORDER, section 1).
 
 ## 1. Decisions this plan follows
 
@@ -23,7 +23,8 @@ The last bullet, "Small choices", lists the planner's choices that DECISIONS doe
 - **Style and citations.** Plain, short sentences, no banned phrase (`examples/nonfiction/entities/book-style.md` lines 3 and 5). The draft has no `[@id]`: an unknown id fails the examples check (`scripts/examples-check/pack.mjs` lines 133 to 138), and CEX-07 checks the same. Drafts have no front matter (`plans/PST-11.md` line 67).
 - **Sample rules.** A sample ships no `.scriba/`, `logs/`, `snapshots/` or `drafts/.versions` (`scripts/examples-check/m1.mjs` line 19). A scenario that names a sample file is a contract with `examples/` (`units/PLT-12-mock-openai-server.md` line 26).
 - **Test rules.** Unit tests never read `examples/` (`units/README.md` line 138; `modules/project-store.md` line 59). A `*.test.*` or `*.spec.*` file that names `examples/` fails the examples check (`m1.mjs` lines 25 and 26, 30 to 33, 201 to 222). E2e specs (`*.e2e.ts`, `e2e/playwright.config.ts` line 11) are outside that scan.
-- **Small choices.** Chapter 4, because it is the only not-started chapter whose research note exists (`sources/outline.md` line 36 names `sources/learning-plateaus-notes.md`). File `drafts/the-plateau-is-not-the-end.md`, by the slug rule of the three existing drafts. Scenario name `grounding-claims`. Spec `e2e/specs/grounding-sample.e2e.ts`. Project folder `grounding-sample`. Claims spans are UTF-16 offsets, `end` exclusive. The four judge reasons are the sentences in section 4.2.
+- **D-ORDER, spec order in the shared e2e library (reviser).** Playwright runs the specs one at a time (`e2e/playwright.config.ts` line 13, `workers: 1`) in file-name order, against one library and one API for the whole run (`e2e/harness/global-setup.ts` lines 23 to 27). `e2e/specs/journey.e2e.ts` must run first: it expects no active project (its first-project step shows the picker), and line 204 asserts that the library holds only `demo-book`. The API has no operation that clears the active project (`active-project.controller.ts` has only GET and POST). A spec that sorts before `journey` and creates or activates a project breaks it; this happened to SHL-15 and was fixed by a rename (`plans/DECISIONS.md`, the two SHL-15 entries of 2026-11-16, "PLAN DOES NOT WORK at step 7" and "reviser, revision 5"). The planner's name `grounding-sample.e2e.ts` sorts before `journey.e2e.ts`, so it is replaced by `e2e/specs/verdicts-sample.e2e.ts`, which sorts after the last spec on main, `touch-editor.e2e.ts`, and after TRG-14's planned `tools-editor.e2e.ts`. Limit recorded: a future spec that sorts after it starts with `grounding-sample` active.
+- **Small choices.** Chapter 4, because it is the only not-started chapter whose research note exists (`sources/outline.md` line 36 names `sources/learning-plateaus-notes.md`). File `drafts/the-plateau-is-not-the-end.md`, by the slug rule of the three existing drafts. Scenario name `grounding-claims`. Spec `e2e/specs/verdicts-sample.e2e.ts` (D-ORDER). Project folder `grounding-sample` (it matches `PROJECT_FOLDER_NAME_PATTERN`, `packages/contracts/src/project-store/constants.ts` line 14). Claims spans are UTF-16 offsets, `end` exclusive. The four judge reasons are the sentences in section 4.2.
 
 ## 2. Files to create or change
 
@@ -32,7 +33,7 @@ The last bullet, "Small choices", lists the planner's choices that DECISIONS doe
 | `examples/nonfiction/drafts/the-plateau-is-not-the-end.md` | new | Chapter 4 draft: the four claims of section 4.2 |
 | `examples/nonfiction/sources/outline.md` | edit, line 34 only | `Draft: not started.` becomes ``Draft: `drafts/the-plateau-is-not-the-end.md`.`` |
 | `e2e/fixtures/mock-openai/scenarios/grounding-claims.json` | new | Two steps: the extract turn and the judge turn, each matched on its marker |
-| `e2e/specs/grounding-sample.e2e.ts` | new | Test T2 (section 4.3) |
+| `e2e/specs/verdicts-sample.e2e.ts` | new | Test T2 (section 4.3). The name sorts after every existing spec (D-ORDER) |
 | `units/AGL-19-grounding-sample-draft.md` | edit, last commit only | Ticks the two boxes; no text changes (as AGL-16 step 6) |
 | `plans/AGL-19.md` | edit, last commit only | `status: done` |
 
@@ -40,18 +41,18 @@ Not changed: `examples/nonfiction/project.yaml` (CEX-08 owns `order`); `examples
 
 ## 3. Procedure (code stage)
 
-0. **Worktree.** From `main`, `git worktree add <path> -b unit/AGL-19`, then `npm ci` in the worktree before step 7. Record `git rev-parse --short HEAD` as `<base>`. Expected: `git status --short` prints nothing.
+0. **Worktree.** From `main`, `git worktree add <path> -b unit/AGL-19`, then `npm ci` in the worktree before step 7. Record `git rev-parse --short HEAD` as `<base>`. Expected: `git status --short` prints nothing. Then two read-only checks: `grep -c '^order:' examples/nonfiction/project.yaml` prints 0 (no `order` yet; open point 3), and `ls e2e/specs` lists no file that sorts after `verdicts-sample.e2e.ts` (D-ORDER). If either fails, stop and report; do not edit `project.yaml` and do not rename the spec on your own.
 1. **Outline.** Edit line 34 of `examples/nonfiction/sources/outline.md` as section 2 says. Expected: `git diff` changes that one line.
 2. **Draft.** Write `examples/nonfiction/drafts/the-plateau-is-not-the-end.md` to the constraints of section 4.2, then `npx prettier --write` it. Expected: `grep -c '^# Chapter 4: The Plateau Is Not the End$'` prints 1; `grep -c '\[@'` prints 0; `grep -ci 'game-changer\|unlock your potential'` prints 0; the body is 250 to 350 words.
 3. **Spans.** For claims 0 to 3 of section 4.2, record `start`, the UTF-16 index of the claim's first character in the file as written (a read-only `node -e` with `indexOf`), and `end` = `start` + the claim's length. Each claim must occur once in the file. Expected: four pairs, all inside the draft.
 4. **Commit 1 (content).** `git add -- examples/nonfiction/drafts/the-plateau-is-not-the-end.md examples/nonfiction/sources/outline.md`, then `git commit -m "feat(AGL-19): add the chapter 4 grounding draft to the sample"`.
 5. **Scenario.** Write `e2e/fixtures/mock-openai/scenarios/grounding-claims.json` with the two steps of section 4.2, using the spans of step 3. Then `npx prettier --write` it. Expected: `npx prettier --check` on the file passes. The mock loads every scenario file at start and throws on invalid JSON or an unknown reply kind (`server.mjs` lines 51 to 84).
-6. **Spec.** Write `e2e/specs/grounding-sample.e2e.ts` (T2, section 4.3), then `npx prettier --write` it. Expected: `npm run lint -w @bbartolome/scriba-e2e` exits 0, and `npm run build` typechecks it.
+6. **Spec.** Write `e2e/specs/verdicts-sample.e2e.ts` (T2, section 4.3), then `npx prettier --write` it. Expected: `npm run lint -w @bbartolome/scriba-e2e` exits 0, and `npm run build` typechecks it.
 7. **T1.** `npm run lint:examples`. Expected: exit 0, and the line `examples check passed: 1 sample(s), …`.
-8. **T2.** `npm run e2e -w @bbartolome/scriba-e2e -- grounding-sample`. Expected: the one test passes. If the citation assertion (T2 step 9b) fails for an offset, read the judge request the mock recorded (the test prints the recorded `Passage` lines for that claim), choose a retrieved passage of the same file that supports the same verdict, change that offset in the scenario, and run again. If no retrieved passage supports the verdict, stop and report. Do not change a verdict to fit the retrieval.
-9. **Base comparison.** Run `npm run e2e` on `<base>` and on the branch, and compare the pass and fail list. The e2e library is shared, so a new project could change another spec. Expected: the only difference is the new test.
+8. **T2.** `npm run e2e -w @bbartolome/scriba-e2e -- verdicts-sample`. Expected: the one test passes. If e2e cannot run in this environment (no browser, or the harness cannot start), stop and report; do not replace T2 with another check (open point 2). If the citation assertion (T2 step 9b) fails for an offset, read the judge request the mock recorded (the test prints the recorded `Passage` lines for that claim), choose a retrieved passage of the same file that supports the same verdict, change that offset in the scenario, and run again. If no retrieved passage supports the verdict, stop and report. Do not change a verdict to fit the retrieval.
+9. **Base comparison.** Run `npm run e2e` on `<base>` and on the branch, and compare the pass and fail list. The e2e library is shared, so a new project could change another spec. Expected: the only difference is the new test, which runs last (D-ORDER). A failure that is on both lists is not caused by this unit: `e2e/specs/tools-preview.e2e.ts` (TRG-05 C2, line 167) is a recorded pre-existing failure on main (`plans/DECISIONS.md`, the SHL-15 code-stage entry of 2026-11-16 that names `tools-preview.e2e.ts:167`, and the PLT-22 criterion 4 entry). Record it; do not fix it.
 10. **Root gates.** `npm run build`, `npm test`, `npm run lint`. Expected: each exits 0, and `prettier --check .` covers the new files.
-11. **Commit 2 (scenario and spec).** `git add -- e2e/fixtures/mock-openai/scenarios/grounding-claims.json e2e/specs/grounding-sample.e2e.ts`, then `git commit -m "test(AGL-19): mock extract and judge turns and the grounding sample check"`.
+11. **Commit 2 (scenario and spec).** `git add -- e2e/fixtures/mock-openai/scenarios/grounding-claims.json e2e/specs/verdicts-sample.e2e.ts`, then `git commit -m "test(AGL-19): mock extract and judge turns and the grounding sample check"`.
 12. **Record and close.** Store the output of T1 and T2 and the Node and npm versions. In a last commit, tick the two boxes of the unit file (text unchanged) and set this plan to `status: done`: `docs(AGL-19): criteria checked, plan status done`.
 
 ## 4. Acceptance criteria and tests
@@ -64,7 +65,7 @@ The e2e harness is where the product reads the sample. `e2e/harness/global-setup
 
 Route: the **real route**, `POST /api/agent-loop/grounding` with `{path}`, not the kit. The kit (`apps/api/test/agent-loop-grounding.kit.ts`, routes at lines 20 and 24) is test-only: it is not in the app that e2e boots (`apps/api/dist/main.js`). The real route is the production "Check grounding" path. It takes one POST and one file read, which is the simplest route that this seam allows. `plans/AGL-17.md` line 273 allows the real route after AGL-17 merges, and AGL-17 is done.
 
-The choice of this seam needs the Navigator (open point 1). The route follows from it.
+The reviser decided this seam (open point 1). The route follows from it. The spec's file name follows D-ORDER (section 1).
 
 ### 4.2 The draft and the scripted turns
 
@@ -92,22 +93,22 @@ The unit has two criteria (unit lines 21 and 22). Each has one test. No criterio
 | Criterion (unit line) | Test | Command | Pass condition |
 |---|---|---|---|
 | "Platform's examples check still passes." (21) | **T1.** The examples check. | `npm run lint:examples` (`package.json` line 27, which runs `scripts/examples-check/index.mjs`) | Exit 0, and the line `examples check passed: 1 sample(s), …` (`index.mjs` lines 87 and 88). The draft adds no issue: the per-sample checks read project.yaml and the entity and source folders (`m1.mjs` lines 45 to 52), the test-file scan finds no `examples/` name (lines 201 to 222), and the draft has no citation (`pack.mjs` lines 133 to 138). |
-| "A check of the draft against the mock yields at least one claim of each verdict, every supported/weak verdict citing a retrieved `sources/` passage (asserted on a temp copy, not `examples/`)." (22) | **T2.** One test, in `e2e/specs/grounding-sample.e2e.ts`: "the grounding-claims draft yields all three verdicts, and each supported or weak verdict cites a retrieved sources passage". | `npm run e2e -w @bbartolome/scriba-e2e -- grounding-sample` | The test passes (steps and assertions below). |
+| "A check of the draft against the mock yields at least one claim of each verdict, every supported/weak verdict citing a retrieved `sources/` passage (asserted on a temp copy, not `examples/`)." (22) | **T2.** One test, in `e2e/specs/verdicts-sample.e2e.ts`: "the grounding-claims draft yields all three verdicts, and each supported or weak verdict cites a retrieved sources passage". | `npm run e2e -w @bbartolome/scriba-e2e -- verdicts-sample` | The test passes (steps and assertions below). |
 
 T2 steps:
 1. Sign in as `e2e/specs/tools-try.e2e.ts` does (its `setUp`, lines 32 to 35: read `<library>/.scriba/setup-url`, then `page.goto`). Copy the helper; do not import it from another spec (as `plans/TRG-14.md` line 110 does for its helper).
 2. Read the active project: `GET /api/project-store/active`.
 3. `POST /api/project-store/projects/start-from-sample` with `{sampleId: "nonfiction", folderName: "grounding-sample", title: "Grounding sample"}` and the origin header of the other specs. Expected: 201 (`samples.controller.ts` lines 24 and 25). The new project is not activated (`samples.service.ts` line 79).
-4. `POST /api/project-store/active` with `{projectId: "grounding-sample"}` (`activateRequestSchema`, `packages/contracts/src/project-store/project.ts` line 72). Expected: a 2xx status.
-5. Provider, as `tools-try.e2e.ts` lines 95 to 103 and 113 to 119: `POST /api/providers` with `baseURL` `<SCRIBA_E2E_MOCK_URL>/scenario/grounding-claims/v1` and model `mock-model`, then `POST /api/providers/app-default` with that provider. Keep the prior app default for step 10.
+4. `POST /api/project-store/active` with `{projectId: "grounding-sample"}` and the origin header (`activateRequestSchema`, `packages/contracts/src/project-store/project.ts` line 72). Expected: 200 and `{active: "grounding-sample"}` (`apps/api/src/modules/project-store/active-project.controller.ts` lines 26 to 32).
+5. Provider, as `tools-try.e2e.ts` lines 88 to 117: read the prior app default (`GET /api/providers/app-default`, 200) for step 10; then `POST /api/providers` with the full body those lines send (`label` `Mock grounding`, `kind: 'openai-compatible'`, `baseURL` `<SCRIBA_E2E_MOCK_URL>/scenario/grounding-claims/v1`, `model: 'mock-model'`, `temperature: 0.7`, `contextSize: 64000`, `maxTokens: 4096`, `timeout: 120000`, `retries: 2`). Expected: 201. Then `POST /api/providers/app-default` with `{providerId, model: 'mock-model'}`. Expected: 200. Steps 6 to 9 run inside the `try` whose `finally` is step 10.
 6. Reset the mock's record of this scenario: `POST <mock>/__mock/scenarios/grounding-claims/reset`. Expected: 204 (`server.mjs` lines 248 to 257).
 7. `POST /api/agent-loop/grounding` with `{path: "drafts/the-plateau-is-not-the-end.md"}`. Expected: 200 (`agent-runs.controller.ts` lines 43 to 50).
-8. Poll (`expect.poll`) until `<SCRIBA_E2E_LIBRARY>/grounding-sample/logs/grounding/drafts/the-plateau-is-not-the-end.md.json` exists, then parse it as JSON. The e2e package does not depend on the contracts package, so the test does not schema-parse it. The file is written by the engine (`grounding-engine.ts` line 151).
+8. Poll (`expect.poll`, timeout 15 s, as `journey.e2e.ts` does) until `<SCRIBA_E2E_LIBRARY>/grounding-sample/logs/grounding/drafts/the-plateau-is-not-the-end.md.json` exists, then parse it as JSON. The e2e package does not depend on the contracts package, so the test does not schema-parse it. The file is written by the engine (`grounding-engine.ts` lines 150 to 153), before the run ends (`agent-run.ts` lines 198 and 199). Then poll `GET /api/agent-loop/runs/current` until its body is the JSON `null` (`agent-runs.controller.ts` lines 27 to 32), so no run is active when step 10 switches the project.
 9. Assertions:
    - (a) The verdicts include at least one `supported`, one `weak` and one `unsupported` (`constants.ts` line 73).
-   - (b) Each `supported` or `weak` claim has a `passage.path` that starts with `sources/`, and the judge request the mock recorded (`GET <mock>/__mock/scenarios/grounding-claims/requests`, the record whose last message contains `Task: judge claims.`) contains the line `Passage <path> at <offset>: ` for that passage. That line is the retrieved passage as the judge saw it, so this is the test of "retrieved".
+   - (b) Each `supported` or `weak` claim has a `passage.path` that starts with `sources/`. In the judge request the mock recorded (`GET <mock>/__mock/scenarios/grounding-claims/requests`, the one record whose last message contains `Task: judge claims.`), the block of that claim, from its line `Claim <i>: <text>` (`<i>` is the claim's position in the artefact's `claims`, which is its extract index) to the next blank line, contains a line that starts with `Passage <path> at <offset>: ` for that passage. The block lists exactly the passages retrieved for that claim (`grounding-engine.ts` lines 195 to 201), so this is the test of "retrieved". On failure the test prints that block (procedure step 8 reads it).
    - (c) The claim `A learning plateau can be a stage of reorganising rather than an end.` has verdict `weak`, which is the status GNP-11 gave its entity.
-10. In `finally`: restore the prior app default, as `tools-try.e2e.ts` does at line 148. If a project was active before the test, activate it again. If none was active, leave the project active, as the other specs do.
+10. In `finally`: restore the prior app default, as `tools-try.e2e.ts` lines 147 to 153 do. If a project was active before the test (step 2), activate it again with `POST /api/project-store/active`. If none was active, leave `grounding-sample` active; the API cannot clear the active project, and the spec runs last (D-ORDER).
 
 ## 5. Downstream agreement
 
@@ -125,27 +126,27 @@ T2 steps:
 
 ## 6. Other plans and units that touch the same files
 
-Plans with status `draft` or `planned` (`grep -l "^status: \(draft\|planned\)" plans/*.md`): only `plans/TRG-14.md` (line 3). It changes `apps/web/src/app/features/tool-registry/**`, `apps/web/package.json` and `package-lock.json`. It has no file in common with AGL-19, so either order is correct.
+Plans with status `draft` or `planned` (`grep -l "^status: \(draft\|planned\)" plans/*.md`, re-run by the reviser at `058f225`): only `plans/TRG-14.md` (line 3, `planned`). It changes `apps/web/src/app/features/tool-registry/**`, `apps/web/package.json`, `package-lock.json`, and adds `e2e/specs/tools-editor.e2e.ts` (its file table, line 110). It has no file in common with AGL-19. Both add a spec to the same e2e run: `tools-editor.e2e.ts` sorts before `verdicts-sample.e2e.ts`, and this spec reads the active project and the app default it finds and restores them (T2 steps 2, 5 and 10), so either merge order is correct.
 
 Units and done plans with files in common:
 
 | Unit or plan | Status | Files it changes or reads | Change it makes | How both orders stay correct |
 |---|---|---|---|---|
-| CEX-08 | unit, no plan | `examples/nonfiction/project.yaml` (adds `order` and export settings) | Adds the `order` list | AGL-19 does not touch project.yaml. Whichever merges later, the `order` list must name `drafts/the-plateau-is-not-the-end.md` (open point 3) |
-| AGL-15 | unit, no plan | The e2e "accept change" step; "the agent edits a draft" (unit line 17) | An agent edit of a draft | If it edits `drafts/the-plateau-is-not-the-end.md`, the spans and offsets go stale. Its PR must name another draft or update the scenario (open point 5) |
+| CEX-08 | unit, no plan | `examples/nonfiction/project.yaml` (adds `order` and export settings) | Adds the `order` list | AGL-19 does not touch project.yaml. CEX-08 line 17 already counts AGL-19's draft, so a CEX-08 that lands later lists it. If `order` is on main before AGL-19's code stage, step 0 stops and reports (open point 3) |
+| AGL-15 | unit, no plan | The e2e "accept change" step; "the agent edits a draft" (unit line 17) | An agent edit of a draft in the journey's copy `demo-book` | No file in common. An agent edit in the e2e changes the library copy, never `examples/`, so the draft, the spans and the offsets of this scenario stay valid in both orders. Its extract and judge calls (AGL-17 auto check) go to its own scenario, not `grounding-claims` (open point 5) |
 | GNP-08 | done | `plans/GNP-08.md` line 36 and `scripts/eval-agent/cases/mystery-question.json` line 3 (intent "Open chapter 4 with a puzzle…") | Manual eval case; not run in CI | The case still runs; open point 4 |
 | PST-22 | unit | `drafts/born-to-it.md` (chapter 1 only) | Tightens chapter 1 | No file in common |
 | PST-11 | done | `sources/outline.md` Draft lines (D9); the three drafts | Predicted this change (`plans/PST-11.md` line 158) | This is the change PST-11 predicted |
 | AGL-17 | done | `plans/AGL-17.md` lines 267 to 273 name AGL-19's paths | None | Consistent |
 | PLT-12 | done | `e2e/fixtures/mock-openai/scenarios/` | None | The new scenario name is unique |
 
-## 7. Open points for the Navigator
+## 7. Open points (all settled by the reviser; none for the Navigator)
 
-1. **Seam for criterion 2 (decide before the code stage).** The unit asks for the check "on a temp copy, not `examples/`". Unit tests may not read `examples/` (`units/README.md` line 138; `modules/project-store.md` line 59), and the examples check fails any test file that names it (`m1.mjs` lines 25, 26 and 201 to 222). Plan default: the e2e spec of section 4.3, on the real route. This adds an e2e step that `modules/agent-loop.md` line 66 does not list (it lists the agent-run and accept-change steps). Options: (a) the default; (b) a recorded command, as GNP-11 D9 (`plans/GNP-11.md` line 48) and PST-11 D11 (`plans/PST-11.md` line 41) did, with the API booted outside a test (heavier, and manual); (c) exempt one test file from the rule, as `scripts/examples-check*.test.mjs` is exempt (`m1.mjs` line 26). Option (c) changes PLT-20's rule and is not recommended.
-2. **Whether `npm run e2e` runs in the implementer's environment.** Chromium is cached (`plans/TRG-14.md` line 79); the planner did not run e2e. If it cannot run, the Navigator decides (GNP-11 open point 2 is the precedent).
-3. **Who lists the fourth draft in `project.yaml` `order`.** CEX-08 owns `order` and is not blocked by AGL-19. CEX-20 demo step 1 (unit line 25) needs four chapters in `order`. Plan default: CEX-08 lists `drafts/the-plateau-is-not-the-end.md`, whichever merges later must cover it, and AGL-19 does not edit `project.yaml`. The Navigator confirms or assigns this.
-4. **GNP-08's chapter 4 assumption and the manual eval case.** GNP-08 (plan line 36) assumed that chapter 4 has no draft, and the manual case `scripts/eval-agent/cases/mystery-question.json` (line 3) asks the agent to open chapter 4. No CI check reads either. The Navigator decides whether the case changes. Low priority.
-5. **AGL-15 and the chapter 4 draft.** AGL-15 has no plan, and its scope says "the agent edits a draft" without naming one. The Navigator names a different draft for it, or accepts a scenario update in its PR. Low priority until AGL-15 is planned.
+1. **Seam for criterion 2. Decided: the e2e spec of section 4.3, on the real route.** The criterion asks for a check of the sample's draft "on a temp copy, not `examples/`". A vitest API test cannot get the sample without naming `examples/` (`units/README.md` line 138; `modules/project-store.md` line 59; `scripts/examples-check/m1.mjs` lines 25 to 33 and 201 to 228); `create-test-app.ts` line 81 points the test app at an empty temp `examples` folder. The e2e harness starts the built composed app with the repository's `examples/` (`global-setup.ts` line 81), and "start from sample" makes the temp copy. The heading's kit applies "until AGL-17 exists" (Navigator decision, `plans/DECISIONS.md` line 5410); AGL-17 is done and its plan allows the real route (`plans/AGL-17.md` line 273). A spec file of its own is a test structure, not a new step of the journey spec, so `modules/agent-loop.md` line 66 (the journey steps this module turns on) is unchanged. Precedent for unit-owned specs chosen in plans: `e2e/specs/tools-try.e2e.ts` (TRG-16), `e2e/specs/search-phone.e2e.ts` (PST-14). Rejected: a recorded command (weaker, manual) and an exemption from the examples check (changes PLT-20's rule).
+2. **Whether `npm run e2e` runs here. Decided: it is expected to run.** The browsers are present (`~/.cache/ms-playwright/chromium-1194`, `-1248`, `-1254`; `/usr/bin/chromium-browser`; checked by the reviser), and the harness builds the stack itself. Procedure step 8 is a stop rule if it cannot run.
+3. **Who lists the fourth draft in `project.yaml` `order`. Decided: not AGL-19.** `order` is CEX-08's scope (unit line 15), and CEX-08 line 17 already counts "AGL-19's grounding draft" among its four chapters, so a CEX-08 that lands after AGL-19 lists it with no unit change. `project.yaml` has no `order` on main (lines 1 to 4). If `order` is on main when the code stage starts, procedure step 0 stops and reports, because adding an entry would then edit CEX-08's authored order.
+4. **GNP-08's chapter 4 eval case. Decided: no change.** `scripts/eval-agent/cases/mystery-question.json` (manual, not CI; `modules/agent-loop.md` line 67) asks the agent to "Open chapter 4 with a puzzle", and expects `completed`, the tool `mystery_question` and citations. A chapter 4 draft does not stop any of the three; the agent's result is a pending change either way. `plans/GNP-08.md` line 36 (C6) is a done plan's record of the state at that time and is not edited. Known effect only.
+5. **AGL-15 and the chapter 4 draft. Decided: no conflict.** AGL-15's e2e edit happens in the library copy that `journey` makes (`demo-book`), never in `examples/`; this spec makes its own fresh copy. Section 6, AGL-15 row.
 
 ## 8. Facts checked and assumed
 
@@ -196,13 +197,26 @@ Code, mock and harness:
 - `scripts/examples-check/index.mjs` lines 81 to 96 (layers and output); `m1.mjs` lines 19 (excluded paths), 25 and 26 (test pattern and exemption), 30 to 33 (name patterns), 45 to 52 (per-sample checks), 201 to 222 (test-file scan); `pack.mjs` lines 133 to 138 (citations in drafts); `package.json` line 27 (`lint:examples`).
 - `scripts/eval-agent/cases/mystery-question.json` line 3.
 
+Added by the reviser at `058f225`:
+- `e2e/specs/` on main: `journey`, `phone-toolbar`, `projects-phone`, `providers-phone`, `search-phone`, `setup-phone`, `tools-preview`, `tools-try`, `touch-editor` (`.e2e.ts`). `journey.e2e.ts` line 204 (library holds only `demo-book`), lines 216 to 235 (provider body). `e2e/harness/global-setup.ts` lines 23 to 27 (one temp library per run). `apps/api/src/modules/project-store/active-project.controller.ts` lines 21 to 32 (GET and POST only; POST answers 200). `plans/DECISIONS.md`, SHL-15 entries of 2026-11-16 (spec order; rename to `touch-editor.e2e.ts`).
+- `e2e/fixtures/mock-openai/server.mjs` line 15 (`stream` is a reply kind), lines 124 and 125 (`lastMessageContent` is a substring test on the last message), lines 239 to 246 (records route).
+- `apps/api/src/modules/agent-loop/grounding-engine.ts` lines 101 to 155 (check), 195 to 201 (judge message blocks), 207 to 221 (exact verdict cover), 227 to 256 (downgrade); `agent-run.ts` lines 196 to 200.
+- The body block offsets of `learning-plateaus-notes.md` (252, 282, 350, 513, 646, 853, 1027, 1275) recomputed by the reviser with a read-only script: they match section 4.2.
+- `plans/TRG-14.md` line 110 (adds `e2e/specs/tools-editor.e2e.ts`). `scripts/eval-agent/cases/mystery-question.json` lines 2 to 8. No branch `unit/AGL-19`; `plans/` holds no plan for AGL-15, AGL-20, CEX-08 or CEX-20.
+
 ### 8.2 Assumed (not checked)
 
-- A1. `npm run e2e` runs here. Chromium is cached (TRG-14 plan line 79); the planner did not run e2e.
+- A1. `npm run e2e` runs here. The browsers are present (checked by the reviser, open point 2); nobody ran e2e for this plan.
 - A2. The offsets 350, 853 and 1027 are the block starts that the running API computes. They follow the rules of `search-index.ts` lines 70 to 107, applied read-only. The built code was not run.
 - A3. Each cited passage is among the top 5 results for its claim. The ranking was not computed. T2 step 9(b) tests it, and procedure step 8 is the fallback.
-- A4. Each claim shares at least one word with a `sources/` passage, so all four go to the judge. Expected from the notes' wording; T2's recorded judge request shows it.
-- A5. `start-from-sample` copies the sample's files unchanged (`units/PST-05-start-from-sample.md`; not read in full). The folder name `grounding-sample` passes the project folder-name pattern in `project.ts` (not read).
+- A4. Each claim shares at least one word with a `sources/` passage, so all four go to the judge. The query joins the claim's words with `OR` (`search-index.ts` lines 111 to 118; tokenizer `porter unicode61`, line 140, no stop words), and each claim has a word such as `and`, `a` or `plateau` that the notes contain, so this is expected; T2's recorded judge request shows it.
+- A5. `start-from-sample` copies the sample's files unchanged (`samples.service.ts` lines 78 to 80 say it copies the tree and sets only the title; the copy code was not read in full). The folder name `grounding-sample` matches `PROJECT_FOLDER_NAME_PATTERN` (`constants.ts` line 14, `^[a-z0-9][a-z0-9-]*$`; checked).
 - A6. A new project in the shared e2e library does not change other specs' results (procedure step 9 checks it).
-- A7. The POST requests need the origin header that the other specs send (`tools-try.e2e.ts` constants, not re-read).
+- A7. The POST requests need the origin header that the other specs send (`tools-try.e2e.ts` line 25, `ORIGIN = 'http://127.0.0.1:8080'`, sent on every POST; whether the guard requires it on each route was not read).
 - A8. The engine joins the stream's text deltas into one string (AGL-16 plan, assumption A3). AGL-16's tests exercise this path on main; the planner did not run them.
+
+## 9. Review parts
+
+One part: the plan is small (four files of content and test, plus the closing commit).
+
+- **Part 1, the whole unit.** Steps 0 to 12 of section 3. Tests T1 (criterion 1, "Platform's examples check still passes.") and T2 (criterion 2, the check of the draft against the mock on a temp copy). Review the draft against section 4.2 (claims verbatim, no `[@`, no banned phrase, no hours figure), the outline's one-line change, the scenario's spans and offsets, the spec's file name (D-ORDER) and its steps, the T1 and T2 output, and the base comparison of step 9.
