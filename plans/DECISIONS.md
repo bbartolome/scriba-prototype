@@ -5455,3 +5455,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Patch id:** 0c32fa82c2b589786f594c428a2b3bd86ae5c6a3 (`git diff main...unit/AGL-17 -- . ':!plans' ':!units' | git patch-id --stable`, computed by the reviewer and the orchestrator).
 - **Result:** APPROVED by one reviewer, part P1 of 1. The reviewer ran the eight test files named by the plan (37 tests, 0 failed), including C1, C2, C2b and X1 to X4. The changed files are the 18 listed in plan section 3, and no other file changed. `units/` and `plans/` are touched only at step 6, which the orchestrator does.
 - **Checks reported by the implementer (on the branch before the rebase):** `npm run lint` exit 0, `npm test` exit 0 (API 426 passed, 117 files), `npm run build` exit 0. Step 3 re-runs them on the rebased branch.
+
+## 2026-11-16 — AGL-19 — PLAN DOES NOT WORK (implementer, plan section 4.4, T2 step 8)
+
+- **Branch:** `unit/AGL-19`, commit d0d88c1 (plan steps 1 to 4: the chapter 4 grounding draft and its outline line). Worktree `scriba-prototype-wt/AGL-19`.
+- **Report:** PLAN DOES NOT WORK. The step that does not work is T2 step 8, the wait for no active run in `e2e/specs/verdicts-sample.e2e.ts`. The step polls `GET /api/agent-loop/runs/current` until the body is JSON `null`.
+- **Cause:** the plan assumes that the route answers `null` when no run is active. It does not. `apps/api/src/modules/agent-loop/agent-runs.service.ts` lines 182 to 195 (`current()`) return the state of the project's last run, active or ended. `null` is returned only when the project has never had a run. After the grounding check, the body was `"status": "ended"` with `"reason": "completed"`, so the 15 second poll timed out. T2 exits 1 at step 8. Steps 9 onward were not reached.
+- **Test status:** T1 (`npm run lint:examples`) exits 0. T2 exits 1 at step 8, as above. The root gates and the base comparison were not run.
+- **Uncommitted in the worktree (plan steps 5 and 6):** `e2e/fixtures/mock-openai/scenarios/grounding-claims.json` and `e2e/specs/verdicts-sample.e2e.ts`. They are not committed and are kept for the next implementer, who checks them against the corrected plan.
+- **Decision:** the plan goes back to `status: draft`. A new Opus reviser corrects the cause in the plan, and examines the commits on `unit/AGL-19`. When the plan is `planned` again, a new implementer continues from the commits of the branch.
