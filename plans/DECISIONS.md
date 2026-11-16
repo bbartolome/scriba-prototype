@@ -4737,3 +4737,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 ## 2026-11-16 — SAU-13 — Phone e2e run: setup-phone passes (orchestrator)
 
 - `npx playwright test specs/setup-phone.e2e.ts --trace off` in /Users/bbartolome/workspace/scriba-prototype-wt/SAU-13 at unit/SAU-13 32ac357: C2 and C3 passed (2 passed, exit 0). This is plan E1 (step 10), which was not run before the merge. The log is /tmp/sau13-checks/e2e-phone.log.
+
+## 2026-11-16 — SAU-13 — Merged to main 14c0e6e (orchestrator)
+
+- Patch id at merge `ac89a1cbe47f56d552243adc206f0447435308d6`, approved by the two Sonnet reviewers (part 1 and part 2). The code is identical to the tested head: `git diff 32ac357 unit/SAU-13 -- apps/web e2e` is empty.
+- Second rebase onto main 829b8f9 (docs only, no code change, patch id unchanged): the same false "local changes would be overwritten" error stopped `git rebase --apply` at the commit `fix(SAU-13): replace the stale placeholder assertions`, on a clean tree. Its own patch was replayed with `git apply --index` (no conflict) and `git rebase --continue`. This is the second time this happened in this unit.
+- Checks on the final head 14c0e6e: lint exit 0, test exit 0 (web 352 passed; the other workspaces and `scripts/*.test.mjs` passed), build exit 0. Phone e2e (E1) exit 0 at 32ac357, the same code.
+- Criteria 1 and 2 checked (PR1, PR2). Plan status `done`. Commit 14c0e6e (`docs(SAU-13): criteria checked, plan status done`), then fast-forward main 829b8f9 to 14c0e6e.
+- Branch `unit/SAU-13` and worktree `/Users/bbartolome/workspace/scriba-prototype-wt/SAU-13` are kept, as the parent asked (not removed in this cycle).
+- Open for the next cycle: SAU-14's `postStep` switch (plans/SAU-14.md S8) is still not made. It is a code change and needs its own unit change and review.
