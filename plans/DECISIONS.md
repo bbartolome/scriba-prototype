@@ -4840,3 +4840,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - The API has no operation that clears the active project (`apps/api/src/modules/project-store/active-project.controller.ts` has only GET and POST), so the spec cannot undo its own activation.
 - The plan does not say how to avoid this. Options named by the implementer: (a) rename or reorder the spec so it runs after `journey` (the plan fixes the file name, so this is a plan change); (b) let C2 and X2 use a library that `journey` does not read; (c) add a clear-active operation to the API (outside this unit's files).
 - Next: the plan goes back to an Opus reviser (status draft). The reviser decides whether the fix is a plan change it can make, or a Navigator point. The code stage then continues at step 7 on unit/SHL-15 (2163d52).
+
+## 2026-11-16 — SHL-15 — reviser, revision 5 after PLAN DOES NOT WORK at step 7, full suite (orchestrator record)
+
+- Decision (reviser, plan change; no Navigator point): option (a). The spec is renamed from `e2e/specs/editor-touch.e2e.ts` to `e2e/specs/touch-editor.e2e.ts` (plan D17, open point 7). With `workers: 1`, no `fullyParallel` and Playwright's `localeCompare` file sort (`node_modules/playwright/lib/runner/index.js` line 2361), it runs last, after `tools-preview.e2e.ts`. `journey` runs first with no active project, as on `main` (plan fact F27).
+- Rejected: (b) a separate library, which needs a change to `e2e/harness/global-setup.ts` (one API on one library for the run); (c) a clear-active API operation, outside this unit's files.
+- Changed in the plan: header; D17; section 2 file row; step 0 revision 5 continuation (`git mv` at 2163d52, commit `test(SHL-15)`); step 6; step 7 (command, expected full suite 11 passed, stop rule); section 4 C2 and X2 file and commands; section 5 SHL-16 note; open point 7; F27; section 8. No criterion, test assertion or other file changes.
+- Follow-up: `plans/SHL-16.md` line 35 names the old spec file. The SHL-16 agreement holds (SHL-16 changes neither name); its reviser may update the name.
+- Limit recorded: a future spec that sorts after `touch-editor.e2e.ts` starts with `touch-book` active. `tools-preview` already leaves `tools-spike` active, so this is not a new constraint.
