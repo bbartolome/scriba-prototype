@@ -18,5 +18,5 @@ unblocks: [AGL-20]
 - Original text; no `.scriba/`, `logs/`, `snapshots/` or `.versions/`.
 
 ## Acceptance criteria (mock extract and judge turns; the engine is tested through a test-only HTTP harness until AGL-17 exists)
-- [ ] Platform's examples check still passes.
-- [ ] A check of the draft against the mock yields at least one claim of each verdict, every supported/weak verdict citing a retrieved `sources/` passage (asserted on a temp copy, not `examples/`).
+- [x] Platform's examples check still passes.
+- [x] A check of the draft against the mock yields at least one claim of each verdict, every supported/weak verdict citing a retrieved `sources/` passage (asserted on a temp copy, not `examples/`).

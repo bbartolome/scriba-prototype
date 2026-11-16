@@ -1,6 +1,6 @@
 ---
 id: AGL-19
-status: planned
+status: done
 ---
 # AGL-19 plan — grounding-claims draft and its mock turns
 
