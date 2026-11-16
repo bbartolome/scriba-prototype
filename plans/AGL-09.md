@@ -1,6 +1,6 @@
 ---
 id: AGL-09
-status: draft
+status: planned
 ---
 # AGL-09 plan — narrative tools: enabled registry tools as functions, entity resolution, citations, draft provenance
 
@@ -9,6 +9,8 @@ Revision 1, written from main at `52b63f8`. Main had moved to `28b88c4` by the t
 Revision 2 (reviser), checked against main at `490aa4c`. Main differs from `28b88c4` only in `plans/AGL-09.md` and `plans/QUEUE.md` (`git diff --stat 28b88c4 HEAD`), so every code line cited below is unchanged. The reviser changed no unit. Corrections: the path of `transcript-entries.ts` (sections 1 and 2); the YAML parse in PC1; OP3 settled from the sources (section 6); the inconsistency I1 withdrawn (unit line 20 agrees with the code); the in-flight plan check (section 5); the new section 8, Review parts. OP1, OP2 and OP4 stay open for the Navigator.
 
 Revision 3 (reviser): OP1 to OP4 settled by the Navigator (835eb48, 5a3035b, e2aa5fc, af04b9b). Steps 8 d and 9 written. Checked against main at af04b9b. Main differs from `e80509e` only in `plans/DECISIONS.md` and `plans/GNP-04.md` (`git diff --stat e80509e HEAD`), and from `490aa4c` in no file under `apps`, `packages`, `e2e`, `modules` or `units`, so every code line cited below is unchanged. The reviser changed no unit. Other corrections: section 1 lines on OP2 and OP4; section 2 rows from the open points; the web test W1 and the copy test W2 for criterion 2 (sections 4 and 8); the OP3 citations (section 6); sections 5 and 7 brought up to date.
+
+Revision 4 (reviser): PC6 corrected after PLAN DOES NOT WORK at 49ce239; an absent style field is now filled with the project's `styleProfile`, as an empty one is (unit line 19; `emit.ts` comment that callers fill the style field), so T2's arguments (no `styleProfile` key) give T4's `entityIds` `['ada-lovelace', 'house-style']`. T2, T4 and every criterion are unchanged. Step 5 b 1 gains a note on the code change needed at `narrative-tools.ts` line 75. The reviser changed no unit and no code.
 
 ## 1. Decisions this plan follows
 
@@ -24,7 +26,7 @@ The unit has no change notes. A search of the unit file for "Moved", "Removed", 
 
 **Arguments and resolution**
 - Entity and style arguments are found from the form descriptor: `views.form.fields[].elementType` is `entity` or `style` (the `x-scriba-type` value, `emit.ts` `formField`; `inputs.ts` `isEntity` and `isStyle`, lines 33 to 34). Source: unit line 19; TRG-02 plan line 184.
-- An empty style field is filled with the project's `styleProfile`. The caller fills it, not the executor. Source: unit line 19; TRG-12 plan section 1, line 18.
+- An empty or absent style field is filled with the project's `styleProfile` (PC6). The caller fills it, not the executor. Source: unit line 19; TRG-12 plan section 1, line 18.
 - IDs are resolved in process through `EntitiesService.resolve` (`apps/api/src/modules/project-store/entities.service.ts` line 36). Source: unit line 19.
 - The executor is `ExecutorService.execute(name, request, signal)` (TRG-12). The signal is the run's abort signal: `AgentRun.runCall` passes `this.controller.signal` to `ToolRun.dispatch`, and dispatch passes it on as `ctx.signal`. A stop therefore aborts the model request. Source: unit line 19; TRG-12 plan section 5 (the AGL-09 row).
 
@@ -60,7 +62,7 @@ The unit has no change notes. A search of the unit file for "Moved", "Removed", 
 - PC3 Validation. The loop does not run Ajv on registry tools. The dispatcher checks only that the arguments are a JSON object. The executor's full-mode check is the validator, and it returns readable issues (TRG-12 C13). This avoids compiling registry schemas in the loop.
 - PC4 Error mapping. Section 3, step 5 has the table. Only the three named codes, unknown IDs, duplicate IDs and Project store refusals count as retries. Every other error becomes a plain error, which the dispatcher answers with its generic failure line without counting it (AGL-02 S7).
 - PC5 Unknown and duplicate IDs. Each unknown ID gives one issue at the path of the first field that names it: `Entity "<id>" is not in this project.` Each duplicate gives `Entity "<id>" is in more than one file: <paths>.`
-- PC6 Empty style field. An absent style field is left alone. An empty one (`''` or `null`) is filled when the project has a `styleProfile`. When the project has none, the empty key is removed, so the executor sees the field as absent. If the tool requires that field, the executor's readable "is required" refusal applies.
+- PC6 Empty style field. A style field that is absent from the arguments, or empty (`''` or `null`), is filled when the project has a `styleProfile`. Sources: unit line 19 ("fill an empty style field"); the function schema never requires a style field, because "callers fill it from the project's profile" (`apps/api/src/modules/tool-registry/emit.ts`, `emitViews`, the comment above `required`), so a model may omit it. When the project has no `styleProfile`, an empty key is removed and an absent key stays absent, so the executor sees the field as absent. The executor's full-mode check uses the tool's own `required` list (`validate.ts`, `requiredKeys(spec)`), which can name the style field: if the tool requires it and the project has no profile, the executor's readable "required" refusal (`TOOL_ARGS_INVALID`) applies and counts as a retry (PC4). A non-empty style value from the model is kept unchanged. (Revision 4: the old text, "An absent style field is left alone", contradicted T2 and T4.)
 - PC7 Provenance. The loop builds it in `runCall`, for outputs of kind `draft` only (OP3, settled). `entityIds` lists every ID passed in `request.entities`, in field order, without duplicates, and this includes the style profile. `sourcesUsed` is the executor's value. `model` is `this.target.model`. `at` is `new Date().toISOString()` at completion.
 - PC8 Names. A registry definition's `name` is a plain `string`. Only built-ins are typed with `AgentReservedToolName` (AGL-02 S16). Registry names are checked against the reserved list when the run starts.
 - PC9 Summary. `Drafted with <name>.` for a draft, and `Ran <name>.` for other kinds. The model receives the default `JSON.stringify(output)` text (AGL-02 S10).
@@ -107,7 +109,7 @@ Open points and their steps: all four are settled by the Navigator (section 6). 
 5. Narrative definitions. Create `tools/narrative-tools.ts`.
    a. `readProjectNarrativeSettings(files, projectId)` returns `{genrePack?, styleProfile?}` (PC1). Any throw or failed parse returns `{}`.
    b. The handler, for one registry tool, with `fields` (the form descriptor fields captured at run start) and the run's `styleProfile`:
-      1. Fill the style fields (PC6).
+      1. Fill the style fields (PC6): absent or empty fields take the project's `styleProfile`. Revision 4 note for the implementer: commit `49ce239` on `unit/AGL-09` has the old rule in `filledArguments`, `apps/api/src/modules/agent-loop/tools/narrative-tools.ts` line 75 (`if (!(field.key in values)) continue;`), which skips an absent style field. Change that line so that an absent field is treated as empty (filled with the profile, or left absent when the project has none), bring the comment above `filledArguments` in line with PC6, and make T4 pass (`entityIds` `['ada-lovelace', 'house-style']`) with T1 to T3 still passing. T2 and T4 do not change.
       2. Collect the IDs of every `entity` and `style` field, in field order. A scalar value is one ID, a list is its items, and a non-string item is skipped (the executor refuses it). Keep the first field that names each ID.
       3. If there are IDs, call `entities.resolve(projectId, ids)` with `projectId` from `ctx.run.projectId`. A `ModuleError` from it becomes a `ToolArgumentError` with one issue at `''`.
       4. Turn each `errors` entry into an issue (PC5), and throw `ToolArgumentError` with all of them when there are any.
