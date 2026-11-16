@@ -5234,3 +5234,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Limit:** GNP-09 is the first unit on main in this cycle, so the limit applies. No new subagent is started after this point.
 
 - **Correction to the check entry above (orchestrator):** the package counts from /tmp/gnp09-checks.log are: contracts 248 of 248 (18 files); API 398 of 398 (110 files); web 397 of 397 (59 files); packs 14 of 14 (4 files); e2e 12 of 12; root `node --test scripts/*.test.mjs` 92 of 92 pass, 0 fail. The "scripts 14 of 14" in the entry above is the packs count, and the web count was missing. `npm run lint`, `npm test` and `npm run build` each exit 0 (LINT_EXIT=0, TEST_EXIT=0, BUILD_EXIT=0).
+
+## 2026-11-16 — GNP-10 — Code approved (orchestrator)
+
+- **Implementer (Haiku, medium):** COMPLETE on unit/GNP-10 (base c2c8c40), commit 311bc54 "feat(GNP-10): numbers_to_people nonfiction draft tool, golden case and eval case". Node v26.13.0, npm 11.20.0. The implementer reported these tests passing: AC 1 `npm run lint:packs` exit 0 and `npm test -w @bbartolome/scriba-packs` 14 of 14; AC 2 the golden test 1 of 1 (update run, then compare run) and `npx vitest run test/packs` 16 of 16; AC 3 `node --test scripts/eval-case-numbers-to-people.test.mjs` 1 of 1 and `node --test scripts/eval-cases.test.mjs` 2 of 2. Root build, test (93 of 93), lint and `prettier --check .` exit 0; e2e 12 of 12. The checks are repeated after the rebase (step 3).
+- **Not run:** the eval-agent real-model run (plan section 8 point 1; the data-only reading of the Navigator decision above applies; carried by GNP-12 criterion 4); step 15 (Playwright `tools-preview`; no browser cache).
+- **Differences from the plan:** Prettier re-wrapped one array and one assert line (content unchanged). The branch already existed at c2c8c40, so `git switch -c` was not run. `myth_buster.yaml` was on the base, so the catalogue line goes after `myth_buster`.
+- **Review (Sonnet, medium), Part 1 (the whole plan):** APPROVED. Patch id `aa061300f6ea2e7425f5853dd96e038917849f93` (matches the command of step 3). The diff holds the 8 files of plan section 4 and no `plans/` or `units/` file.
