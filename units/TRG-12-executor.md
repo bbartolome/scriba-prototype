@@ -33,8 +33,8 @@ One call renders, calls the model and returns `{output, sourcesUsed}` (40); ever
 - Mock OpenAI scenario for a tool execution added to `e2e/fixtures/mock-openai/scenarios/`.
 
 ## Acceptance criteria
-- [ ] `render` with fixture arguments and resolved entities returns the expected prompt; `{{entity id}}` inside `#each` inserts each entity's header and content; an absent optional field renders nothing.
-- [ ] `execute` against the mock server returns `{output: {kind: 'draft', content}, sourcesUsed}`, with `sourcesUsed` exactly the de-duplicated entity references of entity-typed inputs and no style profile; the mock received the per-kind system message then the rendered prompt.
-- [ ] Malformed arguments → `TOOL_ARGS_INVALID` naming every bad field; wrong-kind and unresolved entities → their own readable errors; the mock received no request in each case.
-- [ ] A disabled tool → `TOOL_DISABLED`; an aborted call stops the model request (mock sees the close).
-- [ ] **M2 done-when, API level:** each workhorse-shaped fixture tool produces a draft that cites its source files through `sourcesUsed`.
+- [x] `render` with fixture arguments and resolved entities returns the expected prompt; `{{entity id}}` inside `#each` inserts each entity's header and content; an absent optional field renders nothing.
+- [x] `execute` against the mock server returns `{output: {kind: 'draft', content}, sourcesUsed}`, with `sourcesUsed` exactly the de-duplicated entity references of entity-typed inputs and no style profile; the mock received the per-kind system message then the rendered prompt.
+- [x] Malformed arguments → `TOOL_ARGS_INVALID` naming every bad field; wrong-kind and unresolved entities → their own readable errors; the mock received no request in each case.
+- [x] A disabled tool → `TOOL_DISABLED`; an aborted call stops the model request (mock sees the close).
+- [x] **M2 done-when, API level:** each workhorse-shaped fixture tool produces a draft that cites its source files through `sourcesUsed`.

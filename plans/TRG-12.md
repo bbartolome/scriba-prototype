@@ -1,6 +1,6 @@
 ---
 id: TRG-12
-status: planned
+status: done
 ---
 # TRG-12 plan — executor service, render and execute endpoints, entity kind checks, per-output system messages, model call
 
