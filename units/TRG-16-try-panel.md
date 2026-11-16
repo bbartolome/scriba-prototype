@@ -18,5 +18,5 @@ unblocks: [TRG-17]
 - The Try tab is hidden on an invalid row. Added by the Navigator's decision on TRG-13 open point 2 (2026-11-16). See plans/DECISIONS.md.
 
 ## Acceptance criteria
-- [ ] Component test (fakes): resolution request carries the chosen IDs; execute is called with resolved entities; output and sources render.
-- [ ] In the running app, Try produces output and no file appears under `.scriba/pending/`.
+- [x] Component test (fakes): resolution request carries the chosen IDs; execute is called with resolved entities; output and sources render.
+- [x] In the running app, Try produces output and no file appears under `.scriba/pending/`.

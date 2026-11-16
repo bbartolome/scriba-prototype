@@ -1,6 +1,6 @@
 ---
 id: TRG-16
-status: planned
+status: done
 ---
 # TRG-16 plan — Try panel: run a tool against the active project
 
