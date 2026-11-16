@@ -19,7 +19,8 @@ Drafts become pending changes in `drafts/` or a named file (28), entities in `en
 - `draft` → overlay at `target` or a new `drafts/<tool-name>-<yyyymmdd-hhmm>.md` (UTC; `-2`, `-3`, … on collision); a grounding check follows (AGL-17).
 - `entity` → overlay in `entities/` (same rule, default `entities/<tool-name>-<yyyymmdd-hhmm>.md`).
 - `graph` → validate against the Graph runner's graph file schema; valid → overlay in `graphs/` (default `graphs/<slug-of-name>.json`), becoming a pending change aimed at `graphs/` (the Graph runner's registered validator also checks it at propose time); invalid → readable validation error to the model with the same retries.
-- `claims` → a claims artefact (grounding-result shape) shown as a card (and written to `logs/grounding/…` for its target if one is given).
+- `claims` → shown as a card only; the claims artefact is AGL-16's.
+  Reworded by revision of AGL-13 on 2026-11-16. The old text was: "`claims` → a claims artefact (grounding-result shape) shown as a card (and written to `logs/grounding/…` for its target if one is given)." See plans/DECISIONS.md.
 - `check` → a card only, no file.
 - Provenance from AGL-09 flows to the pending change via the overlay entry.
 
