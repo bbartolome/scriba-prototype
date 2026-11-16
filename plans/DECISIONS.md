@@ -4725,3 +4725,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Plan committed as 5f31564 (`docs(PST-15): plan revised, status planned`). Review parts: part 1 steps 1 to 7 (tests P1 to P5, E1 to E4); part 2 steps 8 to 11 (test L1, the F3 row, the sweep fixture key, the full gate).
 - Open points left for the record: a caller base with a missing target gives `kind: modify` (plan choice); every content failure gives PROJECT_VALIDATION_FAILED 422 (unit line 22); the diff is the plan's own line diff with no new dependency; propose does not edit .gitignore (unit line 23).
 - Next: a Haiku implementer for PST-15 (not started this cycle, because the cycle limit was reached).
+
+## 2026-11-16 — SAU-13 — Rebase onto main 0fdbadc: replayed commit, Sonnet code review (two parts): APPROVED (orchestrator)
+
+- Orchestrator rebase of unit/SAU-13 (38f087b, 9 commits) onto main 0fdbadc with `git rebase --apply main`. It stopped at commit 9 `fix(SAU-13): replace the stale placeholder assertions` with a "local changes would be overwritten" error on a clean tree. `git diff 9f81308 38f087b | git apply --index` checked and applied with no conflict, and `git rebase --continue` finished the rebase. Result: 9 commits on 0fdbadc, head 32ac357. The apps/web and e2e paths are identical to 38f087b. No conflict was resolved by hand; the replayed patch is the commit's own patch.
+- Patch id `ac89a1cbe47f56d552243adc206f0447435308d6` (`git diff main...unit/SAU-13 -- . ':!plans' ':!units' | git patch-id --stable`). The approval of `ee1a0129…` no longer holds.
+- Sonnet reviewers (medium), part 1 and part 2 of plan section 8: both APPROVED `ac89a1cb…`. Neither changed a file. Part 2's R1 rests on the web total (352 passed, exit 0), because the log has no per-file lines. Part 1 could not check the step 12 mutation runs or the step 13 commit shape by reading the diff.
+- Checks on 32ac357: lint exit 0; test exit 0 (web 352 passed, the other workspaces and `scripts/*.test.mjs` passed); build exit 0. Logs in /tmp/sau13-checks/.
+- Next: the phone e2e (plan E1, step 10) is not yet decided; then step 3.8 to 3.10 (marks, plan status done, fast-forward of main).
