@@ -5474,3 +5474,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
   1. Step 9 (base comparison) was not run, and the plan does not make it optional.
      - Problem: Section 3 step 9 says "Run `npm run e2e` on `<base>` and on the branch, and compare the pass and fail list." It gives the reason ("a new project could change another spec") and an Expected result: the only difference is the new test, which runs last. Nothing in the text says "observation only". The branch-only run does not substitute for it. It cannot show that tools-preview:167 also fails on 196e0cd, which the plan expects.
      - Correction: Run `npm run e2e` on 196e0cd (a second checkout, or the orchestrator runs it) and compare the pass and fail lists with /tmp/agl19-e2e-full.txt. Record the result. If tools-preview.e2e.ts:167 fails on both, approve. If it fails only on the branch, report that.
+
+## 2026-11-16 — AGL-19 — Review (Sonnet, medium), Part P1 (the whole plan), second review: APPROVED
+
+- **Branch:** `unit/AGL-19`, two commits on top of main's base 196e0cd: d0d88c1 and 1488be1.
+- **Patch id:** e97cbdd53b047bb7fb943efe88129b3068eaa244 (`git diff main...unit/AGL-19 -- . ':!plans' ':!units' | git patch-id --stable`). The code is the same as at the first review, which was REWORK for step 9 only.
+- **Result:** APPROVED by one reviewer, part P1 of 1. Step 9 is answered: the base run at 196e0cd and the branch run at 1488be1 differ only by the new `grounding-claims` test (`verdicts-sample.e2e.ts:84`), which runs last and passes. `tools-preview.e2e.ts:167` fails on both sides with the same assertion, so it is pre-existing and not caused by this unit. The comparison is in /tmp/agl19-step9-compare.txt.
+- **Checks reported by the implementer:** T1 (`npm run lint:examples`) exit 0. T2 (`npm run e2e -w @bbartolome/scriba-e2e -- verdicts-sample`) exit 0. Other gates on the branch, exit 0: `npm run lint -w @bbartolome/scriba-e2e`, `npm run build`, `npm test` (102 pass), `npm run lint`, `npx prettier --check .`. The full e2e run on the branch: 12 passed, 1 failed (the pre-existing failure above).
