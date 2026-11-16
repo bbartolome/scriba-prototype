@@ -1,4 +1,4 @@
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { Injectable } from '@nestjs/common';
 import {
@@ -32,6 +32,8 @@ import {
   readOpenChanges,
   writeChange,
 } from './pending-store';
+import type { DiscoveredProject } from './project-discovery';
+import type { ResolvedProjectPath } from './path-safety';
 import { ProjectStoreService } from './project-store.service';
 import { requireOkProject } from './project-status';
 import { readYamlState } from './project-yaml';
@@ -40,6 +42,8 @@ import { unifiedDiff } from './unified-diff';
 
 // A per-path check of proposed content. It returns true when the content passes (PST-15 decision 11).
 export type PendingValidator = (content: string) => boolean;
+
+type ConflictReason = NonNullable<PendingChange['conflict']>['reason'];
 
 interface RegisteredValidator {
   regex: RegExp;
@@ -86,13 +90,67 @@ export class PendingService {
     if (project === undefined) {
       throw refuse(PROJECT_ERROR_CODES.NOT_FOUND, PROJECT_MESSAGES.NOT_FOUND);
     }
-    const changes = readOpenChanges(pendingFolder(project, false));
+    const now = new Date();
+    const changes = readOpenChanges(pendingFolder(project, false)).map(
+      (change) => ({
+        ...change,
+        conflict: this.conflictOf(project, change, change.conflict, now),
+      }),
+    );
     return {
       changes:
         query.run === undefined
           ? changes
           : changes.filter((change) => change.origin.runId === query.run),
     };
+  }
+
+  // The conflict of a change against the disk (PST-16 D9 to D11), computed in memory. The stored reason and its
+  // detectedAt are kept while the reason stays the same (D15). Nothing is written.
+  private conflictOf(
+    project: DiscoveredProject,
+    change: PendingChange,
+    stored: PendingChange['conflict'],
+    now: Date,
+  ): PendingChange['conflict'] {
+    const reason = this.conflictReason(project, change);
+    if (reason === null) return null;
+    const detectedAt =
+      stored !== null && stored.reason === reason
+        ? stored.detectedAt
+        : now.toISOString();
+    return { reason, detectedAt };
+  }
+
+  // The disk state of a change's target against its three-way base: null when it still matches. The sizes are
+  // compared first, so a large file is not read when its size differs (D9). A path that now fails the check is
+  // shown as target-missing (D11).
+  private conflictReason(
+    project: DiscoveredProject,
+    change: PendingChange,
+  ): ConflictReason | null {
+    let target: ResolvedProjectPath;
+    try {
+      target = this.store.resolvePath(project.root, change.targetPath);
+    } catch {
+      return 'target-missing';
+    }
+    if (change.kind === 'create') {
+      return target.exists ? 'target-exists' : null;
+    }
+    if (change.capturedBase === null) return 'base-changed';
+    if (!target.exists || !statSync(target.realPath).isFile()) {
+      return 'target-missing';
+    }
+    const base = change.capturedBase;
+    if (
+      statSync(target.realPath).size !== Buffer.byteLength(base.content, 'utf8')
+    ) {
+      return 'base-changed';
+    }
+    return hashOf(readFileSync(target.realPath)) === base.hash
+      ? null
+      : 'base-changed';
   }
 
   // Proposes a full new text for one file of an ok project. Nothing at the target is changed. A change of the same
