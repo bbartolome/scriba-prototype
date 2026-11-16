@@ -62,8 +62,9 @@ function pointerOf(key: string): string {
   return `/${key.replace(/~/g, '~0').replace(/\//g, '~1')}`;
 }
 
-// The arguments with the style fields filled (PC6). An empty style field takes the project's profile. When the
-// project has none, the empty key is removed, so the executor sees the field as absent.
+// The arguments with the style fields filled (PC6). A style field that is absent, or empty ('' or null), takes the
+// project's profile. When the project has none, an empty key is removed, and an absent key stays absent, so the
+// executor sees the field as absent. A non-empty value from the model is kept.
 function filledArguments(
   args: Record<string, unknown>,
   fields: readonly FormField[],
@@ -72,9 +73,9 @@ function filledArguments(
   const values = { ...args };
   for (const field of fields) {
     if (field.elementType !== 'style') continue;
-    if (!(field.key in values)) continue;
     const value = values[field.key];
-    if (value !== '' && value !== null) continue;
+    const empty = value === undefined || value === '' || value === null;
+    if (!empty) continue;
     if (styleProfile === undefined) {
       delete values[field.key];
     } else {
