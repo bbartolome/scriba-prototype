@@ -5302,3 +5302,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Result:** E2 passes. E1 fails on the second draft: the moved-row check for `my_tool` passes, and the save of `cold_open_2` returns 200. The check `[data-editor] .cm-content` contains "name: cold_open_2" fails: the rendered text runs from "schemaVersion: 1" to "title: Core idea" and lacks the lines between them, which contain the name line. The plan assumes that `.cm-content` holds the whole document, and the rendered CodeMirror DOM does not give that for this long file.
 - **Plan change needed:** the reviser says how E1 reads the moved editor's text. Options: the document through the API (the `/user` GET answer), or a check on the saved file. The implementer did not change the design.
 - **Not run:** the TRG-05 spec (`tools-preview.e2e.ts`), step 10 build, step 11 gates, step 12 commit, step 13 records.
+
+## 2026-11-16 — AGL-11 — Review (Sonnet, medium), Part 1 (the whole plan): APPROVED
+
+- **Branch:** `unit/AGL-11`, commits 7611b4d (code) and 34b5280 (rework of the REWORK item in 45a2ae1: the `run-started` assertion in the C1 test). Based on main 38dcdce.
+- **Patch id:** e95b168e0c727a46847e3c16d2779e26bbe27fce.
+- **Result:** APPROVED, one reviewer, part 1 of 1 (the whole plan). The reviewer checked that the diff changes only `apps/api/test/agent-loop-workhorses.test.ts`, that `units/` and `plans/` are untouched, and that the C1 and T5 tests match section 8.
