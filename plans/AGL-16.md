@@ -1,7 +1,7 @@
 ---
 id: AGL-16
 unit: units/AGL-16-grounding-engine.md
-status: planned
+status: done
 date: 2026-11-16
 ---
 

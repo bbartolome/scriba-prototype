@@ -24,7 +24,7 @@ Each claim marked supported, weak or unsupported (33), citing a `sources/` passa
 - Fetched web pages and entities are **not** evidence.
 
 ## Acceptance criteria (mock extract and judge turns; the engine is tested through a test-only HTTP harness until AGL-17 exists)
-- [ ] A verdict citing a passage that wasn't retrieved is downgraded to `unsupported`.
-- [ ] A claim with no retrieved passages is `unsupported` and no judge call covers it.
-- [ ] The claims artefact matches the contract, sits at the path rule, and carries the checked text's content hash.
-- [ ] Malformed extract JSON is retried twice, then the check fails readably.
+- [x] A verdict citing a passage that wasn't retrieved is downgraded to `unsupported`.
+- [x] A claim with no retrieved passages is `unsupported` and no judge call covers it.
+- [x] The claims artefact matches the contract, sits at the path rule, and carries the checked text's content hash.
+- [x] Malformed extract JSON is retried twice, then the check fails readably.
