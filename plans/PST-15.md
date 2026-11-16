@@ -1,6 +1,6 @@
 ---
 id: PST-15
-status: planned
+status: done
 ---
 # PST-15 plan - propose, the pending-change store, path validators and the queue listing
 

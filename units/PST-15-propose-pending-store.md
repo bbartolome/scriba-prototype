@@ -26,8 +26,8 @@ Every agent or recipe write lands in a pending queue (22), shown as a diff again
 - `provenance` stored verbatim (passthrough); `grounding` summary stored for the review chip.
 
 ## Acceptance criteria
-- [ ] A propose never changes the target file on disk; it creates exactly one pending file and one `pending-created` event.
-- [ ] A second propose to the same target from the same origin updates that change and keeps the original base; a different run creates a separate change.
-- [ ] A propose naming a non-active `ok` project succeeds and lands in that project's queue.
-- [ ] A caller-supplied base is used instead of disk; a missing target yields `kind: create` with `null` base.
-- [ ] A proposed file failing a registered validator is refused (test with a test-registered validator for `graphs/`), as is an invalid `project.yaml` and a reserved path.
+- [x] A propose never changes the target file on disk; it creates exactly one pending file and one `pending-created` event.
+- [x] A second propose to the same target from the same origin updates that change and keeps the original base; a different run creates a separate change.
+- [x] A propose naming a non-active `ok` project succeeds and lands in that project's queue.
+- [x] A caller-supplied base is used instead of disk; a missing target yields `kind: create` with `null` base.
+- [x] A proposed file failing a registered validator is refused (test with a test-registered validator for `graphs/`), as is an invalid `project.yaml` and a reserved path.
