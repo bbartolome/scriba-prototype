@@ -26,7 +26,8 @@
     "lint": "npm run lint --workspaces && npm run lint:examples && prettier --check .",
     "lint:examples": "npm run build -w @bbartolome/scriba-contracts && node scripts/examples-check/index.mjs",
     "mock:openai": "node e2e/fixtures/mock-openai/cli.mjs",
-    "e2e": "npm run e2e -w @bbartolome/scriba-e2e"
+    "e2e": "npm run e2e -w @bbartolome/scriba-e2e",
+    "eval:agent": "npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api && node scripts/eval-agent/run.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

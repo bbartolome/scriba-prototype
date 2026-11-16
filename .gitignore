@@ -6,3 +6,4 @@ coverage/
 .claude/settings.local.json
 prompt.md
 e2e/test-results/
+eval-reports/

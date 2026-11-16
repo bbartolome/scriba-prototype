@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "summarize my outline",
+  "expect": {
+    "reason": "completed",
+    "tools": ["list_files", "read_file"],
+    "citations": "any"
+  }
+}
