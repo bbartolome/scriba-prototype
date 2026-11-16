@@ -249,7 +249,10 @@ test('C3 the wizard walks its five steps at 390 by 844 and completes setup', asy
   await test.step('providers: Continue, then Next', async () => {
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await expect(
-      page.getByText('Preferences are not set up yet.', { exact: true }),
+      page.getByRole('textbox', { name: 'Author name', exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.locator('app-setup-page app-theme-toggle [aria-label="Theme"]'),
     ).toBeVisible();
     await expectPhoneLayout(page);
     await nextButton(page).click();
