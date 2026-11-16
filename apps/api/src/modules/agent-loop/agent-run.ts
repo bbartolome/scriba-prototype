@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import type {
+  AgentCard,
   AgentRunEndReason,
   AgentRunState,
   AgentToolFamily,
+  DraftProvenance,
 } from '@bbartolome/scriba-contracts/agent-loop';
 import { ModuleError, type EventsPublisher } from '../platform/platform.module';
 import {
@@ -18,6 +20,7 @@ import { replayTurns, trimHistory } from './conversation-history';
 import type { AgentTranscriptsService } from './transcript-reader';
 import type { TranscriptWriter } from './transcript-writer';
 import type { ToolRun } from './tools/tool-run';
+import type { ToolOutcome } from './tools/tool-types';
 
 // The message of a run that failed for a reason other than a module's own error (D3).
 const FAILED_MESSAGE = 'The agent run failed.';
@@ -235,6 +238,26 @@ export class AgentRun {
     return { text, calls };
   }
 
+  // The provenance of a draft (AGL-09 PC7). Only a draft output gets one; the file is not written here (AGL-13).
+  private provenanceOf(
+    callId: string,
+    name: string,
+    outcome: Extract<ToolOutcome, { kind: 'result' }>,
+  ): DraftProvenance | undefined {
+    const { citations } = outcome;
+    const output = outcome.output as { kind?: unknown } | null;
+    if (citations === undefined || output?.kind !== 'draft') return undefined;
+    return {
+      runId: this.runId,
+      toolCallId: callId,
+      tool: name,
+      entityIds: citations.entityIds,
+      sourcesUsed: citations.sourcesUsed,
+      model: this.target?.model ?? '',
+      at: new Date().toISOString(),
+    };
+  }
+
   // One tool call (D8). An offered name gets its card events; any call is answered to the model. The call's lines are
   // written after its events (D4).
   private async runCall(call: ToolCall): Promise<ChatMessage> {
@@ -248,6 +271,17 @@ export class AgentRun {
       this.controller.signal,
     );
     const { outcome } = result;
+    // The citations of a narrative result, and its provenance when it is a draft. Each is added only when present.
+    const provenance =
+      outcome.kind === 'result'
+        ? this.provenanceOf(callId, call.name, outcome)
+        : undefined;
+    const extras = {
+      ...(outcome.kind === 'result' && outcome.citations !== undefined
+        ? { sourcesUsed: outcome.citations.sourcesUsed }
+        : {}),
+      ...(provenance === undefined ? {} : { provenance }),
+    };
     if (family !== undefined) {
       this.emit('tool-call-args', {
         callId,
@@ -259,6 +293,7 @@ export class AgentRun {
           callId,
           summary: outcome.summary,
           output: outcome.output,
+          ...extras,
         });
       } else {
         this.emit('tool-call-error', {
@@ -285,6 +320,7 @@ export class AgentRun {
         summary: outcome.summary,
         output: outcome.output,
         modelText: outcome.modelText,
+        ...extras,
       });
     } else {
       this.transcript.append('tool-error', this.state.lastSeq, {
@@ -324,8 +360,10 @@ export class AgentRun {
   private writeIntent(): void {
     if (this.intentWritten) return;
     this.intentWritten = true;
+    const excluded = this.tools.rejectedNames;
     this.transcript.append('intent', this.state.lastSeq, {
       intent: this.intent,
+      ...(excluded.length > 0 ? { excludedTools: [...excluded] } : {}),
     });
   }
 
@@ -385,6 +423,12 @@ export class AgentRun {
       card.status = 'done';
       card.summary = String(data.summary);
       card.output = data.output;
+      if (data.sourcesUsed !== undefined) {
+        card.sourcesUsed = data.sourcesUsed as AgentCard['sourcesUsed'];
+      }
+      if (data.provenance !== undefined) {
+        card.provenance = data.provenance as DraftProvenance;
+      }
     } else if (type === 'tool-call-error') {
       card.status = 'error';
       card.error = {

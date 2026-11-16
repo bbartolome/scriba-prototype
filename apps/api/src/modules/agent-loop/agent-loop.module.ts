@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PlatformModule, SettingsService } from '../platform/platform.module';
 import { ProjectStoreModule } from '../project-store/project-store.module';
 import { ProvidersModule } from '../providers/providers.module';
+import { ToolRegistryModule } from '../tool-registry/tool-registry.module';
 import { AgentConversationsController } from './agent-conversations.controller';
 import { AgentRunsController } from './agent-runs.controller';
 import { AgentRunsService } from './agent-runs.service';
@@ -31,7 +32,12 @@ const AGENT_SETTINGS_REGISTRATION = 'AGENT_SETTINGS_REGISTRATION';
 // stop commands, the run transcripts in logs/agent-runs, and the conversation history rebuilt from them. Grounding lands
 // in a later unit.
 @Module({
-  imports: [PlatformModule, ProjectStoreModule, ProvidersModule],
+  imports: [
+    PlatformModule,
+    ProjectStoreModule,
+    ProvidersModule,
+    ToolRegistryModule,
+  ],
   controllers: [
     AgentSettingsController,
     AgentRunsController,

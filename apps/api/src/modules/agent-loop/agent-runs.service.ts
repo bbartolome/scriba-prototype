@@ -82,8 +82,8 @@ export class AgentRunsService {
     const conversationId = body.conversationId ?? randomUUID();
     const startedAt = new Date();
     const enabledFamilies: AgentToolFamily[] = settings.research.enabled
-      ? ['project', 'research']
-      : ['project'];
+      ? ['project', 'narrative', 'research']
+      : ['project', 'narrative'];
     const transcript = new TranscriptWriter({
       files: this.files,
       projectId,

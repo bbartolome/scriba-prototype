@@ -27,6 +27,8 @@ export interface ToolRunOptions {
   projectId: string;
   enabledFamilies: AgentToolFamily[];
   tools: CompiledTool[];
+  // Registry names that are left out of the run because they clash with a reserved name (AGL-09 PC8).
+  rejectedNames?: string[];
 }
 
 // The arguments as the loop receives them. An empty or whitespace-only string is an empty object (S4).
@@ -45,6 +47,14 @@ function argumentIssues(
   parsed: { parsed: boolean; value: unknown },
 ): ToolIssue[] {
   if (!parsed.parsed) return [{ path: '', message: 'is not valid JSON' }];
+  // A tool with no validator (a registry tool) is checked by its executor. Here the arguments must be an object.
+  if (tool.validate === undefined) {
+    const isObject =
+      typeof parsed.value === 'object' &&
+      parsed.value !== null &&
+      !Array.isArray(parsed.value);
+    return isObject ? [] : [{ path: '', message: 'must be an object' }];
+  }
   if (tool.validate(parsed.value)) return [];
   return issuesFromAjv(tool.validate.errors);
 }
@@ -57,16 +67,23 @@ export class ToolRun {
   private readonly offered = new Map<string, CompiledTool>();
   private readonly invalidCounts = new Map<string, number>();
   private readonly withdrawn = new Set<string>();
+  private readonly rejected: string[];
 
   constructor(options: ToolRunOptions) {
     this.runId = options.runId;
     this.projectId = options.projectId;
+    this.rejected = [...(options.rejectedNames ?? [])];
     const families = new Set<AgentToolFamily>(options.enabledFamilies);
     for (const tool of options.tools) {
       if (families.has(tool.definition.family)) {
         this.offered.set(tool.definition.name, tool);
       }
     }
+  }
+
+  // The registry names left out of this run because they clash with a reserved name (AGL-09 OP2).
+  get rejectedNames(): readonly string[] {
+    return this.rejected;
   }
 
   // The family of an offered tool, or undefined for a name that is not offered in this run.
@@ -135,6 +152,9 @@ export class ToolRun {
           summary: result.summary,
           output: result.output,
           modelText: result.modelText ?? JSON.stringify(result.output),
+          ...(result.citations === undefined
+            ? {}
+            : { citations: result.citations }),
         },
       };
     } catch (error) {

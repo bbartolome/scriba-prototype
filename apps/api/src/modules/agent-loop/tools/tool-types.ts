@@ -47,11 +47,18 @@ export interface ToolContext {
   signal?: AbortSignal;
 }
 
+// The entities a narrative call drew on: the IDs it passed, and the sources the executor reports (TRG-12 C6).
+export interface CallCitations {
+  entityIds: string[];
+  sourcesUsed: string[];
+}
+
 export interface ToolHandlerResult {
   summary: string;
   output: unknown;
   // The text the model receives. When it is left out, the model text is JSON.stringify(output) (S10).
   modelText?: string;
+  citations?: CallCitations;
 }
 
 export interface ToolDefinition {
@@ -63,10 +70,20 @@ export interface ToolDefinition {
   handler: (ctx: ToolContext, args: unknown) => Promise<ToolHandlerResult>;
 }
 
-// A definition with its argument validator, compiled once by the service.
+// A registry tool offered to a narrative run (AGL-09). Its name is a plain string, because registry names are not
+// reserved names. Its arguments are checked by the executor, so it has no validator here.
+export interface NarrativeToolDefinition {
+  name: string;
+  family: 'narrative';
+  description: string;
+  schema: ToolArgumentSchema;
+  handler: (ctx: ToolContext, args: unknown) => Promise<ToolHandlerResult>;
+}
+
+// A definition with its argument validator, compiled once by the service. A narrative definition has none.
 export interface CompiledTool {
-  definition: ToolDefinition;
-  validate: ValidateFunction;
+  definition: ToolDefinition | NarrativeToolDefinition;
+  validate?: ValidateFunction;
 }
 
 // One call as the loop passes it: the arguments are the raw string the provider sent (S15).
@@ -77,7 +94,13 @@ export interface ToolCallInput {
 }
 
 export type ToolOutcome =
-  | { kind: 'result'; summary: string; output: unknown; modelText: string }
+  | {
+      kind: 'result';
+      summary: string;
+      output: unknown;
+      modelText: string;
+      citations?: CallCitations;
+    }
   | { kind: 'error'; message: string; attempt: number; withdrawn?: boolean };
 
 // The answer of one dispatch (S9). arguments is the parsed value when the JSON parsed, and the raw string otherwise.

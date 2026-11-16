@@ -30,7 +30,11 @@ export function cutText(
 // writer's and the reader's schemas. The grounding and pending-change kinds are not written here (AGL-16, AGL-12).
 const step = z.number().int().min(1);
 
-const intentPayloadSchema = z.object({ intent: z.string() });
+const intentPayloadSchema = z.object({
+  intent: z.string(),
+  // The registry tools left out of the run, because their names clash with a reserved name (AGL-09 OP2).
+  excludedTools: z.array(z.string()).optional(),
+});
 
 const stepPayloadSchema = z.object({
   step,
