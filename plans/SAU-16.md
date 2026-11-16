@@ -1,7 +1,7 @@
 ---
 id: SAU-16
 title: Setup-flow gate — e2e setup leg through /setup, M2 demo
-status: planned
+status: done
 ---
 # SAU-16 plan — Setup-flow gate: gate tests and the e2e setup and project legs through /setup
 

@@ -17,11 +17,11 @@ Merging this **closes Setup & auth `phase:setup-flow`**.
 - **Extend Platform's e2e:** the setup → project-from-sample leg runs through `/setup`'s first-project step (until now, the e2e's project-from-sample step used the Project store's own picker).
 
 ## Acceptance criteria (the `phase:setup-flow` checklist)
-- [ ] A fresh library walks through all five steps; skipping providers and preferences still allows completion, and they show `skipped`.
-- [ ] Re-running `/setup` shows every saved value as a default; saving one step changes only that step's fields (settings files differ only there; projects unchanged).
-- [ ] The first-project step creates a project from the nonfiction sample via the Project store API; on a re-run it lists existing projects and creates nothing unless asked.
-- [ ] The providers step renders the Model providers component and duplicates no forms.
-- [ ] With `SCRIBA_COMPOSE_VERSION` unset or older, `/setup` and settings show the warning with the one-liner; matching → no warning.
+- [x] A fresh library walks through all five steps; skipping providers and preferences still allows completion, and they show `skipped`.
+- [x] Re-running `/setup` shows every saved value as a default; saving one step changes only that step's fields (settings files differ only there; projects unchanged).
+- [x] The first-project step creates a project from the nonfiction sample via the Project store API; on a re-run it lists existing projects and creates nothing unless asked.
+- [x] The providers step renders the Model providers component and duplicates no forms.
+- [x] With `SCRIBA_COMPOSE_VERSION` unset or older, `/setup` and settings show the warning with the one-liner; matching → no warning.
 - [ ] The e2e setup leg passes in CI.
 
 ## Demo (under 5 min)
