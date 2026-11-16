@@ -4625,3 +4625,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 1 (steps 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12; tests T1 and M1; section 2 paths only): APPROVED for the patch id. T1 failed once with EADDRINUSE on port 8080 (another agent held the port) and passed on rerun. `node --test scripts/eval-agent/run.test.mjs` then gave 3 of 3 (T1, T2, T3). Step 7 and step 8 checks passed (no-argument exit 2; the bad-case exit 2; lint exit 0). M1 was not run: the host has no Ollama. The reviewer judged M1 by reading `run.mjs` against the plan, and the code matches. Per the plan (R6), M1 does not gate the tick of criterion 1.
 - Part 2 (step 5; tests T2 and T3): APPROVED for the patch id. Each of T2 and T3 passed when run alone. The README covers the step 5 topics.
 - Next: step 3 for AGL-25 (rebase onto main, the three checks, patch id again, unit and plan marks, fast-forward).
+
+## 2026-11-16 — TRG-07 — Plan revised: READY (orchestrator)
+
+- The Opus reviser replied READY. No unit change was needed, so none is committed, and the YAGNI test did not apply. The corrections are in plans/TRG-07.md, revision 1 (note in the header): the compile gate of step 4 runs only when there is no error from inputs-subset, reserved-output, hint-unknown or hint-consistency; cold_open has three warnings (D21, X2); the X1 and X3 fixtures are changed so that the lint gates are actually tested; one test per criterion (C2 to C5); the test precedent is apps/api/test/tool-registry-template.test.ts line 10; the plan statuses in 8a are updated.
+- Review parts: 2 parts. Part 1: the lint library, the fixtures and the runtime gates (criteria 1, 3 and 4). Part 2: the CLI and the root wiring (criteria 2 and 5).
+- Status set to planned.
