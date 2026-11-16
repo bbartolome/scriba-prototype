@@ -5,15 +5,17 @@ import {
   compareText,
   discoverSamples,
   isRealDirectory,
+  requireBuilt,
   requireContracts,
 } from './lib.mjs';
 import * as m1 from './m1.mjs';
 import * as graph from './graph.mjs';
+import * as pack from './pack.mjs';
 
-// The examples check (PLT-20, M1 layer; PLT-21, graph layer). PLT-22 appends its layer module to LAYERS.
+// The examples check (PLT-20, M1 layer; PLT-21, graph layer; PLT-22, pack layer).
 // Usage: node scripts/examples-check/index.mjs [--root <dir>]
-// Exit 0: passed. Exit 1: issues, one stderr line each. Exit 2: usage, or the contracts cannot load.
-export const LAYERS = [m1, graph];
+// Exit 0: passed. Exit 1: issues, one stderr line each. Exit 2: usage, or the contracts or the built packs cannot load.
+export const LAYERS = [m1, graph, pack];
 
 const SCRIPT_ROOT = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -45,6 +47,22 @@ export function main(argv = process.argv.slice(2)) {
     return 2;
   }
 
+  let library;
+  let packs;
+  try {
+    library = requireBuilt(
+      SCRIPT_ROOT,
+      'dist/modules/tool-registry/pack-lint.js',
+    );
+    packs = library.loadBuiltinPacks(join(SCRIPT_ROOT, 'packages', 'packs'));
+  } catch (error) {
+    const reason = String(error?.message ?? error).split('\n')[0];
+    process.stderr.write(
+      `examples check: cannot load the built-in packs through the API build (${reason}); run npm run lint:packs\n`,
+    );
+    return 2;
+  }
+
   const examplesDir = join(root, 'examples');
   const ctx = {
     root,
@@ -52,6 +70,11 @@ export function main(argv = process.argv.slice(2)) {
     samples: discoverSamples(examplesDir),
     contracts,
     graphRunner,
+    library: {
+      validateArguments: library.validateArguments,
+      entityValidatorOf: library.entityValidatorOf,
+    },
+    packs,
     yaml: { parse },
     stats: { projectYaml: 0, entityFiles: 0, testFiles: 0 },
   };

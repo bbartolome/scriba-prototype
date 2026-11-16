@@ -28,9 +28,10 @@ const VALID = {
   ].join('\n'),
   'examples/nonfiction/project.yaml':
     'schemaVersion: 1\ntitle: Nonfiction\ngenrePack: nonfiction\n',
-  'examples/nonfiction/sources/outline.md': '# Outline\n\nNo front matter.\n',
+  'examples/nonfiction/sources/outline.md':
+    '---\ntitle: Outline\ncitation: The author outline\nreliability: Own plan\n---\n\n# Outline\n\nNo type, so a source.\n',
   'examples/nonfiction/entities/style.md':
-    '---\ntype: style-profile\n---\n\nStyle notes.\n',
+    '---\ntype: style-profile\ntone: Plain\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nStyle notes.\n',
   'examples/nonfiction/drafts/cold-open.md': 'A cold open.\n',
   'examples/nonfiction/.gitignore': '.scriba/\n',
 };
@@ -258,9 +259,10 @@ test('C5: a deliberately broken sample project.yaml fails with its file path and
 test('C6: the check passes on a nonfiction-shaped sample with two extra sources (one with front matter but no type) and drafts', () => {
   withTree(
     treeWith({
-      'examples/nonfiction/sources/notes.md': '# Notes\n',
+      'examples/nonfiction/sources/notes.md':
+        '---\ntitle: Notes\ncitation: Reading notes\nreliability: From memory\n---\n\n# Notes\n',
       'examples/nonfiction/sources/quotes.md':
-        '---\ntitle: Quotes\n---\n\nQuotes.\n',
+        '---\ntitle: Quotes\ncitation: Quoted text\nreliability: Copied from the book\n---\n\nQuotes.\n',
       'examples/nonfiction/drafts/second.md': 'Second draft.\n',
     }),
     (root) => {
@@ -275,7 +277,7 @@ test('E1: a sources/ file with no type is a source and passes; one whose front-m
   withTree(
     treeWith({
       'examples/nonfiction/sources/outline.md':
-        '---\ntitle: Outline\n---\n\n# Outline\n',
+        '---\ntitle: Outline\ncitation: The author outline\nreliability: Own plan\n---\n\n# Outline\n',
     }),
     (root) => {
       const result = run(root);

@@ -15,6 +15,14 @@ export function requireContracts(scriptRoot, subpath = 'project-store') {
   return fromApi(`@bbartolome/scriba-contracts/${subpath}`);
 }
 
+// A built file of the API workspace (PLT-22: dist/modules/tool-registry/pack-lint.js), loaded the same way.
+export function requireBuilt(scriptRoot, relPath) {
+  const fromApi = createRequire(
+    join(scriptRoot, 'apps', 'api', 'package.json'),
+  );
+  return fromApi(join(scriptRoot, 'apps', 'api', relPath));
+}
+
 // Lists every entry under dir with its lstat kind: 'file', 'dir', 'symlink' or 'other', sorted by
 // path. Symbolic links are listed and never followed. A root that is not a real directory yields
 // nothing. skipDir(name) decides which subdirectories are not entered; they are still listed.

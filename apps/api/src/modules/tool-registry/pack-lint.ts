@@ -1,7 +1,25 @@
 import { readFileSync } from 'node:fs';
 import type { LintDiagnostic } from '@bbartolome/scriba-contracts/tool-registry';
+import { type EntityTypeEntry, readEntityTypes } from './entity-types';
 import { lintEntityTypeSource, lintToolSource, topKeyPosition } from './lint';
-import { builtinFiles } from './packs';
+import { builtinFiles, readBuiltinTools, type ToolEntry } from './packs';
+
+// The examples check (PLT-22) uses the loader and the validators through this entry point.
+export { entityValidatorOf } from './entity-types';
+export { validateArguments } from './validate';
+
+// The built-in tools and entity types of a packs root, loaded the way the runtime loads them. A fault stops the load
+// with a BootError, as at boot.
+export interface BuiltinPacks {
+  tools: ToolEntry[];
+  entityTypes: Map<string, EntityTypeEntry>;
+}
+
+export function loadBuiltinPacks(packsRoot: string): BuiltinPacks {
+  const entityTypes = readEntityTypes(packsRoot);
+  const tools = readBuiltinTools(packsRoot, new Set(entityTypes.keys()));
+  return { tools, entityTypes };
+}
 
 // The pack-lint library (TRG-07). It lints every built-in tool and entity-type file of a packs root, read the way the
 // runtime loader reads them, and returns the diagnostics with the file of each. The CLI, the examples check and the

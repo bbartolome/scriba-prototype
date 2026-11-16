@@ -29,9 +29,10 @@ const VALID = {
   ].join('\n'),
   'examples/nonfiction/project.yaml':
     'schemaVersion: 1\ntitle: Nonfiction\ngenrePack: nonfiction\n',
-  'examples/nonfiction/sources/outline.md': '# Outline\n\nNo front matter.\n',
+  'examples/nonfiction/sources/outline.md':
+    '---\ntitle: Outline\ncitation: The author outline\nreliability: Own plan\n---\n\n# Outline\n\nNo type, so a source.\n',
   'examples/nonfiction/entities/style.md':
-    '---\ntype: style-profile\n---\n\nStyle notes.\n',
+    '---\ntype: style-profile\ntone: Plain\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nStyle notes.\n',
   'examples/nonfiction/drafts/cold-open.md': 'A cold open.\n',
   'examples/nonfiction/.gitignore': '.scriba/\n',
 };

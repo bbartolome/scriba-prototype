@@ -24,7 +24,7 @@
     "dev": "npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api && concurrently -n contracts,api-tsc,api,web \"tsc -p packages/contracts/tsconfig.build.json --watch --preserveWatchOutput\" \"tsc -p apps/api/tsconfig.build.json --watch --preserveWatchOutput\" \"SCRIBA_BOOKS_DIR='$PWD/.scriba-dev' SCRIBA_PACKS_DIR='$PWD/packages/packs' SCRIBA_EXAMPLES_DIR='$PWD/examples' SCRIBA_DEV_ORIGINS=http://localhost:4200 SCRIBA_SETUP_URL_BASE=http://localhost:4200 node --watch apps/api/dist/main.js\" \"npm run start -w @bbartolome/scriba-web\"",
     "test": "npm test --workspaces && node --test 'scripts/*.test.mjs'",
     "lint": "npm run lint --workspaces && npm run lint:examples && npm run lint:packs && prettier --check .",
-    "lint:examples": "npm run build -w @bbartolome/scriba-contracts && node scripts/examples-check/index.mjs",
+    "lint:examples": "npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api && node scripts/examples-check/index.mjs",
     "lint:packs": "npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api && node scripts/lint-packs.mjs",
     "mock:openai": "node e2e/fixtures/mock-openai/cli.mjs",
     "e2e": "npm run e2e -w @bbartolome/scriba-e2e",
