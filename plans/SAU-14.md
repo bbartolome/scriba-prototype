@@ -1,6 +1,6 @@
 ---
 id: SAU-14
-status: planned
+status: done
 ---
 # SAU-14 plan — /setup First-project step
 

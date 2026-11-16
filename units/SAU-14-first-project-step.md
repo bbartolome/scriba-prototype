@@ -17,5 +17,5 @@ unblocks: [SAU-16]
 - Marks `firstProject` `done` when a project is active, or `skipped`.
 
 ## Acceptance criteria
-- [ ] Component tests (fake API): new/import/sample flows call the Project store requests with the right shapes; New carries the default genre pack.
-- [ ] On a re-run with existing projects, the step lists them and creates nothing unless asked.
+- [x] Component tests (fake API): new/import/sample flows call the Project store requests with the right shapes; New carries the default genre pack.
+- [x] On a re-run with existing projects, the step lists them and creates nothing unless asked.
