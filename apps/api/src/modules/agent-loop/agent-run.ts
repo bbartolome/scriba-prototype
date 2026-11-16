@@ -238,7 +238,8 @@ export class AgentRun {
           toolCalls: reply.calls,
         });
         for (const call of reply.calls) {
-          if (this.controller.signal.aborted) return await this.finish('stopped');
+          if (this.controller.signal.aborted)
+            return await this.finish('stopped');
           turn.push(await this.runCall(call));
         }
       }
