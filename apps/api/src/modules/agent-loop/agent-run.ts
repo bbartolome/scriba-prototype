@@ -133,6 +133,8 @@ export class AgentRun {
   private readonly tools: ToolRun;
   private readonly deps: AgentRunDeps;
   private readonly transcript: TranscriptWriter;
+  // The file of an on-demand check run; undefined for a chat run (AGL-17).
+  private readonly checkPath: string | undefined;
   // The text of the model call in progress, not yet written to the transcript (D9).
   private stepText = '';
   private intentWritten = false;
@@ -144,6 +146,7 @@ export class AgentRun {
     this.intent = init.intent;
     this.tools = init.tools;
     this.transcript = init.transcript;
+    this.checkPath = init.checkPath;
     this.deps = deps;
     // The dispatcher's check of a path is this run's check, with the run's abort signal unless one is given (AGL-17).
     this.tools.groundingCheck = (path, signal) =>
@@ -189,6 +192,12 @@ export class AgentRun {
       this.writeIntent();
       if (resolved === ABORTED) return await this.finish('stopped');
       this.target = resolved;
+      // An on-demand check run has no model loop: its only step is the check, then it completes (AGL-17). A failed
+      // check reaches the catch below, which ends the run with the readable text.
+      if (this.checkPath !== undefined) {
+        await this.groundOne(this.checkPath, this.controller.signal);
+        return await this.finish('completed');
+      }
       // The finished turns of this conversation, trimmed to the provider's context size (D10, D11, D16). The run's own
       // transcript is unfinished, so it is never among them (D17).
       const history = trimHistory(

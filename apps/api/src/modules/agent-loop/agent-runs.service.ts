@@ -8,6 +8,7 @@ import {
   type AgentStartRequest,
   type AgentStartResponse,
   type AgentToolFamily,
+  type GroundingRequest,
 } from '@bbartolome/scriba-contracts/agent-loop';
 import type { ProjectSwitchedData } from '@bbartolome/scriba-contracts/project-store';
 import { EventsPublisher, ModuleError } from '../platform/platform.module';
@@ -26,6 +27,16 @@ import { AgentToolsService } from './agent-tools.service';
 import { AgentTranscriptsService } from './transcript-reader';
 import { runStateOfTranscript } from './transcript-run-state';
 import { TranscriptWriter, transcriptPathOf } from './transcript-writer';
+
+// What a launch takes: the project, the intent, the conversation, the families the run offers, and the check path of an
+// on-demand check run (AGL-17).
+interface LaunchOptions {
+  projectId: string;
+  intent: string;
+  conversationId: string;
+  enabledFamilies: AgentToolFamily[];
+  checkPath?: string;
+}
 
 // The runs of one project: the active one, and the most recent one that ended (D2).
 interface ProjectSlots {
@@ -61,6 +72,35 @@ export class AgentRunsService {
   // Checks the start in the order of D1, registers the run, publishes run-started, and answers. The model work starts
   // after the answer. Nothing is awaited before the registration, so two starts cannot both pass the active check.
   start(body: AgentStartRequest): AgentStartResponse {
+    const projectId = this.admit();
+    const settings = this.settings.current();
+    const enabledFamilies: AgentToolFamily[] = settings.research.enabled
+      ? ['project', 'narrative', 'grounding', 'research']
+      : ['project', 'narrative', 'grounding'];
+    return this.launch({
+      projectId,
+      intent: body.intent,
+      conversationId: body.conversationId ?? randomUUID(),
+      enabledFamilies,
+    });
+  }
+
+  // The on-demand check of one file (AGL-17): a run whose only step is the check. It takes the same refusals as a start.
+  // A file the Project store refuses (missing, or not text) is refused before any slot is taken, with its own message.
+  checkGrounding(body: GroundingRequest): AgentStartResponse {
+    const projectId = this.admit();
+    this.files.read(projectId, body.path);
+    return this.launch({
+      projectId,
+      intent: `Check grounding: ${body.path}`,
+      conversationId: randomUUID(),
+      enabledFamilies: ['grounding'],
+      checkPath: body.path,
+    });
+  }
+
+  // The refusals of a start, in order (D1): no active project, a run already active, no provider. Returns the project.
+  private admit(): string {
     const projectId = this.store.activeId();
     if (projectId === null) {
       throw refusal(
@@ -74,20 +114,22 @@ export class AgentRunsService {
         'An agent run is already active in this project.',
       );
     }
-    const settings = this.settings.current();
     if (!this.resolver.hasChoice({ projectId })) {
       throw refusal(
         AGENT_ERROR_CODES.NO_PROVIDER,
         'No model provider is set up. Add a provider and choose an app default first.',
       );
     }
+    return projectId;
+  }
 
+  // Registers a run, publishes its run-started, and starts its work after the answer (D1). Nothing is awaited before the
+  // registration, so two starts cannot both pass the active check.
+  private launch(options: LaunchOptions): AgentStartResponse {
+    const { projectId, conversationId, enabledFamilies } = options;
+    const settings = this.settings.current();
     const runId = randomUUID();
-    const conversationId = body.conversationId ?? randomUUID();
     const startedAt = new Date();
-    const enabledFamilies: AgentToolFamily[] = settings.research.enabled
-      ? ['project', 'narrative', 'grounding', 'research']
-      : ['project', 'narrative', 'grounding'];
     const transcript = new TranscriptWriter({
       files: this.files,
       projectId,
@@ -101,11 +143,12 @@ export class AgentRunsService {
         runId,
         conversationId,
         projectId,
-        intent: body.intent,
+        intent: options.intent,
         cap: settings.stepCap,
         enabledFamilies,
         tools: this.tools.startRun({ runId, projectId, enabledFamilies }),
         transcript,
+        checkPath: options.checkPath,
       },
       {
         resolver: this.resolver,
