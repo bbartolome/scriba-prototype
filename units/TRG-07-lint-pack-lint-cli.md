@@ -21,8 +21,8 @@ Lint on save with errors blocking and warnings passing (22–23), each message o
 - **Pack-lint CLI** `npm run lint:packs`, part of `npm run lint`: loads a packs root exactly like the runtime loader, lints every tool spec and entity-type schema, fails on any error or duplicate names. A **library entry point** returns the same diagnostics; Platform's examples check and Genre packs' tests reuse it instead of re-implementing lint.
 
 ## Acceptance criteria
-- [ ] Each rule has a fixture that triggers it with the right severity and line/column.
-- [ ] `npm run lint:packs` fails on a deliberately broken fixture pack; the library entry returns the same diagnostics.
-- [ ] Duplicate names across built-in packs fail.
-- [ ] An entity-type schema with a nested object field fails lint.
-- [ ] `npm run lint:packs` passes on the real `packages/packs` (possibly empty at this point).
+- [x] Each rule has a fixture that triggers it with the right severity and line/column.
+- [x] `npm run lint:packs` fails on a deliberately broken fixture pack; the library entry returns the same diagnostics.
+- [x] Duplicate names across built-in packs fail.
+- [x] An entity-type schema with a nested object field fails lint.
+- [x] `npm run lint:packs` passes on the real `packages/packs` (possibly empty at this point).

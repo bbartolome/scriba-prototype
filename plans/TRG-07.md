@@ -1,6 +1,6 @@
 ---
 id: TRG-07
-status: planned
+status: done
 ---
 # TRG-07 plan — full lint rule set, pack-lint CLI and library entry point
 
