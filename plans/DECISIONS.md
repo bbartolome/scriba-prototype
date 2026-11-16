@@ -4673,3 +4673,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 
 - Review APPROVED (above). Rebased again onto main 96d5078 with the same patch id. Checks on the rebased head: lint exit 0, test exit 0 (root: 18, 92, 54 and 1 and 12 test files pass), build exit 0 with the warnings above. Criteria 1 (test F1) and 2 (test F2) ticked; plan set to done. Fast-forward of main to 8258ba8. Branch unit/SAU-14 and its worktree removed.
 - SAU-13 is not on the base of SAU-14, so SAU-14 uses the markFirstProjectDone() fallback as the plan allows. SAU-13 must be rebased onto main 8258ba8, and the rebase must keep both the SAU-14 first-project step and the SAU-13 preferences step.
+
+## 2026-11-16 — SAU-13 — Sonnet code review (two parts): APPROVED (orchestrator)
+
+- Patch id: `ee1a012923219ce59778782f8726797c43b6bdb4` (`git diff main...unit/SAU-13 -- . ':!plans' ':!units' | git patch-id --stable`), branch unit/SAU-13 at 74574eb, based on f9c97f5. Both reviewers changed no file and used the same patch id.
+- Part 1 (the step, the page and criteria; tests PR1 to PR8; steps 0 to 7, 9, 11 to 13): APPROVED. The reviewer checked the eight section 2 paths, lint and prettier (exit 0), web tests of the two specs (25 passed), the full web run (53 files, 346 tests), the build (exit 0), and the mutation checks of step 12 (M1 to M6 each fail the expected tests; M4 fails seven of eight, a superset of the plan's expectation). It confirmed that the SAU-12 providers case is intact in step-body.ts; its report wrongly says SAU-12 is not on main.
+- Part 2 (the shared test files; steps 8 and 10; tests R1 and E1): APPROVED. The reviewer checked the StepBody override in setup-page.spec.ts (one override, both stubs), ran the phone e2e (C2 and C3 passed, 2 of 2), and ran the web suite (R1).
+- Next: step 3 of the pipeline for SAU-13 (rebase onto main 8258ba8, where SAU-14 is merged, then the three checks and the patch id again). If the rebase conflicts, it is recorded and left for the next cycle, because a new implementer would start a subagent after the limit.
