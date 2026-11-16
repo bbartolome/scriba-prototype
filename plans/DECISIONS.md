@@ -5058,3 +5058,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
   2. `units/TRG-16-try-panel.md`, Decisions, new bullet at line 18: "The Try tab is hidden on an invalid row." The decision's Effects paragraph offered "hidden or shows `TOOL_INVALID`". The reviser chose "hidden", which is the form the decision's own Decision paragraph uses. TRG-16 settles nothing else for invalid rows, and the bullet conflicts with none of its criteria.
 - **Not changed.** `units/TRG-13-tools-page-list.md` (it does not state the valid-only rule), TRG-15 and TRG-17. No criterion text of any unit changed.
 - **Plan.** `plans/TRG-13.md` is revision 3. Its criteria C7 and C12, step 7, tests L5b and L5c, and sections 5 and 6 follow decision option (b). Open points 1 to 3 are settled. The plan is `status: planned` as of this entry.
+
+## 2026-11-16 — TRG-13 — code review: APPROVED, patch id 9132f4ce943f2a7a94e2eda1b3b413e936ca589c
+
+- **Result (Sonnet reviewer, medium, part 1 of 1, the whole plan; branch `unit/TRG-13` at `375fb5a`, one commit on `3f55c04`):** APPROVED. The reviewer compared the diff with the plan's steps 0 to 14 and the tests of section 4, and confirmed that the diff touches exactly the eight files of plan section 2. It re-ran the tool-registry spec files (5 files, 47 tests, all pass) in the worktree.
+- **Differences accepted:** (1) a contracts build before the baseline test run (the plan's step 2 does not name it; `dist` is gitignored, nothing committed for it); (2) S1c with `safeParse` instead of `.parse`; (3) test-name wording in L1 and L2; (4) the L fixtures copied from `tools-preview.spec.ts` lines 25 to 139; (5) the literal "N errors, M warnings"; (6) Prettier formatting only.
+- **Phone criterion (unit criterion 2):** tested with a Vitest `matchMedia` stub (L6, L6b), as the plan says; no browser phone check.
+- **Patch id:** `9132f4ce943f2a7a94e2eda1b3b413e936ca589c`, confirmed by the reviewer and computed by the orchestrator (`git diff main...unit/TRG-13 -- . ':!plans' ':!units' | git patch-id --stable`).
