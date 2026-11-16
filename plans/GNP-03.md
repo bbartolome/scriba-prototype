@@ -1,7 +1,7 @@
 ---
 id: GNP-03
 title: Core entity types — source and style-profile
-status: planned
+status: done
 ---
 # GNP-03 plan — core entity types: source and style-profile
 

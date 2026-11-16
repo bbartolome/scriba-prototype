@@ -17,5 +17,5 @@ unblocks: [GNP-05, GNP-06, GNP-07, GNP-08, GNP-09, GNP-10, GNP-11, GNP-18, "Comp
 - Fixed field names: Compile & export reads `source.citation`, `source.url` and `style-profile.bannedPhrases`.
 
 ## Acceptance criteria
-- [ ] Both lint clean and load in the Tool registry's entity-types list.
-- [ ] Their per-kind validators accept valid front-matter fixtures and reject a missing `citation` / a non-list `bannedPhrases`.
+- [x] Both lint clean and load in the Tool registry's entity-types list.
+- [x] Their per-kind validators accept valid front-matter fixtures and reject a missing `citation` / a non-list `bannedPhrases`.
