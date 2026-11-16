@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -8,6 +9,11 @@ import {
   type Healthz,
   type VersionInfo,
 } from '@bbartolome/scriba-contracts/platform';
+import {
+  APP_DEFAULT_ROUTE,
+  PROVIDERS_EXAMPLES,
+  PROVIDERS_ROUTE,
+} from '@bbartolome/scriba-contracts/providers';
 import {
   IDENTITY_ROUTE,
   SETUP_AUTH_EXAMPLES,
@@ -34,6 +40,8 @@ import {
   type ShellTestDoubles,
 } from '../../shell/testing/test-doubles';
 import { API_CLIENT } from '../../shell/tokens';
+import { ProvidersPanel } from '../providers/providers.routes';
+import { StepBody } from './step-body';
 
 const version = {
   version: '1.2.3',
@@ -72,12 +80,33 @@ afterEach(() => {
   restoreMatchMedia();
 });
 
-/** Renders `/setup` with the given doubles. */
+/** Stands in for the Model providers panel, which makes its own reads. */
+@Component({ selector: 'app-providers-panel', template: '' })
+class ProvidersStub {}
+
+/** Stands in for the `/providers` route that MPR-11 adds. */
+@Component({ template: '' })
+class ProvidersRouteStub {}
+
+/**
+ * Renders `/setup` with the given doubles. The providers panel is replaced by a stub, and a
+ * `providers` route comes first, so the step embeds the stub whether or not MPR-11 is on `main`.
+ */
 async function renderSetup(
   providers: ShellTestDoubles['providers'],
 ): Promise<RouterTestingHarness> {
+  TestBed.overrideComponent(StepBody, {
+    remove: { imports: [ProvidersPanel] },
+    add: { imports: [ProvidersStub] },
+  });
   TestBed.configureTestingModule({
-    providers: [provideRouter(APP_ROUTES), ...providers],
+    providers: [
+      provideRouter([
+        { path: 'providers', component: ProvidersRouteStub },
+        ...APP_ROUTES,
+      ]),
+      ...providers,
+    ],
   });
   return RouterTestingHarness.create('/setup');
 }
@@ -486,7 +515,7 @@ describe('W wizard with the fake API', () => {
     doubles.api.respond('POST', TAILSCALE_STEP_PATH, afterSkip);
     buttonNamed(rootOf(harness), 'Skip')?.click();
     await settle(harness, (root) => {
-      expect(paragraphs(root)).toContain('Model providers are not set up yet.');
+      expect(root.querySelector('app-providers-panel')).not.toBeNull();
       expect(stepItems(root)[1]).toBe('Tailscale: skipped');
     });
     expect(doubles.api.requests).toContainEqual({
@@ -587,5 +616,188 @@ describe('W wizard with the fake API', () => {
     await harness.navigateByUrl('/no-such-page');
     await harness.navigateByUrl('/setup');
     await expectWarning(harness, false);
+  });
+});
+
+describe('P providers step with the fake API', () => {
+  const PROVIDERS_STEP_PATH = '/api/setup-auth/steps/providers';
+  const NO_USABLE_TEXT =
+    'No usable provider yet. Add a provider and choose it as the app default, or skip this step.';
+
+  const pending = {
+    steps: {
+      access: 'done',
+      tailscale: 'pending',
+      providers: 'pending',
+      preferences: 'pending',
+      firstProject: 'pending',
+    },
+    complete: false,
+    compose: SETUP_AUTH_EXAMPLES.composeOk,
+  } satisfies SetupStatus;
+
+  const providersDone = {
+    ...pending,
+    steps: { ...pending.steps, providers: 'done' },
+  } satisfies SetupStatus;
+
+  const providersSkipped = {
+    ...pending,
+    steps: { ...pending.steps, providers: 'skipped' },
+  } satisfies SetupStatus;
+
+  /** Renders `/setup` and moves from Access to the providers step with Next twice. */
+  async function reachProviders(
+    doubles: ShellTestDoubles,
+  ): Promise<RouterTestingHarness> {
+    doubles.api.respond(
+      'GET',
+      IDENTITY_ROUTE,
+      SETUP_AUTH_EXAMPLES.identityLoopback,
+    );
+    doubles.api.respond('GET', SETUP_STATUS_ROUTE, pending);
+
+    const harness = await renderSetup(doubles.providers);
+    await settle(harness, (root) =>
+      expect(buttonTexts(root)).toEqual(['Next', 'Skip the rest']),
+    );
+    buttonNamed(rootOf(harness), 'Next')?.click();
+    await settle(harness, (root) =>
+      expect(buttonTexts(root)).toEqual([
+        'Mark done',
+        'Skip',
+        'Next',
+        'Skip the rest',
+      ]),
+    );
+    buttonNamed(rootOf(harness), 'Next')?.click();
+    await settle(harness, (root) =>
+      expect(buttonTexts(root)).toEqual([
+        'Continue',
+        'Skip',
+        'Next',
+        'Skip the rest',
+      ]),
+    );
+    return harness;
+  }
+
+  /**
+   * Clicks Continue, waits for the message, and checks that the only requests after the click are
+   * the two reads, and that the step is still providers with Continue enabled.
+   */
+  async function continueShowsMessage(
+    doubles: ShellTestDoubles,
+    harness: RouterTestingHarness,
+  ): Promise<void> {
+    const before = doubles.api.requests.length;
+    buttonNamed(rootOf(harness), 'Continue')?.click();
+
+    await settle(harness, (root) => {
+      expect(root.querySelector('[role="alert"]')?.textContent.trim()).toBe(
+        NO_USABLE_TEXT,
+      );
+      expect(root.querySelector('app-providers-panel')).not.toBeNull();
+      expect(buttonNamed(root, 'Continue')?.disabled).toBe(false);
+      expect(stepItems(root)[2]).toBe('Model providers: pending');
+    });
+    expect(doubles.api.requests.slice(before)).toEqual([
+      { method: 'GET', path: PROVIDERS_ROUTE },
+      { method: 'GET', path: APP_DEFAULT_ROUTE },
+    ]);
+  }
+
+  it('P3 the providers step shows Continue, Skip, Next and Skip the rest, and no Mark done', async () => {
+    const doubles = createShellTestDoubles();
+
+    const harness = await reachProviders(doubles);
+
+    expect(buttonTexts(rootOf(harness))).toEqual([
+      'Continue',
+      'Skip',
+      'Next',
+      'Skip the rest',
+    ]);
+  });
+
+  it('P4 Continue with a usable provider reads the list and the app default, writes done and moves on', async () => {
+    const doubles = createShellTestDoubles();
+    doubles.api.respond(
+      'GET',
+      PROVIDERS_ROUTE,
+      PROVIDERS_EXAMPLES.providerList,
+    );
+    doubles.api.respond(
+      'GET',
+      APP_DEFAULT_ROUTE,
+      PROVIDERS_EXAMPLES.appDefault,
+    );
+    doubles.api.respond('POST', PROVIDERS_STEP_PATH, providersDone);
+    const harness = await reachProviders(doubles);
+    const before = doubles.api.requests.length;
+
+    buttonNamed(rootOf(harness), 'Continue')?.click();
+
+    await settle(harness, (root) => {
+      expect(paragraphs(root)).toContain('Preferences are not set up yet.');
+      expect(stepItems(root)[2]).toBe('Model providers: done');
+    });
+    expect(doubles.api.requests.slice(before)).toEqual([
+      { method: 'GET', path: PROVIDERS_ROUTE },
+      { method: 'GET', path: APP_DEFAULT_ROUTE },
+      { method: 'POST', path: PROVIDERS_STEP_PATH, body: { state: 'done' } },
+    ]);
+  });
+
+  it('P5 Continue without an app default writes nothing and shows the message', async () => {
+    const doubles = createShellTestDoubles();
+    doubles.api.respond(
+      'GET',
+      PROVIDERS_ROUTE,
+      PROVIDERS_EXAMPLES.providerList,
+    );
+    doubles.api.respond(
+      'GET',
+      APP_DEFAULT_ROUTE,
+      PROVIDERS_EXAMPLES.appDefaultUnset,
+    );
+    const harness = await reachProviders(doubles);
+
+    await continueShowsMessage(doubles, harness);
+  });
+
+  it('P6 Skip on the providers step writes skipped and moves on', async () => {
+    const doubles = createShellTestDoubles();
+    doubles.api.respond('POST', PROVIDERS_STEP_PATH, providersSkipped);
+    const harness = await reachProviders(doubles);
+    const before = doubles.api.requests.length;
+
+    buttonNamed(rootOf(harness), 'Skip')?.click();
+
+    await settle(harness, (root) => {
+      expect(paragraphs(root)).toContain('Preferences are not set up yet.');
+      expect(stepItems(root)[2]).toBe('Model providers: skipped');
+    });
+    expect(doubles.api.requests.slice(before)).toEqual([
+      { method: 'POST', path: PROVIDERS_STEP_PATH, body: { state: 'skipped' } },
+    ]);
+    expect(
+      doubles.api.requests.filter((request) =>
+        request.path.startsWith('/api/providers'),
+      ),
+    ).toEqual([]);
+  });
+
+  it('P8 Continue when the app default names no listed provider writes nothing and shows the message', async () => {
+    const doubles = createShellTestDoubles();
+    doubles.api.respond('GET', PROVIDERS_ROUTE, { providers: [] });
+    doubles.api.respond(
+      'GET',
+      APP_DEFAULT_ROUTE,
+      PROVIDERS_EXAMPLES.appDefault,
+    );
+    const harness = await reachProviders(doubles);
+
+    await continueShowsMessage(doubles, harness);
   });
 });

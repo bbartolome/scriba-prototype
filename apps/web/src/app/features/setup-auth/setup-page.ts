@@ -7,8 +7,16 @@ import type {
   SetupStatus,
   SetupStep,
 } from '@bbartolome/scriba-contracts/setup-auth';
+import { forkJoin } from 'rxjs';
 import { API_CLIENT, ApiError, type ApiPath } from '../../shell';
 import { ComposeWarning } from './compose-warning';
+import {
+  APP_DEFAULT_PATH,
+  appDefaultCopy,
+  isUsable,
+  PROVIDERS_PATH,
+  providerIdsCopy,
+} from './providers-copy';
 import { loadSetupAuthContract } from './setup-contract';
 import { SignInNotice, tailnetExplanation } from './sign-in-notice';
 import { StepBody } from './step-body';
@@ -16,11 +24,17 @@ import { WIZARD_STEPS } from './steps';
 
 type SetupAuthContract = Awaited<ReturnType<typeof loadSetupAuthContract>>;
 
+/** The alert line when Continue on the providers step finds no usable provider (S4). */
+const NO_USABLE_PROVIDER_TEXT =
+  'No usable provider yet. Add a provider and choose it as the app default, or skip this step.';
+
 /**
  * The setup wizard at `/setup`. It shows who the caller is, then the five steps with their states.
- * Next moves on and writes nothing. Mark done and Skip write the step's state and move on. Skip the
- * rest and Finish complete setup and go to the landing. A 401 shows the sign-in notice; the two
- * tailnet codes show their explanations; any other error shows its message.
+ * Next moves on and writes nothing. Mark done and Skip write the step's state and move on. On the
+ * providers step, Continue writes done only when a usable provider exists, and otherwise shows a
+ * message; its Skip writes skipped. Skip the rest and Finish complete setup and go to the landing. A
+ * 401 shows the sign-in notice; the two tailnet codes show their explanations; any other error shows
+ * its message.
  */
 @Component({
   imports: [ComposeWarning, MatButton, SignInNotice, StepBody],
@@ -75,7 +89,22 @@ type SetupAuthContract = Awaited<ReturnType<typeof loadSetupAuthContract>>;
               Finish
             </button>
           } @else {
-            @if (step() !== 'access') {
+            @if (step() === 'providers') {
+              <button
+                mat-flat-button
+                [disabled]="busy()"
+                (click)="continueProviders()"
+              >
+                Continue
+              </button>
+              <button
+                mat-stroked-button
+                [disabled]="busy()"
+                (click)="writeState('skipped')"
+              >
+                Skip
+              </button>
+            } @else if (step() !== 'access') {
               <button
                 mat-flat-button
                 [disabled]="busy()"
@@ -158,6 +187,34 @@ export class SetupPage {
             this.finish();
           } else {
             this.moveOn();
+          }
+        },
+        error: (error: unknown) => {
+          this.busy.set(false);
+          this.fail(error);
+        },
+      });
+  }
+
+  /**
+   * Continue on the providers step: reads the provider ids and the app default, then writes done when
+   * a usable provider exists. Otherwise it writes nothing and shows the message.
+   */
+  protected continueProviders(): void {
+    if (this.contract === undefined || this.busy()) return;
+    this.begin();
+    forkJoin([
+      this.api.get(PROVIDERS_PATH, providerIdsCopy),
+      this.api.get(APP_DEFAULT_PATH, appDefaultCopy),
+    ])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ([list, current]) => {
+          this.busy.set(false);
+          if (isUsable(list, current)) {
+            this.writeState('done');
+          } else {
+            this.failure.set(NO_USABLE_PROVIDER_TEXT);
           }
         },
         error: (error: unknown) => {
