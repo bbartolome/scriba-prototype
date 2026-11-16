@@ -1,6 +1,6 @@
 ---
 unit: GNP-09
-status: draft
+status: planned
 module: genre-packs
 milestone: M2
 blocked_by: [GNP-02, GNP-03, GNP-06]
@@ -9,6 +9,8 @@ unblocks: [GNP-12, GNP-23]
 # GNP-09 plan — myth_buster nonfiction draft tool, golden case and eval case
 
 Batch: [GNP-09] (Genre packs, phase:nonfiction-workhorses, M2), a batch of one. Planner draft at main `e510387`. The working tree holds only `units/SAU-12-providers-step.md` (modified, not this plan's). No `plans/GNP-09.md` existed, and no `unit/GNP-09` branch exists. The unit `units/GNP-09-myth-buster.md` has no change note (lines 1 to 24 read in full; no "by revision" line). `unit/GNP-08` exists and is in progress; it was not touched. The planner changed no file except this plan, committed nothing and ran no build, install or test.
+
+Revision 1 (reviser, 2026-11-16, at main `106ed5b`): each statement was checked against the unit, the module, `plans/GNP-08.md` (planned), `units/GNP-12-workhorses-gate.md`, `units/GNP-23-remix.md` and the code on main. Corrections: C4 and C9 (settled; the AC 4 test moves to its own new file, so `scripts/eval-cases.test.mjs` is no longer shared with GNP-08 and GNP-08's step 12 count of two tests holds in either order), section 3, section 4, steps 0, 5, 10, 13 and 14, the AC 4 test, section 8 (both open points settled), and the new section "Review parts". No unit file was changed. `plans/DECISIONS.md` has no entry that names GNP-09. Only GNP-08 (planned) and GNP-09 have front-matter `status: draft` or `planned`.
 
 ## 1. Decisions this plan obeys
 
@@ -33,12 +35,12 @@ Labels: **U** = unit file; **M** = module file; **D** = a settled decision of a 
 - **C1 Invalid-argument key is `belief`.** It is the tool's own required input, which no other test checks (as `plans/GNP-08.md` C1 does for `puzzle`).
 - **C2 Length and tone.** `length`: integer, default 800, minimum 200, maximum 2000. `tone`: free text (`plans/GNP-07.md` C2, C3).
 - **C3 Controls.** `coreIdea` carries `x-scriba-control: textarea`, as `cold_open.yaml`. `belief` carries none.
-- **C4 No `minItems`.** The unit says `required` for `claimIds` and sets no minimum. `validate.ts` supports `minItems` (line 187), but this plan does not add one. Open point 2.
+- **C4 No `minItems` (settled by revision 1).** The unit says `required` for `claimIds` and sets no minimum, and no criterion or downstream unit asks for one. `validate.ts` supports `minItems` (line 187), but this plan does not add one: an empty `claimIds` list passes validation.
 - **C5 `sourcesUsed`.** The non-style entity IDs passed, in property order: `entityIds`, then `claimIds`. The evidence sources of a claim are not expanded, because the registry uses only the IDs given (M4).
 - **C6 Prompt order.** Claims are rendered before the other entities, because they are what the passage takes apart.
 - **C7 Names.** Case `belief-claims`; entity IDs `notes-a`, `claim-a`, `claim-b`, `style-a`; test file `apps/api/test/packs/myth-buster.test.ts`; one `it` for AC 2 and one for AC 3, timeout 60000 ms (as `plans/GNP-07.md` C7).
 - **C8 Seam of AC 3.** `createTestApp` and the HTTP execute route, with inline entities, in the same test file. `goldenCase` expects status 200, and `golden.kit.ts` does not export `post`. `golden.kit.ts` is not changed.
-- **C9 Seam of AC 4.** One new `test` in `scripts/eval-cases.test.mjs` that reads `scripts/eval-agent/cases/` and runs no model (`plans/GNP-07.md` C6 and C9).
+- **C9 Seam of AC 4 (revised).** A new file `scripts/eval-case-myth-buster.test.mjs` with one `test`. It reads `scripts/eval-agent/cases/myth-buster.json` and runs no model (`plans/GNP-07.md` C6 and C9). Root `npm test` runs `node --test 'scripts/*.test.mjs'`, so the file runs in CI. The general checks of every case file (id pattern, documented keys, `reason` and `citations` values) stay in GNP-07's existing test in `scripts/eval-cases.test.mjs`, which loops over all case files and so also checks this case. `scripts/eval-cases.test.mjs` is not changed, so GNP-08's step 9 ("after the existing one") and step 12 ("two tests passed") hold in either merge order.
 - **C10 Eval values.** `sample` `nonfiction`. `intent` "Bust the myth that ten thousand hours of practice make anyone an expert, using my notes." Chapter 3, "The Ten-Thousand-Hour Idea" (`examples/nonfiction/sources/outline.md` lines 26 to 31), is the myth's chapter. `expect`: `reason` `completed`, `tools` `["myth_buster"]`, `citations` `present`. GNP-08 uses chapter 4, so the two cases do not share a chapter.
 - **C11 Catalogue line position.** By name order (`apps/api/src/modules/tool-registry/catalog.service.ts` line 436). See section 3.
 
@@ -59,7 +61,8 @@ Labels: **U** = unit file; **M** = module file; **D** = a settled decision of a 
 - `packages/packs/test/checks.ts`: `COMMON_INPUTS` (line 35), `DESCRIPTION_LIMIT` (line 44), `VERBS` (line 48, contains `state`), `checkCommonInputs` (from line 192), `firstWord` (lower-cases the first word) and `checkDescription` (from line 236).
 - `packages/packs/test/real-packs.test.ts`: `real packs` > `the suite passes on the real packs`.
 - `scripts/lint-packs.mjs`: runs `apps/api/dist/modules/tool-registry/pack-lint.js`, so the API build comes first.
-- `apps/api/src/modules/tool-registry/executor.service.ts` `prepare`: step 3 (lines 123 to 150) checks each entity ref's kind against the field's `x-scriba-entity-kinds`, returns 422 `TOOL_ENTITY_KIND_MISMATCH`, and sets `sources` to the unique non-style refs (lines 149 and 150).
+- `apps/api/src/modules/tool-registry/executor.service.ts` `prepare`: step 3 (lines 123 to 150) checks each entity ref's kind against the field's `x-scriba-entity-kinds`, returns 422 `TOOL_ENTITY_KIND_MISMATCH` with the message `Entity "<id>" for "<field>" is of kind "<type>", but the field takes "<kind>".` (lines 139 to 146), and sets `sources` to the unique non-style refs (lines 149 and 150). The check runs before the template and the model.
+- `cd apps/api && npx vitest run <file> -- --update-goldens` is accepted by vitest and keeps `<file>` as the filter (checked by revision 1 with a file name that matches nothing: vitest printed `filter: <file>` and no option error).
 - `apps/api/src/modules/tool-registry/validate.ts`: entity refs in field order, list items in order (lines 100 to 125); `argsInvalid` writes `- <field>: <message>.` per issue (lines 218 to 240); `minItems` supported (line 187).
 - `apps/api/src/modules/tool-registry/lint.ts`: entity-kinds rules (lines 420 to 490, 825 to 835); `template-unused` warning for a required input the prompt does not use (line 817).
 - `apps/api/src/modules/tool-registry/template.ts` `formatCatalogEntry` (lines 557 to 568): `- <name>: <description> Output: <kind>. Inputs: <key> (<type>, single|list, required|optional); ...`, ports only. `catalog.service.ts` line 436 sorts the names.
@@ -90,15 +93,14 @@ Labels: **U** = unit file; **M** = module file; **D** = a settled decision of a 
 
 ## 3. Shared files with GNP-08
 
-Both units add files at new paths; the paths of section 4 and GNP-08's section 3 do not overlap. Three shared files: the recipe golden, the eval-cases test file, and (only by convention) the eval case folder. The rule for each:
+Both units add files at new paths; the paths of section 4 and GNP-08's section 3 do not overlap. One shared file, the recipe golden; one shared folder, the eval cases (new files only). `scripts/eval-cases.test.mjs` is not shared (C9). The rule for each:
 
 1. **`packages/packs/test/golden/propose_graph/recipe.golden.json`.** Each tool unit adds one catalogue line to the `content` of the user message (one JSON line). Name order: `cold_open` (main), `mystery_question` (GNP-08), `myth_buster` (this unit), `numbers_to_people` (GNP-10), `propose_graph`. The golden is never merged by hand: after a rebase, the implementer runs step 8 again on the base as it is. Whichever of the two units merges second regenerates the golden. Both orders give the same file.
-2. **`scripts/eval-cases.test.mjs`.** Each unit appends one `test` after the last existing `test`, under its own name. No existing test is changed or renumbered. On a textual conflict at the end of the file, keep every test on the base, then add this one. The file then holds GNP-07's test, then the others in merge order. The count: 2 tests with GNP-07 only; 3 with GNP-08 (or GNP-10) on the base.
-3. **Names.** This unit: `myth_buster.yaml`, `pack-myth_buster.json`, `myth-buster.json`, `myth-buster.test.ts`, case `belief-claims`. GNP-08: `mystery_question.yaml`, `pack-mystery_question.json`, `mystery-question.json`, `mystery-question.test.ts`, case `puzzle-finding`. No name is shared.
+2. **`scripts/eval-cases.test.mjs` is not shared (C9).** GNP-08 adds one `test` to it; this unit does not change it and puts its AC 4 test in the new file `scripts/eval-case-myth-buster.test.mjs`. GNP-08's steps 9 and 12 (one existing test before it, two tests after it) therefore hold in either order, and this unit's step 13 counts only its own file (1 test), in either order.
+3. **Eval case folder.** Each unit adds one new file to `scripts/eval-agent/cases/` (`mystery-question.json`, `myth-buster.json`). GNP-07's test loops over every case file, so in either order it checks both; each case is valid on its own.
+4. **Names.** This unit: `myth_buster.yaml`, `pack-myth_buster.json`, `myth-buster.json`, `myth-buster.test.ts`, `eval-case-myth-buster.test.mjs`, case `belief-claims`. GNP-08: `mystery_question.yaml`, `pack-mystery_question.json`, `mystery-question.json`, `mystery-question.test.ts`, case `puzzle-finding`. No name is shared.
 
-Note for GNP-08 (not changed here): its procedure step 12 says the eval file passes "with two tests". If this unit lands first, the count is three. GNP-08's implementer should read the count from the file on the base.
-
-Either order applies cleanly: the second unit to merge rebases, applies rule 1 or 2, and reruns its own steps 8 and 13.
+Either order applies: the only shared file is the recipe golden. If GNP-08 is on main first, this unit's step 8 regenerates the golden on that base (its line goes after `mystery_question`). If this unit is on main first, GNP-08's step 7 regenerates it (its own plan says the line goes in name order when GNP-09's line is already there). A textual conflict on that golden at rebase is resolved only by the regeneration, never by hand.
 
 ## 4. Files to change
 
@@ -111,15 +113,15 @@ Either order applies cleanly: the second unit to merge rebases, applies rule 1 o
 | `e2e/fixtures/mock-openai/scenarios/pack-myth_buster.json` | new | one scripted reply (step 4) |
 | `apps/api/test/packs/myth-buster.test.ts` | new | the tests of AC 2 and AC 3 (step 5) |
 | `scripts/eval-agent/cases/myth-buster.json` | new | the eval case (step 9) |
-| `scripts/eval-cases.test.mjs` | one `test` appended; existing tests unchanged | the test of AC 4 (step 10) |
+| `scripts/eval-case-myth-buster.test.mjs` | new | the test of AC 4 (step 10, C9) |
 
-Not changed: `units/**`, `modules/**`, `plans/**` (except this plan), `plans/DECISIONS.md`, `packages/packs/test/checks.ts`, `packages/packs/test/real-packs.test.ts`, `packages/packs/test/golden/propose_graph/story.golden.json`, `packages/packs/test/golden/cold_open/**`, `packages/packs/nonfiction/entity-types/**`, `apps/api/src/**`, `apps/api/test/packs/golden.kit.ts`, `apps/api/test/fixtures/**` (including the fixture `myth_buster.yaml`), `scripts/eval-agent/run.mjs`, `scripts/eval-agent/README.md`, `e2e/**` specs, `examples/**`, `package-lock.json`, and the GNP-08 files and branch.
+Not changed: `units/**`, `modules/**`, `plans/**` (except this plan), `plans/DECISIONS.md`, `packages/packs/test/checks.ts`, `packages/packs/test/real-packs.test.ts`, `packages/packs/test/golden/propose_graph/story.golden.json`, `packages/packs/test/golden/cold_open/**`, `packages/packs/nonfiction/entity-types/**`, `apps/api/src/**`, `apps/api/test/packs/golden.kit.ts`, `apps/api/test/fixtures/**` (including the fixture `myth_buster.yaml`), `scripts/eval-cases.test.mjs` (C9), `scripts/eval-agent/run.mjs`, `scripts/eval-agent/README.md`, `e2e/**` specs, `examples/**`, `package-lock.json`, and the GNP-08 files and branch.
 
 ## 5. Procedure
 
 Run from `/Users/bbartolome/workspace/scriba-prototype`. The implementer creates the branch with `git switch -c unit/GNP-09` from main. Record `node -v` and `npm -v` with the results. Do not push. Do not use `git add -A` or `git commit -a`.
 
-**Step 0. Base.** Seam: filesystem and read-only git. `git rev-parse --short HEAD` (expected `e510387` or a later main). `test ! -e packages/packs/nonfiction/tools/myth_buster.yaml` exits 0. `ls packages/packs/nonfiction/tools` lists only `cold_open.yaml` and, if GNP-08 has merged, `mystery_question.yaml`. `ls packages/packs/test/golden/propose_graph` lists four files. If a check fails, re-read the changed files before editing.
+**Step 0. Base.** Seam: filesystem and read-only git. `git rev-parse --short HEAD` (expected `106ed5b` or a later main). `test ! -e packages/packs/nonfiction/tools/myth_buster.yaml` and `test ! -e scripts/eval-case-myth-buster.test.mjs` exit 0. `ls packages/packs/nonfiction/tools` lists `cold_open.yaml` and, if GNP-08 has merged, `mystery_question.yaml`; record which. `ls packages/packs/test/golden/propose_graph` lists four files. If a check fails, re-read the changed files before editing.
 
 **Step 1. Runtime and build.** Seam: TypeScript build. `npm ci` if `node_modules/` is absent. Then `npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api`. Expected: exit 0 (A1).
 
@@ -269,9 +271,9 @@ The arguments omit `length` and `tone`, so the default applies (A3).
 
 - Imports `expect` and `it` from `vitest`; `goldenCase`, `type GoldenRunResult` and `PACKS_ROOT` from `./golden.kit`; copies the `renderedPrompt` helper of `cold-open.test.ts`. No `any`. The file does not contain the text `examples/`.
 - **AC 2 `it`** (timeout 60000): `goldenCase({ tool: 'myth_buster', name: 'belief-claims', expect: { kind: 'draft', sourcesUsed: ['notes-a', 'claim-a', 'claim-b'] }, invalidWithout: 'belief', check })`. `check` asserts that the rendered prompt contains `notes-a`, `claim-a`, `claim-b`, `style-a`, `[@`, `TK (`, `Belief: Ten thousand hours of practice make anyone an expert.`, `Length: 800 words` and `game-changer`.
-- **AC 3 `it`** (timeout 60000): opens its own app as `runGoldenCase` does (the mock's scenario `pack-myth_buster`, the same provider config, `makeLibrary`, `createTestApp` with `env: { SCRIBA_PACKS_DIR: PACKS_ROOT }`, `sessionCookie`, `send` with `LOOPBACK_HOST` and `LOOPBACK_ORIGIN`). Then:
-  - (a) `claimIds: ['claim-a']` with `claim-a` of type `claim`, plus `coreIdea` and `belief`: HTTP 200, output kind `draft`.
-  - (b) `claimIds: ['notes-a']` with `notes-a` of type `source`: HTTP 422, code `TOOL_ENTITY_KIND_MISMATCH`, message contains `notes-a`, `claimIds` and `claim`.
+- **AC 3 `it`** (timeout 60000): opens its own app as `runGoldenCase` does (the mock's scenario `pack-myth_buster`, the same provider config, `makeLibrary`, `createTestApp` with `env: { SCRIBA_PACKS_DIR: PACKS_ROOT }`, `sessionCookie`, `send` with `LOOPBACK_HOST` and `LOOPBACK_ORIGIN`). Its extra imports are the ones `golden.kit.ts` uses for this: `PROVIDER_DEFAULTS`, `TOOL_EXECUTE_ROUTE`, `errorBodySchema`, `toolCallResultSchema`, `createTestApp`, `send`, `sessionCookie`, `LOOPBACK_HOST`, `LOOPBACK_ORIGIN`, `recordsOf`, `startMockOpenAI`, `makeLibrary`, `stringify` from `yaml`, `rmSync`. Each body is `{ arguments: { coreIdea, belief, claimIds }, entities: [<one entity>] }`, with the `coreIdea` and `belief` of the fixture of step 3 and an entity of the shape `{ ref, type, path, content }` as in that fixture. Then:
+  - (a) `claimIds: ['claim-a']` with `claim-a` of type `claim`: HTTP 200, output kind `draft` (parsed with `toolCallResultSchema`).
+  - (b) `claimIds: ['notes-a']` with `notes-a` of type `source`: HTTP 422, code `TOOL_ENTITY_KIND_MISMATCH` (parsed with `errorBodySchema`), message contains `notes-a`, `claimIds` and `"claim"`.
   - (c) `claimIds: ['concept-a']` with `concept-a` of type `concept`: HTTP 422, code `TOOL_ENTITY_KIND_MISMATCH`.
   - (d) `recordsOf(mock, 'pack-myth_buster')` has length 1: only (a) reached the model.
   - In `finally`: close the app and the mock; `rmSync` the library.
@@ -300,13 +302,13 @@ Then `cd apps/api && npx vitest run test/packs/propose-graph.test.ts` exits 0.
 }
 ```
 
-**Step 10. Eval-data test (AC 4, C9).** Seam: `scripts/eval-cases.test.mjs`, which reads the case files and runs no model. Append one `test` after the last existing `test` (section 3, rule 2), named `AC 4: the myth-buster eval case is in the eval data and uses the documented keys and values`. It calls `loadCases()`, finds the case with id `myth-buster`, and asserts: every key of the file is in `CASE_KEYS`; every `expect` key is in `EXPECT_KEYS`; `reason` is in `RUN_END_REASONS`; `citations` is in `CITATION_MODES`; `sample` is `nonfiction`; `intent` is a non-empty string; `expect.tools` deep-equals `['myth_buster']`; `expect.reason` is `completed`; `expect.citations` is `present`. Existing tests are unchanged. Then `npx prettier --write scripts/eval-cases.test.mjs`.
+**Step 10. Eval-data test (AC 4, C9).** Seam: `node --test` on a new file that reads the case file and runs no model. Create `scripts/eval-case-myth-buster.test.mjs` (ES module; imports `readFileSync` from `node:fs`, `dirname` and `join` from `node:path`, `fileURLToPath` from `node:url`, `test` from `node:test`, `assert` from `node:assert/strict`, as `scripts/eval-cases.test.mjs` does). One `test`, named `AC 4: the myth-buster eval case is in the eval data and uses the documented keys and values`. It reads and parses `eval-agent/cases/myth-buster.json` relative to the file, and asserts: `Object.keys(data).sort()` deep-equals `['expect', 'intent', 'sample']` (the documented case keys); `Object.keys(data.expect).sort()` deep-equals `['citations', 'reason', 'tools']` (the documented `expect` keys); `sample` is `nonfiction`; `intent` is a non-empty string; `expect.tools` deep-equals `['myth_buster']`; `expect.reason` is `completed`; `expect.citations` is `present`. `scripts/eval-cases.test.mjs` is not changed. Then `npx prettier --write scripts/eval-case-myth-buster.test.mjs`.
 
 **Step 11. Pack checks (AC 1, A4).** Seam: `lintPacks` and `contentChecks` on the real packs (`packages/packs/test/real-packs.test.ts`), and the `lint-packs` CLI. `npm run lint:packs` exits 0 and no finding names `myth_buster`. `npm test -w @bbartolome/scriba-packs` exits 0.
 
 **Step 12. API build, lint and pack tests (AC 2, AC 3).** Seam: the composed app booted on the real packs (`nonfiction-entity-types.test.ts` line 99). `npm run build -w @bbartolome/scriba-api && npm run lint -w @bbartolome/scriba-api` exit 0. `cd apps/api && npx vitest run test/packs/myth-buster.test.ts` shows 2 tests passed. `cd apps/api && npx vitest run test/packs` exits 0.
 
-**Step 13. Eval test and format and root gates.** Seam: `node --test` and the mock-openai test. `node --test scripts/eval-cases.test.mjs` exits 0; the pass count is 2, or 3 when GNP-08 is on the base (section 3). `npx prettier --check packages/packs/nonfiction/tools/myth_buster.yaml packages/packs/test/golden/myth_buster packages/packs/test/golden/propose_graph e2e/fixtures/mock-openai/scenarios/pack-myth_buster.json apps/api/test/packs/myth-buster.test.ts scripts/eval-agent/cases/myth-buster.json scripts/eval-cases.test.mjs` exits 0. From the root: `npm run build`, `npm test`, `npm run lint` and `npx prettier --check .` exit 0; an unrelated failure on the base is reported, not fixed. `npm test -w @bbartolome/scriba-e2e` exits 0, which shows that the mock loads the new scenario. The Playwright `tools-preview` spec is not required: it selects rows by tool and origin. Run it only if the browser is installed; otherwise record it as not run.
+**Step 13. Eval test and format and root gates.** Seam: `node --test` and the mock-openai test. `node --test scripts/eval-case-myth-buster.test.mjs` exits 0 with 1 test passed, in either merge order (section 3, rule 2). `node --test scripts/eval-cases.test.mjs` exits 0 (GNP-07's test, and GNP-08's when it is on the base, also check the new case file). `npx prettier --check packages/packs/nonfiction/tools/myth_buster.yaml packages/packs/test/golden/myth_buster packages/packs/test/golden/propose_graph e2e/fixtures/mock-openai/scenarios/pack-myth_buster.json apps/api/test/packs/myth-buster.test.ts scripts/eval-agent/cases/myth-buster.json scripts/eval-case-myth-buster.test.mjs` exits 0. From the root: `npm run build`, `npm test`, `npm run lint` and `npx prettier --check .` exit 0; an unrelated failure on the base is reported, not fixed. `npm test -w @bbartolome/scriba-e2e` exits 0, which shows that the mock loads the new scenario. The Playwright `tools-preview` spec is not required: it selects rows by tool and origin. Run it only if the browser is installed; otherwise record it as not run.
 
 **Step 14. Commit (implementer only, when the orchestrator asks).** `git add` each path of section 4 by name. `git diff --cached --stat` lists only those paths, and no `plans/` or `units/` file. Commit with `feat(GNP-09): myth_buster nonfiction draft tool, golden case and eval case`. Do not push.
 
@@ -330,9 +332,9 @@ Each acceptance criterion has exactly one test. The text is copied from `units/G
 - Pass: step 5's cases (a) to (d): the claim is accepted (200); the source and the concept are refused (422, `TOOL_ENTITY_KIND_MISMATCH`); one model record in total.
 
 **AC4: A manual eval case (small and larger local model) is added to the Agent loop's eval script data.**
-- Test file: `scripts/eval-cases.test.mjs` (one new test). Test name: `AC 4: the myth-buster eval case is in the eval data and uses the documented keys and values`.
-- Command: `node --test scripts/eval-cases.test.mjs` (step 13).
-- Pass: the test passes. The run with a small and a larger local model is not run here (open point 1).
+- Test file: `scripts/eval-case-myth-buster.test.mjs` (new, one test). Test name: `AC 4: the myth-buster eval case is in the eval data and uses the documented keys and values`.
+- Command: `node --test scripts/eval-case-myth-buster.test.mjs` (steps 10 and 13).
+- Pass: 1 test passed. The run with a small and a larger local model is not part of the criterion's test and is not run here (open point 1, settled).
 
 ## 7. Agreement with downstream units
 
@@ -344,7 +346,11 @@ Each acceptance criterion has exactly one test. The text is copied from `units/G
 
 ## 8. Open points
 
-1. **AC 4, the run with a small and a larger local model, is not run here.** Cause: it needs a local model server (`scripts/eval-agent/README.md`), and it is not part of CI. The local check is the data test (as `plans/GNP-07.md` C9). Owner: whoever runs the eval; GNP-12's "done when" reads this case with a real model.
-2. **An empty `claimIds` list passes validation.** Cause: the unit says `required` and sets no minimum; `validate.ts` supports `minItems`. This plan adds no `minItems` (C4). Question for the unit author: should an empty claim list be refused? If yes, `claimIds` gains `minItems: 1` and the AC 3 test gains one refusal case. No other file changes.
+1. **AC 4, the run with a small and a larger local model (settled by revision 1).** The criterion asks that the case "is added to the Agent loop's eval script data"; the test checks exactly that, as `plans/GNP-07.md` C9 and `plans/GNP-08.md` open point 1 do. A case file names no model (the models are given with `--model`), so the run needs a local model server and is not part of CI; the implementer records it as not run. The real-model run belongs to GNP-12's "done when" (its criterion 4), which reads this case.
+2. **An empty `claimIds` list passes validation (settled by revision 1, C4).** The simplest option: no `minItems`. The unit sets no minimum, and no criterion or downstream unit needs one. No Navigator point.
 
 Sections complete: front matter, and sections 1 to 8 (decisions, facts and assumptions, shared files with GNP-08, files, procedure, tests, downstream agreement, open points). All four acceptance criteria have one test each.
+
+## Review parts
+
+**Part 1** (the whole plan; a small plan): steps 0 to 14 of section 5, and the tests AC1, AC2, AC3 and AC4 of section 6.
