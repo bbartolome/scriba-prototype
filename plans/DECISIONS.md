@@ -5294,3 +5294,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **REWORK list:**
   1. Step 7c of `plans/AGL-11.md` says to assert the events of the run starting with `run-started`. The test file never mentions `run-started`, so it is not asserted in the C1 test. Correction: in the C1 test, add an assertion that `events` holds a `run-started` event (for example, `expect(events.some((e) => e.type === 'run-started')).toBe(true)`), then run the file again and expect 5 passed.
 - **Other checks by the reviewer:** the diff changes only `apps/api/test/agent-loop-workhorses.test.ts`; `units/` and `plans/` are untouched; `examples/` does not appear; the four C1 rows match section 5, table 2.
+
+## 2026-11-16 — TRG-14 — PLAN DOES NOT WORK (implementer, step 9, second report)
+
+- **Branch:** `unit/TRG-14`, commits 96b7314 (Part A) and 938ef1e (Part B), unchanged. Worktree `scriba-prototype-wt/TRG-14`. Plan revision 3 (ea89775). Steps 0 to 8 are done. Steps 9 to 13 are not done. The e2e spec `e2e/specs/tools-editor.e2e.ts` is untracked in the worktree, with the revision 3 E1 checks.
+- **Step:** 9 (E2E), check E1 of plans/TRG-14.md section 5, the moved-row check for the Duplicate of `cold_open` as `cold_open_2`.
+- **Result:** E2 passes. E1 fails on the second draft: the moved-row check for `my_tool` passes, and the save of `cold_open_2` returns 200. The check `[data-editor] .cm-content` contains "name: cold_open_2" fails: the rendered text runs from "schemaVersion: 1" to "title: Core idea" and lacks the lines between them, which contain the name line. The plan assumes that `.cm-content` holds the whole document, and the rendered CodeMirror DOM does not give that for this long file.
+- **Plan change needed:** the reviser says how E1 reads the moved editor's text. Options: the document through the API (the `/user` GET answer), or a check on the saved file. The implementer did not change the design.
+- **Not run:** the TRG-05 spec (`tools-preview.e2e.ts`), step 10 build, step 11 gates, step 12 commit, step 13 records.
