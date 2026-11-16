@@ -5013,3 +5013,33 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Invariant sweep:** plan section 2 lists apps/api/test/invariant-sweep.ts with the two FIXTURE_PATHS entries, with the reason. The reviser reports that no criterion needs a Scope change.
 - **Reported by the reviser, not verified by the orchestrator:** the DECISIONS entry for MPR-08 (line 4015) cites providers.resolution.ts lines 17 to 19 and 42. On main, `resolve` is at line 70 and `listModels` at lines 93 and 132. This is an error in an old entry. It is not corrected here, because DECISIONS is only added to. A later entry must correct it.
 - **Next:** the plan goes to `status: planned`. Then an implementer for TRG-12 (Haiku, from the branch unit/TRG-12, which does not exist yet).
+
+## 2026-11-16 — TRG-12 — Implementer report COMPLETE, branch `unit/TRG-12` at `6229e2f` (orchestrator record)
+
+- **Result:** COMPLETE (one Haiku implementer, the one part of plans/TRG-12.md section 8: steps 1 to 11, criteria C1 to C5 and X1). Criteria C1 to C5 and X1 pass in `apps/api/test/tool-registry-executor.test.ts`.
+- **Differences from the plan (the implementer's report):** an explicit `let target: ResolvedModel` annotation; the `TOOL_INVALID` wording for a bad prompt or a failed template render (the plan gives no text); the comment on the execute route; C5 also passes `ada-lovelace` (a typed person), because `person` is required by cold_open; prettier reformatted the test file; the commit has a body.
+- **Incident (the implementer's report):** the implementer made one call to the session messaging tool (a no-op message to a session named "unused"). The permission classifier denied it, and nothing was sent.
+
+## 2026-11-16 — TRG-12 — Sonnet code review (one part, steps 1 to 11, tests C1 to C5 and X1): APPROVED, patch id 323d5277aeeb7076759db953163ddb2686f67e23 (orchestrator record)
+
+- **Result (one Sonnet reviewer, medium; branch `unit/TRG-12` at `6229e2f`):** APPROVED for patch id `323d5277aeeb7076759db953163ddb2686f67e23`. The reviewer computed the same id, and the orchestrator recomputed it.
+- **Checks by the reviewer:** the 8 changed files are the section 2 paths; C1 to C5 and X1 pass (6 tests); the 11-file regression and the 5-file regression pass.
+- **Rebase onto main (Step 3):** the default backend left an interactive rebase in progress with a false state; it was aborted, and `git rebase --apply main` replayed the commit as `6594663` on `bafecf2`. The patch id did not change.
+- **Checks on the rebased commit and on the final commit:** `npm run lint`, `npm run build` and `npm test` pass. Root: 18 files, 248 tests. API: 103 files, 383 tests. The other two suites: 4 files, 14 tests and 1 file, 12 tests.
+
+## 2026-11-16 — TRG-12 — merged to main at `ac13917` (orchestrator record)
+
+- **Main:** fast-forward from `unit/TRG-12`. The code is `6594663`. `ac13917` marks the five criteria in `units/TRG-12-executor.md` lines 36 to 40 and sets `plans/TRG-12.md` to `status: done`. X1 is an extra test and has no checkbox.
+- **Cleanup:** the branch and its worktree are removed. The kept branches are unchanged: `unit/PST-15`, `unit/SAU-13`, `unit/TRG-07`.
+- **Still to write:** a correcting entry for the MPR-08 decision. Its line numbers for `providers.resolution.ts` (lines 17 to 19 and 42) do not match main, where `resolve` is at line 70. Found by the TRG-12 reviser; not yet checked by the orchestrator against the code.
+
+## 2026-11-16 — GNP-11 — Planner draft, revision 1 (orchestrator record)
+
+- **Result:** a draft plan, `plans/GNP-11.md`, written at main `bafecf2`. Two criteria, two tests (T1: the examples check plus the recorded pack-layer script R1; T2: the examples check plus the e2e compared with the base). Committed as draft in `241d019`.
+- **Open points for the reviser:**
+  1. The seam of criterion 1 before PLT-22 merges: keep the recorded R1 (the plan's default), or add PLT-22 to `blocked_by`. **Needs the Navigator.**
+  2. Whether `npm run e2e` runs in this environment (T2). The Navigator only if it cannot run.
+  3. The claim statuses against the AGL-19 draft: handed to AGL-19's plan. No Navigator.
+  4. The outline is listed in CEX-04's default `all` bibliography. Left to the CEX-04 planner; the Navigator only if CEX-04's default changes.
+  5. No `styleProfile` in `examples/nonfiction/project.yaml`, which reverses a PST-11 decision. **Needs the Navigator.**
+- **Inconsistencies found (none changed):** `units/GNP-11-nonfiction-sample-entities.md` line 22 names the pack layer, but PLT-22 is not in its `blocked_by` (line 7) and has no plan; line 18 says "if lack", yet all four sources lack front matter and `source.yaml` line 22 requires citation; `modules/genre-packs.md` line 88 credits PLT-20 with entity-schema checks that belong to PLT-22; line 19 draws GNP-11 without GNP-03; `plans/PST-11.md` lines 22, 41 and 165 cite `units/README.md` line 133, and the rule is at line 138; `units/CEX-04` line 30 (all Sources) differs from PST-11 open point 4 (the outline); `units/AGL-09` line 19 and `units/CEX-07` line 19 read a project `styleProfile` that `project.yaml` does not name.
