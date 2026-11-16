@@ -21,7 +21,7 @@ Every agent write becomes a pending change (15); later reads see earlier writes 
 - **At run end, for any reason** (completed, stopped, capped, error, project-switched): call the Project store's in-process `propose` once per touched path with the overlay content, the captured base, origin `{kind: 'agent-run', runId, toolCallId?}` (the call that last wrote the path), the draft provenance in `provenance` (when the content came from a narrative tool), and for `drafts/` paths the grounding summary in `grounding` (from AGL-17). Propose is allowed into the bound project even if no longer active. Then emit `run-ended` with the pending change IDs. The Project store's three-way check handles host edits in the meantime.
 
 ## Acceptance criteria
-- [ ] No agent write changes a file on disk before the author accepts it (asserted on disk).
-- [ ] Two edits to one file in one agent run yield one pending change against the first captured base; a read between them sees the first edit.
-- [ ] A stopped agent run still creates its pending changes; a project-switched one creates them in the original project.
-- [ ] Edit with zero and with two matches returns distinct readable errors.
+- [x] No agent write changes a file on disk before the author accepts it (asserted on disk).
+- [x] Two edits to one file in one agent run yield one pending change against the first captured base; a read between them sees the first edit.
+- [x] A stopped agent run still creates its pending changes; a project-switched one creates them in the original project.
+- [x] Edit with zero and with two matches returns distinct readable errors.

@@ -1,6 +1,6 @@
 ---
 id: AGL-12
-status: planned
+status: done
 title: write_file and edit_file through the run overlay, captured base, propose at run end
 unit: units/AGL-12-write-overlay.md
 revision: 2
