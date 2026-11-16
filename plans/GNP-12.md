@@ -1,6 +1,6 @@
 ---
 unit: GNP-12
-status: planned
+status: done
 ---
 # GNP-12 plan — workhorses gate (closes Genre packs `phase:nonfiction-workhorses`)
 
