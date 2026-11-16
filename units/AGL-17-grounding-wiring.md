@@ -21,5 +21,5 @@ A check runs automatically after any draft (32), on demand (36), and the review 
 - The draft's pending change carries the grounding summary `{supported, weak, unsupported, checkedAt}` in the Project store's `grounding` field.
 
 ## Acceptance criteria
-- [ ] An agent-drafted paragraph triggers a check automatically; its pending change carries the summary.
-- [ ] `check_grounding` and the on-demand endpoint both produce a `grounding-result` and an artefact.
+- [x] An agent-drafted paragraph triggers a check automatically; its pending change carries the summary.
+- [x] `check_grounding` and the on-demand endpoint both produce a `grounding-result` and an artefact.
