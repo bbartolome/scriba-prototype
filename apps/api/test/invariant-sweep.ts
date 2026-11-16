@@ -114,6 +114,9 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/project-store/projects/:projectId/rebuild': {
     path: '/api/project-store/projects/no-such-project/rebuild',
   },
+  '/api/project-store/projects/:projectId/pending': {
+    path: '/api/project-store/projects/no-such-project/pending',
+  },
   '/api/tool-registry/tools/:name': {
     path: '/api/tool-registry/tools/no-such-tool',
   },

@@ -25,6 +25,7 @@ import {
   PROJECT_FILES_ROUTE,
   PROJECT_IMPORT_ROUTE,
   PROJECT_NEW_ROUTE,
+  PROJECT_PENDING_ROUTE,
   PROJECT_START_FROM_SAMPLE_ROUTE,
   PROJECTS_ROUTE,
   SAMPLES_ROUTE,
@@ -456,6 +457,15 @@ const F3_ROWS: readonly GetRow[] = [
         host: LOOPBACK_HOST,
         cookie,
         path: fileUrl(PROJECT_ENTITY_RESOLVE_ROUTE, BOOK, { ids: 'ann' }),
+      }),
+  },
+  {
+    template: PROJECT_PENDING_ROUTE,
+    request: (app, cookie) =>
+      send(app.baseUrl, {
+        host: LOOPBACK_HOST,
+        cookie,
+        path: fileUrl(PROJECT_PENDING_ROUTE, BOOK),
       }),
   },
 ];

@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto';
 import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { Injectable } from '@nestjs/common';
@@ -11,6 +10,8 @@ import {
   PROJECT_ERROR_CODES,
   proposeInputSchema,
   type PendingChange,
+  type PendingList,
+  type PendingListQuery,
   type PendingOrigin,
   type ProposeInput,
 } from '@bbartolome/scriba-contracts/project-store';
@@ -34,7 +35,7 @@ import {
 import { ProjectStoreService } from './project-store.service';
 import { requireOkProject } from './project-status';
 import { readYamlState } from './project-yaml';
-import { ProjectsService } from './projects.service';
+import { PROJECT_MESSAGES, ProjectsService } from './projects.service';
 import { unifiedDiff } from './unified-diff';
 
 // A per-path check of proposed content. It returns true when the content passes (PST-15 decision 11).
@@ -75,6 +76,23 @@ export class PendingService {
   // registration order; the first failure refuses the proposal.
   registerValidator(pattern: string, check: PendingValidator): void {
     this.validators.push({ regex: patternToRegExp(pattern), check });
+  }
+
+  // The open changes of a project, in id order. The project must be active; a missing folder is an empty list, and
+  // nothing is created. The run filter keeps the changes whose origin names that run.
+  list(projectId: string, query: PendingListQuery): PendingList {
+    this.store.requireActive(projectId);
+    const project = this.projects.find(projectId);
+    if (project === undefined) {
+      throw refuse(PROJECT_ERROR_CODES.NOT_FOUND, PROJECT_MESSAGES.NOT_FOUND);
+    }
+    const changes = readOpenChanges(pendingFolder(project, false));
+    return {
+      changes:
+        query.run === undefined
+          ? changes
+          : changes.filter((change) => change.origin.runId === query.run),
+    };
   }
 
   // Proposes a full new text for one file of an ok project. Nothing at the target is changed. A change of the same
