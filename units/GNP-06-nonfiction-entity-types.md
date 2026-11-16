@@ -20,5 +20,5 @@ Blocker corrected on 2026-11-16: GNP-03 added to blocked_by, because the source 
 - All folder `entities`.
 
 ## Acceptance criteria
-- [ ] All three lint clean; reference fields are recognised as entity references with kind `source`.
-- [ ] Per-kind validators reject a claim with `status: unsourced`.
+- [x] All three lint clean; reference fields are recognised as entity references with kind `source`.
+- [x] Per-kind validators reject a claim with `status: unsourced`.

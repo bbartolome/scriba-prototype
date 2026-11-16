@@ -1,7 +1,7 @@
 ---
 id: GNP-06
 title: Nonfiction entity types — person, claim, concept
-status: planned
+status: done
 ---
 # GNP-06 plan — nonfiction entity types: person, claim and concept
 
