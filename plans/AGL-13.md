@@ -1,6 +1,6 @@
 ---
 id: AGL-13
-status: planned
+status: done
 ---
 # AGL-13 plan — output routing by kind (draft, entity, graph, check); target argument; graph validation
 

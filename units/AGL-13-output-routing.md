@@ -25,6 +25,6 @@ Drafts become pending changes in `drafts/` or a named file (28), entities in `en
 - Provenance from AGL-09 flows to the pending change via the overlay entry.
 
 ## Acceptance criteria
-- [ ] A `draft` output with no target lands at the generated path; a target outside `drafts/` is refused readably.
-- [ ] Propose-graph output becomes a pending change aimed at `graphs/` that parses with the Graph runner schema; an invalid graph returns a readable error and is retried.
-- [ ] `check` output creates no file.
+- [x] A `draft` output with no target lands at the generated path; a target outside `drafts/` is refused readably.
+- [x] Propose-graph output becomes a pending change aimed at `graphs/` that parses with the Graph runner schema; an invalid graph returns a readable error and is retried.
+- [x] `check` output creates no file.
