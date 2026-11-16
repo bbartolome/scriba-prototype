@@ -1,7 +1,7 @@
 ---
 id: GNP-05
 title: Core gate — image read-only check, registry lists propose_graph
-status: planned
+status: done
 ---
 # GNP-05 — plan
 

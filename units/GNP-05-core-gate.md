@@ -18,6 +18,6 @@ Merging this **closes Genre packs `phase:core-propose-graph`**.
 
 ## Acceptance criteria (the `phase:core-propose-graph` checklist)
 - [ ] CI runs the pack validation suite on every push and fails on its broken-spec fixtures (GNP-01).
-- [ ] `propose_graph` validation and both-view goldens pass (GNP-04).
-- [ ] The built image contains `/opt/scriba/packs/core`, and the app user cannot write to it.
-- [ ] The Tool registry's list includes `propose_graph` from the built-in `core` pack.
+- [x] `propose_graph` validation and both-view goldens pass (GNP-04).
+- [x] The built image contains `/opt/scriba/packs/core`, and the app user cannot write to it.
+- [x] The Tool registry's list includes `propose_graph` from the built-in `core` pack.
