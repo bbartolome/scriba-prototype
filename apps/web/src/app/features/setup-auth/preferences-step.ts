@@ -17,10 +17,7 @@ type SetupAuthContract = Awaited<ReturnType<typeof loadSetupAuthContract>>;
   selector: 'app-preferences-step',
   template: `
     @if (stored(); as values) {
-      <app-preferences-form
-        [stored]="values"
-        (save)="onSave($event)"
-      />
+      <app-preferences-form [stored]="values" (save)="onSave($event)" />
     }
     <p>Theme is kept on this device only.</p>
     <app-theme-toggle />

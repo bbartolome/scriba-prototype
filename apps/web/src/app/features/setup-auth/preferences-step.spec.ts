@@ -151,9 +151,17 @@ function type(input: HTMLInputElement, value: string): void {
 async function renderAtPreferences(
   doubles: ShellTestDoubles,
 ): Promise<RouterTestingHarness> {
-  doubles.api.respond('GET', IDENTITY_ROUTE, SETUP_AUTH_EXAMPLES.identityLoopback);
+  doubles.api.respond(
+    'GET',
+    IDENTITY_ROUTE,
+    SETUP_AUTH_EXAMPLES.identityLoopback,
+  );
   doubles.api.respond('GET', SETUP_STATUS_ROUTE, atPreferences);
-  doubles.api.respond('GET', PREFERENCES_ROUTE, SETUP_AUTH_EXAMPLES.preferences);
+  doubles.api.respond(
+    'GET',
+    PREFERENCES_ROUTE,
+    SETUP_AUTH_EXAMPLES.preferences,
+  );
 
   const harness = await renderSetup(doubles.providers);
   await settle(harness, (root) =>
@@ -244,7 +252,9 @@ describe('preferences step with the fake API', () => {
     const harness = await renderAtPreferences(doubles);
     const root = rootOf(harness);
 
-    expect(genrePackInput(root).getAttribute('list')).toBe('genre-pack-choices');
+    expect(genrePackInput(root).getAttribute('list')).toBe(
+      'genre-pack-choices',
+    );
     const options = [
       ...root.querySelectorAll<HTMLOptionElement>(
         'datalist#genre-pack-choices option',
@@ -274,7 +284,12 @@ describe('preferences step with the fake API', () => {
     const harness = await renderAtPreferences(doubles);
 
     expect(buttonTexts(rootOf(harness))).toEqual(
-      expect.arrayContaining(['Save preferences', 'Skip', 'Next', 'Skip the rest']),
+      expect.arrayContaining([
+        'Save preferences',
+        'Skip',
+        'Next',
+        'Skip the rest',
+      ]),
     );
     expect(buttonTexts(rootOf(harness))).not.toContain('Mark done');
 
@@ -326,9 +341,17 @@ describe('preferences step with the fake API', () => {
 
   it('PR7 the stored values are read when the step is shown, not at load', async () => {
     const doubles = createShellTestDoubles();
-    doubles.api.respond('GET', IDENTITY_ROUTE, SETUP_AUTH_EXAMPLES.identityLoopback);
+    doubles.api.respond(
+      'GET',
+      IDENTITY_ROUTE,
+      SETUP_AUTH_EXAMPLES.identityLoopback,
+    );
     doubles.api.respond('GET', SETUP_STATUS_ROUTE, atPreferences);
-    doubles.api.respond('GET', PREFERENCES_ROUTE, SETUP_AUTH_EXAMPLES.preferences);
+    doubles.api.respond(
+      'GET',
+      PREFERENCES_ROUTE,
+      SETUP_AUTH_EXAMPLES.preferences,
+    );
 
     const harness = await renderSetup(doubles.providers);
     await settle(harness, (root) =>
