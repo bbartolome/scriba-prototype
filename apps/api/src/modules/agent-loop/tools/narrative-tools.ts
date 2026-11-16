@@ -281,26 +281,27 @@ export function narrativeDefinition(
 ): NarrativeToolDefinition {
   const name = fn.function.name;
   const ownSchema = fn.function.parameters as unknown as ToolArgumentSchema;
-  // A draft or entity output is routed (AGL-13 P1, P11). A tool whose own inputs have a `target` keeps it, and its
-  // output takes the default path, without the routing argument.
+  // A draft, entity or graph output is routed (AGL-13 P1, P13). The folder decides that. A tool whose own inputs have
+  // a `target` offers no routing argument (P11): its input is kept, and its output takes the default path.
   const folder = routedFolder(kind);
-  const routing =
-    folder !== undefined && !('target' in ownSchema.properties)
-      ? folder
-      : undefined;
+  const offersTarget =
+    folder !== undefined && !('target' in ownSchema.properties);
   return {
     name,
     family: 'narrative',
     description: fn.function.description,
-    schema: routing === undefined ? ownSchema : withTarget(ownSchema, routing),
+    schema:
+      folder !== undefined && offersTarget
+        ? withTarget(ownSchema, folder)
+        : ownSchema,
     handler: async (ctx, args) => {
       const raw = args as Record<string, unknown>;
       const explicit =
-        routing === undefined
-          ? undefined
-          : explicitTargetOf(deps, ctx, kind, routing, raw.target);
+        folder !== undefined && offersTarget
+          ? explicitTargetOf(deps, ctx, kind, folder, raw.target)
+          : undefined;
       const values = filledArguments(
-        routing === undefined ? raw : withoutTarget(raw),
+        folder !== undefined && offersTarget ? withoutTarget(raw) : raw,
         fields,
         styleProfile,
       );
@@ -355,11 +356,12 @@ export function narrativeDefinition(
           ? `Drafted with ${name}.`
           : `Ran ${name}.`;
       const citations = { entityIds: ids, sourcesUsed: result.sourcesUsed };
-      if (routing === undefined) {
+      if (folder === undefined) {
         return { summary, output: result.output, citations };
       }
       // The routed text: refused when it is over the cap (AGL-13 P7), else placed at the explicit target or at a
-      // free default path (P6, P8), and returned for the run to put in the overlay (P3).
+      // free default path (P6, P8), and returned for the run to put in the overlay (P3). A tool with its own
+      // `target` input has no explicit target, so its output always takes the default path.
       if (isTooLarge(result.output.content)) {
         throw new ToolArgumentError([{ path: '', message: SIZE_MESSAGE }]);
       }
@@ -373,7 +375,7 @@ export function narrativeDefinition(
         defaultTargetOf(
           deps,
           ctx,
-          defaultBaseOf(kind, routing, name, result.output.content, new Date()),
+          defaultBaseOf(kind, folder, name, result.output.content, new Date()),
         );
       if (explicit === undefined) {
         captureOf(ctx.run, deps.files, ctx.run.projectId, target);
