@@ -4705,3 +4705,23 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 1 (lint library, fixtures, runtime gates; criteria 1, 3, 4; tests C1, C3, C4, X1 to X4): APPROVED. The reviewer ran `npm test -w @bbartolome/scriba-api -- tool-registry-lint` (exit 0, 31 passed), the full API suite (exit 0, 93 files, 331 tests), `npm run lint` (exit 0) and `node scripts/lint-packs.mjs --root apps/api/test/fixtures/packs` (exit 0, three warnings in cold_open.yaml as D21 expects). `checkTool` is unchanged; only loader test lines 323 and 419 change. All six implementer differences are judged acceptable.
 - Part 2 (CLI and root wiring; criteria 2, 5; tests C2, C5): APPROVED. `node --test scripts/lint-packs.test.mjs` (exit 0, 3 of 3), `npm run lint:packs` (exit 0 on packages/packs), and the broken-pack run (exit 1). The root package.json diff is the two lines the plan gives.
 - Next: step 3 for TRG-07 (rebase onto the current main, the three checks, patch id again, criteria and plan marks, fast-forward).
+
+## 2026-11-16 — TRG-07 — Merged to main (orchestrator)
+
+- Rebased once more onto main 3fbd09c (`git rebase --apply`, no conflict; patch id `50b40e3912cd7166428708d9b7b3fcf0ad433ab8` unchanged). Checks on the rebased head d1f644a: `npm run lint` exit 0, `npm test` exit 0, `npm run build` exit 0.
+- Criteria 1 to 5 ticked in units/TRG-07-lint-pack-lint-cli.md; plan set to `status: done` (commit c043338 on unit/TRG-07). Fast-forward of main to c043338. History stays linear.
+- The branch unit/TRG-07 and its worktree /Users/bbartolome/workspace/scriba-prototype-wt/TRG-07 are kept, as the cycle instruction says. They are merged and can be removed later.
+
+## 2026-11-16 — SAU-13 — Rebase onto main 950cf03: COMPLETE, new patch id (orchestrator)
+
+- The implementer's rebase resolved the four conflicts (setup-contract.ts, step-body.ts, setup-page.ts and setup-page.spec.ts; setup-phone.e2e.ts merged cleanly) and kept SAU-14's first-project step and SAU-13's preferences step. Head unit/SAU-13 at 38f087b, 9 commits on 950cf03. Checks on 38f087b: lint 0, test 0 (web 352 tests; the other workspace 12), build 0.
+- The patch id changed: `ac89a1cbe47f56d552243adc206f0447435308d6` (the approved one was `ee1a012923219ce59778782f8726797c43b6bdb4`). Two Sonnet reviewers (parts 1 and 2 of plan section 8) must review this patch id before step 3 continues. The phone e2e (plan step 9) was not run and is for the reviewers.
+- Merge decision for SAU-14's `postStep` switch: NOT made. `onFirstProjectActivated()` still calls `markFirstProjectDone()`, and SAU-13's `postStep` sits beside it. plans/SAU-14.md S8 gives this rule for this order ("keeps markFirstProjectDone and adds postStep beside it"). A switch would be a code change outside SAU-13's plan and needs its own review, so it is left for a later unit change.
+- Next: rebase unit/SAU-13 onto main c043338 (docs and TRG-07 code only; no conflict expected), then the two Sonnet reviewers, then the three checks, then step 3.
+
+## 2026-11-16 — PST-15 — Plan revised: READY, status planned (orchestrator)
+
+- Opus reviser replied READY with no unit change, so no unit change is recorded here. Corrections (all in plans/PST-15.md, section 9 "Revision record"): P3 uses a second ok project; `base: null` is dropped (open point 1); private helpers of files.service.ts are exported; the parse refusal uses PLATFORM_ERROR_STATUS.PLATFORM_VALIDATION_FAILED; the DECISIONS citations are corrected; E3 has six lines.
+- Plan committed as 5f31564 (`docs(PST-15): plan revised, status planned`). Review parts: part 1 steps 1 to 7 (tests P1 to P5, E1 to E4); part 2 steps 8 to 11 (test L1, the F3 row, the sweep fixture key, the full gate).
+- Open points left for the record: a caller base with a missing target gives `kind: modify` (plan choice); every content failure gives PROJECT_VALIDATION_FAILED 422 (unit line 22); the diff is the plan's own line diff with no new dependency; propose does not edit .gitignore (unit line 23).
+- Next: a Haiku implementer for PST-15 (not started this cycle, because the cycle limit was reached).
