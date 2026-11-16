@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PlatformModule, SettingsService } from '../platform/platform.module';
+import { ProjectStoreModule } from '../project-store/project-store.module';
 import { ConnectionTestService } from './providers.connection-test';
 import { ProvidersController } from './providers.controller';
 import { ProvidersRegistry } from './providers.registry';
@@ -29,7 +30,7 @@ const PROVIDERS_SECTION_REGISTRATION = 'PROVIDERS_SECTION_REGISTRATION';
 
 // Model providers: the providers section of settings.yaml, the in-process registry, and the first-start seeding.
 @Module({
-  imports: [PlatformModule],
+  imports: [PlatformModule, ProjectStoreModule],
   controllers: [ProvidersController],
   providers: [
     {

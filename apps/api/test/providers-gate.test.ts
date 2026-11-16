@@ -11,6 +11,8 @@ import {
   KEY_SET_ROUTE,
   MODELS_ROUTE,
   PRESETS_ROUTE,
+  PROJECT_MODEL_CLEAR_ROUTE,
+  PROJECT_MODEL_ROUTE,
   PROVIDER_DEFAULTS,
   PROVIDER_DELETE_ROUTE,
   PROVIDER_UPDATE_ROUTE,
@@ -47,7 +49,7 @@ interface RoutePair {
   path: string;
 }
 
-// The twelve method and path pairs of providers.controller.ts. The test checks that each is on the app.
+// The fourteen method and path pairs of providers.controller.ts. The test checks that each is on the app.
 const CONTROLLER_ROUTES: RoutePair[] = [
   { method: 'GET', path: PROVIDERS_ROUTE },
   { method: 'POST', path: PROVIDERS_ROUTE },
@@ -61,6 +63,8 @@ const CONTROLLER_ROUTES: RoutePair[] = [
   { method: 'POST', path: KEY_CLEAR_ROUTE },
   { method: 'GET', path: EFFECTIVE_MODEL_ROUTE },
   { method: 'POST', path: CONNECTION_TEST_ROUTE },
+  { method: 'POST', path: PROJECT_MODEL_ROUTE },
+  { method: 'POST', path: PROJECT_MODEL_CLEAR_ROUTE },
 ];
 
 function errorCodeOf(reply: Reply): string {

@@ -15,6 +15,8 @@ import {
   KEY_SET_ROUTE,
   MODELS_ROUTE,
   PRESETS_ROUTE,
+  PROJECT_MODEL_CLEAR_ROUTE,
+  PROJECT_MODEL_ROUTE,
   PROVIDER_DELETE_ROUTE,
   PROVIDER_UPDATE_ROUTE,
   PROVIDERS_ROUTE,
@@ -76,6 +78,20 @@ export class ProvidersController {
     @Body(new ZodValidationPipe(modelChoiceSchema)) body: ModelChoice,
   ) {
     return { appDefault: this.providers.setAppDefault(body) };
+  }
+
+  @Post(PROJECT_MODEL_ROUTE)
+  @HttpCode(200)
+  setProjectModel(
+    @Body(new ZodValidationPipe(modelChoiceSchema)) body: ModelChoice,
+  ) {
+    return this.providers.setProjectModel(body);
+  }
+
+  @Post(PROJECT_MODEL_CLEAR_ROUTE)
+  @HttpCode(200)
+  clearProjectModel() {
+    return this.providers.clearProjectModel();
   }
 
   @Post(PROVIDER_UPDATE_ROUTE)

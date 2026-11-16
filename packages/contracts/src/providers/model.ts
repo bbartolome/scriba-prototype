@@ -34,9 +34,16 @@ export const appDefaultSchema = z.object({
   appDefault: modelChoiceSchema.nullable(),
 });
 
+// Response of POST /api/providers/project-model and POST /api/providers/project-model/clear. `projectModel` is null
+// after a clear.
+export const projectModelResponseSchema = z.object({
+  projectModel: modelChoiceSchema.nullable(),
+});
+
 export type ModelChoice = z.infer<typeof modelChoiceSchema>;
 export type EffectiveModelSource = z.infer<typeof effectiveModelSourceSchema>;
 export type EffectiveModel = z.infer<typeof effectiveModelSchema>;
 export type EffectiveModelQuery = z.infer<typeof effectiveModelQuerySchema>;
 export type ModelList = z.infer<typeof modelListSchema>;
 export type AppDefault = z.infer<typeof appDefaultSchema>;
+export type ProjectModelResponse = z.infer<typeof projectModelResponseSchema>;

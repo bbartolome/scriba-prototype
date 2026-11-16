@@ -5,11 +5,21 @@ import {
   type EffectiveModel,
   type EffectiveModelQuery,
   type ModelChoice,
+  type ProjectModelResponse,
   type ProviderConfig,
   type ProviderCreate,
   type ProviderRead,
   type ProviderUpdate,
 } from '@bbartolome/scriba-contracts/providers';
+import {
+  PROJECT_ERROR_CODES,
+  PROJECT_ERROR_STATUS,
+} from '@bbartolome/scriba-contracts/project-store';
+import { ModuleError } from '../platform/platform.module';
+import {
+  FilesService,
+  ProjectStoreService,
+} from '../project-store/project-store.module';
 import { ProvidersRegistry } from './providers.registry';
 import { ModelResolver } from './providers.resolution';
 import { SecretsStore } from './secrets/secrets-store';
@@ -23,6 +33,8 @@ export class ProvidersService {
     private readonly registry: ProvidersRegistry,
     private readonly secrets: SecretsStore,
     private readonly resolver: ModelResolver,
+    private readonly store: ProjectStoreService,
+    private readonly files: FilesService,
   ) {}
 
   list(): ProviderRead[] {
@@ -78,6 +90,25 @@ export class ProvidersService {
     return this.registry.appDefault();
   }
 
+  // Sets the active project's model override (D5). The active check comes first, then the provider check, and both
+  // refuse before any write. The project's own refusals (PROJECT_INVALID and the rest) come from updateProjectYaml.
+  setProjectModel(choice: ModelChoice): ProjectModelResponse {
+    const projectId = this.activeProjectId();
+    this.registry.find(choice.providerId);
+    const model = { providerId: choice.providerId, model: choice.model };
+    this.files.updateProjectYaml(projectId, { model });
+    return { projectModel: model };
+  }
+
+  // Clears the active project's model override (D6). A project with no override is answered without a write.
+  clearProjectModel(): ProjectModelResponse {
+    const projectId = this.activeProjectId();
+    if (this.resolver.projectOverride(projectId) !== undefined) {
+      this.files.updateProjectYaml(projectId, { model: null });
+    }
+    return { projectModel: null };
+  }
+
   async models(providerId: string): Promise<string[]> {
     return this.resolver.modelList(providerId);
   }
@@ -93,6 +124,19 @@ export class ProvidersService {
       contextSize: resolved.contextSize,
       ...(resolved.warning === undefined ? {} : { warning: resolved.warning }),
     };
+  }
+
+  // The active project's id. With no project active the command is refused, and nothing is written (D5).
+  private activeProjectId(): string {
+    const projectId = this.store.activeId();
+    if (projectId === null) {
+      throw new ModuleError(
+        PROJECT_ERROR_CODES.NO_ACTIVE,
+        PROJECT_ERROR_STATUS.PROJECT_NO_ACTIVE,
+        'No project is active. Activate a project first.',
+      );
+    }
+    return projectId;
   }
 
   // The stored config, keySet, and the last four characters of the key when it has five or more. The key is never in
