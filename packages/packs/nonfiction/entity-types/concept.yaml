@@ -1,0 +1,16 @@
+schemaVersion: 1
+kind: concept
+title: Concept
+description: A named idea the book explains; the body holds examples and where it is used.
+folder: entities
+fields:
+  type: object
+  properties:
+    name:
+      type: string
+      title: Name
+    definition:
+      type: string
+      title: Definition
+      description: One line.
+  required: [name, definition]

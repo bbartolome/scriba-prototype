@@ -1,0 +1,23 @@
+schemaVersion: 1
+kind: person
+title: Person
+description: A person the book describes; the body holds what happened.
+folder: entities
+fields:
+  type: object
+  properties:
+    name:
+      type: string
+      title: Name
+    role:
+      type: string
+      title: Role
+    sources:
+      type: array
+      title: Sources
+      description: The source files that tell about this person.
+      x-scriba-type: entity
+      x-scriba-entity-kinds: [source]
+      items:
+        type: string
+  required: [name, role, sources]
