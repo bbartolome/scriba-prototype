@@ -22,6 +22,7 @@ import {
   pendingListSchema,
   type PendingChange,
 } from '@bbartolome/scriba-contracts/project-store';
+import { graphFileSchema } from '@bbartolome/scriba-contracts/graph-runner';
 import { PROVIDER_DEFAULTS } from '@bbartolome/scriba-contracts/providers';
 import { createTestApp, type TestApp } from './create-test-app';
 import { send, sessionCookie, type Reply } from './guard-request';
@@ -48,6 +49,9 @@ import { dataOf } from './sse';
 
 // The shared fixture packs: cold_open is a draft tool in every genre.
 const FIXTURE_PACKS = join(__dirname, 'fixtures', 'packs');
+
+// The real packs: propose_graph is a graph tool of core.
+const PACKS_ROOT = join(__dirname, '..', '..', '..', 'packages', 'packs');
 
 interface SettingsOptions {
   providerBaseURL: string;
@@ -354,6 +358,110 @@ it('AC1: a draft output with no target lands at the generated path; a target out
         '# Outline\n',
       );
       expect(existsSync(join(book, 'drafts'))).toBe(false);
+    } finally {
+      await stream.close();
+    }
+  } finally {
+    await h.close();
+  }
+});
+
+// The content of every tool message in one request, in order.
+function toolContents(body: ChatBody): string[] {
+  return body.messages
+    .filter((message) => message.role === 'tool')
+    .map((message) => String(message.content));
+}
+
+// A story graph whose first node id is not a valid id (the dot), so the graph file schema refuses it.
+const GRAPH_WITH_BAD_ID =
+  '{"schemaVersion":1,"view":"story","name":"First","nodes":[{"id":"a.b","kind":"scene","label":"A","position":{"x":0,"y":0}}],"edges":[]}';
+const GRAPH_VALID =
+  '{"schemaVersion":1,"view":"story","name":"Ada and the engine","nodes":[{"id":"ada","kind":"entity","label":"Ada","position":{"x":0,"y":0}}],"edges":[]}';
+
+it('AC2: a proposed graph becomes a pending change under graphs/ that parses with the graph schema; an invalid one gets a readable error and is retried', async () => {
+  const h = await openHarness({
+    scenario: 'routing-graph',
+    packs: PACKS_ROOT,
+    steps: [
+      {
+        match: { endpoint: 'chat', lastMessageContent: 'Intent: first sketch' },
+        reply: { kind: 'stream', deltas: [GRAPH_WITH_BAD_ID] },
+      },
+      {
+        match: {
+          endpoint: 'chat',
+          lastMessageContent: 'Intent: second sketch',
+        },
+        reply: { kind: 'stream', deltas: [GRAPH_VALID] },
+      },
+      {
+        match: { endpoint: 'chat', turnIndex: 0 },
+        reply: {
+          kind: 'toolCalls',
+          calls: [
+            {
+              name: 'propose_graph',
+              argumentChunks: [
+                '{"intent":"first sketch","view":"story","includeCatalogue":false}',
+              ],
+            },
+          ],
+        },
+      },
+      {
+        match: { endpoint: 'chat', turnIndex: 1 },
+        reply: {
+          kind: 'toolCalls',
+          calls: [
+            {
+              name: 'propose_graph',
+              argumentChunks: [
+                '{"intent":"second sketch","view":"story","includeCatalogue":false}',
+              ],
+            },
+          ],
+        },
+      },
+      {
+        match: { endpoint: 'chat', turnIndex: 2 },
+        reply: { kind: 'stream', deltas: ['Sketched.'] },
+      },
+    ],
+  });
+  try {
+    const book = join(h.fixture.library, 'book');
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
+    try {
+      await startRun(h, { intent: 'Sketch two graphs for the book' });
+      const events = await readUntilEnded(stream);
+
+      // Turn 0: the Zod issue is one readable line at the path of the bad node id.
+      const errors = eventsOf(events, 'tool-call-error');
+      expect(errors).toHaveLength(1);
+      expect(errors[0].data.attempt).toBe(1);
+      expect(errors[0].data.message).toContain('graph/nodes/0/id');
+
+      // The model received that line in its next request, which offers the tool again, and retried.
+      const offered = chatBodies(await recordsOf(h.mock, h.scenario)).filter(
+        (body) =>
+          body.tools?.some((tool) => tool.function.name === 'propose_graph'),
+      );
+      expect(offered).toHaveLength(3);
+      expect(toolContents(offered[1])).toEqual([errors[0].data.message]);
+
+      // Turn 1 is the valid graph: one result, and one pending change under graphs/.
+      expect(eventsOf(events, 'tool-call-result')).toHaveLength(1);
+      const changes = await pendingOfBook(h);
+      expect(changes).toHaveLength(1);
+      expect(changes[0]).toMatchObject({
+        targetPath: 'graphs/ada-and-the-engine.json',
+        kind: 'create',
+      });
+      expect(
+        graphFileSchema.safeParse(JSON.parse(changes[0].proposed)).success,
+      ).toBe(true);
+      expect(existsSync(join(book, 'graphs'))).toBe(false);
     } finally {
       await stream.close();
     }
