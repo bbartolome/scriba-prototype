@@ -8,6 +8,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  PROJECT_PENDING_ACCEPT_ANYWAY_ROUTE,
   PROJECT_PENDING_ACCEPT_ROUTE,
   PROJECT_PENDING_REFRESH_ROUTE,
   PROJECT_PENDING_REJECT_ROUTE,
@@ -55,6 +56,18 @@ export class PendingController {
     @Param('id') id: string,
   ): PendingChange {
     return this.pending.reject(projectId, id);
+  }
+
+  // The body is optional, as for accept: an accept anyway with no body applies the proposal (PST-17 D4, D14).
+  @Post(PROJECT_PENDING_ACCEPT_ANYWAY_ROUTE)
+  @HttpCode(200)
+  acceptAnyway(
+    @Param('projectId') projectId: string,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(pendingDecisionSchema.optional()))
+    body: PendingDecision | undefined,
+  ): PendingChange {
+    return this.pending.acceptAnyway(projectId, id, body ?? {});
   }
 
   // Refresh takes no body: it merges the disk into the change (PST-17 D1, D14).

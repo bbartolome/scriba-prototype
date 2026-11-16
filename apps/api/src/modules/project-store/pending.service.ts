@@ -17,6 +17,7 @@ import {
   type ProposeInput,
 } from '@bbartolome/scriba-contracts/project-store';
 import { EventsPublisher, ModuleError } from '../platform/platform.module';
+import { saveBackup } from './backups';
 import { isTopLevelDraft, saveVersion } from './draft-versions';
 import {
   decodeText,
@@ -193,6 +194,47 @@ export class PendingService {
         now,
       );
     }
+    return this.applyContent(project, change, target, content, now);
+  }
+
+  // Accepts an open change although the disk has changed (PST-17 D3, D10, D14). The disk content is saved first: a
+  // top-level drafts/ file as a version, any other existing file as a backup under .scriba/backups/. Then the
+  // proposal, or the edited content, is written as accept writes it. No three-way check and no content check run.
+  acceptAnyway(
+    projectId: string,
+    id: string,
+    body: PendingDecision,
+  ): PendingChange {
+    const { project, change } = this.openChangeOf(projectId, id);
+    const target = this.store.resolvePath(project.root, change.targetPath);
+    if (
+      target.isRoot ||
+      (target.exists && statSync(target.realPath).isDirectory())
+    ) {
+      throw notAFile();
+    }
+    const now = new Date();
+    if (target.exists) {
+      const bytes = readFileSync(target.realPath);
+      if (isTopLevelDraft(target.relativePath)) {
+        saveVersion(project, target.relativePath, bytes, now);
+      } else {
+        saveBackup(project, target.relativePath, bytes, now);
+      }
+    }
+    const content = body.content ?? change.proposed;
+    return this.applyContent(project, change, target, content, now);
+  }
+
+  // The apply path of accept and accept anyway (PST-17 D12): the write of the target, the resolved record, the
+  // events, and the store hook.
+  private applyContent(
+    project: DiscoveredProject,
+    change: PendingChange,
+    target: ResolvedProjectPath,
+    content: string,
+    now: Date,
+  ): PendingChange {
     this.writeProposal(target, content);
     const resolved = this.resolveChange(project, change, 'accepted', now);
     this.events.publish({

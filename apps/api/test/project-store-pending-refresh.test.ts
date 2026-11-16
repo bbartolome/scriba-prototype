@@ -8,19 +8,11 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { expect, it } from 'vitest';
-import {
-  PROJECT_PENDING_ROUTE,
-  type PendingChange,
-} from '@bbartolome/scriba-contracts/project-store';
+import { afterEach, expect, it, vi } from 'vitest';
+import type { PendingChange } from '@bbartolome/scriba-contracts/project-store';
 import { createTestApp, type TestApp } from './create-test-app';
 import { dataOf, openSse, type OpenSse } from './sse';
-import {
-  bookLibrary,
-  fileUrl,
-  putFile,
-  sha256Of,
-} from './project-store-files.kit';
+import { bookLibrary, putFile, sha256Of } from './project-store-files.kit';
 import {
   addOkProject,
   postJsonPlain,
@@ -34,15 +26,17 @@ import type { ErrorBody } from './project-store-projects.kit';
 // app. The host edits the disk directly, because no POST touches the target.
 
 const KIT = '/api/project-store-test/pending/propose';
-const REGISTER_GRAPH = '/api/project-store-test/pending/register-graph-validator';
+const REGISTER_GRAPH =
+  '/api/project-store-test/pending/register-graph-validator';
 const BOOK = 'book';
-const PENDING = fileUrl(PROJECT_PENDING_ROUTE, BOOK);
 const ACCEPT = (id: string, projectId = BOOK): string =>
   `/api/project-store/projects/${projectId}/pending/${id}/accept`;
 const REJECT = (id: string, projectId = BOOK): string =>
   `/api/project-store/projects/${projectId}/pending/${id}/reject`;
 const REFRESH = (id: string, projectId = BOOK): string =>
   `/api/project-store/projects/${projectId}/pending/${id}/refresh`;
+const ACCEPT_ANYWAY = (id: string, projectId = BOOK): string =>
+  `/api/project-store/projects/${projectId}/pending/${id}/accept-anyway`;
 
 interface PendingEvent {
   type: string;
@@ -145,6 +139,12 @@ function errorOf(reply: PlainReply): ErrorBody['error'] {
 const OUTLINE = join('sources', 'outline.md');
 const PENDING_FOLDER = (library: string, projectId = BOOK): string =>
   join(library, projectId, '.scriba', 'pending');
+const BACKUPS = (library: string, projectId = BOOK): string =>
+  join(library, projectId, '.scriba', 'backups');
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 it('T1 (criterion line 23): refresh clears a conflict when host and proposal edit different paragraphs, and the merged text has both', async () => {
   const fixture = bookLibrary();
@@ -188,7 +188,11 @@ it('T1 (criterion line 23): refresh clears a conflict when host and proposal edi
         expect(readFileSync(target, 'utf8')).toBe(host);
 
         // The accept with no edit writes the merged text.
-        const accepted = await postJsonPlain(app.baseUrl, ACCEPT(change.id), {});
+        const accepted = await postJsonPlain(
+          app.baseUrl,
+          ACCEPT(change.id),
+          {},
+        );
         expect(accepted.status).toBe(200);
         expect(readFileSync(target, 'utf8')).toBe(merged);
       } finally {
@@ -301,15 +305,14 @@ it('X2a: refresh in a project that is not active is PROJECT_NOT_ACTIVE, changes 
       });
       const before = snapshot(secondRoot);
 
-      const reply = await postEmpty(
-        app.baseUrl,
-        REFRESH(change.id, 'second'),
-      );
+      const reply = await postEmpty(app.baseUrl, REFRESH(change.id, 'second'));
       expect(reply.status).toBe(409);
       expect(errorOf(reply).code).toBe('PROJECT_NOT_ACTIVE');
 
       expect(snapshot(secondRoot)).toEqual(before);
-      expect(openFiles(fixture.library, 'second')).toEqual([`${change.id}.json`]);
+      expect(openFiles(fixture.library, 'second')).toEqual([
+        `${change.id}.json`,
+      ]);
     });
   } finally {
     fixture.remove();
@@ -513,7 +516,10 @@ it('X10 (D5, paragraph reach; PST-22 demo step 3): edits to two lines of one par
         path: 'sources/outline.md',
         content: '# Outline\n\nAlpha one.\nAlpha two, agent.\n\nBeta.\n',
       });
-      writeFileSync(target, '# Outline\n\nAlpha one, host.\nAlpha two.\n\nBeta.\n');
+      writeFileSync(
+        target,
+        '# Outline\n\nAlpha one, host.\nAlpha two.\n\nBeta.\n',
+      );
       const conflicted = await postEmpty(app.baseUrl, REFRESH(change.id));
       expect(conflicted.status).toBe(200);
       const kept = conflicted.json as PendingChange;
@@ -527,7 +533,10 @@ it('X10 (D5, paragraph reach; PST-22 demo step 3): edits to two lines of one par
         path: 'sources/b.md',
         content: '# Outline\n\nAlpha one.\nAlpha two.\n\nBeta, agent.\n',
       });
-      writeFileSync(other, '# Outline\n\nAlpha one, host.\nAlpha two.\n\nBeta.\n');
+      writeFileSync(
+        other,
+        '# Outline\n\nAlpha one, host.\nAlpha two.\n\nBeta.\n',
+      );
       const merged = await postEmpty(app.baseUrl, REFRESH(separate.id));
       expect(merged.status).toBe(200);
       const clean = merged.json as PendingChange;
@@ -537,6 +546,251 @@ it('X10 (D5, paragraph reach; PST-22 demo step 3): edits to two lines of one par
       );
     });
   } finally {
+    fixture.remove();
+  }
+});
+
+it('T3 (criterion line 25): accept anyway keeps the overwritten disk content as a version (draft) or a backup (other file), then writes the proposal', async () => {
+  const fixture = bookLibrary();
+  try {
+    const draft = join(fixture.library, BOOK, 'drafts', 'ch01.md');
+    const outline = join(fixture.library, BOOK, OUTLINE);
+    const versions = join(fixture.library, BOOK, 'drafts', '.versions');
+    putFile(fixture.library, `${BOOK}/drafts/ch01.md`, 'Old\n');
+    writeFileSync(outline, '# Outline\n');
+    await withKit(fixture.library, async (app) => {
+      // (a) A top-level draft: the host text is saved as one version.
+      const modify = await propose(app, {
+        path: 'drafts/ch01.md',
+        content: 'New\n',
+      });
+      writeFileSync(draft, 'Host\n');
+      const refused = await postJsonPlain(app.baseUrl, ACCEPT(modify.id), {});
+      expect(refused.status).toBe(409);
+
+      const forced = await postJsonPlain(
+        app.baseUrl,
+        ACCEPT_ANYWAY(modify.id),
+        {},
+      );
+      expect(forced.status).toBe(200);
+      expect((forced.json as PendingChange).status).toBe('accepted');
+      expect(readFileSync(draft, 'utf8')).toBe('New\n');
+      const saved = readdirSync(join(versions, 'ch01.md'));
+      expect(saved).toHaveLength(1);
+      expect(saved[0]).toMatch(/^\d{8}T\d{9}Z\.md$/);
+      expect(
+        readFileSync(join(versions, 'ch01.md', saved[0] as string), 'utf8'),
+      ).toBe('Host\n');
+
+      // (b) Another file: the host text is saved as a backup, and no version is added.
+      const versionsBefore = snapshot(versions);
+      const other = await propose(app, {
+        path: 'sources/outline.md',
+        content: 'P\n',
+      });
+      writeFileSync(outline, 'H\n');
+      const otherRefused = await postJsonPlain(
+        app.baseUrl,
+        ACCEPT(other.id),
+        {},
+      );
+      expect(otherRefused.status).toBe(409);
+      const forcedOther = await postEmpty(app.baseUrl, ACCEPT_ANYWAY(other.id));
+      expect(forcedOther.status).toBe(200);
+      expect(readFileSync(outline, 'utf8')).toBe('P\n');
+      const backups = readdirSync(BACKUPS(fixture.library));
+      expect(backups).toHaveLength(1);
+      expect(
+        readFileSync(
+          join(BACKUPS(fixture.library), backups[0] as string, OUTLINE),
+          'utf8',
+        ),
+      ).toBe('H\n');
+      expect(snapshot(versions)).toEqual(versionsBefore);
+    });
+  } finally {
+    fixture.remove();
+  }
+});
+
+it('X1b (D13): accept anyway of a resolved change is PROJECT_PENDING_NOT_OPEN; an unknown or malformed id is PROJECT_NOT_FOUND; no backup is made', async () => {
+  const fixture = bookLibrary();
+  try {
+    writeFileSync(join(fixture.library, BOOK, OUTLINE), 'Orig\n');
+    await withKit(fixture.library, async (app) => {
+      const change = await propose(app, {
+        path: 'sources/outline.md',
+        content: 'P\n',
+      });
+      const rejected = await postEmpty(app.baseUrl, REJECT(change.id));
+      expect(rejected.status).toBe(200);
+      writeFileSync(join(fixture.library, BOOK, OUTLINE), 'Host\n');
+
+      const resolved = await postEmpty(app.baseUrl, ACCEPT_ANYWAY(change.id));
+      expect(resolved.status).toBe(409);
+      expect(errorOf(resolved).code).toBe('PROJECT_PENDING_NOT_OPEN');
+
+      const unknown = await postEmpty(
+        app.baseUrl,
+        ACCEPT_ANYWAY('20260101T000000000Z-000000'),
+      );
+      expect(unknown.status).toBe(404);
+      expect(errorOf(unknown).code).toBe('PROJECT_NOT_FOUND');
+
+      const slashed = await postEmpty(app.baseUrl, ACCEPT_ANYWAY('a%2Fb'));
+      expect(slashed.status).toBe(404);
+      expect(errorOf(slashed).code).toBe('PROJECT_NOT_FOUND');
+
+      expect(existsSync(BACKUPS(fixture.library))).toBe(false);
+      expect(readFileSync(join(fixture.library, BOOK, OUTLINE), 'utf8')).toBe(
+        'Host\n',
+      );
+    });
+  } finally {
+    fixture.remove();
+  }
+});
+
+it('X2b (D1, D13): accept anyway in a project that is not active is PROJECT_NOT_ACTIVE, changes nothing, and the change stays open', async () => {
+  const fixture = bookLibrary();
+  try {
+    addOkProject(fixture.library, 'second');
+    const secondRoot = join(fixture.library, 'second');
+    await withKit(fixture.library, async (app) => {
+      const change = await propose(app, {
+        projectId: 'second',
+        path: 'sources/new.md',
+        content: 'N\n',
+      });
+      const before = snapshot(secondRoot);
+
+      const reply = await postEmpty(
+        app.baseUrl,
+        ACCEPT_ANYWAY(change.id, 'second'),
+      );
+      expect(reply.status).toBe(409);
+      expect(errorOf(reply).code).toBe('PROJECT_NOT_ACTIVE');
+
+      expect(snapshot(secondRoot)).toEqual(before);
+      expect(existsSync(BACKUPS(fixture.library, 'second'))).toBe(false);
+      expect(openFiles(fixture.library, 'second')).toEqual([
+        `${change.id}.json`,
+      ]);
+    });
+  } finally {
+    fixture.remove();
+  }
+});
+
+it('X7 (D3, D10): accept anyway with no body applies the proposal; with an edit it writes the edit; a create whose target the host wrote is backed up, with no version', async () => {
+  const fixture = bookLibrary();
+  try {
+    const outline = join(fixture.library, BOOK, OUTLINE);
+    const created = join(fixture.library, BOOK, 'sources', 'new.md');
+    const backups = BACKUPS(fixture.library);
+    writeFileSync(outline, '# Outline\n');
+    await withKit(fixture.library, async (app) => {
+      // (a) No body: the proposal is applied, and the host bytes are saved in a backup.
+      const first = await propose(app, {
+        path: 'sources/outline.md',
+        content: 'P\n',
+      });
+      writeFileSync(outline, 'H\n');
+      const applied = await postEmpty(app.baseUrl, ACCEPT_ANYWAY(first.id));
+      expect(applied.status).toBe(200);
+      expect(readFileSync(outline, 'utf8')).toBe('P\n');
+      const firstBackups = readdirSync(backups);
+      expect(firstBackups).toHaveLength(1);
+      expect(
+        readFileSync(join(backups, firstBackups[0] as string, OUTLINE), 'utf8'),
+      ).toBe('H\n');
+
+      // (b) A body with content: the edited text is written, not the proposal.
+      const second = await propose(app, {
+        path: 'sources/outline.md',
+        content: 'Q\n',
+      });
+      writeFileSync(outline, 'H2\n');
+      const edited = await postJsonPlain(
+        app.baseUrl,
+        ACCEPT_ANYWAY(second.id),
+        { content: 'Edited\n' },
+      );
+      expect(edited.status).toBe(200);
+      expect(readFileSync(outline, 'utf8')).toBe('Edited\n');
+
+      // (c) A create: the host wrote the target; the proposal is written and the host bytes are backed up.
+      const create = await propose(app, {
+        path: 'sources/new.md',
+        content: 'N\n',
+      });
+      expect(create.kind).toBe('create');
+      writeFileSync(created, 'H3\n');
+      const createReply = await postEmpty(
+        app.baseUrl,
+        ACCEPT_ANYWAY(create.id),
+      );
+      expect(createReply.status).toBe(200);
+      expect(readFileSync(created, 'utf8')).toBe('N\n');
+      const names = readdirSync(backups).sort();
+      expect(names).toHaveLength(3);
+      const newBackup = names.find((name) =>
+        existsSync(join(backups, name, 'sources', 'new.md')),
+      );
+      expect(newBackup).toBeDefined();
+      expect(
+        readFileSync(
+          join(backups, newBackup as string, 'sources', 'new.md'),
+          'utf8',
+        ),
+      ).toBe('H3\n');
+      expect(
+        existsSync(join(fixture.library, BOOK, 'drafts', '.versions')),
+      ).toBe(false);
+    });
+  } finally {
+    fixture.remove();
+  }
+});
+
+it('X8 (D11): two accept-anyways in one millisecond keep both backups, as <stamp> and <stamp>-2', async () => {
+  const fixture = bookLibrary();
+  try {
+    const outline = join(fixture.library, BOOK, OUTLINE);
+    const backups = BACKUPS(fixture.library);
+    writeFileSync(outline, '# Outline\n');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-16T10:00:00.000Z'));
+    await withKit(fixture.library, async (app) => {
+      const first = await propose(app, {
+        path: 'sources/outline.md',
+        content: 'P1\n',
+      });
+      writeFileSync(outline, 'H1\n');
+      const one = await postEmpty(app.baseUrl, ACCEPT_ANYWAY(first.id));
+      expect(one.status).toBe(200);
+
+      const second = await propose(app, {
+        path: 'sources/outline.md',
+        content: 'P2\n',
+      });
+      writeFileSync(outline, 'H2\n');
+      const two = await postEmpty(app.baseUrl, ACCEPT_ANYWAY(second.id));
+      expect(two.status).toBe(200);
+    });
+    vi.useRealTimers();
+
+    const names = readdirSync(backups).sort();
+    expect(names).toEqual(['20261116T100000000Z', '20261116T100000000Z-2']);
+    expect(
+      readFileSync(join(backups, names[0] as string, OUTLINE), 'utf8'),
+    ).toBe('H1\n');
+    expect(
+      readFileSync(join(backups, names[1] as string, OUTLINE), 'utf8'),
+    ).toBe('H2\n');
+  } finally {
+    vi.useRealTimers();
     fixture.remove();
   }
 });

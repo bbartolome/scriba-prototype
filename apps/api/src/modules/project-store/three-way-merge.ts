@@ -77,9 +77,7 @@ export function mergeLines(
   const all = [
     ...hunksOf(baseLines, ours, 'ours'),
     ...hunksOf(baseLines, theirs, 'theirs'),
-  ].sort(
-    (a, b) => a.reachStart - b.reachStart || a.reachEnd - b.reachEnd,
-  );
+  ].sort((a, b) => a.reachStart - b.reachStart || a.reachEnd - b.reachEnd);
 
   // Clusters: a hunk joins the current cluster while its reach starts at or before the cluster's largest reach end.
   const clusters: Hunk[][] = [];
