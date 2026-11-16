@@ -1,6 +1,6 @@
 ---
 id: MPR-12
-status: planned
+status: done
 ---
 # MPR-12 plan — project model override: resolution, set and clear API, type compatibility test
 

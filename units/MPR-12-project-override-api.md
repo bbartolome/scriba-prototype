@@ -22,9 +22,9 @@ Override the model per book (22), saved in `project.yaml` so it travels with the
 - **Type-level test** asserting the Project store's `project.yaml` `model` shape is compatible with `ModelChoice`.
 
 ## Acceptance criteria
-- [ ] Setting an override writes only the `model` field of `project.yaml` (other bytes untouched) and the next resolution for that project uses it (`source: 'project'`).
-- [ ] Clearing it returns the project to the app default.
-- [ ] An override naming a deleted provider resolves to the app default with a warning.
-- [ ] Switching the active project changes the effective model.
-- [ ] A `project.yaml` with no override (like the nonfiction sample) validates and resolves to the app default.
-- [ ] The type-level compatibility test compiles.
+- [x] Setting an override writes only the `model` field of `project.yaml` (other bytes untouched) and the next resolution for that project uses it (`source: 'project'`).
+- [x] Clearing it returns the project to the app default.
+- [x] An override naming a deleted provider resolves to the app default with a warning.
+- [x] Switching the active project changes the effective model.
+- [x] A `project.yaml` with no override (like the nonfiction sample) validates and resolves to the app default.
+- [x] The type-level compatibility test compiles.
