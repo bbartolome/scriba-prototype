@@ -52,4 +52,36 @@ describe('Core gate', () => {
     fixture.detectChanges();
     expect(root.querySelector('h2')?.textContent?.trim()).toBe('Core gate');
   });
+
+  it('M1 the core gate renders the editor layout only when the query names a file', async () => {
+    doubles.api.respond('GET', '/api/project-store/projects/book/file', {
+      path: 'drafts/ch01.md',
+      content: '# Chapter One\n',
+      hash: 'sha256:' + 'a'.repeat(64),
+      mtime: '2026-11-14T10:00:00Z',
+    });
+    TestBed.configureTestingModule({
+      imports: [App],
+      providers: [provideRouter(APP_ROUTES), ...doubles.providers],
+    });
+    await TestBed.compileComponents();
+    const fixture = TestBed.createComponent(App);
+    const router = TestBed.inject(Router);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    await router.navigateByUrl('/core-gate');
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(root.querySelector('h2')?.textContent?.trim()).toBe('Core gate');
+    expect(root.querySelector('app-editor-layout')).toBeNull();
+
+    await router.navigateByUrl('/core-gate?projectId=book&path=drafts%2Fch01.md');
+    await vi.waitFor(
+      () => expect(root.querySelector('app-editor-layout')).not.toBeNull(),
+      { timeout: 5000 },
+    );
+    fixture.detectChanges();
+    expect(root.querySelector('h2')?.textContent?.trim()).toBe('Core gate');
+  });
 });
