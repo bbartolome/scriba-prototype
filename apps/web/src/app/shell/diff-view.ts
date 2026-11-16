@@ -5,6 +5,7 @@ import {
   ElementRef,
   inject,
   input,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -12,10 +13,21 @@ import {
   MatButtonToggle,
   MatButtonToggleGroup,
 } from '@angular/material/button-toggle';
-import { MergeView, unifiedMergeView } from '@codemirror/merge';
+import {
+  Change,
+  type DiffConfig,
+  diff,
+  MergeView,
+  unifiedMergeView,
+} from '@codemirror/merge';
 import { EditorState, type Extension, Text } from '@codemirror/state';
 import { EditorView, highlightSpecialChars } from '@codemirror/view';
 import { DeviceClassService } from './device-class';
+import {
+  documentExtensions,
+  documentText,
+  dominantLineSeparator,
+} from './markdown-document';
 
 type Layout = 'unified' | 'split';
 type Side = 'base' | 'proposed';
@@ -60,17 +72,43 @@ function diffTheme(): Extension {
   return theme;
 }
 
+/** What the editable proposed side needs: its loaded text, its path and the emit. */
+interface Edit {
+  readonly text: string;
+  readonly path: string;
+  readonly onEdit: (text: string) => void;
+}
+
+/** The edit options of a view, before the loaded text is added. */
+type EditOptions = Omit<Edit, 'text'>;
+
 /**
- * The extensions of one side, the same in both layouts. `role` names the side;
- * SHL-16 adds an editable input here. The text is never edited.
+ * The extensions of one side, the same in both layouts. Only the proposed side
+ * takes `edit`, and only when `editable` is true: it then uses the dominant
+ * line separator of its loaded text and emits the whole edited text. The base
+ * side and the read-only proposed side are never editable.
  */
-function sideExtensions(side: Side): Extension[] {
+function sideExtensions(side: Side, edit?: Edit): Extension[] {
+  if (!edit) {
+    return [
+      diffTheme(),
+      highlightSpecialChars(),
+      EditorState.lineSeparator.of('\n'),
+      EditorState.readOnly.of(true),
+      EditorView.editable.of(false),
+      EditorView.editorAttributes.of({ 'data-side': side }),
+    ];
+  }
   return [
     diffTheme(),
     highlightSpecialChars(),
-    EditorState.lineSeparator.of('\n'),
-    EditorState.readOnly.of(true),
-    EditorView.editable.of(false),
+    documentExtensions(edit.text),
+    EditorView.contentAttributes.of({
+      'aria-label': 'Proposed text for ' + edit.path,
+    }),
+    EditorView.updateListener.of((update) => {
+      if (update.docChanged) edit.onEdit(documentText(update.state));
+    }),
     EditorView.editorAttributes.of({ 'data-side': side }),
   ];
 }
@@ -84,18 +122,81 @@ function toText(value: string): Text {
   return Text.of(value.split('\n'));
 }
 
+/** The start of the line that holds position `p`. */
+function lineStart(text: string, p: number): number {
+  return p === 0 ? 0 : text.lastIndexOf('\n', p - 1) + 1;
+}
+
+/** The position just after the line break that ends the line holding `p`, or the end of the text. */
+function lineEnd(text: string, p: number): number {
+  if (p > 0 && text[p - 1] === '\n') return p;
+  const next = text.indexOf('\n', p);
+  return next < 0 ? text.length : next + 1;
+}
+
+/**
+ * The diff of the base against the proposed text with its CRLF restored. The
+ * base keeps its CRs (it is split on `\n` only), so a line-ending change shows
+ * as a change. The positions of the restored text map back to the proposed
+ * document, which has no CRs: each `\r\n` of the restored text is one inserted
+ * CR.
+ */
+function crlfOverride(a: string, b: string): readonly Change[] {
+  const restored = b.replace(/\n/g, '\r\n');
+  const back = (p: number): number => {
+    let inserted = 0;
+    for (let i = 0; i < p; i++) {
+      if (restored[i] === '\r' && restored[i + 1] === '\n') inserted++;
+    }
+    return p - inserted;
+  };
+  return diff(a, restored, { scanLimit: 500 }).map((change) => {
+    let { fromA, toA, fromB, toB } = change;
+    // A change that differs only in CRs widens to whole lines, so that the
+    // LF to CRLF change marks its line on both sides.
+    if (
+      a.slice(fromA, toA).replace(/\r/g, '') ===
+      restored.slice(fromB, toB).replace(/\r/g, '')
+    ) {
+      fromA = lineStart(a, fromA);
+      fromB = lineStart(restored, fromB);
+      toA = lineEnd(a, toA);
+      toB = lineEnd(restored, toB);
+    }
+    return new Change(fromA, toA, back(fromB), back(toB));
+  });
+}
+
+/**
+ * The diff config of an editable view. Only a CRLF-dominant proposed text needs
+ * the override: an LF-dominant one is split on `\n` as the base is, so the
+ * default diff is exact for it.
+ */
+function editDiffConfig(proposed: string): DiffConfig | undefined {
+  return dominantLineSeparator(proposed) === '\r\n'
+    ? { scanLimit: 500, override: crlfOverride }
+    : undefined;
+}
+
 function createUnified(
   parent: HTMLElement,
   base: string,
   proposed: string,
+  edit: EditOptions | undefined,
 ): EditorView {
+  const side = edit && { ...edit, text: proposed };
   return new EditorView({
     parent,
     state: EditorState.create({
-      doc: toText(proposed),
+      // The editable proposed document is split by its own line separator.
+      doc: side ? proposed : toText(proposed),
       extensions: [
-        sideExtensions('proposed'),
-        unifiedMergeView({ original: toText(base), mergeControls: false }),
+        sideExtensions('proposed', side),
+        unifiedMergeView({
+          original: toText(base),
+          mergeControls: false,
+          diffConfig: side ? editDiffConfig(proposed) : undefined,
+        }),
       ],
     }),
   });
@@ -105,18 +206,26 @@ function createSplit(
   parent: HTMLElement,
   base: string,
   proposed: string,
+  edit: EditOptions | undefined,
 ): MergeView {
+  const side = edit && { ...edit, text: proposed };
   return new MergeView({
     parent,
     a: { doc: toText(base), extensions: sideExtensions('base') },
-    b: { doc: toText(proposed), extensions: sideExtensions('proposed') },
+    b: {
+      doc: side ? proposed : toText(proposed),
+      extensions: sideExtensions('proposed', side),
+    },
+    diffConfig: side ? editDiffConfig(proposed) : undefined,
   });
 }
 
 /**
- * A read-only diff of two strings for a path: unified on a phone, side by side
- * on a tablet or desktop, with a toggle that overrides the device class. The
- * component never changes a document and shows no accept or reject control.
+ * A diff of two strings for a path: unified on a phone, side by side on a
+ * tablet or desktop, with a toggle that overrides the device class. Read-only
+ * by default. With `editable` the proposed side accepts edits and emits the
+ * whole edited text through `contentChange`; the base side is never editable.
+ * The component shows no accept or reject control.
  */
 @Component({
   selector: 'app-diff-view',
@@ -183,11 +292,14 @@ export class DiffView {
   readonly proposed = input.required<string>();
   readonly conflict = input<boolean>(false);
   readonly conflictMessage = input<string>();
+  readonly editable = input<boolean>(false);
+  readonly contentChange = output<string>();
 
   protected readonly defaultConflict = DEFAULT_CONFLICT;
   protected readonly override = signal<Layout | undefined>(undefined);
+  // Read-only equal texts show "No changes"; an editable proposed side always opens.
   protected readonly identical = computed(
-    () => this.base() === this.proposed(),
+    () => !this.editable() && this.base() === this.proposed(),
   );
   protected readonly layout = computed<Layout>(
     () => this.override() ?? (this.device() === 'phone' ? 'unified' : 'split'),
@@ -195,6 +307,8 @@ export class DiffView {
 
   private readonly device = inject(DeviceClassService).deviceClass;
   private readonly body = viewChild<ElementRef<HTMLElement>>('body');
+  private readonly onEdit = (text: string): void =>
+    this.contentChange.emit(text);
 
   constructor() {
     // One view is alive at a time. The effect destroys it when an input or the
@@ -205,10 +319,15 @@ export class DiffView {
       const layout = this.layout();
       const base = this.base();
       const proposed = this.proposed();
+      const editable = this.editable();
+      const path = this.path();
+      const edit: EditOptions | undefined = editable
+        ? { path, onEdit: this.onEdit }
+        : undefined;
       const view =
         layout === 'unified'
-          ? createUnified(parent, base, proposed)
-          : createSplit(parent, base, proposed);
+          ? createUnified(parent, base, proposed, edit)
+          : createSplit(parent, base, proposed, edit);
       onCleanup(() => view.destroy());
     });
   }
