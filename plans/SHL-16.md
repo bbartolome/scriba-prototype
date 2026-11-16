@@ -1,6 +1,6 @@
 ---
 id: SHL-16
-status: planned
+status: done
 ---
 # SHL-16 plan — editable merge view: the proposed side accepts edits and emits the edited text
 

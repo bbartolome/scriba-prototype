@@ -23,7 +23,7 @@ Edit the proposed side of a diff before accepting (21).
 - Read-only mode is unchanged.
 
 ## Acceptance criteria
-- [ ] With `editable`, the proposed side accepts edits and the component emits the edited text, byte-preserving untouched content.
-- [ ] Without it, behaviour matches SHL-12 exactly (its tests still pass).
-- [ ] With `editable`, a change of line endings only (LF base, CRLF proposed) shows a visible mark in the diff, in both layouts.
+- [x] With `editable`, the proposed side accepts edits and the component emits the edited text, byte-preserving untouched content.
+- [x] Without it, behaviour matches SHL-12 exactly (its tests still pass).
+- [x] With `editable`, a change of line endings only (LF base, CRLF proposed) shows a visible mark in the diff, in both layouts.
   - Added by the Navigator on 2026-11-16 (SHL-16 open point 1, option (e)). See plans/DECISIONS.md.
