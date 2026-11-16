@@ -100,6 +100,9 @@ test('TRG-05 C1: one tool response drives the form and the node body', async ({
   const nodeBody = page.locator('section[aria-label="Node body"]');
 
   await page.goto('/tools');
+  await page
+    .locator('li[data-tool="cold_open"][data-origin="user"] [data-open]')
+    .click();
   await expect(nodeBody.locator('li[data-port]')).toHaveCount(6);
 
   // (a) One read of the tool while the page lives.
@@ -169,6 +172,9 @@ test('TRG-05 C2: the picker offers person entities only and takes a dropped pers
 
   await setUp(page);
   await page.goto('/tools');
+  await page
+    .locator('li[data-tool="cold_open"][data-origin="user"] [data-open]')
+    .click();
 
   const formLayout = page.locator('section[aria-label="Form layout"]');
   const personPicker = formLayout.locator('section[data-key="person"] select');

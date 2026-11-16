@@ -4,6 +4,7 @@ import {
   computed,
   DestroyRef,
   inject,
+  input,
   OnInit,
   signal,
 } from '@angular/core';
@@ -29,9 +30,6 @@ import {
   type ToolDetailView,
 } from './tool-copy';
 import { ToolForm } from './tool-form';
-
-/** The tool the preview shows: the registry's cold-open fixture, one workhorse with ports and params. */
-const PREVIEW_TOOL = 'cold_open';
 
 type EntityItem = EntityList['entities'][number];
 
@@ -75,7 +73,7 @@ function issuesOf(details: unknown): ToolArgsIssue[] {
  * The Tools preview (TRG-05): the cold-open fixture, loaded once from the API, drawn in the form layout and
  * in the node-body layout side by side. The entity chips come from the active project; a chip dragged onto
  * a picker lands in it. Submit posts the form's arguments to validate: a refusal shows its issues inline, and
- * a valid answer shows the arguments with their defaults applied. A dev page: TRG-13 keeps it as a detail tab.
+ * a valid answer shows the arguments with their defaults applied. It is the Preview tab of a tool's detail (TRG-13).
  */
 @Component({
   selector: 'app-tools-preview',
@@ -126,7 +124,7 @@ function issuesOf(details: unknown): ToolArgsIssue[] {
   `,
   template: `
     <div cdkDropListGroup class="preview">
-      <h1>Tools preview</h1>
+      <h2>Tools preview</h2>
       <p class="note">
         The cold-open tool, from one API response: a form layout and a node
         body.
@@ -215,6 +213,9 @@ function issuesOf(details: unknown): ToolArgsIssue[] {
   `,
 })
 export class ToolsPreviewPage implements OnInit {
+  /** The tool the preview reads and validates, by name. */
+  readonly tool = input.required<string>();
+
   private readonly api = inject(API_CLIENT);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -288,7 +289,7 @@ export class ToolsPreviewPage implements OnInit {
   /** The tool's detail, read once. A tool with no views has no layouts to draw. */
   private readDetail(): void {
     this.api
-      .get(toolPath(PREVIEW_TOOL), toolDetailCopy)
+      .get(toolPath(this.tool()), toolDetailCopy)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (detail) => {
@@ -305,7 +306,7 @@ export class ToolsPreviewPage implements OnInit {
   protected submit(args: ToolArguments): void {
     this.api
       .post(
-        toolValidatePath(PREVIEW_TOOL),
+        toolValidatePath(this.tool()),
         { arguments: args, mode: 'full' },
         toolValidateCopy,
       )

@@ -173,6 +173,7 @@ async function settle(
 /** Renders the page and lets the first reads settle. */
 async function render(): Promise<ComponentFixture<ToolsPreviewPage>> {
   const fixture = TestBed.createComponent(ToolsPreviewPage);
+  fixture.componentRef.setInput('tool', 'cold_open');
   await settle(fixture);
   return fixture;
 }
