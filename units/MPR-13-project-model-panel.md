@@ -20,5 +20,5 @@ Merging this **closes Model providers `phase:project-override`**.
 - Refreshes on `project-store/project-switched`.
 
 ## Acceptance criteria
-- [ ] Component tests: hidden with no active project; set and clear call the override requests; readout shows each source; the deleted-provider warning is shown.
-- [ ] A `project-switched` event refreshes the section.
+- [x] Component tests: hidden with no active project; set and clear call the override requests; readout shows each source; the deleted-provider warning is shown.
+- [x] A `project-switched` event refreshes the section.

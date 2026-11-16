@@ -1,6 +1,6 @@
 ---
 id: MPR-13
-status: planned
+status: done
 ---
 # MPR-13 plan — "This project" model panel and the effective-model readout
 
