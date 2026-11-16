@@ -17,5 +17,5 @@ unblocks: ["Genre packs per-tool manual eval cases"]
 - Output: a Markdown or JSON report under a git-ignored folder.
 
 ## Acceptance criteria
-- [ ] The script runs the "summarize my outline" case against a configured provider and writes a report.
-- [ ] Adding a case is a single data file, documented in the script's README.
+- [x] The script runs the "summarize my outline" case against a configured provider and writes a report.
+- [x] Adding a case is a single data file, documented in the script's README.

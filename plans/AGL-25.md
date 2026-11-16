@@ -1,6 +1,6 @@
 ---
 id: AGL-25
-status: planned
+status: done
 ---
 # AGL-25 plan — manual real-model eval script (`npm run eval:agent`)
 
