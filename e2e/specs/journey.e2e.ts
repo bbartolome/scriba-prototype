@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { expect, test, type TestInfo } from '@playwright/test';
+import { expect, test, type Request, type TestInfo } from '@playwright/test';
 
 // A placeholder records itself as pending. Its owner replaces the call with the step's assertions.
 function pending(testInfo: TestInfo, name: string): void {
@@ -31,7 +31,7 @@ test('journey: setup, project from sample, agent run, accept change, manuscript'
     ).toBe(true);
   });
 
-  // Owner: Setup & auth, M1 (SAU-08). Reads setup-url from SCRIBA_E2E_LIBRARY. This step is live.
+  // Owner: Setup & auth, M1 (SAU-08) and M2 (SAU-16). Reads setup-url from SCRIBA_E2E_LIBRARY. This step is live.
   await test.step('setup', async () => {
     const errors: Error[] = [];
     page.on('pageerror', (error) => errors.push(error));
@@ -53,8 +53,52 @@ test('journey: setup, project from sample, agent run, accept change, manuscript'
     await expect(
       page.getByText('Signed in from this computer (loopback).'),
     ).toBeVisible();
-    // Skip the rest is a real POST through the guard's Origin check.
-    await page.getByRole('button', { name: 'Skip the rest' }).click();
+    // The harness sets no SCRIBA_COMPOSE_VERSION, so the compose state is unknown and the one-liner shows.
+    await expect(
+      page.getByText('does not report its compose version'),
+    ).toBeVisible();
+    await expect(
+      page.locator('code', {
+        hasText: 'docker run --rm -e SETUP=true bbartolome/scriba | bash',
+      }),
+    ).toBeVisible();
+    // A fresh library: four steps pending, not complete.
+    const fresh = (await (
+      await page.request.get('/api/setup-auth/status')
+    ).json()) as { steps: Record<string, string>; complete: boolean };
+    expect(fresh.steps).toMatchObject({
+      tailscale: 'pending',
+      providers: 'pending',
+      preferences: 'pending',
+      firstProject: 'pending',
+    });
+    expect(fresh.complete).toBe(false);
+    // The walk through the five steps: Next, Next, Skip, Skip, Skip.
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(page.getByText('Tailscale is unavailable.')).toBeVisible();
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(
+      page.locator('app-setup-page app-providers-panel'),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Skip', exact: true }).click();
+    await expect(page.getByText('Model providers: skipped')).toBeVisible();
+    await page.getByRole('button', { name: 'Skip', exact: true }).click();
+    await expect(page.getByText('Preferences: skipped')).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Start from sample', exact: true }),
+    ).toBeVisible();
+    // Skip on the last step writes its state and finishes setup. Skip the rest is no longer clicked.
+    await page.getByRole('button', { name: 'Skip', exact: true }).click();
+    await expect(page).toHaveURL(/\/projects(\/|$)/);
+    const skipped = (await (
+      await page.request.get('/api/setup-auth/status')
+    ).json()) as { steps: Record<string, string>; complete: boolean };
+    expect(skipped.steps).toMatchObject({
+      providers: 'skipped',
+      preferences: 'skipped',
+      firstProject: 'skipped',
+    });
+    expect(skipped.complete).toBe(true);
     // The landing reads complete and leaves /setup.
     await expect(page).toHaveURL(/\/projects(\/|$)/);
     const status = await page.request.get('/api/setup-auth/status');
@@ -65,20 +109,38 @@ test('journey: setup, project from sample, agent run, accept change, manuscript'
     expect(errors).toEqual([]);
   });
 
-  // Owner: Project store, M1 (PST-09). Uses the examples folder the harness sets.
+  // Owner: Setup & auth, M2 (SAU-16). The first-project step of /setup creates the project from the nonfiction sample.
   await test.step('project from sample', async () => {
     const errors: Error[] = [];
     page.on('pageerror', (error) => errors.push(error));
-    // The Nonfiction card of the picker, found by its name; its form opens with the sample's defaults.
-    const card = page.getByRole('region', { name: 'Nonfiction', exact: true });
-    await card
+    const next = page.getByRole('button', { name: 'Next', exact: true });
+    // First visit: Next three times reaches Preferences, which saves Ada and fiction.
+    await page.goto('/setup');
+    for (let step = 0; step < 3; step += 1) {
+      await next.click();
+    }
+    await page
+      .getByRole('textbox', { name: 'Author name', exact: true })
+      .fill('Ada');
+    await page
+      .getByLabel('Default genre pack', { exact: true })
+      .fill('fiction');
+    await page
+      .getByRole('button', { name: 'Save preferences', exact: true })
+      .click();
+    await expect(page.getByText('Preferences: done')).toBeVisible();
+    await next.click();
+    // The first-project step: the nonfiction sample, a title and a folder, then Start from sample.
+    await page
+      .getByRole('combobox', { name: 'Sample', exact: true })
+      .selectOption('nonfiction');
+    await page.locator('input[name="sampleTitle"]').fill('Demo book');
+    await page.getByLabel('Folder name', { exact: true }).fill('demo-book');
+    await page
       .getByRole('button', { name: 'Start from sample', exact: true })
       .click();
-    await card.getByLabel('Folder name', { exact: true }).fill('demo-book');
-    await card.getByLabel('Title', { exact: true }).fill('Demo book');
-    await card
-      .getByRole('button', { name: 'Create from sample', exact: true })
-      .click();
+    await expect(page.getByText('Demo book: ok (active)')).toBeVisible();
+    await page.getByRole('button', { name: 'Finish', exact: true }).click();
     // The new project is active, and the page lands in it.
     await expect(page).toHaveURL(/\/projects\/demo-book\/chat$/);
     const project = join(process.env.SCRIBA_E2E_LIBRARY!, 'demo-book');
@@ -89,6 +151,58 @@ test('journey: setup, project from sample, agent run, accept change, manuscript'
     expect(await readFile(join(project, '.gitignore'), 'utf8')).toContain(
       '.scriba/',
     );
+    const done = (await (
+      await page.request.get('/api/setup-auth/status')
+    ).json()) as { steps: Record<string, string>; complete: boolean };
+    expect(done.steps.firstProject).toBe('done');
+    expect(done.complete).toBe(true);
+
+    // The settings page shows the same compose warning and one-liner as /setup.
+    await page.goto('/settings');
+    await expect(
+      page.getByText('does not report its compose version'),
+    ).toBeVisible();
+    await expect(
+      page.locator('code', {
+        hasText: 'docker run --rm -e SETUP=true bbartolome/scriba | bash',
+      }),
+    ).toBeVisible();
+
+    // Re-run visit: the saved values are shown, and the first-project step lists and creates nothing.
+    const writes: string[] = [];
+    const onRequest = (request: Request): void => {
+      if (
+        request.method() === 'POST' &&
+        new URL(request.url()).pathname.startsWith('/api/project-store/')
+      ) {
+        writes.push(request.url());
+      }
+    };
+    page.on('request', onRequest);
+    await page.goto('/setup');
+    await expect(page.getByText('Access: done')).toBeVisible();
+    await expect(page.getByText('Tailscale: skipped')).toBeVisible();
+    await expect(page.getByText('Model providers: skipped')).toBeVisible();
+    await expect(page.getByText('Preferences: done')).toBeVisible();
+    await expect(page.getByText('First project: done')).toBeVisible();
+    for (let step = 0; step < 3; step += 1) {
+      await next.click();
+    }
+    await expect(
+      page.getByRole('textbox', { name: 'Author name', exact: true }),
+    ).toHaveValue('Ada');
+    await expect(
+      page.getByLabel('Default genre pack', { exact: true }),
+    ).toHaveValue('fiction');
+    await next.click();
+    await expect(page.getByText('Demo book: ok (active)')).toBeVisible();
+    page.off('request', onRequest);
+    expect(writes).toEqual([]);
+    const entries = (await readdir(process.env.SCRIBA_E2E_LIBRARY!)).filter(
+      (name) => !name.startsWith('.'),
+    );
+    expect(entries).toEqual(['demo-book']);
+    await page.goto('/projects/demo-book/chat');
     expect(errors).toEqual([]);
   });
 
