@@ -3,7 +3,14 @@
 // 2 usage, an invalid case file, an unknown case, or port 8080 in use.
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import {
+  access,
+  mkdir,
+  readdir,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -247,9 +254,26 @@ async function isHealthy() {
   }
 }
 
-async function waitForApi(api) {
+// The API counts as ready only when this child is still alive, the setup URL is in the library, and /healthz answers
+// 200. A healthy answer from another process on the port is not enough.
+async function setupUrlExists(library) {
+  try {
+    await access(join(library, '.scriba', 'setup-url'));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function isReady(api, library) {
+  return (
+    !hasExited(api) && (await setupUrlExists(library)) && (await isHealthy())
+  );
+}
+
+async function waitForApi(api, library) {
   const deadline = Date.now() + HEALTH_TIMEOUT_MS;
-  while (!(await isHealthy())) {
+  while (!(await isReady(api, library))) {
     if (hasExited(api)) {
       throw new StepError(
         `the API exited before it was ready (code ${api.exitCode}, signal ${api.signalCode})`,
@@ -514,7 +538,12 @@ async function main(argv) {
   try {
     let session;
     try {
-      await waitForApi(api);
+      await waitForApi(api, library);
+      if (hasExited(api)) {
+        throw new StepError(
+          `the API exited before sign-in (code ${api.exitCode}, signal ${api.signalCode})`,
+        );
+      }
       session = await signIn(library);
     } catch (error) {
       // No report is written when the API does not start or sign-in fails. The folder goes with it.
