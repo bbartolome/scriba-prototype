@@ -5073,3 +5073,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Precedents:** the tick rule comes from SAU-16 (line 4937). GNP-01 (line 4903) supports "complete, box unticked, named cause" and states no tick rule.
 - **Unit changes (orchestrator, committed by path as `docs(GNP-11,PLT-22)`):** `units/PLT-22-examples-check-pack-layer.md` line 7 `blocked_by` adds GNP-11; `units/GNP-11-nonfiction-sample-entities.md` line 9 `unblocks` adds PLT-22; `modules/platform.md` line 23 adds GNP-11 to the PLT-22 blockers so the module agrees with the unit. Each change has a note with the old text.
 - **Decision, point 5 (confirmation, option (a)):** `examples/nonfiction/project.yaml` keeps no `styleProfile` key. This follows the done plan `plans/PST-11.md` line 51 and GNP-11's Decisions (lines 15 to 19). It is not a new Navigator decision. Option (b) would edit a done unit's file and create a merge-order dependency with CEX-08.
+
+## 2026-11-16 — TRG-13 — a failed check recorded: one timeout in the first `npm test` run; the rerun on the same commit passed
+
+- **Failed check (first run, `unit/TRG-13` at `4736e32`, while two other implementers ran their own installs and tests):** the web spec `apps/web/src/app/features/project-store/search-panel.spec.ts` (PST-14's file, not in the TRG-13 diff) failed its T1 with "Test timed out in 5000ms". Run alone it passes (2 of 2).
+- **Rerun on the same commit `4736e32`:** `npm test` exit 0 (root 248 tests; api 103 files and 383 tests; packs 4 files and 14 tests; web 59 files passed; e2e 1 file and 12 tests). `npm run lint` and `npm run build` exit 0 on the same commit.
+- **Result:** no code change. The patch id is still `9132f4ce943f2a7a94e2eda1b3b413e936ca589c`, so the approval holds. The timeout is a load-sensitive wait, the kind that unit SHL-22 covers; it is not a TRG-13 defect.
