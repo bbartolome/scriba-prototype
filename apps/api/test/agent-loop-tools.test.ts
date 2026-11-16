@@ -299,6 +299,8 @@ it('AC3: a tool is withdrawn on the third consecutive invalid call, and a valid 
       expect(await offeredTools(app, first)).toEqual([
         'list_files',
         'search_notes',
+        'write_file',
+        'edit_file',
       ]);
       expect(
         await callResult(
@@ -353,6 +355,8 @@ it('AC3: a tool is withdrawn on the third consecutive invalid call, and a valid 
         'list_files',
         'read_file',
         'search_notes',
+        'write_file',
+        'edit_file',
       ]);
       expect(
         (await callResult(app, second, 'read_file', '{}')).outcome,

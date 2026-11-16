@@ -5,6 +5,7 @@ import {
   issuesFromAjv,
   readableMessage,
 } from './readable-error';
+import { WriteOverlay } from './write-overlay';
 import {
   ToolArgumentError,
   type CompiledTool,
@@ -64,6 +65,8 @@ function argumentIssues(
 export class ToolRun {
   readonly runId: string;
   readonly projectId: string;
+  // The writes and captured bases of this run (AGL-12 D1, D2).
+  readonly overlay = new WriteOverlay();
   private readonly offered = new Map<string, CompiledTool>();
   private readonly invalidCounts = new Map<string, number>();
   private readonly withdrawn = new Set<string>();

@@ -7,6 +7,8 @@ import {
 import {
   EntitiesService,
   FilesService,
+  ProjectsService,
+  ProjectStoreService,
   SearchService,
 } from '../project-store/project-store.module';
 import {
@@ -39,13 +41,17 @@ export class AgentToolsService {
     private readonly catalog: CatalogService,
     private readonly executor: ExecutorService,
     private readonly entities: EntitiesService,
+    store: ProjectStoreService,
+    projects: ProjectsService,
   ) {
     // No coercion and no defaults: a string "yes" for a boolean is refused, and nothing is filled in (S1, D14).
     const ajv = new Ajv({ allErrors: true, strict: true });
-    this.tools = builtinTools(files, search).map((definition) => ({
-      definition,
-      validate: ajv.compile(definition.schema),
-    }));
+    this.tools = builtinTools(files, search, store, projects).map(
+      (definition) => ({
+        definition,
+        validate: ajv.compile(definition.schema),
+      }),
+    );
   }
 
   // The state of one agent run. The loop calls this once per run (S14).

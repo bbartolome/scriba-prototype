@@ -1,14 +1,23 @@
-import type { SearchResult } from '@bbartolome/scriba-contracts/project-store';
+import { statSync } from 'node:fs';
+import {
+  FILE_SIZE_CAP_BYTES,
+  type SearchResult,
+} from '@bbartolome/scriba-contracts/project-store';
 import { ModuleError } from '../../platform/platform.module';
 import {
   FilesService,
+  ProjectsService,
+  ProjectStoreService,
   SearchService,
+  type ResolvedProjectPath,
 } from '../../project-store/project-store.module';
+import type { ToolRun } from './tool-run';
 import { ToolArgumentError, type ToolDefinition } from './tool-types';
 
-// The built-in read tools of M1 (D6, D7) and search_notes (M2). Each calls the Project store in-process, with
-// project-relative paths, and none writes. The Project store checks the paths; a refusal comes back as a readable
-// tool error.
+// The built-in tools of the project family: list_files, read_file and search_notes (M1, M2), and write_file and
+// edit_file (AGL-12). The write tools never write to disk: they change the run overlay, and the overlay is proposed
+// at run end. Each tool calls the Project store in-process, with project-relative paths. The Project store checks
+// the paths; a refusal comes back as a readable tool error.
 
 interface ListFilesArgs {
   path?: string;
@@ -19,11 +28,30 @@ interface ReadFileArgs {
   path: string;
 }
 
+interface WriteFileArgs {
+  path: string;
+  content: string;
+}
+
+interface EditFileArgs {
+  path: string;
+  old: string;
+  new: string;
+}
+
 interface SearchNotesArgs {
   query: string;
   limit?: number;
   scope?: ('sources' | 'entities')[];
 }
+
+const FOLDER_MESSAGE =
+  'The path names a folder, so no file can be written there.';
+const SIZE_MESSAGE = 'The text is larger than the 5 MiB limit.';
+const NO_FILE_MESSAGE = 'No file was found at that path.';
+const NOT_FOUND_MESSAGE = 'The text to replace was not found in the file.';
+const TWICE_MESSAGE =
+  'The text to replace occurs more than once in the file. It must occur exactly once.';
 
 // The folder name in the summary (S11): the project root reads as `the project root`.
 function folderName(path: string): string {
@@ -33,9 +61,67 @@ function folderName(path: string): string {
   return segments.length === 0 ? 'the project root' : segments.join('/');
 }
 
+// The target of a path, checked as the Project store checks a read (S2): the project must be active, then it is
+// looked up, then the path is resolved. A refused path is a ModuleError; a project that is not found is a plain
+// error, which does not count as an invalid call.
+export function targetOf(
+  store: ProjectStoreService,
+  projects: ProjectsService,
+  projectId: string,
+  path: string,
+): ResolvedProjectPath {
+  store.requireActive(projectId);
+  const project = projects.find(projectId);
+  if (project === undefined) {
+    throw new Error(`Project ${projectId} was not found.`);
+  }
+  return store.resolvePath(project.root, path);
+}
+
+// Captures the base of a target at its first touch (AGL-12 D2): the disk text of an existing file, or null for a
+// file that does not exist. A later call changes nothing. Returns the captured base.
+export function captureOf(
+  run: ToolRun,
+  files: FilesService,
+  projectId: string,
+  target: ResolvedProjectPath,
+): string | null {
+  const known = run.overlay.baseOf(target.relativePath);
+  if (known !== undefined) return known;
+  const base = target.exists
+    ? files.read(projectId, target.relativePath).content
+    : null;
+  run.overlay.capture(target.relativePath, base);
+  return base;
+}
+
+// The root, or a path that is an existing folder, cannot hold a file.
+function isFolder(target: ResolvedProjectPath): boolean {
+  return (
+    target.isRoot || (target.exists && statSync(target.realPath).isDirectory())
+  );
+}
+
+function isTooLarge(text: string): boolean {
+  return Buffer.byteLength(text, 'utf8') > FILE_SIZE_CAP_BYTES;
+}
+
+// The offsets of the needle in the text, from the start, stopping at the second one. An overlapping match counts.
+function matchesOf(text: string, needle: string): number[] {
+  const found: number[] = [];
+  let at = text.indexOf(needle);
+  while (at !== -1 && found.length < 2) {
+    found.push(at);
+    at = text.indexOf(needle, at + 1);
+  }
+  return found;
+}
+
 export function builtinTools(
   files: FilesService,
   search: SearchService,
+  store: ProjectStoreService,
+  projects: ProjectsService,
 ): ToolDefinition[] {
   const listFiles: ToolDefinition = {
     name: 'list_files',
@@ -71,7 +157,8 @@ export function builtinTools(
   const readFile: ToolDefinition = {
     name: 'read_file',
     family: 'project',
-    description: 'Read the text of a project-relative file.',
+    description:
+      'Read the text of a project-relative file. A file this run has written shows the text it proposed.',
     schema: {
       type: 'object',
       properties: {
@@ -85,11 +172,131 @@ export function builtinTools(
     },
     handler: async (ctx, args) => {
       const input = args as ReadFileArgs;
+      const projectId = ctx.run.projectId;
+      const target = targetOf(store, projects, projectId, input.path);
+      // The overlay first (AGL-12 P4): a later read in the run sees the text the run wrote.
+      const pending = ctx.run.overlay.contentOf(target.relativePath);
+      if (pending !== undefined) {
+        return {
+          summary: `Read ${target.relativePath}.`,
+          output: { path: target.relativePath, content: pending },
+        };
+      }
       // The hash and the mtime are left out, to keep the model text short (S11).
-      const file = files.read(ctx.run.projectId, input.path);
+      const file = files.read(projectId, input.path);
+      if (!ctx.run.overlay.isCaptured(file.path)) {
+        ctx.run.overlay.capture(file.path, file.content);
+      }
       return {
         summary: `Read ${file.path}.`,
         output: { path: file.path, content: file.content },
+      };
+    },
+  };
+
+  const writeFile: ToolDefinition = {
+    name: 'write_file',
+    family: 'project',
+    description:
+      'Write the whole text of a project-relative file. The text is proposed for the author to accept; nothing is saved to disk yet.',
+    schema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          minLength: 1,
+          description: 'The project-relative path of the file.',
+        },
+        content: {
+          type: 'string',
+          description: 'The whole new text of the file.',
+        },
+      },
+      required: ['path', 'content'],
+      additionalProperties: false,
+    },
+    handler: async (ctx, args) => {
+      const input = args as WriteFileArgs;
+      const projectId = ctx.run.projectId;
+      const target = targetOf(store, projects, projectId, input.path);
+      if (isFolder(target)) {
+        throw new ToolArgumentError([
+          { path: '/path', message: FOLDER_MESSAGE },
+        ]);
+      }
+      if (isTooLarge(input.content)) {
+        throw new ToolArgumentError([
+          { path: '/content', message: SIZE_MESSAGE },
+        ]);
+      }
+      captureOf(ctx.run, files, projectId, target);
+      ctx.run.overlay.put(target.relativePath, input.content, ctx.callId);
+      return {
+        summary: `Wrote ${target.relativePath}.`,
+        output: { path: target.relativePath },
+      };
+    },
+  };
+
+  const editFile: ToolDefinition = {
+    name: 'edit_file',
+    family: 'project',
+    description:
+      'Replace one piece of text in a project-relative file. The text to replace must occur exactly once. The change is proposed for the author to accept; nothing is saved to disk yet.',
+    schema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          minLength: 1,
+          description: 'The project-relative path of the file.',
+        },
+        old: {
+          type: 'string',
+          minLength: 1,
+          description: 'The exact text to replace. It must occur exactly once.',
+        },
+        new: {
+          type: 'string',
+          description: 'The text that replaces it.',
+        },
+      },
+      required: ['path', 'old', 'new'],
+      additionalProperties: false,
+    },
+    handler: async (ctx, args) => {
+      const input = args as EditFileArgs;
+      const projectId = ctx.run.projectId;
+      const target = targetOf(store, projects, projectId, input.path);
+      // The base is captured before the match, so a refused edit still fixes the base (AGL-12 P6).
+      const base = captureOf(ctx.run, files, projectId, target);
+      const current = ctx.run.overlay.contentOf(target.relativePath) ?? base;
+      if (current === null) {
+        throw new ToolArgumentError([
+          { path: '/path', message: NO_FILE_MESSAGE },
+        ]);
+      }
+      const found = matchesOf(current, input.old);
+      if (found.length === 0) {
+        throw new ToolArgumentError([
+          { path: '/old', message: NOT_FOUND_MESSAGE },
+        ]);
+      }
+      if (found.length > 1) {
+        throw new ToolArgumentError([{ path: '/old', message: TWICE_MESSAGE }]);
+      }
+      const [at] = found;
+      const next =
+        current.slice(0, at) + input.new + current.slice(at + input.old.length);
+      if (isTooLarge(next)) {
+        throw new ToolArgumentError([
+          { path: '/content', message: SIZE_MESSAGE },
+        ]);
+      }
+      ctx.run.overlay.put(target.relativePath, next, ctx.callId);
+      return {
+        summary: `Edited ${target.relativePath}.`,
+        output: { path: target.relativePath },
       };
     },
   };
@@ -144,5 +351,5 @@ export function builtinTools(
     },
   };
 
-  return [listFiles, readFile, searchNotes];
+  return [listFiles, readFile, searchNotes, writeFile, editFile];
 }
