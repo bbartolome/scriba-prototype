@@ -4769,3 +4769,17 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 1 (steps 1 to 7; tests P1 to P5, E1 to E4): APPROVED. The reviewer ran `npx vitest run test/project-store-pending-propose.test.ts test/project-store-files-helpers.test.ts` (exit 0, 15 of 15) and `npx tsc --noEmit -p apps/api/tsconfig.json` (exit 0). The files changed match plan section 3. The reviewer judged each of the implementer's twelve stated differences acceptable.
 - Part 2 (steps 8 to 11; test L1 with L1(d); the F3 row; the sweep fixture key; the full gate): APPROVED. The reviewer ran the part's four vitest files (exit 0, 11 of 11), the full gate on 87e551b: build exit 0; `npm test -w @bbartolome/scriba-api` exit 0, 342 of 342 in 95 files; lint exit 0; prettier check exit 0. Logs in /tmp/pst15-review-p2/.
 - Next: step 3 for PST-15 (rebase onto main, the three checks, patch id again, criteria and plan marks, fast-forward).
+
+## 2026-11-16 — PST-15 — Rebase, checks, merged to main (orchestrator)
+
+- Rebase of unit/PST-15 onto main 9a24726 (`git rebase main`; the rescheduled pause was continued with `GIT_EDITOR=true git rebase --continue`, as before). No conflict. Commits now c7148fe (part 1) and 68f417e (part 2) on 9a24726. Patch id unchanged: `de3980a0ab3edccc12960ebfe7cecda274d42342`.
+- Checks on 68f417e, Node v26.13.0, npm 11.20.0, root scripts: `npm run lint` exit 0; `npm test` exit 0; `npm run build` exit 0. Logs in /tmp/pst15-step3/.
+- Criteria 1 to 5 ticked in units/PST-15-propose-pending-store.md; plan set to `status: done`. Commit 5e5d07a on unit/PST-15 (`docs(PST-15): criteria checked, plan status done`).
+- Fast-forward of main 9a24726 to 5e5d07a (`git merge --ff-only`). History stays linear.
+- The branch unit/PST-15 and its worktree /Users/bbartolome/workspace/scriba-prototype-wt/PST-15 are kept, as the cycle instruction says.
+
+## 2026-11-16 — MPR-13 — Opus revision READY: plan status planned (orchestrator)
+
+- The reviser (Opus, medium) applied the four Navigator decisions to plans/MPR-13.md: section 6 marks each point decided with the confirming lines; D4 adds the `reconcile$` subscription (point 2); section 4 adds M2 step i (a `reconcile$` tick, `doubles.events.tick`, test-doubles.ts line 159); section 5 and section 7 updated to main 59db8aa; section 8 "Review parts" with one part (steps 0 to 12); section 9 revision record.
+- Reviser's reply: READY, no unit change, YAGNI test "no action", NBSP count 0. Checked by the orchestrator: the four decisions match the Navigator record; the cited lines exist (sse-client.ts line 59, test-doubles.ts lines 121 and 159); AGL-25, SAU-13, SAU-14 and TRG-07 are `status: done` on main; no unit file changed.
+- Plan set to `status: planned` (commit follows, `docs(MPR-13): plan revised, status planned`). Next: a Haiku implementer for MPR-13 in the next cycle (the cycle stopped after PST-15 reached main).
