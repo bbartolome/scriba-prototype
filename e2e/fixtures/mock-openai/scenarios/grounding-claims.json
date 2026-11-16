@@ -1,0 +1,28 @@
+{
+  "steps": [
+    {
+      "match": {
+        "endpoint": "chat",
+        "lastMessageContent": "Task: extract claims."
+      },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "{\"claims\":[{\"text\":\"Bryan and Harter studied people learning telegraphy in 1897 and 1899.\",\"span\":{\"start\":293,\"end\":362}},{\"text\":\"The studies covered telegraph learners, not the adults this book is written for.\",\"span\":{\"start\":691,\"end\":771}},{\"text\":\"A learning plateau can be a stage of reorganising rather than an end.\",\"span\":{\"start\":980,\"end\":1049}},{\"text\":\"Most learners break through a plateau within six weeks.\",\"span\":{\"start\":1211,\"end\":1266}}]}"
+        ]
+      }
+    },
+    {
+      "match": {
+        "endpoint": "chat",
+        "lastMessageContent": "Task: judge claims."
+      },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "{\"verdicts\":[{\"claim\":0,\"verdict\":\"supported\",\"passage\":{\"path\":\"sources/learning-plateaus-notes.md\",\"offset\":350},\"reason\":\"The notes date the telegraph studies to 1897 and 1899.\"},{\"claim\":1,\"verdict\":\"supported\",\"passage\":{\"path\":\"sources/learning-plateaus-notes.md\",\"offset\":1027},\"reason\":\"The notes say the studies are narrow: telegraph learners only.\"},{\"claim\":2,\"verdict\":\"weak\",\"passage\":{\"path\":\"sources/learning-plateaus-notes.md\",\"offset\":853},\"reason\":\"The notes state the idea, but only for telegraph learners and from memory.\"},{\"claim\":3,\"verdict\":\"unsupported\",\"passage\":null,\"reason\":\"No source gives a duration for a plateau.\"}]}"
+        ]
+      }
+    }
+  ]
+}
