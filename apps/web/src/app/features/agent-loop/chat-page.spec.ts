@@ -31,6 +31,7 @@ import {
   AGENT_RUN_STOP_PATH,
   AGENT_RUNS_PATH,
   AGENT_SETTINGS_PATH,
+  entityResolvePath,
 } from './agent-contract';
 
 const RUN_STATE_BASE = {
@@ -530,5 +531,78 @@ describe('chat page', () => {
     expect(page(harness).textContent).toContain('step 2 of 12');
     expect(cards(harness)).toHaveLength(1);
     expect(cards(harness)[0]?.textContent).toContain('read_file');
+  });
+
+  it('W1 a card with sourcesUsed links each resolved source to the files route', async () => {
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    doubles.api.respond('GET', entityResolvePath('p1'), {
+      resolved: [
+        {
+          id: 'ada-lovelace',
+          type: 'person',
+          path: 'entities/ada-lovelace.md',
+          content: 'Ada wrote the first program.',
+        },
+      ],
+      errors: [{ id: 'ghost-entity', code: 'unknown' }],
+    });
+    const harness = await render(doubles);
+
+    push(doubles, 'run-started', { runId: 'r1', seq: 1 });
+    push(doubles, 'tool-call-started', {
+      runId: 'r1',
+      seq: 2,
+      callId: 'c1',
+      name: 'cold_open',
+      family: 'narrative',
+    });
+    push(doubles, 'tool-call-result', {
+      runId: 'r1',
+      seq: 3,
+      callId: 'c1',
+      summary: 'Drafted with cold_open.',
+      output: { kind: 'draft', content: 'Opening.' },
+      sourcesUsed: ['ada-lovelace', 'ghost-entity'],
+    });
+    await settle(harness);
+
+    push(doubles, 'tool-call-started', {
+      runId: 'r1',
+      seq: 4,
+      callId: 'c2',
+      name: 'cold_open',
+      family: 'narrative',
+    });
+    push(doubles, 'tool-call-result', {
+      runId: 'r1',
+      seq: 5,
+      callId: 'c2',
+      summary: 'Drafted with cold_open.',
+      output: { kind: 'draft', content: 'Opening again.' },
+      sourcesUsed: ['ada-lovelace'],
+    });
+    await settle(harness);
+
+    const resolves = doubles.api.requests.filter(
+      (request) => request.path === entityResolvePath('p1'),
+    );
+    expect(resolves.map((request) => request.params)).toEqual([
+      { ids: 'ada-lovelace' },
+      { ids: 'ghost-entity' },
+    ]);
+
+    const [first, second] = cards(harness);
+    for (const card of [first, second]) {
+      const links = Array.from(
+        card?.querySelectorAll('section[aria-label="Sources"] a') ?? [],
+      );
+      expect(links).toHaveLength(1);
+      expect(links[0]?.textContent?.trim()).toBe('entities/ada-lovelace.md');
+      expect(links[0]?.getAttribute('href')).toBe(
+        '/projects/p1/files?path=entities%2Fada-lovelace.md',
+      );
+      expect(card?.textContent).not.toContain('ghost-entity');
+    }
   });
 });

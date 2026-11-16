@@ -365,8 +365,28 @@ export function errorText(error: ChatCardError): string {
   return `Attempt ${error.attempt}: ${error.message}${marker}`;
 }
 
+/**
+ * The project-relative paths of a card's sources, in the order of sourcesUsed. An ID with no path in `paths` is
+ * left out. Undefined when the card has no sourcesUsed.
+ */
+export function cardSources(
+  card: ChatCard,
+  paths: ReadonlyMap<string, string>,
+): string[] | undefined {
+  if (card.sourcesUsed === undefined) {
+    return undefined;
+  }
+  return card.sourcesUsed.flatMap((id) => {
+    const path = paths.get(id);
+    return path === undefined ? [] : [path];
+  });
+}
+
 /** The shared card's view of one chat card. The host never passes an event to the card. */
-export function cardView(card: ChatCard): ToolCallView {
+export function cardView(
+  card: ChatCard,
+  sources?: readonly string[],
+): ToolCallView {
   return {
     name: card.name,
     status: card.status,
@@ -374,5 +394,6 @@ export function cardView(card: ChatCard): ToolCallView {
     arguments: card.arguments,
     output: outputOf(card.output),
     error: card.error === undefined ? undefined : errorText(card.error),
+    sources,
   };
 }

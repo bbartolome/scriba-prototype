@@ -11,6 +11,7 @@ import type {
   ConversationHistory,
   ConversationList,
 } from '@bbartolome/scriba-contracts/agent-loop';
+import type { EntityResolution } from '@bbartolome/scriba-contracts/project-store';
 import type { ApiPath, ResponseSchema } from '../../shell';
 
 /** `POST` the start of a run (`AGENT_RUNS_ROUTE`). */
@@ -27,12 +28,23 @@ export const AGENT_CONVERSATION_PATH: ApiPath =
   '/api/agent-loop/conversations/:conversationId';
 /** `GET` and `POST` the agent settings (`AGENT_SETTINGS_ROUTE`). */
 export const AGENT_SETTINGS_PATH: ApiPath = '/api/agent-loop/settings';
+/** `GET` the entities of a project by ID (`PROJECT_ENTITY_RESOLVE_ROUTE`). A template: see `entityResolvePath`. */
+export const PROJECT_ENTITY_RESOLVE_PATH: ApiPath =
+  '/api/project-store/projects/:projectId/entities/resolve';
 
 /** Fills the history route's `:conversationId` with the id, encoded as one path segment. */
 export function conversationPath(conversationId: string): ApiPath {
   return AGENT_CONVERSATION_PATH.replace(
     ':conversationId',
     encodeURIComponent(conversationId),
+  ) as ApiPath;
+}
+
+/** Fills the resolve route's `:projectId` with the id, encoded as one path segment. */
+export function entityResolvePath(projectId: string): ApiPath {
+  return PROJECT_ENTITY_RESOLVE_PATH.replace(
+    ':projectId',
+    encodeURIComponent(projectId),
   ) as ApiPath;
 }
 
@@ -198,6 +210,34 @@ function isHistory(value: unknown): boolean {
   );
 }
 
+/** The body of GET .../entities/resolve: each resolved entity has an ID, a type, a path and its content. */
+function isEntityResolution(value: unknown): boolean {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const resolved = value['resolved'];
+  const errors = value['errors'];
+  return (
+    Array.isArray(resolved) &&
+    resolved.every(
+      (entry: unknown) =>
+        isRecord(entry) &&
+        isFilled(entry['id']) &&
+        isFilled(entry['type']) &&
+        isFilled(entry['path']) &&
+        isText(entry['content']),
+    ) &&
+    Array.isArray(errors) &&
+    errors.every(
+      (entry: unknown) =>
+        isRecord(entry) &&
+        isFilled(entry['id']) &&
+        (entry['code'] === 'unknown' || entry['code'] === 'duplicate') &&
+        isOptional(entry['paths'], Array.isArray)
+    )
+  );
+}
+
 function isConversationList(value: unknown): boolean {
   if (!isRecord(value)) {
     return false;
@@ -265,6 +305,10 @@ export const conversationHistoryReply: ResponseSchema<ConversationHistory> =
 
 /** The bare section, the same for GET and POST .../settings. */
 export const settingsReply: ResponseSchema<AgentSettings> = replyOf(isSettings);
+
+/** The body of GET .../entities/resolve (the source paths of a card). */
+export const entityResolutionReply: ResponseSchema<EntityResolution> =
+  replyOf(isEntityResolution);
 
 /** The stop reply is ignored, so every body is accepted (D8). */
 export const anyReply: ResponseSchema<unknown> = replyOf(() => true);

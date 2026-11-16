@@ -1,4 +1,8 @@
 import {
+  PROJECT_ENTITY_RESOLVE_ROUTE,
+  entityResolutionSchema,
+} from '@bbartolome/scriba-contracts/project-store';
+import {
   AGENT_CARD_STATUSES,
   AGENT_CONVERSATION_ROUTE,
   AGENT_CONVERSATIONS_ROUTE,
@@ -33,7 +37,10 @@ import {
   conversationHistoryReply,
   conversationListReply,
   conversationPath,
+  entityResolutionReply,
+  entityResolvePath,
   isChatEvent,
+  PROJECT_ENTITY_RESOLVE_PATH,
   RUN_END_REASON_VALUES,
   RUN_STATUS_VALUES,
   runStateReply,
@@ -358,5 +365,56 @@ describe('agent contract copies', () => {
     });
     expect(agentLoopEventSchema.safeParse(grounding).success).toBe(true);
     expect(isChatEvent(grounding)).toBe(false);
+  });
+
+  it('W2 the entity resolve path and reply guard agree with the project-store contract', () => {
+    expect(PROJECT_ENTITY_RESOLVE_PATH).toBe(PROJECT_ENTITY_RESOLVE_ROUTE);
+    expect(entityResolvePath('p 1/x')).toBe(
+      '/api/project-store/projects/p%201%2Fx/entities/resolve',
+    );
+
+    agreesWithContract(
+      entityResolutionReply,
+      entityResolutionSchema,
+      [
+        {
+          resolved: [
+            {
+              id: 'ada-lovelace',
+              type: 'person',
+              path: 'entities/ada-lovelace.md',
+              content: 'Ada wrote the first program.',
+            },
+          ],
+          errors: [],
+        },
+        { resolved: [], errors: [{ id: 'ghost-entity', code: 'unknown' }] },
+        {
+          resolved: [],
+          errors: [
+            {
+              id: 'ada-lovelace',
+              code: 'duplicate',
+              paths: ['entities/a.md', 'entities/b.md'],
+            },
+          ],
+        },
+      ],
+      [
+        null,
+        { resolved: [] },
+        {
+          resolved: [
+            {
+              id: 'ada-lovelace',
+              type: 'person',
+              content: 'Ada wrote the first program.',
+            },
+          ],
+          errors: [],
+        },
+        { resolved: [], errors: [{ id: 'ghost-entity', code: 'missing' }] },
+      ],
+    );
   });
 });

@@ -1,4 +1,11 @@
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import type {
   AgentRunState,
@@ -6,6 +13,7 @@ import type {
   AgentSettingsUpdate,
   ConversationSummary,
 } from '@bbartolome/scriba-contracts/agent-loop';
+import type { EntityResolution } from '@bbartolome/scriba-contracts/project-store';
 import { catchError, filter, map, of, Subject, switchMap, tap } from 'rxjs';
 import {
   ActiveProjectSignal,
@@ -30,6 +38,8 @@ import {
   conversationHistoryReply,
   conversationListReply,
   conversationPath,
+  entityResolutionReply,
+  entityResolvePath,
   isChatEvent,
   runStateReply,
   settingsReply,
@@ -43,6 +53,7 @@ import {
   canContinue,
   type ChatState,
   type ChatTurn,
+  cardSources,
   cardView,
   stepLabel,
   turnsOfHistory,
@@ -368,6 +379,10 @@ export class ChatPage {
   protected readonly stepCapText = signal('');
   protected readonly researchOn = signal(false);
   protected readonly endpointText = signal('');
+  /** The project-relative path of each source entity the page has resolved (OP1, step 9 b). */
+  protected readonly sourcePaths = signal<ReadonlyMap<string, string>>(
+    new Map(),
+  );
 
   protected readonly textOf = textOf;
   protected readonly checkedOf = checkedOf;
@@ -388,7 +403,7 @@ export class ChatPage {
       turn,
       cards: turn.cards.map((card) => ({
         key: card.callId,
-        view: cardView(card),
+        view: cardView(card, cardSources(card, this.sourcePaths())),
       })),
       reviewHref:
         project !== undefined && turn.pendingChangeIds.length > 0
@@ -403,8 +418,34 @@ export class ChatPage {
   private refreshing = false;
   private buffered: ChatEvent[] = [];
   private loadedFor = this.projectId();
+  /** The source IDs already asked for, as `project` and `id` joined, so each is asked for once. */
+  private readonly requestedSources = new Set<string>();
 
   constructor() {
+    // Each source ID of the stream is resolved to its path, once per project (OP1, step 9 b). An ID that is not
+    // resolved, or a failed request, leaves its ID without a path and shows no notice.
+    effect(() => {
+      const project = this.projectId();
+      if (project === undefined) {
+        return;
+      }
+      for (const card of this.chat().turns.flatMap((turn) => turn.cards)) {
+        for (const id of card.sourcesUsed ?? []) {
+          const key = `${project}\n${id}`;
+          if (this.requestedSources.has(key)) {
+            continue;
+          }
+          this.requestedSources.add(key);
+          this.api
+            .get(entityResolvePath(project), entityResolutionReply, { ids: id })
+            .subscribe({
+              next: (reply) => this.takeResolution(project, reply),
+              error: () => undefined,
+            });
+        }
+      }
+    });
+
     this.refreshes
       .pipe(
         tap(() => {
@@ -578,6 +619,22 @@ export class ChatPage {
     this.notice.set(undefined);
     this.buffered = [];
     this.chat.set({ turns: [] });
+    this.sourcePaths.set(new Map());
+    this.requestedSources.clear();
+  }
+
+  /** Takes one resolution of a source: each resolved path is kept, unless the project has changed since the request. */
+  private takeResolution(project: string, reply: EntityResolution): void {
+    if (this.projectId() !== project) {
+      return;
+    }
+    this.sourcePaths.update((paths) => {
+      const next = new Map(paths);
+      for (const entity of reply.resolved) {
+        next.set(entity.id, entity.path);
+      }
+      return next;
+    });
   }
 
   /** Takes the settings: the step cap goes to the view, and the form shows the stored values. */
