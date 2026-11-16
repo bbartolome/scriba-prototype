@@ -1,0 +1,17 @@
+{
+  "arguments": {
+    "intent": "Turn the chapter notes into a recipe that sketches a story graph.",
+    "view": "recipe",
+    "includeCatalogue": true,
+    "entityIds": ["keeper"],
+    "files": ["drafts/chapter-notes.md"]
+  },
+  "entities": [
+    {
+      "ref": "keeper",
+      "type": "person",
+      "path": "entities/keeper.md",
+      "content": "The keeper tends the lighthouse alone and keeps a log of every ship."
+    }
+  ]
+}

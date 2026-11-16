@@ -21,5 +21,5 @@ unblocks: [GNP-05, "Agent loop graph proposal"]
 - The Agent loop writes the result as a pending change aimed at `graphs/`, validated against the graph schema (retry on failure is the Agent loop's).
 
 ## Acceptance criteria
-- [ ] `propose_graph` validates; calling it without `view` returns an Ajv error naming `view`.
-- [ ] Golden tests: with the mock scripted to return a story graph and a recipe, each output parses against the Graph runner's graph schema, and the rendered prompt matches its golden (the recipe-view golden includes the tool catalogue).
+- [x] `propose_graph` validates; calling it without `view` returns an Ajv error naming `view`.
+- [x] Golden tests: with the mock scripted to return a story graph and a recipe, each output parses against the Graph runner's graph schema, and the rendered prompt matches its golden (the recipe-view golden includes the tool catalogue).

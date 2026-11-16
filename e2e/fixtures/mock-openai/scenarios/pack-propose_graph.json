@@ -1,0 +1,28 @@
+{
+  "steps": [
+    {
+      "match": {
+        "endpoint": "chat",
+        "lastMessageContent": "Map how the keeper meets the assistant on the night of the storm."
+      },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "{\"schemaVersion\":1,\"view\":\"story\",\"name\":\"The storm night\",\"nodes\":[{\"id\":\"keeper\",\"kind\":\"entity\",\"label\":\"The keeper\",\"path\":\"entities/keeper.md\",\"position\":{\"x\":0,\"y\":0}},{\"id\":\"assistant\",\"kind\":\"entity\",\"label\":\"The assistant\",\"path\":\"entities/assistant.md\",\"position\":{\"x\":0,\"y\":160}},{\"id\":\"arrival\",\"kind\":\"scene\",\"label\":\"Arrival\",\"path\":\"drafts/arrival.md\",\"position\":{\"x\":320,\"y\":80}},{\"id\":\"first-meeting\",\"kind\":\"beat\",\"label\":\"They meet at the door\",\"position\":{\"x\":640,\"y\":80}}],\"edges\":[{\"id\":\"e1\",\"from\":\"arrival\",\"to\":\"first-meeting\",\"relation\":\"containment\"},{\"id\":\"e2\",\"from\":\"keeper\",\"to\":\"arrival\",\"relation\":\"appears in\"},{\"id\":\"e3\",\"from\":\"assistant\",\"to\":\"arrival\",\"relation\":\"appears in\"}]}"
+        ]
+      }
+    },
+    {
+      "match": {
+        "endpoint": "chat",
+        "lastMessageContent": "Turn the chapter notes into a recipe that sketches a story graph."
+      },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "{\"schemaVersion\":1,\"view\":\"recipe\",\"name\":\"Chapter notes to story graph\",\"nodes\":[{\"id\":\"notes\",\"kind\":\"input\",\"position\":{\"x\":0,\"y\":0},\"params\":{\"type\":\"text\",\"label\":\"Chapter notes\"}},{\"id\":\"cast\",\"kind\":\"input\",\"position\":{\"x\":0,\"y\":160},\"params\":{\"type\":\"entity\",\"label\":\"Cast\",\"entityKind\":\"person\"}},{\"id\":\"sketch\",\"kind\":\"tool\",\"position\":{\"x\":320,\"y\":80},\"tool\":\"propose_graph\"},{\"id\":\"story-graph\",\"kind\":\"output\",\"position\":{\"x\":640,\"y\":80},\"params\":{\"label\":\"Story graph\"}}],\"edges\":[{\"id\":\"w1\",\"from\":\"notes.out\",\"to\":\"sketch.intent\"},{\"id\":\"w2\",\"from\":\"cast.out\",\"to\":\"sketch.entityIds\"},{\"id\":\"w3\",\"from\":\"sketch.output\",\"to\":\"story-graph.in\"}]}"
+        ]
+      }
+    }
+  ]
+}

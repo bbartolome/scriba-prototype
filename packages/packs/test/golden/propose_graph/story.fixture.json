@@ -1,0 +1,23 @@
+{
+  "arguments": {
+    "intent": "Map how the keeper meets the assistant on the night of the storm.",
+    "view": "story",
+    "includeCatalogue": false,
+    "entityIds": ["keeper", "assistant"],
+    "files": ["drafts/arrival.md"]
+  },
+  "entities": [
+    {
+      "ref": "keeper",
+      "type": "person",
+      "path": "entities/keeper.md",
+      "content": "The keeper tends the lighthouse alone and keeps a log of every ship."
+    },
+    {
+      "ref": "assistant",
+      "type": "person",
+      "path": "entities/assistant.md",
+      "content": "The assistant arrives on the night of the storm to help with the lamp."
+    }
+  ]
+}

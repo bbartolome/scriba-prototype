@@ -1,6 +1,6 @@
 ---
 id: GNP-04
-status: planned
+status: done
 ---
 # GNP-04 plan — core/propose_graph tool with golden tests for both views
 

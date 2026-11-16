@@ -1,0 +1,74 @@
+schemaVersion: 1
+name: propose_graph
+description: Sketch a story graph or a recipe from a plain-language intent.
+inputs:
+  type: object
+  properties:
+    intent:
+      type: string
+      title: Intent
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    view:
+      type: string
+      title: View
+      enum: [story, recipe]
+      x-scriba-control: select
+    includeCatalogue:
+      type: boolean
+      title: Include the tool catalogue
+      description: Set to true when view is recipe, false when view is story.
+      x-scriba-control: toggle
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    files:
+      type: array
+      title: Files
+      items:
+        type: string
+  required: [intent, view, includeCatalogue]
+output: graph
+enabled: true
+prompt: |
+  You sketch a Scriba graph file from the author's intent.
+
+  Intent: {{intent}}
+  View: {{view}}
+
+  Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if files}}
+  Files:
+  {{#each files}}
+  - {{this}}
+  {{/each}}
+  {{/if}}
+
+  Steps:
+  1. Read the intent and the material.
+  2. Write one graph file with the keys schemaVersion (always 1), view (the view above), name (a short title), nodes and edges.
+  3. Node ids and edge ids are unique and match ^[a-z0-9][a-z0-9-]*$. Every node has a position {"x": <number>, "y": <number>}.
+  4. If the view is story: each node is {"id", "kind", "label", "path" (optional), "position"} with kind entity, scene or beat. Each edge is {"id", "from", "to", "relation" (optional)}, where from and to are node ids and relation is free text. Suggested relations: order (from precedes to), causality (from causes to), containment (from contains to).
+  5. If the view is recipe: each node is {"id", "kind", "position", "tool" (tool nodes only), "params"} with kind input, tool or output.
+     - An input node has params {"type": "text", "entity" or "style", "label", "entityKind" (optional)} and one output port with key out.
+     - A tool node has "tool", the name of one tool in the tool list below, and no params: the author sets each tool's settings on the canvas. Its input ports are the input keys the list gives; its output port has key output and type text.
+     - An output node has optional params {"label", "path"} and one input port with key in.
+     - Each edge is a wire {"id", "from", "to"} with no relation. from and to are port ids written <nodeId>.<key>. Each input port takes at most one wire, and the two ports of a wire have the same type.
+
+  {{#if includeCatalogue}}
+  Tools for a recipe:
+  {{toolCatalog}}
+  {{/if}}
+
+  Constraints:
+  - Use only the material above.
+  - Give a path only where the material gives it: an entity node takes the path in its entity's header line, and a scene or beat node takes a path from the files list. Never invent a path; leave path out when none fits.
+  - Return JSON only: one graph file, with no prose before or after it.
