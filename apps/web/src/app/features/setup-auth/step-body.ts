@@ -1,14 +1,18 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import type {
   Identity,
   SetupStep,
 } from '@bbartolome/scriba-contracts/setup-auth';
+import { ProvidersPanel } from '../providers/providers.routes';
 
 /**
- * The body of one wizard step. Access shows the current identity. The other four steps are
- * placeholders for now; each of their own units replaces its own case.
+ * The body of one wizard step. Access shows the current identity. The providers case embeds the
+ * Model providers panel, or a link to `/providers` until that route exists. The other three steps
+ * are placeholders for now; each of their own units replaces its own case.
  */
 @Component({
+  imports: [ProvidersPanel, RouterLink],
   selector: 'app-step-body',
   template: `
     @switch (step()) {
@@ -20,7 +24,11 @@ import type {
         <p>Tailscale is unavailable.</p>
       }
       @case ('providers') {
-        <p>Model providers are not set up yet.</p>
+        @if (panelAvailable()) {
+          <app-providers-panel />
+        } @else {
+          <p><a routerLink="/providers">Model providers</a></p>
+        }
       }
       @case ('preferences') {
         <p>Preferences are not set up yet.</p>
@@ -32,8 +40,14 @@ import type {
   `,
 })
 export class StepBody {
+  private readonly router = inject(Router);
   readonly step = input.required<SetupStep>();
   readonly who = input.required<Identity>();
+
+  /** Whether the root route table has the `/providers` route, which MPR-11 adds. */
+  protected panelAvailable(): boolean {
+    return this.router.config.some((route) => route.path === 'providers');
+  }
 
   protected identityText(): string {
     const who = this.who();
