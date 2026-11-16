@@ -125,5 +125,18 @@ export const APP_ROUTES: Routes = withDeviceGate([
         (feature) => feature.toolsRoutes,
       ),
   },
+  {
+    path: 'providers',
+    pathMatch: 'full',
+    data: {
+      scope: 'app',
+      minDeviceClass: 'phone',
+      nav: { label: 'Providers', icon: 'tune', order: 50 },
+    } satisfies ShellRouteData,
+    loadChildren: () =>
+      import('./features/providers/providers.routes').then(
+        (feature) => feature.providersRoutes,
+      ),
+  },
   { path: '**', component: NotFoundPage },
 ]);

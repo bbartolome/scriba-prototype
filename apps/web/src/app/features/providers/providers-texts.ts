@@ -11,6 +11,7 @@ export function maskedKey(hint: string): string {
 
 export const TEXTS = {
   heading: 'Providers',
+  pageHeading: 'Model providers',
   listLabel: 'Providers',
   loading: 'Loading providers...',
   loadProvidersFailed: 'The providers could not be loaded.',
