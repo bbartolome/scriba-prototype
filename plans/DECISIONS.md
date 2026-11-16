@@ -4799,3 +4799,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Fast-forward: main f5ed26e to 7989826 (`git merge --ff-only unit/MPR-13`). History stays linear; the only merge commit on main is the old cf7a8bb (PLT-01).
 - Branch unit/MPR-13 and its worktree removed. MPR-13 unblocks no unit; with it, the phase `project-override` of Model providers is closed.
 - The uncommitted note units/SAU-12-providers-step.md stays in the main working tree, untouched.
+
+## 2026-11-16 — SHL-15 — PLAN DOES NOT WORK, implementer report (orchestrator)
+
+- Report: the implementer stopped at plan section 3 step 10 (the bundle record) and at the premise of plan section 2 that the layout is reached only through the lazy `/core-gate` chunk. Worktree `/Users/bbartolome/workspace/scriba-prototype-wt/SHL-15`, branch `unit/SHL-15`.
+- Commits on `unit/SHL-15`: 82d5ac2 (`feat(SHL-15)`, tests C1 and X1), 4136e42 (`feat(SHL-15)`, mount on the core-gate query, test M1), 2e891eb (`style(SHL-15)`, prettier). Passed: C1, X1, M1, the existing core-gate test, the web unit suite (57 files, 358 tests), web and e2e lint, the e2e type check, prettier. Not run: C2, X2, the full e2e suite.
+- Cause: the production build fails. `npm run build -w @bbartolome/scriba-web` (run by `e2e/harness/global-setup.ts`) reports `bundle initial exceeded maximum budget. Budget 1.00 MB was not met by 102.45 kB with a total of 1.10 MB`. The initial total on 8b7a5f2 is 582.37 kB. The mount in `core-gate.ts` (decision D14) imports `EditorLayout`, which puts the editor and CodeMirror (the string `Markdown source for` is in `main-*.js`) into the initial bundle. Scratch copies outside the worktree show that restoring the base `core-gate.ts` brings the total back to 582.37 kB. The plan changes no budget, and `apps/web/angular.json` is not in plan section 2.
+- The implementer also reports: the build of the main checkout was denied by the permission classifier; the base size comes from a scratch copy of 8b7a5f2. The untracked file `e2e/specs/editor-touch.e2e.ts` in the worktree is not committed.
+- Options the implementer names: (a) lazy-load the editor layout in `core-gate.ts` (a dynamic import or a deferred block); (b) a change of the budget in `apps/web/angular.json`, outside plan section 2.
+- Next: the plan goes back to an Opus reviser (status draft). It examines the commits on `unit/SHL-15`. When the plan is `planned` again, a new implementer continues from those commits.
