@@ -4631,3 +4631,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - The Opus reviser replied READY. No unit change was needed, so none is committed, and the YAGNI test did not apply. The corrections are in plans/TRG-07.md, revision 1 (note in the header): the compile gate of step 4 runs only when there is no error from inputs-subset, reserved-output, hint-unknown or hint-consistency; cold_open has three warnings (D21, X2); the X1 and X3 fixtures are changed so that the lint gates are actually tested; one test per criterion (C2 to C5); the test precedent is apps/api/test/tool-registry-template.test.ts line 10; the plan statuses in 8a are updated.
 - Review parts: 2 parts. Part 1: the lint library, the fixtures and the runtime gates (criteria 1, 3 and 4). Part 2: the CLI and the root wiring (criteria 2 and 5).
 - Status set to planned.
+
+## 2026-11-16 — AGL-25 — Merged to main (orchestrator)
+
+- Step 3: the approved patch id `079103303b50048bbd36ff6214db4d29376152d2` held through two clean rebases (onto cad97b7, then onto 61fbfeb); patch id unchanged both times. Checks on 264f397 (Node v26.13.0): `npm run lint` exit 0; `npm test` exit 0 (contracts 248 of 248, API 300 of 300, web 338 of 338, scripts 12 of 12); `npm run build` exit 0. The later rebase changed no code: the diff outside plans/ and units/ against the tested head is empty.
+- Step 8: criteria 1 and 2 ticked on unit/AGL-25 (T1 for criterion 1; T2 and T3 for criterion 2). Plan status set to done. Commit 5ffca60 on the branch.
+- Step 9: `git merge --ff-only unit/AGL-25` on main, 61fbfeb to 5ffca60. This is the first unit on main in this session, so the limit applies from here.
+- M1 (real model) was not run: the host has no Ollama. It does not gate the tick (plan R6).
+- Step 10: the branch unit/AGL-25 is deleted. The worktree removal is recorded in the session summary.
