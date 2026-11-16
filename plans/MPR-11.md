@@ -1,6 +1,6 @@
 ---
 id: MPR-11
-status: planned
+status: done
 ---
 # MPR-11 plan — `/providers` route: lazy app-level entry, nav item, page that hosts the providers panel
 

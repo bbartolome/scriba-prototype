@@ -18,5 +18,5 @@ Merging this **closes Model providers `phase:settings-ui`**.
 - Responsive: usable on phone for checking and switching the app default over the tailnet (story 31); desktop-first otherwise.
 
 ## Acceptance criteria (the `phase:settings-ui` checklist)
-- [ ] MPR-09 and MPR-10 criteria pass on `main`.
-- [ ] The route is lazy-loaded, appears in nav, and is usable at phone width for switching the app default.
+- [x] MPR-09 and MPR-10 criteria pass on `main`.
+- [x] The route is lazy-loaded, appears in nav, and is usable at phone width for switching the app default.
