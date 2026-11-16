@@ -32,10 +32,11 @@ const NO_USABLE_PROVIDER_TEXT =
  * The setup wizard at `/setup`. It shows who the caller is, then the five steps with their states.
  * Next moves on and writes nothing. Mark done and Skip write the step's state and move on. On the
  * providers step, Continue writes done only when a usable provider exists, and otherwise shows a
- * message; its Skip writes skipped. On the first-project step, an activation marks the step done, and
- * Mark done there is enabled only while a listed project is active. Skip the rest and Finish complete
- * setup and go to the landing. A 401 shows the sign-in notice; the two tailnet codes show their
- * explanations; any other error shows its message.
+ * message; its Skip writes skipped. On the preferences step, Save writes the changed fields and
+ * marks the step done, Skip writes skipped, and there is no Mark done. On the first-project step, an
+ * activation marks the step done, and Mark done there is enabled only while a listed project is
+ * active. Skip the rest and Finish complete setup and go to the landing. A 401 shows the sign-in
+ * notice; the two tailnet codes show their explanations; any other error shows its message.
  */
 @Component({
   imports: [ComposeWarning, MatButton, SignInNotice, StepBody],
@@ -75,6 +76,8 @@ const NO_USABLE_PROVIDER_TEXT =
           (firstProjectActive)="onFirstProjectActive($event)"
           (firstProjectActivated)="onFirstProjectActivated()"
           (firstProjectFailed)="onFirstProjectFailed($event)"
+          (preferencesSaved)="onPreferencesSaved()"
+          (preferencesFailed)="onPreferencesFailed($event)"
         />
         <div class="controls">
           @if (isLastStep()) {
@@ -104,6 +107,14 @@ const NO_USABLE_PROVIDER_TEXT =
               >
                 Continue
               </button>
+              <button
+                mat-stroked-button
+                [disabled]="busy()"
+                (click)="writeState('skipped')"
+              >
+                Skip
+              </button>
+            } @else if (step() === 'preferences') {
               <button
                 mat-stroked-button
                 [disabled]="busy()"
@@ -179,29 +190,23 @@ export class SetupPage {
   protected writeState(state: 'done' | 'skipped'): void {
     const contract = this.contract;
     if (contract === undefined || this.busy()) return;
-    const path = contract.SETUP_STEP_ROUTE.replace(
-      ':step',
-      this.step(),
-    ) as ApiPath;
     this.begin();
-    this.api
-      .post(path, { state }, contract.setupStatusSchema)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (status) => {
-          this.status.set(status);
-          this.busy.set(false);
-          if (this.isLastStep()) {
-            this.finish();
-          } else {
-            this.moveOn();
-          }
-        },
-        error: (error: unknown) => {
-          this.busy.set(false);
-          this.fail(error);
-        },
-      });
+    this.postStep(state, () =>
+      this.isLastStep() ? this.finish() : this.moveOn(),
+    );
+  }
+
+  /** The preferences step saved its fields: marks the step done and stays on the step. */
+  protected onPreferencesSaved(): void {
+    const contract = this.contract;
+    if (contract === undefined || this.busy()) return;
+    this.begin();
+    this.postStep('done', () => undefined);
+  }
+
+  /** The preferences step failed to read or save: shows the error. */
+  protected onPreferencesFailed(error: unknown): void {
+    this.fail(error);
   }
 
   /**
@@ -300,6 +305,30 @@ export class SetupPage {
         next: (status) => {
           this.status.set(status);
           this.busy.set(false);
+        },
+        error: (error: unknown) => {
+          this.busy.set(false);
+          this.fail(error);
+        },
+      });
+  }
+
+  /** Posts the state of the current step. The caller has called begin(). */
+  private postStep(state: 'done' | 'skipped', after: () => void): void {
+    const contract = this.contract;
+    if (contract === undefined) return;
+    const path = contract.SETUP_STEP_ROUTE.replace(
+      ':step',
+      this.step(),
+    ) as ApiPath;
+    this.api
+      .post(path, { state }, contract.setupStatusSchema)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (status) => {
+          this.status.set(status);
+          this.busy.set(false);
+          after();
         },
         error: (error: unknown) => {
           this.busy.set(false);
