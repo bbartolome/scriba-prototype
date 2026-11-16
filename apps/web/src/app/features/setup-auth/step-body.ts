@@ -6,15 +6,17 @@ import type {
 } from '@bbartolome/scriba-contracts/setup-auth';
 import { FirstProjectStep } from './first-project-step';
 import { ProvidersPanel } from '../providers/providers.routes';
+import { PreferencesStep } from './preferences-step';
 
 /**
  * The body of one wizard step. Access shows the current identity. The providers case embeds the
  * Model providers panel, or a link to `/providers` until that route exists. The first-project case
- * embeds the first-project step and forwards its three events. The preferences case is a placeholder
- * for now; its own unit replaces it.
+ * embeds the first-project step and forwards its three events. Preferences embeds its own step
+ * component, which reports a save or a failure to the page. The other two steps are placeholders
+ * for now; each of their own units replaces its own case.
  */
 @Component({
-  imports: [FirstProjectStep, ProvidersPanel, RouterLink],
+  imports: [FirstProjectStep, ProvidersPanel, RouterLink, PreferencesStep],
   selector: 'app-step-body',
   template: `
     @switch (step()) {
@@ -33,7 +35,10 @@ import { ProvidersPanel } from '../providers/providers.routes';
         }
       }
       @case ('preferences') {
-        <p>Preferences are not set up yet.</p>
+        <app-preferences-step
+          (saved)="preferencesSaved.emit()"
+          (failed)="preferencesFailed.emit($event)"
+        />
       }
       @case ('firstProject') {
         <app-first-project-step
@@ -52,6 +57,12 @@ export class StepBody {
   readonly firstProjectActive = output<boolean>();
   readonly firstProjectActivated = output<void>();
   readonly firstProjectFailed = output<unknown>();
+
+  /** The preferences step saved its fields. */
+  readonly preferencesSaved = output<void>();
+
+  /** The preferences step failed to read or save. */
+  readonly preferencesFailed = output<unknown>();
 
   /** Whether the root route table has the `/providers` route, which MPR-11 adds. */
   protected panelAvailable(): boolean {
