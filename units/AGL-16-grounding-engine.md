@@ -5,8 +5,8 @@ module: agent-loop
 phase: phase:grounding
 milestone: M3
 blocked_by: [AGL-10, AGL-12]
-parallel_with: [AGL-13, AGL-14, AGL-15, AGL-18, AGL-19]
-unblocks: [AGL-17, AGL-20]
+parallel_with: [AGL-13, AGL-14, AGL-15, AGL-18]
+unblocks: [AGL-17, AGL-19, AGL-20]
 ---
 
 # AGL-16 — Grounding engine
@@ -23,7 +23,7 @@ Each claim marked supported, weak or unsupported (33), citing a `sources/` passa
 - Grounding model calls don't count towards the step cap; stop cancels them.
 - Fetched web pages and entities are **not** evidence.
 
-## Acceptance criteria (mock extract and judge turns)
+## Acceptance criteria (mock extract and judge turns; the engine is tested through a test-only HTTP harness until AGL-17 exists)
 - [ ] A verdict citing a passage that wasn't retrieved is downgraded to `unsupported`.
 - [ ] A claim with no retrieved passages is `unsupported` and no judge call covers it.
 - [ ] The claims artefact matches the contract, sits at the path rule, and carries the checked text's content hash.

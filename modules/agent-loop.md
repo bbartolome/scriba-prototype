@@ -41,7 +41,7 @@ AGL-01 contract slice  ══> phase:contract
 
 ### Parallelism
 - After AGL-01: AGL-02, AGL-06, AGL-07 in parallel; after AGL-03: AGL-04, AGL-05 in parallel.
-- After AGL-02: AGL-10 once Project store search lands. After AGL-08: AGL-09, AGL-12, AGL-25 in parallel; AGL-19 any time after its content gates.
+- After AGL-02: AGL-10 once Project store search lands. After AGL-08: AGL-09, AGL-12, AGL-25 in parallel; AGL-19 after its content gates and AGL-16.
 - After AGL-12: AGL-13, AGL-14, AGL-16 in parallel; AGL-18 against fakes any time after AGL-07.
 - AGL-21 and AGL-22 in parallel after AGL-08.
 
