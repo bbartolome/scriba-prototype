@@ -5223,3 +5223,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Effect:** the GNP-08 tick stands. GNP-09 AC 4 and GNP-10 AC 3 may be ticked on their unit branches when their data tests pass. GNP-10 plan section 8 point 1 ("awaits a Navigator confirmation") is closed by this decision; the plan text itself is not edited here.
 - **Reason:** the criterion's main clause is "is added to the eval script data", a data operation. The parenthetical describes the case type, not a run requirement. The same reading was applied to GNP-08 (line 5200) and to AGL-25 (line 4640: the real-model run does not gate the tick).
 - **Evidence checked by the orchestrator:** plans/GNP-08.md line 290 (the Navigator cited line 283; the quoted words match line 290, and the Navigator record marks that line wrong); plans/DECISIONS.md line 5200; line 4640.
+
+## 2026-11-16 — GNP-09 — Merged to main (orchestrator)
+
+- **Step 3:** the approved patch id 3a3286dc12c1cc87de3513a80841cfc3e2e3b12a held. The branch was moved onto main twice by cherry-pick (aedb4e9 and then da6a341), because a `git rebase main` stopped in the todo state with "Could not execute the todo command". The code outside plans/ and units/ is unchanged by the moves (diff empty), and the patch id did not change.
+- **Checks:** on d98f03c (the cherry-picked head before the last move), Node v26.13.0: `npm run lint` exit 0; `npm test` exit 0 (contracts 248 of 248, API 398 of 398 test files 110 of 110, scripts 14 of 14, packs 14 of 14, e2e 12 of 12); `npm run build` exit 0. Log: /tmp/gnp09-checks.log (not in the repo).
+- **Step 8:** AC 1 to AC 4 ticked on unit/GNP-09 (AC 4 after the Navigator decision in the entry above, data-only reading). Plan status set to done. Commit da6a341 on the branch.
+- **Step 9:** `git merge --ff-only unit/GNP-09` on main, aedb4e9 to da6a341.
+- **Step 10:** the branch unit/GNP-09 and its worktree are deleted. The real-model run of the AC 4 case was not run (no local model server).
+- **Limit:** GNP-09 is the first unit on main in this cycle, so the limit applies. No new subagent is started after this point.
