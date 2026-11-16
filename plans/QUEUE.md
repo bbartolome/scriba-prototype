@@ -1,80 +1,77 @@
-# Candidate queue
-Written by the scout on 2026-11-16 as a help for selection, not a record of progress; only plans on main record progress.
-
-- TRG-15 | M2 | available: no | waits on TRG-14 (plan planned, not done)
-- TRG-17 | M2 | available: no | M2 demo unit; waits on TRG-14 and TRG-15
-- AGL-12 | M3 | available: yes | all blockers done on main
-- AGL-13 | M3 | available: no | waits on AGL-12
-- AGL-14 | M3 | available: no | waits on AGL-12
-- AGL-16 | M3 | available: no | waits on AGL-12
-- AGL-17 | M3 | available: no | waits on AGL-13 and AGL-16
-- AGL-18 | M3 | available: yes | all blockers done on main
-- AGL-19 | M3 | available: yes | all blockers done on main
-- PST-17 | M3 | available: yes | all blockers done on main
-- PST-18 | M3 | available: yes | all blockers done on main
-- PST-19 | M3 | available: yes | all blockers done on main
-- PST-20 | M3 | available: no | waits on PST-17
-- PST-21 | M3 | available: no | waits on PST-18
-- PST-22 | M3 | available: no | M3 demo unit; waits on AGL-12 and PST-17 to PST-21
-- AGL-15 | M3 | available: no | waits on AGL-12, AGL-13, AGL-14 and PST-22
-- AGL-20 | M3 | available: no | M3 demo unit; waits on AGL-15 to AGL-19
-- SAU-18 | M3 | available: yes | all blockers done on main
-- SAU-19 | M3 | available: no | waits on SAU-18
-- SAU-20 | M3 | available: yes | all blockers done on main
-- SAU-21 | M3 | available: no | M3 demo unit; waits on SAU-18 to SAU-20
-- GRR-02 | M4 | available: yes | all blockers done on main
-- GRR-03 | M4 | available: yes | all blockers done on main
-- GRR-04 | M4 | available: no | waits on GRR-02 and GRR-03
-- GRR-05 | M4 | available: no | waits on GRR-04
-- GRR-06 | M4 | available: no | waits on GRR-04 and PST-22
-- GRR-07 | M4 | available: no | waits on GRR-04
-- GRR-08 | M4 | available: no | waits on GRR-02 to GRR-07 and PST-22
-- GRR-09 | M4 | available: no | waits on GRR-02
-- GRR-10 | M4 | available: yes | all blockers done on main
-- GRR-11 | M4 | available: no | waits on GRR-03 and GRR-10
-- GRR-12 | M4 | available: no | waits on GRR-11
-- GRR-13 | M4 | available: no | waits on GRR-04, GRR-05, GRR-06, GRR-11, PST-20
-- GRR-14 | M4 | available: no | waits on GRR-10
-- GRR-15 | M4 | available: no | waits on GRR-11 to GRR-14
-- GRR-16 | M4 | available: no | waits on PLT-22 (plan draft, not done)
-- GRR-17 | M4 | available: no | M4 demo unit; waits on GRR-08 to GRR-16
-- CEX-01 | M5 | available: yes | all blockers done on main
-- CEX-02 | M5 | available: no | waits on CEX-01
-- CEX-03 | M5 | available: no | waits on CEX-02
-- CEX-04 | M5 | available: no | waits on CEX-02
-- CEX-05 | M5 | available: no | waits on CEX-02
-- CEX-06 | M5 | available: no | waits on CEX-05
-- CEX-07 | M5 | available: no | waits on CEX-05
-- CEX-08 | M5 | available: no | waits on CEX-01
-- CEX-09 | M5 | available: no | waits on CEX-02 to CEX-08
-- CEX-10 | M5 | available: no | waits on CEX-04, CEX-05, CEX-09
-- CEX-11 | M5 | available: no | waits on CEX-10
-- CEX-12 | M5 | available: no | waits on CEX-10
-- CEX-13 | M5 | available: no | waits on CEX-10
-- CEX-14 | M5 | available: no | waits on CEX-03 and CEX-10
-- CEX-15 | M5 | available: no | waits on CEX-10 to CEX-14
-- CEX-16 | M5 | available: no | waits on CEX-03
-- CEX-17 | M5 | available: no | waits on CEX-01
-- CEX-18 | M5 | available: no | waits on CEX-05, CEX-10, CEX-14, CEX-17
-- CEX-19 | M5 | available: no | waits on CEX-16 and CEX-17
-- CEX-20 | M5 | available: no | M5 demo unit; waits on CEX-08, CEX-15 to CEX-19, PST-22
-- GNP-13 | M6 | available: yes | all blockers done on main
-- GNP-14 | M6 | available: no | waits on GNP-13
-- GNP-15 | M6 | available: no | waits on GNP-13
-- GNP-16 | M6 | available: no | waits on GNP-13
-- GNP-17 | M6 | available: no | waits on GNP-13
-- GNP-18 | M6 | available: no | waits on GNP-13 and GNP-16
-- GNP-19 | M6 | available: no | M6 demo unit; waits on CEX-09, GNP-13 to GNP-18, GRR-17
-- AGL-21 | M7 | available: yes | all blockers done on main
-- AGL-22 | M7 | available: yes | all blockers done on main
-- AGL-23 | M7 | available: no | waits on AGL-20, AGL-21, AGL-22
-- AGL-24 | M7 | available: no | waits on CEX-09 and CEX-15
-- GNP-20 | M7 | available: yes | all blockers done on main
-- GNP-21 | M7 | available: yes | all blockers done on main
-- GNP-22 | M7 | available: yes | all blockers done on main
-- GNP-23 | M7 | available: no | waits on GNP-15, GNP-16, GNP-21, GNP-22
-- GNP-24 | M7 | available: no | M7 demo unit; waits on GNP-19 to GNP-23
-- SHL-17 | M7 | available: yes | all blockers done on main
-- SHL-18 | M7 | available: yes | all blockers done on main
-- SHL-19 | M7 | available: no | M7 demo unit; waits on PST-22, SHL-17, SHL-18
-- PST-23 | M7 | available: yes | all blockers done on main
+# Candidate units (scout, main). First unfinished milestone: M2 (demo TRG-17). Format: unit | milestone | available now | reason
+TRG-15 | M2 | no | waits for TRG-14 (planned)
+TRG-17 | M2 | no | waits for TRG-14 (planned), TRG-15 (no plan)
+AGL-18 | M3 | yes | all blockers done on main
+AGL-19 | M3 | yes | all blockers done on main
+SAU-18 | M3 | yes | all blockers done on main
+SAU-20 | M3 | yes | all blockers done on main
+AGL-13 | M3 | yes | all blockers done on main
+AGL-14 | M3 | yes | all blockers done on main
+AGL-16 | M3 | yes | all blockers done on main
+PST-17 | M3 | yes | all blockers done on main
+PST-18 | M3 | yes | all blockers done on main
+PST-19 | M3 | yes | all blockers done on main
+SAU-19 | M3 | no | waits for SAU-18 (no plan)
+AGL-17 | M3 | no | waits for AGL-13 (no plan), AGL-16 (no plan)
+PST-20 | M3 | no | waits for PST-17 (no plan)
+PST-21 | M3 | no | waits for PST-18 (no plan)
+SAU-21 | M3 | no | waits for SAU-18 (no plan), SAU-19 (no plan), SAU-20 (no plan)
+PST-22 | M3 | no | waits for PST-17 (no plan), PST-18 (no plan), PST-19 (no plan), PST-20 (no plan), PST-21 (no plan)
+AGL-15 | M3 | no | waits for AGL-13 (no plan), AGL-14 (no plan), PST-22 (no plan)
+AGL-20 | M3 | no | waits for AGL-15 (no plan), AGL-16 (no plan), AGL-17 (no plan), AGL-18 (no plan), AGL-19 (no plan)
+GRR-02 | M4 | yes | all blockers done on main
+GRR-03 | M4 | yes | all blockers done on main
+GRR-10 | M4 | yes | all blockers done on main
+GRR-16 | M4 | no | waits for PLT-22 (draft)
+GRR-04 | M4 | no | waits for GRR-02 (no plan), GRR-03 (no plan)
+GRR-09 | M4 | no | waits for GRR-02 (no plan)
+GRR-11 | M4 | no | waits for GRR-03 (no plan), GRR-10 (no plan)
+GRR-14 | M4 | no | waits for GRR-10 (no plan)
+GRR-05 | M4 | no | waits for GRR-04 (no plan)
+GRR-06 | M4 | no | waits for GRR-04 (no plan), PST-22 (no plan)
+GRR-07 | M4 | no | waits for GRR-04 (no plan)
+GRR-12 | M4 | no | waits for GRR-11 (no plan)
+GRR-08 | M4 | no | waits for GRR-02 (no plan), GRR-03 (no plan), GRR-04 (no plan), GRR-05 (no plan), GRR-06 (no plan), GRR-07 (no plan), PST-22 (no plan)
+GRR-13 | M4 | no | waits for GRR-04 (no plan), GRR-05 (no plan), GRR-06 (no plan), GRR-11 (no plan), PST-20 (no plan)
+GRR-15 | M4 | no | waits for GRR-11 (no plan), GRR-12 (no plan), GRR-13 (no plan), GRR-14 (no plan)
+GRR-17 | M4 | no | waits for GRR-08 (no plan), GRR-09 (no plan), GRR-10 (no plan), GRR-11 (no plan), GRR-12 (no plan), GRR-13 (no plan), GRR-14 (no plan), GRR-15 (no plan), GRR-16 (no plan)
+CEX-01 | M5 | yes | all blockers done on main
+CEX-02 | M5 | no | waits for CEX-01 (no plan)
+CEX-08 | M5 | no | waits for CEX-01 (no plan)
+CEX-17 | M5 | no | waits for CEX-01 (no plan)
+CEX-03 | M5 | no | waits for CEX-02 (no plan)
+CEX-04 | M5 | no | waits for CEX-02 (no plan)
+CEX-05 | M5 | no | waits for CEX-02 (no plan)
+CEX-06 | M5 | no | waits for CEX-05 (no plan)
+CEX-07 | M5 | no | waits for CEX-05 (no plan)
+CEX-16 | M5 | no | waits for CEX-03 (no plan)
+CEX-09 | M5 | no | waits for CEX-02 (no plan), CEX-03 (no plan), CEX-04 (no plan), CEX-05 (no plan), CEX-06 (no plan), CEX-07 (no plan), CEX-08 (no plan)
+CEX-19 | M5 | no | waits for CEX-16 (no plan), CEX-17 (no plan)
+CEX-10 | M5 | no | waits for CEX-04 (no plan), CEX-05 (no plan), CEX-09 (no plan)
+CEX-11 | M5 | no | waits for CEX-10 (no plan)
+CEX-12 | M5 | no | waits for CEX-10 (no plan)
+CEX-13 | M5 | no | waits for CEX-10 (no plan)
+CEX-14 | M5 | no | waits for CEX-03 (no plan), CEX-10 (no plan)
+CEX-15 | M5 | no | waits for CEX-10 (no plan), CEX-11 (no plan), CEX-12 (no plan), CEX-13 (no plan), CEX-14 (no plan)
+CEX-18 | M5 | no | waits for CEX-05 (no plan), CEX-10 (no plan), CEX-14 (no plan), CEX-17 (no plan)
+CEX-20 | M5 | no | waits for CEX-08 (no plan), CEX-15 (no plan), CEX-16 (no plan), CEX-17 (no plan), CEX-18 (no plan), CEX-19 (no plan), PST-22 (no plan)
+GNP-13 | M6 | yes | all blockers done on main
+GNP-14 | M6 | no | waits for GNP-13 (no plan)
+GNP-15 | M6 | no | waits for GNP-13 (no plan)
+GNP-16 | M6 | no | waits for GNP-13 (no plan)
+GNP-17 | M6 | no | waits for GNP-13 (no plan)
+GNP-18 | M6 | no | waits for GNP-13 (no plan), GNP-16 (no plan)
+GNP-19 | M6 | no | waits for CEX-09 (no plan), GNP-13 (no plan), GNP-14 (no plan), GNP-15 (no plan), GNP-16 (no plan), GNP-17 (no plan), GNP-18 (no plan), GRR-17 (no plan)
+GNP-20 | M7 | yes | all blockers done on main
+GNP-21 | M7 | yes | all blockers done on main
+GNP-22 | M7 | yes | all blockers done on main
+SHL-17 | M7 | yes | all blockers done on main
+SHL-18 | M7 | yes | all blockers done on main
+GNP-23 | M7 | no | waits for GNP-15 (no plan), GNP-16 (no plan), GNP-21 (no plan), GNP-22 (no plan)
+SHL-19 | M7 | no | waits for PST-22 (no plan), SHL-17 (no plan), SHL-18 (no plan)
+GNP-24 | M7 | no | waits for GNP-19 (no plan), GNP-20 (no plan), GNP-21 (no plan), GNP-22 (no plan), GNP-23 (no plan)
+AGL-21 | M7 | yes | all blockers done on main
+AGL-22 | M7 | yes | all blockers done on main
+AGL-24 | M7 | no | waits for CEX-09 (no plan), CEX-15 (no plan)
+PST-23 | M7 | yes | all blockers done on main
+AGL-23 | M7 | no | waits for AGL-20 (no plan), AGL-21 (no plan), AGL-22 (no plan)
