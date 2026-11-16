@@ -1,6 +1,6 @@
 ---
 id: SHL-22
-status: planned
+status: done
 ---
 # SHL-22 plan — explicit wait timeouts in the load-sensitive specs
 
