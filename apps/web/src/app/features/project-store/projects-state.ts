@@ -8,7 +8,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import type { ProjectSummary } from '@bbartolome/scriba-contracts/project-store';
 import { filter } from 'rxjs';
-import { API_CLIENT, SSE_CLIENT } from '../../shell';
+import { API_CLIENT, SSE_CLIENT } from '../../shell/tokens';
 import { PROJECTS_PATH, projectListCopy } from './project-store-contract';
 
 /** The message of a failed read: the error's own message, or a fallback for a value that is not an Error. */

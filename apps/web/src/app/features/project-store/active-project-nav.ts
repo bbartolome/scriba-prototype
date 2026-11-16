@@ -5,7 +5,7 @@ import {
   inject,
   untracked,
 } from '@angular/core';
-import { ActiveProjectSignal } from '../../shell';
+import { ActiveProjectSignal } from '../../shell/project-scope';
 import { ProjectsState } from './projects-state';
 
 /**
