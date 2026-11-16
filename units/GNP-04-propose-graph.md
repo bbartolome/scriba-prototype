@@ -13,7 +13,7 @@ unblocks: [GNP-05, "Agent loop graph proposal"]
 
 ## Spec
 - `core/tools/propose_graph.yaml`, output `graph`, `enabled: true`. Description: "Sketch a story graph or a recipe from a plain-language intent."
-- Inputs: `intent` [text port, required], `view` (`story | recipe`, string enum, **required**), `entityIds` [entity port, list], `files` (array of project-relative path strings, param).
+- Inputs: `intent` [text port, required], `view` (`story | recipe`, string enum, **required**), `includeCatalogue` (boolean, **required**, param, sent by the model: true when `view` is `recipe`, false when `view` is `story`; the prompt shows `{{toolCatalog}}` only when it is true), `entityIds` [entity port, list], `files` (array of project-relative path strings, param). `includeCatalogue` added by Navigator decision on 2026-11-16. See plans/DECISIONS.md, GNP-04.
 - Prompt describes the Graph runner's graph file shape `{schemaVersion, view, name, nodes, edges}`:
   - story view: nodes `entity | scene | beat` with `label` and optional `path`; edges carry free-text relations (suggested `order`, `causality`, `containment`);
   - recipe view: nodes `input | tool | output` with `{id, kind, position, tool?, params?}`; wires connect port ids `<nodeId>.<key>`; one wire per input; types must match; node ids `^[a-z0-9][a-z0-9-]*$`.
