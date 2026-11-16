@@ -376,6 +376,29 @@ describe('FilesPage', () => {
     // The link holds the icon's ligature (`folder`) and then the label in a span.
     expect(link?.querySelector('span')?.textContent?.trim()).toBe('Files');
   });
+
+  it('F12 a draft file shows a Check grounding link to the chat; another file shows none', async () => {
+    const doubles = createShellTestDoubles();
+    doubles.api.respond('GET', LIST, { entries: TREE });
+    doubles.api.respond('GET', READ, read('drafts/ch1.md', OUTLINE));
+    const harness = await render(doubles, '/projects/p1/files?path=drafts/ch1.md');
+
+    const checks = Array.from(root(harness).querySelectorAll('a.check')).filter(
+      (link) => link.textContent?.trim() === 'Check grounding',
+    );
+    expect(checks).toHaveLength(1);
+    const href = new URL(checks[0]?.getAttribute('href') ?? '', 'http://localhost');
+    expect(href.pathname).toBe('/projects/p1/chat');
+    expect(href.searchParams.get('check')).toBe('drafts/ch1.md');
+    expect(
+      doubles.api.requests.every((request) => request.method === 'GET'),
+    ).toBe(true);
+
+    doubles.api.respond('GET', READ, read('sources/outline.md', OUTLINE));
+    await harness.navigateByUrl('/projects/p1/files?path=sources/outline.md');
+    await settle(harness);
+    expect(root(harness).querySelector('a.check')).toBeNull();
+  });
 });
 
 const WRITE: ApiPath = '/api/project-store/projects/p1/file/write';

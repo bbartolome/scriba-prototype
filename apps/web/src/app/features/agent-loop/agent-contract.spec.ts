@@ -7,6 +7,7 @@ import {
   AGENT_CONVERSATION_ROUTE,
   AGENT_CONVERSATIONS_ROUTE,
   AGENT_ERROR_CODES,
+  AGENT_GROUNDING_ROUTE,
   AGENT_RUN_CURRENT_ROUTE,
   AGENT_RUN_END_REASONS,
   AGENT_RUN_STATUSES,
@@ -25,6 +26,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AGENT_CONVERSATION_PATH,
   AGENT_CONVERSATIONS_PATH,
+  AGENT_GROUNDING_PATH,
   AGENT_NO_PROVIDER_CODE,
   AGENT_RUN_ACTIVE_CODE,
   AGENT_RUN_CURRENT_PATH,
@@ -94,6 +96,28 @@ const runState = {
 
 const endedCard = { ...card, status: 'done' };
 
+const HASH = `sha256:${'a'.repeat(64)}`;
+const claim = {
+  text: 'The rain began at noon.',
+  span: { start: 0, end: 24 },
+  verdict: 'supported',
+  passage: {
+    path: 'sources/outline.md',
+    offset: 0,
+    snippet: 'The rain began at noon.',
+  },
+  reason: 'Matches the outline.',
+};
+/** A grounding result without the event's seq (the body of grounding-result and of a run state item). */
+const RESULT = {
+  schemaVersion: 1,
+  targetPath: 'drafts/ch01.md',
+  contentHash: HASH,
+  checkedAt: '2026-11-16T10:00:00Z',
+  runId: 'r1',
+  claims: [claim],
+};
+
 function envelope(type: string, data: unknown): unknown {
   return { module: 'agent-loop', type, data };
 }
@@ -106,6 +130,7 @@ describe('agent contract copies', () => {
     // Route paths and error codes.
     expect(AGENT_RUNS_PATH).toBe(AGENT_RUNS_ROUTE);
     expect(AGENT_RUN_STOP_PATH).toBe(AGENT_RUN_STOP_ROUTE);
+    expect(AGENT_GROUNDING_PATH).toBe(AGENT_GROUNDING_ROUTE);
     expect(AGENT_RUN_CURRENT_PATH).toBe(AGENT_RUN_CURRENT_ROUTE);
     expect(AGENT_CONVERSATIONS_PATH).toBe(AGENT_CONVERSATIONS_ROUTE);
     expect(AGENT_CONVERSATION_PATH).toBe(AGENT_CONVERSATION_ROUTE);
@@ -145,6 +170,7 @@ describe('agent contract copies', () => {
         runState,
         { ...runState, status: 'ended', reason: 'capped', step: 12, cap: 12 },
         { ...runState, groundingResults: [] },
+        { ...runState, groundingResults: [RESULT] },
       ],
       [
         { ...runState, status: 'pending' },
@@ -163,6 +189,11 @@ describe('agent contract copies', () => {
         { ...runState, reason: 'paused' },
         { ...runState, pendingChangeIds: [''] },
         { ...runState, groundingResults: {} },
+        {
+          ...runState,
+          groundingResults: [{ ...RESULT, claims: [{ ...claim, verdict: 'maybe' }] }],
+        },
+        { ...runState, groundingResults: [{ ...RESULT, targetPath: 3 }] },
         { ...runState, runId: '' },
         { ...runState, conversationId: undefined },
       ],
@@ -266,7 +297,7 @@ describe('agent contract copies', () => {
     expect(anyReply.safeParse(null).success).toBe(true);
   });
 
-  it('X1 isChatEvent agrees with the contract for the eight handled types and refuses the grounding types', () => {
+  it('X1b isChatEvent agrees with the contract for the ten handled types', () => {
     const valid: unknown[] = [
       envelope('run-started', RUN),
       envelope('token-delta', { ...RUN, seq: 2, text: '' }),
@@ -358,13 +389,33 @@ describe('agent contract copies', () => {
       expect(agentLoopEventSchema.safeParse(sample).success).toBe(false);
     }
 
-    // The grounding types are valid under the contract and refused by the page (D18).
-    const grounding = envelope('grounding-started', {
-      ...RUN,
-      targetPath: 'drafts/ch01.md',
-    });
-    expect(agentLoopEventSchema.safeParse(grounding).success).toBe(true);
-    expect(isChatEvent(grounding)).toBe(false);
+    // The grounding types: a valid sample passes both, and each invalid one fails both.
+    const groundingStarted = (data: Record<string, unknown>): unknown =>
+      envelope('grounding-started', { ...RUN, targetPath: 'drafts/ch01.md', ...data });
+    const groundingResult = (data: Record<string, unknown>): unknown =>
+      envelope('grounding-result', { ...RESULT, seq: 2, ...data });
+    const groundingValid: unknown[] = [
+      groundingStarted({}),
+      groundingResult({}),
+      groundingResult({ targetPath: '' }),
+    ];
+    const groundingInvalid: unknown[] = [
+      groundingStarted({ targetPath: 3 }),
+      groundingStarted({ seq: 0 }),
+      groundingResult({ targetPath: 3 }),
+      groundingResult({ seq: 0 }),
+      groundingResult({ claims: [{ ...claim, verdict: 'maybe' }] }),
+      groundingResult({ schemaVersion: 2 }),
+      groundingResult({ claims: undefined }),
+    ];
+    for (const sample of groundingValid) {
+      expect(isChatEvent(sample)).toBe(true);
+      expect(agentLoopEventSchema.safeParse(sample).success).toBe(true);
+    }
+    for (const sample of groundingInvalid) {
+      expect(isChatEvent(sample)).toBe(false);
+      expect(agentLoopEventSchema.safeParse(sample).success).toBe(false);
+    }
   });
 
   it('W2 the entity resolve path and reply guard agree with the project-store contract', () => {

@@ -25,6 +25,7 @@ import {
 } from '../../shell/testing/match-media';
 import {
   AGENT_CONVERSATIONS_PATH,
+  AGENT_GROUNDING_PATH,
   AGENT_NO_PROVIDER_CODE,
   AGENT_RUN_ACTIVE_CODE,
   AGENT_RUN_CURRENT_PATH,
@@ -46,6 +47,47 @@ const RUN_STATE_BASE = {
   pendingChangeIds: [],
   lastSeq: 0,
 };
+
+const HASH = `sha256:${'a'.repeat(64)}`;
+
+/** One claim of a grounding result; a passage is given as its path and snippet. */
+function groundingClaim(
+  text: string,
+  verdict: string,
+  passage?: { path: string; snippet: string },
+): Record<string, unknown> {
+  return {
+    text,
+    span: { start: 0, end: text.length },
+    verdict,
+    ...(passage === undefined
+      ? {}
+      : { passage: { path: passage.path, offset: 0, snippet: passage.snippet } }),
+    reason: 'Checked against the sources.',
+  };
+}
+
+/** The data of a grounding result of run r1, without the event's seq. */
+function groundingResult(
+  targetPath: string,
+  claims: Record<string, unknown>[],
+): Record<string, unknown> {
+  return {
+    runId: 'r1',
+    schemaVersion: 1,
+    targetPath,
+    contentHash: HASH,
+    checkedAt: '2026-11-16T10:00:00Z',
+    claims,
+  };
+}
+
+/** The buttons whose text is exactly `name`, in document order. */
+function buttonsNamed(scope: ParentNode, name: string): HTMLButtonElement[] {
+  return Array.from(scope.querySelectorAll('button')).filter(
+    (button) => (button.textContent ?? '').trim() === name,
+  );
+}
 
 let resize: (width: number, height: number) => void;
 
@@ -604,5 +646,337 @@ describe('chat page', () => {
       );
       expect(card?.textContent).not.toContain('ghost-entity');
     }
+  });
+  it('G1 at phone width the summary chip shows text labels, and the claim list is collapsed until the chip is tapped', async () => {
+    restoreMatchMedia();
+    resize = stubMatchMedia(390, 844);
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    const harness = await render(doubles);
+
+    push(doubles, 'run-started', { runId: 'r1', seq: 1 });
+    push(doubles, 'grounding-started', {
+      runId: 'r1',
+      seq: 2,
+      targetPath: 'drafts/ch01.md',
+    });
+    push(doubles, 'grounding-result', {
+      seq: 3,
+      ...groundingResult('drafts/ch01.md', [
+        groundingClaim('The rain began at noon.', 'supported', {
+          path: 'sources/outline.md',
+          snippet: 'The rain began at noon.',
+        }),
+        groundingClaim('It rained all week.', 'weak', {
+          path: 'sources/outline.md',
+          snippet: 'Rain fell on Monday.',
+        }),
+        groundingClaim('The ship sank in May.', 'unsupported'),
+      ]),
+    });
+    await settle(harness);
+
+    const chip = page(harness).querySelector<HTMLButtonElement>('app-grounding-chip button');
+    expect(chip?.querySelector('span.summary')?.textContent?.trim()).toBe(
+      '1 supported · 1 weak · 1 unsupported',
+    );
+    expect(chip?.getAttribute('aria-expanded')).toBe('false');
+    expect(page(harness).querySelector('li.claim')).toBeNull();
+
+    chip?.click();
+    await settle(harness);
+
+    expect(
+      page(harness)
+        .querySelector<HTMLButtonElement>('app-grounding-chip button')
+        ?.getAttribute('aria-expanded'),
+    ).toBe('true');
+    const badges = Array.from(
+      page(harness).querySelectorAll('app-grounding-chip li.claim [data-verdict]'),
+    );
+    expect(badges.map((badge) => badge.querySelector('span.label')?.textContent?.trim())).toEqual([
+      'Supported',
+      'Weak',
+      'Unsupported',
+    ]);
+    for (const badge of badges) {
+      expect(badge.querySelector('mat-icon')?.getAttribute('aria-hidden')).toBe(
+        'true',
+      );
+    }
+  });
+
+  it('G2 the summary counts the claims of a grounding result, and expanding shows each passage with a link to its file', async () => {
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    const harness = await render(doubles);
+
+    push(doubles, 'run-started', { runId: 'r1', seq: 1 });
+    push(doubles, 'grounding-result', {
+      seq: 2,
+      ...groundingResult('drafts/ch01.md', [
+        groundingClaim('Claim one.', 'supported', {
+          path: 'sources/a.md',
+          snippet: 'Snippet from a.',
+        }),
+        groundingClaim('Claim two.', 'supported', {
+          path: 'sources/b.md',
+          snippet: 'Snippet from b.',
+        }),
+        groundingClaim('Claim three.', 'weak', {
+          path: 'sources/c.md',
+          snippet: 'Snippet from c.',
+        }),
+        groundingClaim('Claim four.', 'unsupported'),
+      ]),
+    });
+    await settle(harness);
+
+    const chip = () => page(harness).querySelector<HTMLButtonElement>('app-grounding-chip button');
+    expect(chip()?.querySelector('span.summary')?.textContent?.trim()).toBe(
+      '2 supported · 1 weak · 1 unsupported',
+    );
+    expect(chip()?.getAttribute('aria-expanded')).toBe('true');
+
+    chip()?.click();
+    await settle(harness);
+    expect(chip()?.getAttribute('aria-expanded')).toBe('false');
+    expect(page(harness).querySelector('li.claim')).toBeNull();
+
+    chip()?.click();
+    await settle(harness);
+    const rows = Array.from(page(harness).querySelectorAll('li.claim'));
+    expect(rows).toHaveLength(4);
+    const passages = [
+      ['sources/a.md', 'Snippet from a.'],
+      ['sources/b.md', 'Snippet from b.'],
+      ['sources/c.md', 'Snippet from c.'],
+    ];
+    for (const [index, [path, snippet]] of passages.entries()) {
+      const row = rows[index];
+      expect(row?.textContent).toContain(snippet);
+      const link = row?.querySelector('a');
+      expect(link).not.toBeNull();
+      const href = new URL(link?.getAttribute('href') ?? '', 'http://localhost');
+      expect(href.pathname).toBe('/projects/p1/files');
+      expect(href.searchParams.get('path')).toBe(path);
+    }
+    expect(rows[3]?.textContent).toContain('No source passage cited.');
+  });
+
+  it('G3 grounding-started shows a checking state, and the seq rule applies to grounding events', async () => {
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    const harness = await render(doubles);
+
+    push(doubles, 'run-started', { runId: 'r1', seq: 1 });
+    push(doubles, 'grounding-started', {
+      runId: 'r1',
+      seq: 2,
+      targetPath: 'drafts/ch02.md',
+    });
+    await settle(harness);
+    expect(
+      page(harness).querySelector('app-grounding-chip span.summary')?.textContent?.trim(),
+    ).toBe('Checking drafts/ch02.md');
+
+    push(doubles, 'grounding-result', {
+      seq: 3,
+      ...groundingResult('drafts/ch02.md', [
+        groundingClaim('The rain began at noon.', 'supported', {
+          path: 'sources/outline.md',
+          snippet: 'The rain began at noon.',
+        }),
+      ]),
+    });
+    await settle(harness);
+    expect(
+      page(harness).querySelector('app-grounding-chip span.summary')?.textContent?.trim(),
+    ).toBe('1 supported · 0 weak · 0 unsupported');
+
+    // A second result at seq 2 is at or below the turn's lastSeq (3) and is refused.
+    push(doubles, 'grounding-result', {
+      seq: 2,
+      ...groundingResult('drafts/ch02.md', [groundingClaim('Other.', 'unsupported')]),
+    });
+    await settle(harness);
+    expect(
+      page(harness).querySelector('app-grounding-chip span.summary')?.textContent?.trim(),
+    ).toBe('1 supported · 0 weak · 0 unsupported');
+  });
+
+  it('G4 a run state with grounding results shows the chip after the read', async () => {
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    doubles.api.respond('GET', AGENT_RUN_CURRENT_PATH, {
+      ...RUN_STATE_BASE,
+      lastSeq: 1,
+      groundingResults: [
+        groundingResult('drafts/ch01.md', [
+          groundingClaim('The rain began at noon.', 'weak', {
+            path: 'sources/outline.md',
+            snippet: 'Rain fell.',
+          }),
+        ]),
+      ],
+    });
+    const harness = await render(doubles);
+
+    expect(
+      page(harness).querySelector('app-grounding-chip span.summary')?.textContent?.trim(),
+    ).toBe('0 supported · 1 weak · 0 unsupported');
+  });
+
+  it('G5 Check grounding on a draft card posts its path, the chip sits after its card, and the reply starts a run', async () => {
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    const harness = await render(doubles);
+
+    push(doubles, 'run-started', { runId: 'r1', seq: 1 });
+    push(doubles, 'tool-call-started', {
+      runId: 'r1',
+      seq: 2,
+      callId: 'c1',
+      name: 'draft_chapter',
+      family: 'narrative',
+    });
+    push(doubles, 'tool-call-args', {
+      runId: 'r1',
+      seq: 3,
+      callId: 'c1',
+      arguments: {},
+      valid: true,
+    });
+    push(doubles, 'tool-call-result', {
+      runId: 'r1',
+      seq: 4,
+      callId: 'c1',
+      summary: 'Drafted.',
+      diffPreview: { path: 'drafts/ch01.md', base: '', proposed: 'Text.' },
+    });
+    push(doubles, 'tool-call-started', {
+      runId: 'r1',
+      seq: 5,
+      callId: 'c2',
+      name: 'write_file',
+      family: 'project',
+    });
+    push(doubles, 'tool-call-args', {
+      runId: 'r1',
+      seq: 6,
+      callId: 'c2',
+      arguments: {},
+      valid: true,
+    });
+    push(doubles, 'tool-call-result', {
+      runId: 'r1',
+      seq: 7,
+      callId: 'c2',
+      summary: 'Wrote notes.',
+      diffPreview: { path: 'notes/a.md', base: '', proposed: 'Notes.' },
+    });
+    push(doubles, 'grounding-result', {
+      seq: 8,
+      ...groundingResult('drafts/ch01.md', [
+        groundingClaim('The rain began at noon.', 'supported', {
+          path: 'sources/outline.md',
+          snippet: 'The rain began at noon.',
+        }),
+      ]),
+    });
+    push(doubles, 'run-ended', {
+      runId: 'r1',
+      seq: 9,
+      reason: 'completed',
+      pendingChangeIds: [],
+    });
+    await settle(harness);
+
+    const [first, second] = cards(harness);
+    const chips = Array.from(page(harness).querySelectorAll('app-grounding-chip'));
+    expect(chips).toHaveLength(1);
+    expect(
+      first?.compareDocumentPosition(chips[0] as Element) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      (chips[0] as Element).compareDocumentPosition(second as Element) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    const checks = buttonsNamed(page(harness), 'Check grounding');
+    expect(checks).toHaveLength(1);
+    const check = checks[0];
+    expect(check?.disabled).toBe(false);
+    expect(
+      (first as Element).compareDocumentPosition(check as Element) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      (check as Element).compareDocumentPosition(second as Element) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    doubles.api.respond('POST', AGENT_GROUNDING_PATH, {
+      runId: 'g1',
+      conversationId: 'c1',
+    });
+    check?.click();
+    await settle(harness);
+
+    expect(
+      doubles.api.requests.filter((request) => request.path === AGENT_GROUNDING_PATH),
+    ).toEqual([
+      {
+        method: 'POST',
+        path: AGENT_GROUNDING_PATH,
+        body: { path: 'drafts/ch01.md' },
+      },
+    ]);
+    expect(buttonNamed(page(harness), 'Stop')).toBeDefined();
+    const intents = Array.from(page(harness).querySelectorAll('p.intent')).map(
+      (element) => element.textContent?.trim(),
+    );
+    expect(intents).toContain('Check grounding: drafts/ch01.md');
+    expect(
+      buttonsNamed(page(harness), 'Check grounding')[0]?.disabled,
+    ).toBe(true);
+  });
+
+  it('G6 the check query of the Files link shows a Check grounding button that posts the path', async () => {
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    const harness = await render(doubles);
+
+    await harness.navigateByUrl('/projects/p1/chat?check=drafts/ch01.md');
+    await settle(harness);
+
+    const named = buttonsNamed(page(harness), 'Check grounding: drafts/ch01.md');
+    expect(named).toHaveLength(1);
+    expect(requestsTo(doubles, AGENT_GROUNDING_PATH)).toBe(0);
+
+    doubles.api.respond('POST', AGENT_GROUNDING_PATH, {
+      runId: 'g1',
+      conversationId: 'c1',
+    });
+    named[0]?.click();
+    await settle(harness);
+
+    expect(
+      doubles.api.requests.filter((request) => request.path === AGENT_GROUNDING_PATH),
+    ).toEqual([
+      {
+        method: 'POST',
+        path: AGENT_GROUNDING_PATH,
+        body: { path: 'drafts/ch01.md' },
+      },
+    ]);
+
+    await harness.navigateByUrl('/projects/p1/chat?check=sources/a.md');
+    await settle(harness);
+    const starts = Array.from(page(harness).querySelectorAll('button')).some(
+      (button) => (button.textContent ?? '').trim().startsWith('Check grounding:'),
+    );
+    expect(starts).toBe(false);
   });
 });
