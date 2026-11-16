@@ -1,6 +1,6 @@
 ---
 id: GNP-02
-status: planned
+status: done
 ---
 # GNP-02 plan — golden-test harness and the per-tool mock fixture convention
 

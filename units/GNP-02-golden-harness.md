@@ -21,5 +21,5 @@ unblocks: [GNP-04, GNP-05, GNP-07, GNP-08, GNP-09, GNP-10, GNP-14, GNP-15, GNP-1
 - Fixtures are the tests' own; never read `examples/`.
 
 ## Acceptance criteria
-- [ ] A sample golden case against a test-only fixture tool passes, and fails when the template changes without updating the golden.
-- [ ] The convention is documented in `packages/packs/test/README.md`.
+- [x] A sample golden case against a test-only fixture tool passes, and fails when the template changes without updating the golden.
+- [x] The convention is documented in `packages/packs/test/README.md`.
