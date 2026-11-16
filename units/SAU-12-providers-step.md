@@ -11,6 +11,8 @@ unblocks: [SAU-16]
 
 # SAU-12 — Providers step
 
+> **Note:** The `blocked_by` entry "Model providers phase:settings-ui (to embed; link to /providers until then)" has no unit id and may be stale. The panel is now embedded on main. Ignore that entry; it does not block this unit.
+
 ## Decisions
 - Embeds the Model providers module's exported settings panel (an Angular API). Until Model providers `phase:settings-ui` lands, the step links to `/providers` instead.
 - **Never reimplements** provider forms, model listing or the connection test. Ollama is seeded by Model providers.
