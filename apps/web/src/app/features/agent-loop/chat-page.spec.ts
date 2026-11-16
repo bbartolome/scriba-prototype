@@ -157,6 +157,19 @@ function push(
   } satisfies SseEnvelope);
 }
 
+// A queue event of the Project store (AGL-14 P9): the pending change as it now stands.
+function pushQueue(
+  doubles: ShellTestDoubles,
+  type: string,
+  data: Record<string, unknown>,
+): void {
+  doubles.events.push({
+    module: 'project-store',
+    type,
+    data,
+  } satisfies SseEnvelope);
+}
+
 function buttonNamed(
   scope: ParentNode,
   name: string,
@@ -1010,5 +1023,156 @@ describe('chat page', () => {
         (button.textContent ?? '').trim().startsWith('Check grounding:'),
     );
     expect(starts).toBe(false);
+  });
+});
+
+describe('chat page write diffs and the review link (AGL-14)', () => {
+  // A write_file run: its call, its arguments and its result with the diff preview of the write.
+  function pushWriteCard(
+    doubles: ShellTestDoubles,
+    diffPreview: { path: string; base: string; proposed: string },
+  ): void {
+    push(doubles, 'run-started', { runId: 'r1', seq: 1 });
+    push(doubles, 'tool-call-started', {
+      runId: 'r1',
+      seq: 2,
+      callId: 'c1',
+      name: 'write_file',
+      family: 'project',
+    });
+    push(doubles, 'tool-call-args', {
+      runId: 'r1',
+      seq: 3,
+      callId: 'c1',
+      arguments: { path: diffPreview.path, content: diffPreview.proposed },
+      valid: true,
+    });
+    push(doubles, 'tool-call-result', {
+      runId: 'r1',
+      seq: 4,
+      callId: 'c1',
+      summary: `Wrote ${diffPreview.path}`,
+      diffPreview,
+    });
+  }
+
+  it('V1 a write card shows the diff inside the card, side by side on a desktop', async () => {
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    const harness = await render(doubles);
+
+    pushWriteCard(doubles, {
+      path: 'notes/a.md',
+      base: 'Old line\n',
+      proposed: 'New line\n',
+    });
+    await settle(harness);
+
+    const card = page(harness).querySelector('app-tool-call-card');
+    const view = card?.querySelector('app-diff-view');
+    expect(view).not.toBeNull();
+    const section = view?.querySelector(
+      'section[aria-label="Changes to notes/a.md"]',
+    );
+    expect(section).not.toBeNull();
+    expect(section?.querySelector('.cm-mergeView')).not.toBeNull();
+    expect(section?.querySelector('.cm-merge-a')?.textContent).toContain(
+      'Old line',
+    );
+    expect(section?.querySelector('.cm-merge-b')?.textContent).toContain(
+      'New line',
+    );
+  });
+
+  it('V2 the review link of a run appears with its pending change IDs and goes when a queue event accepts them', async () => {
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    const harness = await render(doubles);
+    const link = 'a[href="/projects/p1/review?run=r1"]';
+
+    push(doubles, 'run-started', { runId: 'r1', seq: 1 });
+    pushQueue(doubles, 'pending-created', {
+      projectId: 'p1',
+      pendingChange: { id: 'pc1', status: 'pending' },
+    });
+    push(doubles, 'run-ended', {
+      runId: 'r1',
+      seq: 2,
+      reason: 'completed',
+      pendingChangeIds: ['pc1'],
+    });
+    await settle(harness);
+    expect(page(harness).querySelector(link)).not.toBeNull();
+
+    pushQueue(doubles, 'pending-resolved', {
+      projectId: 'p1',
+      pendingChange: { id: 'pc1', status: 'accepted' },
+    });
+    await settle(harness);
+    expect(page(harness).querySelector(link)).toBeNull();
+  });
+
+  it('V3 a queue event of another project, or a change still pending, leaves the review link in place', async () => {
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    const harness = await render(doubles);
+    const link = 'a[href="/projects/p1/review?run=r1"]';
+
+    push(doubles, 'run-started', { runId: 'r1', seq: 1 });
+    push(doubles, 'run-ended', {
+      runId: 'r1',
+      seq: 2,
+      reason: 'completed',
+      pendingChangeIds: ['pc1'],
+    });
+    await settle(harness);
+    expect(page(harness).querySelector(link)).not.toBeNull();
+
+    pushQueue(doubles, 'pending-resolved', {
+      projectId: 'p2',
+      pendingChange: { id: 'pc1', status: 'accepted' },
+    });
+    await settle(harness);
+    expect(page(harness).querySelector(link)).not.toBeNull();
+
+    pushQueue(doubles, 'pending-updated', {
+      projectId: 'p1',
+      pendingChange: { id: 'pc1', status: 'pending' },
+    });
+    await settle(harness);
+    expect(page(harness).querySelector(link)).not.toBeNull();
+  });
+
+  it('V4 on a phone the diff is unified and the write card is collapsed until it is opened', async () => {
+    restoreMatchMedia();
+    resize = stubMatchMedia(390, 844);
+    const doubles = createShellTestDoubles();
+    registerInitialReads(doubles);
+    const harness = await render(doubles);
+
+    pushWriteCard(doubles, {
+      path: 'notes/a.md',
+      base: 'Old line\n',
+      proposed: 'New line\n',
+    });
+    await settle(harness);
+
+    const header = page(harness).querySelector<HTMLButtonElement>(
+      'app-tool-call-card button.header',
+    );
+    expect(header?.getAttribute('aria-expanded')).toBe('false');
+    expect(page(harness).querySelector('app-diff-view')).toBeNull();
+
+    header?.click();
+    await settle(harness);
+    expect(header?.getAttribute('aria-expanded')).toBe('true');
+    const view = page(harness).querySelector('app-diff-view');
+    expect(view).not.toBeNull();
+    expect(view?.querySelector('.cm-mergeView')).toBeNull();
+    expect(view?.querySelector('.cm-merge-a')).toBeNull();
+    const unified = [...(view?.querySelectorAll('[role="radio"]') ?? [])].find(
+      (button) => button.textContent?.trim() === 'Unified',
+    );
+    expect(unified?.getAttribute('aria-checked')).toBe('true');
   });
 });

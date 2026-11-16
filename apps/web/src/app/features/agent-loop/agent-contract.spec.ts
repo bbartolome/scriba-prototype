@@ -424,6 +424,28 @@ describe('agent contract copies', () => {
     }
   });
 
+  it('Q1 isChatEvent refuses a diff preview that the contract refuses, and accepts the one it accepts', () => {
+    const withPreview = (diffPreview: unknown): unknown =>
+      envelope('tool-call-result', { ...CALL, summary: 'x', diffPreview });
+    const valid: unknown[] = [
+      withPreview({ path: 'drafts/ch01.md', base: '', proposed: 'x' }),
+    ];
+    const invalid: unknown[] = [
+      withPreview({ path: 'drafts/ch01.md', proposed: 'x' }),
+      withPreview({ path: 'drafts/ch01.md', base: null, proposed: 'x' }),
+      withPreview({ path: 3, base: '', proposed: 'x' }),
+    ];
+
+    for (const sample of valid) {
+      expect(isChatEvent(sample)).toBe(true);
+      expect(agentLoopEventSchema.safeParse(sample).success).toBe(true);
+    }
+    for (const sample of invalid) {
+      expect(isChatEvent(sample)).toBe(false);
+      expect(agentLoopEventSchema.safeParse(sample).success).toBe(false);
+    }
+  });
+
   it('W2 the entity resolve path and reply guard agree with the project-store contract', () => {
     expect(PROJECT_ENTITY_RESOLVE_PATH).toBe(PROJECT_ENTITY_RESOLVE_ROUTE);
     expect(entityResolvePath('p 1/x')).toBe(
