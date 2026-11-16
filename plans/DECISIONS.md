@@ -4783,3 +4783,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - The reviser (Opus, medium) applied the four Navigator decisions to plans/MPR-13.md: section 6 marks each point decided with the confirming lines; D4 adds the `reconcile$` subscription (point 2); section 4 adds M2 step i (a `reconcile$` tick, `doubles.events.tick`, test-doubles.ts line 159); section 5 and section 7 updated to main 59db8aa; section 8 "Review parts" with one part (steps 0 to 12); section 9 revision record.
 - Reviser's reply: READY, no unit change, YAGNI test "no action", NBSP count 0. Checked by the orchestrator: the four decisions match the Navigator record; the cited lines exist (sse-client.ts line 59, test-doubles.ts lines 121 and 159); AGL-25, SAU-13, SAU-14 and TRG-07 are `status: done` on main; no unit file changed.
 - Plan set to `status: planned` (commit follows, `docs(MPR-13): plan revised, status planned`). Next: a Haiku implementer for MPR-13 in the next cycle (the cycle stopped after PST-15 reached main).
+
+## 2026-11-16 — MPR-13 — Sonnet code review (one part): APPROVED (orchestrator)
+
+- Implementer (Haiku, medium) reported COMPLETE on unit/MPR-13 at 5e598c6, based on main 3275144. M1, M2 and P4 passed; no difference from the plan; no criterion untested. Test outputs under /tmp/mpr13-*.txt.
+- Reviewer (Sonnet, medium), part 1 (the whole unit: steps 0 to 12 of the plan; tests M1, M2, P4 and R1 to R3): APPROVED. It checked the seven code paths of plan section 2 against `git diff --name-only main...unit/MPR-13`, decisions D1 to D14, and the test outputs.
+- Patch id: `45eaa2f186785aafb573b55c19cb0bbd74e9907c` (`git diff main...unit/MPR-13 -- . ':!plans' ':!units' | git patch-id --stable`).
+- Next: step 3 for MPR-13 (rebase onto main, the three checks, patch id again, criteria and plan marks, fast-forward).
