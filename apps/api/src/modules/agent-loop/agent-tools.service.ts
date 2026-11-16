@@ -41,8 +41,8 @@ export class AgentToolsService {
     private readonly catalog: CatalogService,
     private readonly executor: ExecutorService,
     private readonly entities: EntitiesService,
-    store: ProjectStoreService,
-    projects: ProjectsService,
+    private readonly store: ProjectStoreService,
+    private readonly projects: ProjectsService,
   ) {
     // No coercion and no defaults: a string "yes" for a boolean is refused, and nothing is filled in (S1, D14).
     const ajv = new Ajv({ allErrors: true, strict: true });
@@ -76,10 +76,17 @@ export class AgentToolsService {
       const fields = this.catalog.entry(name).views.form.fields;
       narrative.push({
         definition: narrativeDefinition(
-          { executor: this.executor, entities: this.entities },
+          {
+            executor: this.executor,
+            entities: this.entities,
+            files: this.files,
+            store: this.store,
+            projects: this.projects,
+          },
           fn,
           fields,
           settings.styleProfile,
+          this.catalog.entry(name).spec.output,
         ),
       });
     }

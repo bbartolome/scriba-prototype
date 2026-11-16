@@ -8,6 +8,7 @@ import {
   toolArgsInvalidDetailsSchema,
   type FormField,
   type ModelFunction,
+  type OutputKind,
   type ResolvedEntity,
   type ToolCallResult,
 } from '@bbartolome/scriba-contracts/tool-registry';
@@ -15,17 +16,31 @@ import { ModuleError } from '../../platform/platform.module';
 import type {
   EntitiesService,
   FilesService,
+  ProjectsService,
+  ProjectStoreService,
+  ResolvedProjectPath,
 } from '../../project-store/project-store.module';
 import type { ExecutorService } from '../../tool-registry/tool-registry.module';
+import {
+  FOLDER_MESSAGE,
+  SIZE_MESSAGE,
+  captureOf,
+  isFolder,
+  isTooLarge,
+  targetOf,
+} from './builtin-tools';
+import { routedFolder, stampOf, withSuffix } from './output-routing';
 import {
   ToolArgumentError,
   type NarrativeToolDefinition,
   type ToolArgumentSchema,
+  type ToolContext,
   type ToolIssue,
 } from './tool-types';
 
 // The narrative tools of AGL-09: each enabled registry tool is offered as a function, and its call resolves the
 // entities it names, runs the executor, and reports what it used. This file holds the handler and its error table.
+// A draft or entity output is routed to a file of its folder (AGL-13): the call may name the file in `target`.
 
 export interface NarrativeSettings {
   genrePack?: string;
@@ -35,6 +50,9 @@ export interface NarrativeSettings {
 export interface NarrativeDeps {
   executor: ExecutorService;
   entities: EntitiesService;
+  files: FilesService;
+  store: ProjectStoreService;
+  projects: ProjectsService;
 }
 
 // The genre pack and the style profile of a project, from its project.yaml (PC1). A missing or invalid file gives
@@ -127,23 +145,126 @@ function refusalOf(error: unknown): unknown {
   }
 }
 
+// The offered copy of a routed tool's schema (AGL-13 P11): the registry's schema with an optional `target`. The
+// registry's object is not changed.
+function withTarget(
+  schema: ToolArgumentSchema,
+  folder: string,
+): ToolArgumentSchema {
+  return {
+    ...schema,
+    properties: {
+      ...schema.properties,
+      target: {
+        type: 'string',
+        minLength: 1,
+        description: `Optional. The file to write, in ${folder}/. Left out, a new file is named for you.`,
+      },
+    },
+  };
+}
+
+// The arguments without `target` (AGL-13 P12). The executor refuses an unknown argument, so it never sees it.
+function withoutTarget(args: Record<string, unknown>): Record<string, unknown> {
+  const copy = { ...args };
+  delete copy.target;
+  return copy;
+}
+
+// The explicit target of a routed call, checked and captured (AGL-13 P4, P5, P6). Undefined when the call left the
+// target out. Every refusal is one issue at `/target`, and it is raised before the executor runs.
+function explicitTargetOf(
+  deps: NarrativeDeps,
+  ctx: ToolContext,
+  folder: string,
+  value: unknown,
+): ResolvedProjectPath | undefined {
+  if (value === undefined) return undefined;
+  const notInFolder: ToolIssue[] = [
+    { path: '/target', message: `The target must be a file in ${folder}/.` },
+  ];
+  if (typeof value !== 'string' || value === '') {
+    throw new ToolArgumentError(notInFolder);
+  }
+  const projectId = ctx.run.projectId;
+  try {
+    const target = targetOf(deps.store, deps.projects, projectId, value);
+    if (
+      !target.relativePath.startsWith(`${folder}/`) ||
+      target.relativePath.length <= folder.length + 1
+    ) {
+      throw new ToolArgumentError(notInFolder);
+    }
+    if (isFolder(target)) {
+      throw new ToolArgumentError([
+        { path: '/target', message: FOLDER_MESSAGE },
+      ]);
+    }
+    captureOf(ctx.run, deps.files, projectId, target);
+    return target;
+  } catch (error) {
+    if (error instanceof ModuleError) {
+      throw new ToolArgumentError([
+        { path: '/target', message: error.message },
+      ]);
+    }
+    throw error;
+  }
+}
+
+// The default path of a routed call (AGL-13 P8): `<folder>/<tool-name>-<stamp>.md`, with `-2`, `-3`, ... before the
+// extension until the path is free on disk and in this run's overlay.
+function defaultTargetOf(
+  deps: NarrativeDeps,
+  ctx: ToolContext,
+  folder: string,
+  name: string,
+  now: Date,
+): ResolvedProjectPath {
+  const base = `${folder}/${name}-${stampOf(now)}.md`;
+  const resolve = (path: string): ResolvedProjectPath =>
+    targetOf(deps.store, deps.projects, ctx.run.projectId, path);
+  const taken = (target: ResolvedProjectPath): boolean =>
+    target.exists ||
+    ctx.run.overlay.contentOf(target.relativePath) !== undefined;
+  let target = resolve(base);
+  for (let n = 2; taken(target); n += 1) {
+    target = resolve(withSuffix(base, n));
+  }
+  return target;
+}
+
 // The narrative definition of one registry tool. Its description and schema are the registry's function schema, and
-// its fields are the form descriptor of the tool.
+// its fields are the form descriptor of the tool. Its kind is the tool's declared output kind (AGL-13 P15).
 export function narrativeDefinition(
   deps: NarrativeDeps,
   fn: ModelFunction,
   fields: readonly FormField[],
   styleProfile: string | undefined,
+  kind: OutputKind,
 ): NarrativeToolDefinition {
   const name = fn.function.name;
+  const ownSchema = fn.function.parameters as unknown as ToolArgumentSchema;
+  // A draft or entity output is routed (AGL-13 P1, P11). A tool whose own inputs have a `target` keeps it, and its
+  // output takes the default path, without the routing argument.
+  const folder = routedFolder(kind);
+  const routing =
+    folder !== undefined && !('target' in ownSchema.properties)
+      ? folder
+      : undefined;
   return {
     name,
     family: 'narrative',
     description: fn.function.description,
-    schema: fn.function.parameters as unknown as ToolArgumentSchema,
+    schema: routing === undefined ? ownSchema : withTarget(ownSchema, routing),
     handler: async (ctx, args) => {
+      const raw = args as Record<string, unknown>;
+      const explicit =
+        routing === undefined
+          ? undefined
+          : explicitTargetOf(deps, ctx, routing, raw.target);
       const values = filledArguments(
-        args as Record<string, unknown>,
+        routing === undefined ? raw : withoutTarget(raw),
         fields,
         styleProfile,
       );
@@ -193,11 +314,29 @@ export function narrativeDefinition(
       } catch (error) {
         throw refusalOf(error);
       }
-      const kind = result.output.kind;
+      const summary =
+        result.output.kind === 'draft'
+          ? `Drafted with ${name}.`
+          : `Ran ${name}.`;
+      const citations = { entityIds: ids, sourcesUsed: result.sourcesUsed };
+      if (routing === undefined) {
+        return { summary, output: result.output, citations };
+      }
+      // The routed text: refused when it is over the cap (AGL-13 P7), else placed at the explicit target or at a
+      // free default path (P6, P8), and returned for the run to put in the overlay (P3).
+      if (isTooLarge(result.output.content)) {
+        throw new ToolArgumentError([{ path: '', message: SIZE_MESSAGE }]);
+      }
+      const target =
+        explicit ?? defaultTargetOf(deps, ctx, routing, name, new Date());
+      if (explicit === undefined) {
+        captureOf(ctx.run, deps.files, ctx.run.projectId, target);
+      }
       return {
-        summary: kind === 'draft' ? `Drafted with ${name}.` : `Ran ${name}.`,
+        summary,
         output: result.output,
-        citations: { entityIds: ids, sourcesUsed: result.sourcesUsed },
+        citations,
+        written: { path: target.relativePath, content: result.output.content },
       };
     },
   };

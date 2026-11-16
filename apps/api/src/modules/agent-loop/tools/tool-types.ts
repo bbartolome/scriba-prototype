@@ -59,6 +59,14 @@ export interface ToolHandlerResult {
   // The text the model receives. When it is left out, the model text is JSON.stringify(output) (S10).
   modelText?: string;
   citations?: CallCitations;
+  // The text a routed output proposes, and its path. The run puts it in the overlay (AGL-13 P3).
+  written?: WrittenText;
+}
+
+// A routed output: the path it is aimed at and the text it proposes.
+export interface WrittenText {
+  path: string;
+  content: string;
 }
 
 export interface ToolDefinition {
@@ -100,6 +108,7 @@ export type ToolOutcome =
       output: unknown;
       modelText: string;
       citations?: CallCitations;
+      written?: WrittenText;
     }
   | { kind: 'error'; message: string; attempt: number; withdrawn?: boolean };
 

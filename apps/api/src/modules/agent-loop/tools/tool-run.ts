@@ -158,6 +158,7 @@ export class ToolRun {
           ...(result.citations === undefined
             ? {}
             : { citations: result.citations }),
+          ...(result.written === undefined ? {} : { written: result.written }),
         },
       };
     } catch (error) {

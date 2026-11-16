@@ -45,9 +45,9 @@ interface SearchNotesArgs {
   scope?: ('sources' | 'entities')[];
 }
 
-const FOLDER_MESSAGE =
+export const FOLDER_MESSAGE =
   'The path names a folder, so no file can be written there.';
-const SIZE_MESSAGE = 'The text is larger than the 5 MiB limit.';
+export const SIZE_MESSAGE = 'The text is larger than the 5 MiB limit.';
 const NO_FILE_MESSAGE = 'No file was found at that path.';
 const NOT_FOUND_MESSAGE = 'The text to replace was not found in the file.';
 const TWICE_MESSAGE =
@@ -96,13 +96,13 @@ export function captureOf(
 }
 
 // The root, or a path that is an existing folder, cannot hold a file.
-function isFolder(target: ResolvedProjectPath): boolean {
+export function isFolder(target: ResolvedProjectPath): boolean {
   return (
     target.isRoot || (target.exists && statSync(target.realPath).isDirectory())
   );
 }
 
-function isTooLarge(text: string): boolean {
+export function isTooLarge(text: string): boolean {
   return Buffer.byteLength(text, 'utf8') > FILE_SIZE_CAP_BYTES;
 }
 

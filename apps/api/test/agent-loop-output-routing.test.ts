@@ -330,12 +330,13 @@ it('AC1: a draft output with no target lands at the generated path; a target out
       const ended = eventsOf(events, 'run-ended');
       const changes = await pendingOfBook(h);
       expect(changes).toHaveLength(2);
-      const first = changes.find(
-        (change) => change.origin.toolCallId === generated,
-      );
-      const second = changes.find(
-        (change) => change.origin.toolCallId === explicit,
-      );
+      // The call of each change: an agent-run origin names it, and the other kind is not expected here.
+      const callOf = (change: PendingChange): string | undefined =>
+        change.origin.kind === 'agent-run'
+          ? change.origin.toolCallId
+          : undefined;
+      const first = changes.find((change) => callOf(change) === generated);
+      const second = changes.find((change) => callOf(change) === explicit);
       expect(first).toMatchObject({
         kind: 'create',
         proposed: DRAFT_TEXT,

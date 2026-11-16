@@ -290,6 +290,15 @@ export class AgentRun {
       outcome.kind === 'result'
         ? this.provenanceOf(callId, call.name, outcome)
         : undefined;
+    // A routed output's text goes to the overlay before its card is emitted (AGL-13 P3).
+    if (outcome.kind === 'result' && outcome.written !== undefined) {
+      this.tools.overlay.put(
+        outcome.written.path,
+        outcome.written.content,
+        callId,
+        provenance,
+      );
+    }
     const extras = {
       ...(outcome.kind === 'result' && outcome.citations !== undefined
         ? { sourcesUsed: outcome.citations.sourcesUsed }
