@@ -5308,3 +5308,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Branch:** `unit/AGL-11`, commits 7611b4d (code) and 34b5280 (rework of the REWORK item in 45a2ae1: the `run-started` assertion in the C1 test). Based on main 38dcdce.
 - **Patch id:** e95b168e0c727a46847e3c16d2779e26bbe27fce.
 - **Result:** APPROVED, one reviewer, part 1 of 1 (the whole plan). The reviewer checked that the diff changes only `apps/api/test/agent-loop-workhorses.test.ts`, that `units/` and `plans/` are untouched, and that the C1 and T5 tests match section 8.
+
+## 2026-11-16 — TRG-16 — Review (Sonnet, medium), Parts A, B and C: APPROVED
+
+- **Branch:** `unit/TRG-16`, commit 8f21306 (code), cherry-picked onto main 156cdcd as 88c7bb2 with the same patch id. Case A applied: TRG-14 is not on main as code, so the tab signal is added by this unit.
+- **Patch id:** e6d355fb40bf163b0b22dff487d405cc7bca1d95.
+- **Result:** APPROVED by three reviewers, one per part of section 8: Part A (steps 0 to 6, 8a, 8b; tests R1, S3a, Y1 to Y6; criterion 1 is Y1 and Y2), Part B (steps 7, 8c; tests Y7a, Y7b, Y8; Y9 not applicable in case A), Part C (steps 9 to 15; test E1, criterion 2).
+- **Pre-existing failure, not caused by this unit:** `e2e/specs/tools-preview.e2e.ts` (TRG-05) fails at C2 (the person picker drag leaves the value empty). The implementer reproduced it with main's committed `tools-list.ts`. The Part C reviewer found that `tools-preview.e2e.ts` was added by 237a9f7 and changed by e373e38 (TRG-13), which also changed `tools-list.ts`. Plan step 12 expects this spec to pass; it cannot be met by this unit. Recorded as a pre-existing failure for a separate fix.
