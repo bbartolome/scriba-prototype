@@ -5448,3 +5448,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Checked by the implementer and consistent with the code:** `grounding-engine.ts` check and `GroundingFailure` (lines 40 to 137), `tool-run.ts` dispatch catch (lines 164 to 186), `agent-run.ts` finish (388 to 404) and flushWrites (408 to 439), `transcript-reader.ts` `runOf` default branch (206 to 208), `runStateOfTranscript` (line 121), `AGENT_GROUNDING_ROUTE`, the event schemas, and `groundingRequestSchema`.
 - **Requested correction (from the report, for the reviser to check):** revise section 5, row C1, so that it checks the grounding-result `contentHash` (or the artefact's `contentHash`) against the SHA-256 of the sentence and newline, and finds the pending change by `targetPath`.
 - **Result:** the plan goes back to `status: draft`. A new Opus reviser corrects it. The branch `unit/AGL-17` keeps no commits from this round.
+
+## 2026-11-16 — AGL-17 — Review (Sonnet, medium), Part P1 (the whole plan): APPROVED
+
+- **Branch:** `unit/AGL-17`, seven commits on top of main `55cca72` (7c1f258 to 3a170b9). Worktree `scriba-prototype-wt/AGL-17`.
+- **Patch id:** 0c32fa82c2b589786f594c428a2b3bd86ae5c6a3 (`git diff main...unit/AGL-17 -- . ':!plans' ':!units' | git patch-id --stable`, computed by the reviewer and the orchestrator).
+- **Result:** APPROVED by one reviewer, part P1 of 1. The reviewer ran the eight test files named by the plan (37 tests, 0 failed), including C1, C2, C2b and X1 to X4. The changed files are the 18 listed in plan section 3, and no other file changed. `units/` and `plans/` are touched only at step 6, which the orchestrator does.
+- **Checks reported by the implementer (on the branch before the rebase):** `npm run lint` exit 0, `npm test` exit 0 (API 426 passed, 117 files), `npm run build` exit 0. Step 3 re-runs them on the rebased branch.
