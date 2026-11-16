@@ -1,8 +1,8 @@
 // A line diff in the unified form, written here so that no dependency is needed (PST-15 decision 19).
 
-type Tag = ' ' | '-' | '+';
+export type Tag = ' ' | '-' | '+';
 
-interface Op {
+export interface Op {
   tag: Tag;
   line: string;
 }
@@ -14,7 +14,7 @@ const CONTEXT = 3;
 const LCS_BOUND = 4_000_000;
 
 // An empty text has no lines. Any other text is split at each LF, so a text that ends in LF ends with an empty line.
-function linesOf(text: string | null): string[] {
+export function linesOf(text: string | null): string[] {
   if (text === null || text === '') return [];
   return text.split('\n');
 }
@@ -61,7 +61,7 @@ function middleOps(oldLines: string[], newLines: string[]): Op[] {
 }
 
 // The whole alignment: the common leading lines, the middle, and the common trailing lines.
-function alignLines(oldLines: string[], newLines: string[]): Op[] {
+export function alignLines(oldLines: string[], newLines: string[]): Op[] {
   const shorter = Math.min(oldLines.length, newLines.length);
   let prefix = 0;
   while (prefix < shorter && oldLines[prefix] === newLines[prefix]) prefix++;

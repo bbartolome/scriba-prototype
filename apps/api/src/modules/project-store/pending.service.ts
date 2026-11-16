@@ -44,6 +44,7 @@ import { ProjectStoreService } from './project-store.service';
 import { requireOkProject } from './project-status';
 import { readYamlState } from './project-yaml';
 import { PROJECT_MESSAGES, ProjectsService } from './projects.service';
+import { mergeLines } from './three-way-merge';
 import { unifiedDiff } from './unified-diff';
 
 // A per-path check of proposed content. It returns true when the content passes (PST-15 decision 11).
@@ -228,6 +229,52 @@ export class PendingService {
     return resolved;
   }
 
+  // Refreshes an open change against the disk (PST-17 D2, D6 to D9). A clean three-way merge of the base, the
+  // proposal and the disk makes the disk text the new base and the merged text the proposal. Every other case keeps
+  // or sets the conflict as persistConflict does, and writes no file.
+  refresh(projectId: string, id: string): PendingChange {
+    const { project, change } = this.openChangeOf(projectId, id);
+    const target = this.store.resolvePath(project.root, change.targetPath);
+    const now = new Date();
+    const reason = this.conflictReason(project, change);
+    if (
+      reason === null ||
+      reason !== 'base-changed' ||
+      change.capturedBase === null
+    ) {
+      return this.persistConflict(project, change, now);
+    }
+    const base = change.capturedBase;
+    if (statSync(target.realPath).size > FILE_SIZE_CAP_BYTES) {
+      return this.persistConflict(project, change, now);
+    }
+    const bytes = readFileSync(target.realPath);
+    const diskText = decodeText(bytes);
+    if (diskText === undefined) {
+      return this.persistConflict(project, change, now);
+    }
+    const merged = mergeLines(base.content, change.proposed, diskText);
+    if (merged === undefined) {
+      return this.persistConflict(project, change, now);
+    }
+    this.checkContent(target, merged);
+    const updated: PendingChange = {
+      ...change,
+      capturedBase: { hash: hashOf(bytes), content: diskText },
+      proposed: merged,
+      diff: unifiedDiff(change.targetPath, diskText, merged),
+      conflict: null,
+      updatedAt: now.toISOString(),
+    };
+    writeChange(pendingFolder(project, false) as string, updated);
+    this.events.publish({
+      module: 'project-store',
+      type: 'pending-updated',
+      data: { projectId: project.id, pendingChange: updated },
+    });
+    return updated;
+  }
+
   // Rechecks the open changes whose target is one of paths (PST-16 D4, D17). It writes and publishes only when a
   // conflict changed. Nothing happens for a project that is not found or not ok.
   recheck(projectId: string, paths: readonly string[]): void {
@@ -315,32 +362,9 @@ export class PendingService {
     return resolved;
   }
 
-  // The one write of an accept (PST-16 D19). PST-23 adds its migration before this call.
-  private writeProposal(target: ResolvedProjectPath, content: string): void {
-    writeText(target.realPath, content);
-  }
-
-  // Proposes a full new text for one file of an ok project. Nothing at the target is changed. A change of the same
-  // target from the same origin is folded into the open one (PST-15 decision 9).
-  propose(input: ProposeInput): PendingChange {
-    const parsed = proposeInputSchema.safeParse(input);
-    if (!parsed.success) {
-      throw new ModuleError(
-        PLATFORM_ERROR_CODES.VALIDATION_FAILED,
-        PLATFORM_ERROR_STATUS.PLATFORM_VALIDATION_FAILED,
-        PENDING_MESSAGES.INVALID,
-      );
-    }
-    const { projectId, path, content, base, origin, provenance, grounding } =
-      parsed.data;
-    const project = requireOkProject(this.projects.find(projectId));
-    const target = this.store.resolvePath(project.root, path);
-    if (
-      target.isRoot ||
-      (target.exists && statSync(target.realPath).isDirectory())
-    ) {
-      throw notAFile();
-    }
+  // The checks of a proposed text, in order: the size cap, the root project.yaml, then the registered validators
+  // (PST-15 decisions 10 and 11). A failed check throws; nothing is written here.
+  private checkContent(target: ResolvedProjectPath, content: string): void {
     if (Buffer.byteLength(content, 'utf8') > FILE_SIZE_CAP_BYTES) {
       throw refuse(PROJECT_ERROR_CODES.FILE_TOO_LARGE, FILE_MESSAGES.TOO_LARGE);
     }
@@ -369,6 +393,35 @@ export class PendingService {
         );
       }
     }
+  }
+
+  // The one write of an accept (PST-16 D19). PST-23 adds its migration before this call.
+  private writeProposal(target: ResolvedProjectPath, content: string): void {
+    writeText(target.realPath, content);
+  }
+
+  // Proposes a full new text for one file of an ok project. Nothing at the target is changed. A change of the same
+  // target from the same origin is folded into the open one (PST-15 decision 9).
+  propose(input: ProposeInput): PendingChange {
+    const parsed = proposeInputSchema.safeParse(input);
+    if (!parsed.success) {
+      throw new ModuleError(
+        PLATFORM_ERROR_CODES.VALIDATION_FAILED,
+        PLATFORM_ERROR_STATUS.PLATFORM_VALIDATION_FAILED,
+        PENDING_MESSAGES.INVALID,
+      );
+    }
+    const { projectId, path, content, base, origin, provenance, grounding } =
+      parsed.data;
+    const project = requireOkProject(this.projects.find(projectId));
+    const target = this.store.resolvePath(project.root, path);
+    if (
+      target.isRoot ||
+      (target.exists && statSync(target.realPath).isDirectory())
+    ) {
+      throw notAFile();
+    }
+    this.checkContent(target, content);
 
     const now = new Date();
     const iso = now.toISOString();

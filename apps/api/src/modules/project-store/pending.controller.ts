@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import {
   PROJECT_PENDING_ACCEPT_ROUTE,
+  PROJECT_PENDING_REFRESH_ROUTE,
   PROJECT_PENDING_REJECT_ROUTE,
   PROJECT_PENDING_ROUTE,
   pendingDecisionSchema,
@@ -54,5 +55,15 @@ export class PendingController {
     @Param('id') id: string,
   ): PendingChange {
     return this.pending.reject(projectId, id);
+  }
+
+  // Refresh takes no body: it merges the disk into the change (PST-17 D1, D14).
+  @Post(PROJECT_PENDING_REFRESH_ROUTE)
+  @HttpCode(200)
+  refresh(
+    @Param('projectId') projectId: string,
+    @Param('id') id: string,
+  ): PendingChange {
+    return this.pending.refresh(projectId, id);
   }
 }

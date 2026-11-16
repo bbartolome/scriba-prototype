@@ -123,6 +123,9 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/project-store/projects/:projectId/pending/:id/reject': {
     path: '/api/project-store/projects/no-such-project/pending/no-such-change/reject',
   },
+  '/api/project-store/projects/:projectId/pending/:id/refresh': {
+    path: '/api/project-store/projects/no-such-project/pending/no-such-change/refresh',
+  },
   '/api/tool-registry/tools/:name': {
     path: '/api/tool-registry/tools/no-such-tool',
   },
