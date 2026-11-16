@@ -4487,3 +4487,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Patch id of the code (`git diff main...unit/SHL-22 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 4860be6, based on 6ba3516): 55cb1cbac96f7a86e1a376e38ee4fdc6e4eab090.
 - Reviewer (Part 1, the only part): APPROVED. The reviewer checked the four spec files against plan section 2 and table 2.3, the LOAD_WAIT declaration, the test timeouts, that no assertion or title changed, and the rows 1 to 4 evidence in the report. Only the four spec files change.
 - Accepted deviations (reviewer): the implementer followed the rebase branch of step 9 because main moved to 6ba3516; the edits were applied by a script at AST positions and then formatted with prettier; the criterion 4 red run also passed 24 of 24, so the load did not reproduce the failure, which the plan allows recording.
+
+## 2026-11-16 — AGL-08 — Code review: approved; criterion 3 left unticked
+
+- Patch id of the code (`git diff main...unit/AGL-08 -- . ':!plans' ':!units' | git patch-id --stable`, head 84ad8e8, base 3f3e7ab): b064fef9d04722e8b748af9c033784e65766f7e3.
+- Reviewers (Sonnet, two parts, medium): Part 1 (procedure steps 1, 2, 4, 7 and the six criterion 2 items) APPROVED; Part 2 (steps 3, 5, 6, 8 to 12 and criteria 1 and 3) APPROVED. Both reviewers checked the patch id.
+- Criterion 3 (the e2e agent-run step passes in CI) cannot be run here: no remote and no CI runner. Local proxies pass: `npm run e2e` with `--trace off` in the worktree and in a fresh clone (8 passed each). The box stays unticked, following the precedent of PLT-11 criterion 5 and PLT-13 criterion 2 (plans/PLT-13.md lines 195 to 200). This was recorded by the orchestrator under that precedent; no Navigator session was opened for it, because the run reached its limit. The user should confirm it.
+- Accepted deviations (implementer): the e2e was run as `npm run e2e -w @bbartolome/scriba-e2e -- --trace off`; the Intent, Send, Stop, article and region locators use `exact: true`; the transcript poll uses `readdir(...).catch(() => [])`. Only the three planned files changed.
+- Main moved after the branch base (four docs commits), so the two code commits were re-applied onto main with cherry-pick, because `git rebase` stalled on a clean worktree (as in AGL-05). The patch id stayed the same.
