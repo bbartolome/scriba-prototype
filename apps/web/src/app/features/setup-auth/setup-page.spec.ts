@@ -744,7 +744,7 @@ describe('P providers step with the fake API', () => {
     buttonNamed(rootOf(harness), 'Continue')?.click();
 
     await settle(harness, (root) => {
-      expect(paragraphs(root)).toContain('Preferences are not set up yet.');
+      expect(root.querySelector('app-preferences-step')).not.toBeNull();
       expect(stepItems(root)[2]).toBe('Model providers: done');
     });
     expect(doubles.api.requests.slice(before)).toEqual([
@@ -780,7 +780,7 @@ describe('P providers step with the fake API', () => {
     buttonNamed(rootOf(harness), 'Skip')?.click();
 
     await settle(harness, (root) => {
-      expect(paragraphs(root)).toContain('Preferences are not set up yet.');
+      expect(root.querySelector('app-preferences-step')).not.toBeNull();
       expect(stepItems(root)[2]).toBe('Model providers: skipped');
     });
     expect(doubles.api.requests.slice(before)).toEqual([

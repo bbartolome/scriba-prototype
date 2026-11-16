@@ -174,7 +174,7 @@ async function renderAtPreferences(
   );
   buttonNamed(rootOf(harness), 'Next')?.click();
   await settle(harness, (root) =>
-    expect(paragraphs(root)).toContain('Model providers are not set up yet.'),
+    expect(root.querySelector('app-providers-panel')).not.toBeNull(),
   );
   buttonNamed(rootOf(harness), 'Next')?.click();
   await settle(harness, (root) =>
@@ -364,7 +364,7 @@ describe('preferences step with the fake API', () => {
     );
     buttonNamed(rootOf(harness), 'Next')?.click();
     await settle(harness, (root) =>
-      expect(paragraphs(root)).toContain('Model providers are not set up yet.'),
+      expect(root.querySelector('app-providers-panel')).not.toBeNull(),
     );
     const readsBefore = doubles.api.requests.filter(
       (r) => r.method === 'GET' && r.path === PREFERENCES_ROUTE,
