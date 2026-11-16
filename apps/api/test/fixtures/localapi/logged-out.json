@@ -1,0 +1,18 @@
+{
+  "BackendState": "NeedsLogin",
+  "AuthURL": "",
+  "HaveNodeKey": true,
+  "TailscaleIPs": null,
+  "Self": {
+    "ID": "",
+    "DNSName": "",
+    "HostName": "scriba",
+    "UserID": 0,
+    "Online": false,
+    "TailscaleIPs": null
+  },
+  "MagicDNSSuffix": "",
+  "CurrentTailnet": null,
+  "CertDomains": null,
+  "User": {}
+}

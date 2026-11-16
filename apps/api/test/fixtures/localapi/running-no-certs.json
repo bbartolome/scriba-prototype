@@ -1,0 +1,29 @@
+{
+  "BackendState": "Running",
+  "AuthURL": "",
+  "HaveNodeKey": true,
+  "TailscaleIPs": ["100.100.10.7", "fd7a:115c:a1e0::7"],
+  "Self": {
+    "ID": "n1",
+    "DNSName": "scriba-1.tail1234.ts.net.",
+    "HostName": "scriba",
+    "UserID": 4242,
+    "Online": true,
+    "TailscaleIPs": ["100.100.10.7", "fd7a:115c:a1e0::7"]
+  },
+  "MagicDNSSuffix": "tail1234.ts.net",
+  "CurrentTailnet": {
+    "Name": "ada.example.com",
+    "MagicDNSSuffix": "tail1234.ts.net",
+    "MagicDNSEnabled": true
+  },
+  "CertDomains": [],
+  "User": {
+    "1111": {
+      "ID": 1111,
+      "LoginName": "bob@example.com",
+      "DisplayName": "Bob"
+    },
+    "4242": { "ID": 4242, "LoginName": "ada@example.com", "DisplayName": "Ada" }
+  }
+}

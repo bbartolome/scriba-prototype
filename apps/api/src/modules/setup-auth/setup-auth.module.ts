@@ -10,11 +10,14 @@ import { REQUEST_POLICY, buildRequestPolicy } from './request-policy';
 import { SETUP_AUTH_SECTION_DEF } from './setup-auth.section';
 import { SetupAuthGuard } from './setup-auth.guard';
 import { SetupCookieSigner } from './setup-cookie.signer';
+import { LocalApiClient } from './localapi-client';
 import { SetupFlowController } from './setup-flow.controller';
 import { SetupSessionController } from './setup-session.controller';
 import { SetupStatusController } from './setup-status.controller';
 import { SetupStatusService } from './setup-status.service';
 import { SetupTokenStore } from './setup-token.store';
+import { TailscaleStatusController } from './tailscale-status.controller';
+import { TailscaleStatusService } from './tailscale-status.service';
 import { PreferencesReader } from './setup-preferences.reader';
 
 export { RequestIdentity } from './request-identity';
@@ -29,6 +32,7 @@ const SETUP_AUTH_SECTION_REGISTRATION = 'SETUP_AUTH_SECTION_REGISTRATION';
     SetupSessionController,
     SetupStatusController,
     SetupFlowController,
+    TailscaleStatusController,
   ],
   providers: [
     {
@@ -42,6 +46,8 @@ const SETUP_AUTH_SECTION_REGISTRATION = 'SETUP_AUTH_SECTION_REGISTRATION';
     SetupTokenStore,
     SetupCookieSigner,
     SetupStatusService,
+    LocalApiClient,
+    TailscaleStatusService,
     PreferencesReader,
     {
       provide: REQUEST_POLICY,
