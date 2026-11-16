@@ -9,10 +9,14 @@ const PREFERENCE_KEYS: readonly PreferenceKey[] = [
   'defaultGenrePack',
 ];
 
+/** The built-in packs offered as the genre pack choices. `core` is always active, so it is not one. */
+export const GENRE_PACK_CHOICES = ['nonfiction', 'fiction'] as const;
+
 /**
- * The two preference fields, both free text. The form keeps its own drafts and emits only the
- * fields whose text differs from the stored value. The Save button is disabled when none differ.
- * The form makes no API call; the page posts what it emits.
+ * The two preference fields. The author name is free text. The genre pack offers the built-in packs
+ * as choices and accepts any other text. The form keeps its own drafts and emits only the fields
+ * whose text differs from the stored value. The Save button is disabled when none differ. The form
+ * makes no API call; the page posts what it emits.
  */
 @Component({
   imports: [MatButton],
@@ -49,10 +53,16 @@ const PREFERENCE_KEYS: readonly PreferenceKey[] = [
       <input
         type="text"
         name="defaultGenrePack"
+        list="genre-pack-choices"
         [value]="shownValue('defaultGenrePack')"
         (input)="onInput('defaultGenrePack', $event)"
       />
     </label>
+    <datalist id="genre-pack-choices">
+      @for (choice of genrePackChoices; track choice) {
+        <option [value]="choice"></option>
+      }
+    </datalist>
     <button
       mat-flat-button
       type="button"
@@ -69,6 +79,8 @@ export class PreferencesForm {
 
   /** The changed fields only. */
   readonly save = output<Partial<Preferences>>();
+
+  protected readonly genrePackChoices = GENRE_PACK_CHOICES;
 
   private readonly drafts = signal<Partial<Record<PreferenceKey, string>>>({});
 
