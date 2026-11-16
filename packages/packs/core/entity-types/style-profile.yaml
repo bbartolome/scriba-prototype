@@ -1,0 +1,21 @@
+schemaVersion: 1
+kind: style-profile
+title: Style profile
+description: The tone, length and banned phrases of a book or passage; the body holds sample paragraphs.
+folder: entities
+fields:
+  type: object
+  properties:
+    tone:
+      type: string
+      title: Tone
+    targetLength:
+      type: integer
+      title: Target length
+      description: The target length in words.
+    bannedPhrases:
+      type: array
+      title: Banned phrases
+      items:
+        type: string
+  required: [tone, targetLength, bannedPhrases]

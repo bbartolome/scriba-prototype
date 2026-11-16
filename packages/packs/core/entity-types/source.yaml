@@ -1,0 +1,22 @@
+schemaVersion: 1
+kind: source
+title: Source
+description: A source the book cites; the body holds quotes and notes.
+folder: sources
+fields:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Title
+    citation:
+      type: string
+      title: Citation
+    url:
+      type: string
+      title: URL
+    reliability:
+      type: string
+      title: Reliability
+      description: A short note on how far the source can be trusted.
+  required: [title, citation, reliability]
