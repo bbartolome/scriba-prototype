@@ -5251,3 +5251,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Step 10:** the branch unit/GNP-10 and its worktree scriba-prototype-wt/GNP-10 are deleted.
 - **Not run:** the eval-agent real-model run of the numbers-to-people case (no local model server; carried by GNP-12 criterion 4); step 15 (Playwright `tools-preview`; no browser cache).
 - **Limit:** GNP-10 is the one unit on main in this cycle. No subagent is started after this point.
+
+## 2026-11-16 — GNP-12 — Navigator decision (session `a2095714b1104371933fd5b36dd705e1`, option a): criterion 4's real-model part stays unticked; the unit is complete without it
+
+- **Question (reviser, NAVIGATOR):** how is criterion 4 (`units/GNP-12-workhorses-gate.md` line 20, "with a real model through the manual eval") handled at GNP-12's merge. The real-model run needs a person and a local model server. This environment has neither (`plans/GNP-12.md` section 2, item 13).
+- **Decision (Navigator, option a):** GNP-12 merges with line 20 unticked, with the cause "not run: no model server" recorded in the implementer report. The box is ticked later, when a person with a local model server runs the procedure in `plans/GNP-12.md` section 8, point 2. No unit file text changes and no acceptance criterion text changes.
+- **Reason:** the unticked-box precedents are SAU-16 (lines 4935 to 4937, option A) and GNP-11 (line 5071, option (c)). The split, option (c), was rejected on cost (line 5072). GNP-08, GNP-09 and GNP-10 are not unticked-box precedents: their eval-case boxes were ticked under the data-only reading (lines 5220 to 5222), and their real-model runs are carried by GNP-12 criterion 4. That reading does not apply to criterion 4, whose text requires a real model.
+- **Effect:** the phase closes at the merge. GNP-20, GNP-21, GNP-22, AGL-11 and TRG-17 are unblocked. AGL-11's own done-when still needs a real-model `[@id]` run.
+- **Navigator corrections:** the first carry-forward wrongly listed GNP-08, GNP-09 and GNP-10 as unticked-box precedents, and wrongly read the plan's default (a) as a hold of the merge. The confirming challenge corrected both. Plan section 8, point 2, default (a) is "a person runs the procedure before line 20 is ticked".
