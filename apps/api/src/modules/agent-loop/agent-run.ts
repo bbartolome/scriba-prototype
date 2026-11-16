@@ -23,7 +23,12 @@ import {
 } from '../providers/providers.module';
 import { AGENT_SYSTEM_PROMPT } from './agent-prompt';
 import { replayTurns, trimHistory } from './conversation-history';
-import { GroundingFailure, type GroundingCheckInput } from './grounding-engine';
+import {
+  GroundingFailure,
+  contentHashOf,
+  summaryOf,
+  type GroundingCheckInput,
+} from './grounding-engine';
 import type { AgentTranscriptsService } from './transcript-reader';
 import type { TranscriptWriter } from './transcript-writer';
 import type { ToolRun } from './tools/tool-run';
@@ -182,7 +187,7 @@ export class AgentRun {
       // The key is known from here on, so the transcript can replace it (D4, D7).
       if (resolved !== ABORTED) this.transcript.setKey(resolved.key);
       this.writeIntent();
-      if (resolved === ABORTED) return this.finish('stopped');
+      if (resolved === ABORTED) return await this.finish('stopped');
       this.target = resolved;
       // The finished turns of this conversation, trimmed to the provider's context size (D10, D11, D16). The run's own
       // transcript is unfinished, so it is never among them (D17).
@@ -205,18 +210,18 @@ export class AgentRun {
       // The run's own assistant and tool messages, in order, after the intent (D10 (5)).
       const turn: ChatMessage[] = [];
       for (;;) {
-        if (this.controller.signal.aborted) return this.finish('stopped');
+        if (this.controller.signal.aborted) return await this.finish('stopped');
         this.state.step += 1;
         this.writeStep();
         const reply = await this.askModel(resolved, [...preamble, ...turn]);
-        if (this.controller.signal.aborted) return this.finish('stopped');
-        if (reply.calls.length === 0) return this.finish('completed');
+        if (this.controller.signal.aborted) return await this.finish('stopped');
+        if (reply.calls.length === 0) return await this.finish('completed');
         if (this.state.step >= this.state.cap) {
           this.emit('step-cap-reached', {
             step: this.state.step,
             cap: this.state.cap,
           });
-          return this.finish('capped');
+          return await this.finish('capped');
         }
         turn.push({
           role: 'assistant',
@@ -224,12 +229,12 @@ export class AgentRun {
           toolCalls: reply.calls,
         });
         for (const call of reply.calls) {
-          if (this.controller.signal.aborted) return this.finish('stopped');
+          if (this.controller.signal.aborted) return await this.finish('stopped');
           turn.push(await this.runCall(call));
         }
       }
     } catch (error) {
-      this.finish('error', messageOf(error));
+      await this.finish('error', messageOf(error));
     }
   }
 
@@ -427,10 +432,15 @@ export class AgentRun {
   // Ends the run: marks it ended, releases its slot, then publishes run-ended (D3), then writes run-end (D4). A
   // requested end wins over the reason the loop reached, because the abort is what the loop saw. The transcript is
   // completed first, so a run that ends mid-call keeps the text it had.
-  private finish(reason: AgentRunEndReason, message?: string): void {
+  private async finish(
+    reason: AgentRunEndReason,
+    message?: string,
+  ): Promise<void> {
     if (this.state.status === 'ended') return;
     this.writeIntent();
     this.writeStepText();
+    // The automatic checks run before the writes are filed, so each pending change carries its summary (AGL-17).
+    await this.groundDrafts();
     this.flushWrites();
     const ended = this.requestedEnd ?? reason;
     this.state.status = 'ended';
@@ -445,13 +455,42 @@ export class AgentRun {
     this.transcript.append('run-end', this.state.lastSeq, data);
   }
 
+  // The automatic check of each drafts/ path the run's overlay holds, on its final text, once (AGL-17). A path already
+  // checked at this text in this run is not repeated. A failure is in the transcript already, and the loop goes on
+  // with the next path. Nothing is checked once the run is aborted. It never rejects.
+  private async groundDrafts(): Promise<void> {
+    for (const entry of this.tools.overlay.entriesInOrder()) {
+      if (this.controller.signal.aborted) return;
+      if (!entry.path.startsWith('drafts/')) continue;
+      if (this.groundingOf(entry.path, entry.content) !== undefined) continue;
+      try {
+        await this.groundOne(entry.path, this.controller.signal);
+      } catch {
+        // The failure is written to the transcript by groundOne; the run goes on.
+      }
+    }
+  }
+
+  // The latest grounding result of this run for a path, when it checked this exact text (AGL-17).
+  private groundingOf(
+    path: string,
+    content: string,
+  ): GroundingResult | undefined {
+    const hash = contentHashOf(content);
+    return [...this.state.groundingResults]
+      .reverse()
+      .find((item) => item.targetPath === path && item.contentHash === hash);
+  }
+
   // Proposes each path the run wrote, once, in the order of the first write (AGL-12 D4, P10). A path the Project store
   // refuses gets a `pending-change` line with the refusal and does not stop the others. Ids go to the state in order.
+  // A path checked at its final text carries the summary of that check (AGL-17).
   private flushWrites(): void {
     for (const entry of this.tools.overlay.entriesInOrder()) {
       const path = entry.path;
       try {
         const base = this.baseFor(path);
+        const grounding = this.groundingOf(path, entry.content);
         const change = this.deps.propose({
           projectId: this.projectId,
           path,
@@ -465,6 +504,9 @@ export class AgentRun {
           ...(entry.provenance === undefined
             ? {}
             : { provenance: entry.provenance }),
+          ...(grounding === undefined
+            ? {}
+            : { grounding: summaryOf(grounding) }),
         });
         this.state.pendingChangeIds.push(change.id);
         this.transcript.append('pending-change', this.state.lastSeq, {

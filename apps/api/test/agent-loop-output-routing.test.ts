@@ -43,6 +43,7 @@ import {
   type MockOpenAIRecord,
 } from './providers-client.kit';
 import { dataOf } from './sse';
+import { EXTRACT_MARKER } from '../src/modules/agent-loop/grounding-prompts';
 
 // The routing of draft, entity, graph and check outputs (AGL-13) through the composed app and the mock.
 // Every test builds its own temp library, its own mock scenario folder and its own app, and removes them all.
@@ -277,12 +278,21 @@ const BASE_ARGS =
   '{"coreIdea":"Engines reward patience","person":"ada-lovelace"}';
 const DRAFT_TEXT = 'The cold open opens on the bench at dawn.';
 
+// The run-end check of a draft (AGL-17): an extract reply with no claims, so no judge call follows.
+function emptyExtractStep(): unknown {
+  return {
+    match: { endpoint: 'chat', lastMessageContent: EXTRACT_MARKER },
+    reply: { kind: 'stream', deltas: ['{"claims":[]}'] },
+  };
+}
+
 it('AC1: a draft output with no target lands at the generated path; a target outside drafts/ is refused readably', async () => {
   const h = await openHarness({
     scenario: 'routing-draft',
     packs: FIXTURE_PACKS,
     prepare: writeDraftProject,
     steps: [
+      emptyExtractStep(),
       {
         match: {
           endpoint: 'chat',

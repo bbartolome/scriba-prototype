@@ -40,6 +40,7 @@ import {
   type MockOpenAIRecord,
 } from './providers-client.kit';
 import { dataOf } from './sse';
+import { EXTRACT_MARKER } from '../src/modules/agent-loop/grounding-prompts';
 
 // The narrative tools of AGL-09 through the mock: the offer, the entity resolution, the citations and the provenance.
 // Every test builds its own temp library, its own mock scenario folder and its own app, and removes them all.
@@ -226,9 +227,18 @@ function toolContents(body: ChatBody): string[] {
     .map((message) => String(message.content));
 }
 
+// The run-end check of the draft (AGL-17): an extract reply with no claims, listed first.
+function emptyExtractStep(): unknown {
+  return {
+    match: { endpoint: 'chat', lastMessageContent: EXTRACT_MARKER },
+    reply: { kind: 'stream', deltas: ['{"claims":[]}'] },
+  };
+}
+
 // The scenario of a draft: the executor's request, the first model turn that calls cold_open, and the final text.
 function draftSteps(args: string): unknown[] {
   return [
+    emptyExtractStep(),
     {
       match: {
         endpoint: 'chat',

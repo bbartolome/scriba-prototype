@@ -34,6 +34,7 @@ import {
 } from './project-store-projects.kit';
 import { startMockOpenAI, type MockOpenAI } from './providers-client.kit';
 import { dataOf } from './sse';
+import { EXTRACT_MARKER } from '../src/modules/agent-loop/grounding-prompts';
 
 // The write diff previews of AGL-14: the diffPreview of tool-call-result, the run state and the transcript. Each test
 // builds its own temp library, its own mock scenario folder and its own app, and removes them all.
@@ -226,10 +227,19 @@ function transcriptLinesOf(
     );
 }
 
+// The run-end check of a draft (AGL-17): an extract reply with no claims, so no judge call follows.
+function emptyExtractStep(): unknown {
+  return {
+    match: { endpoint: 'chat', lastMessageContent: EXTRACT_MARKER },
+    reply: { kind: 'stream', deltas: ['{"claims":[]}'] },
+  };
+}
+
 it('A1: a write or edit result carries the path, the captured base and the proposed text; a new file has an empty base', async () => {
   const h = await openHarness({
     scenario: 'diff-data',
     steps: [
+      emptyExtractStep(),
       toolCallStep(
         0,
         'write_file',
@@ -343,6 +353,7 @@ it('A3: the live diff is whole, and the transcript line of the same call carries
   const h = await openHarness({
     scenario: 'diff-transcript',
     steps: [
+      emptyExtractStep(),
       toolCallStep(
         0,
         'write_file',
@@ -400,6 +411,7 @@ it('A4: a routed narrative draft carries a diff of its target path, with an empt
     packs: FIXTURE_PACKS,
     prepare: writeDraftProject,
     steps: [
+      emptyExtractStep(),
       {
         match: {
           endpoint: 'chat',

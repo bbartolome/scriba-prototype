@@ -31,6 +31,7 @@ import {
   type MockOpenAIRecord,
 } from './providers-client.kit';
 import { dataOf } from './sse';
+import { EXTRACT_MARKER } from '../src/modules/agent-loop/grounding-prompts';
 
 // The four nonfiction workhorses of AGL-09 and AGL-10 called by the agent from an intent, through the mock.
 // Every test builds its own temp library, its own mock scenario folder and its own app, and removes them all.
@@ -289,6 +290,11 @@ it.each(WORKHORSE_CASES)(
     const h = await openHarness(
       scenario,
       [
+        // The run-end check of the draft (AGL-17): an extract reply with no claims, so no judge call follows.
+        {
+          match: { endpoint: 'chat', lastMessageContent: EXTRACT_MARKER },
+          reply: { kind: 'stream', deltas: ['{"claims":[]}'] },
+        },
         // The executor's request: its last message starts with the core idea.
         {
           match: {
@@ -384,9 +390,13 @@ it.each(WORKHORSE_CASES)(
         // The mock's requests: the agent offers the tool, the executor's prompt cites the sources, and the
         // agent's last turn holds the tool result.
         const records = await recordsOf(h.mock, scenario);
-        expect(records).toHaveLength(3);
+        expect(records).toHaveLength(4);
         const bodies = chatBodies(records);
         expect(toolNamesOf(bodies[0])).toContain(row.tool);
+        // The run-end check's extract request comes after the agent's last turn (AGL-17).
+        expect(String(bodies[3]?.messages.at(-1)?.content)).toContain(
+          EXTRACT_MARKER,
+        );
 
         const executors = bodies.filter((body) =>
           String(body.messages[0]?.content).startsWith(

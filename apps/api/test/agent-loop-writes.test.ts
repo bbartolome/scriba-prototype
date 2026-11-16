@@ -38,6 +38,7 @@ import {
 } from './project-store-projects.kit';
 import { startMockOpenAI, type MockOpenAI } from './providers-client.kit';
 import { dataOf } from './sse';
+import { EXTRACT_MARKER } from '../src/modules/agent-loop/grounding-prompts';
 
 // Every test builds its own temp library, its own mock scenario folder and its own app, and removes them all.
 
@@ -294,6 +295,14 @@ function stallAt(turnIndex: number) {
   };
 }
 
+// The run-end check of a draft (AGL-17): an extract reply with no claims, so no judge call follows.
+function emptyExtractStep() {
+  return {
+    match: { endpoint: 'chat', lastMessageContent: EXTRACT_MARKER },
+    reply: { kind: 'stream', deltas: ['{"claims":[]}'] },
+  };
+}
+
 function writeCall(turnIndex: number, name: string, args: string) {
   return {
     match: { endpoint: 'chat', turnIndex },
@@ -303,6 +312,7 @@ function writeCall(turnIndex: number, name: string, args: string) {
 
 it('AC1: no agent write changes a file on disk before the author accepts it', async () => {
   const h = await openHarness('writes-disk', [
+    emptyExtractStep(),
     writeCall(
       0,
       'write_file',
@@ -419,6 +429,7 @@ it('AC2: two edits to one file in one run yield one pending change against the f
 it('AC3: a stopped agent run still creates its pending changes, and a project-switched one creates them in the original project', async () => {
   // Run A: stopped after its write.
   const stopped = await openHarness('stop-after-write', [
+    emptyExtractStep(),
     writeCall(
       0,
       'write_file',
@@ -461,6 +472,7 @@ it('AC3: a stopped agent run still creates its pending changes, and a project-sw
 
   // Run B: the project is switched after its write.
   const switched = await openHarness('switch-after-write', [
+    emptyExtractStep(),
     writeCall(
       0,
       'write_file',
