@@ -5095,3 +5095,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Scope and C23:** the diff touches exactly the nine paths of plan section 2 (67 insertions, no deletions outside plans/ and units/). Each entity sentence restates a source line.
 - **Criterion 1:** the box stays unticked on the branch (`- [ ]`, unit line 23), as option (c) of the Navigator's decision requires. Criterion 2 is ticked only at merge.
 - **Note:** `git diff --name-only 34aa104 HEAD -- e2e` is empty; against the current main tip it lists `e2e/specs/tools-preview.e2e.ts`, a TRG-13 change that is not in this unit.
+
+## 2026-11-16 — AGL-09 — Navigator decision: OP1, how a card links sources to files (unit line 21)
+
+- **Decision (Navigator, session 97a01c92fcaf492ea8b1328c63a35116, option (b)):** the web resolves the `sourcesUsed` entity IDs to project-relative file paths in the browser, through `GET /api/project-store/projects/:projectId/entities/resolve` (`PROJECT_ENTITY_RESOLVE_ROUTE`, `packages/contracts/src/project-store/routes.ts` lines 29 to 30), and passes the resolved paths to the card's `sources` field. No contract change. Unit line 21 stays as written. The plan's step 9 gets the resolve call, upstream of `cardView`, which stays synchronous.
+- **Reason.** The card's `sources` field takes project-relative paths (`apps/web/src/app/shell/tool-call-view.ts` lines 42 to 43), and the event carries entity IDs (`packages/contracts/src/agent-loop/events.ts` line 43). TRG-16 already resolves entities in the browser through the same route (`units/TRG-16-try-panel.md` line 15). Option (a) would change the done AGL-01 contract and the shape that AGL-13, PST-20 and GNP-12 read. Option (c) would reword unit line 21.
+- **Orchestrator check.** The Navigator's carry-forward lines were checked against the source: `cardView` (`apps/web/src/app/features/agent-loop/chat-state.ts` lines 369 to 378) does not map `sourcesUsed`; the route is at `routes.ts` lines 29 to 30; the TRG-16 line is 15. Accepted.
+- **Still open for the Navigator:** OP2 (where the clash report goes) and OP4 (a tool disabled mid-run). OP3 is to be confirmed.
