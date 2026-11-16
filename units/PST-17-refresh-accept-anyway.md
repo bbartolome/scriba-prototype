@@ -20,6 +20,6 @@ Small host edits shouldn't force throwing proposals away (27); the author can st
 - Both require the project to be active.
 
 ## Acceptance criteria
-- [ ] Refresh clears a conflict when host edits and proposal touch different paragraphs, with merged text containing both.
-- [ ] Refresh keeps the conflict when they overlap, leaving the change unchanged.
-- [ ] Accept-anyway keeps the overwritten disk content as a version (draft) or a backup (other file), then writes the proposal.
+- [x] Refresh clears a conflict when host edits and proposal touch different paragraphs, with merged text containing both.
+- [x] Refresh keeps the conflict when they overlap, leaving the change unchanged.
+- [x] Accept-anyway keeps the overwritten disk content as a version (draft) or a backup (other file), then writes the proposal.
