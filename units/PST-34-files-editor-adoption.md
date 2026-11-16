@@ -19,4 +19,4 @@ unblocks: []
 - The follow-up PR of PST-10's editor decision: on desktop and tablet, the Files page opens a file in the Shell's editor with direct save; a save sends `baseHash`; `PROJECT_WRITE_CONFLICT` shows the stale-base warning; on `phone` the read-only preview stays.
 
 ## Acceptance criteria
-- [ ] When the editor is present: a save sends `baseHash`, and a write-conflict response shows the warning without losing the author's text.
+- [x] When the editor is present: a save sends `baseHash`, and a write-conflict response shows the warning without losing the author's text.

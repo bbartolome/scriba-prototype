@@ -1,6 +1,6 @@
 ---
 unit: PST-34
-status: planned
+status: done
 ---
 # PST-34 plan — Files editor adoption: the editor on tablet and desktop, direct save, stale-base warning
 
