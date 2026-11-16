@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Seven of the twelve people in the study practised with a teacher setting the task [@person-a]."
+        ]
+      }
+    }
+  ]
+}

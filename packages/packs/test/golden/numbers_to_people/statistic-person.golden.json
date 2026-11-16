@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Write the answer as Markdown prose. Return only the text of the answer, with no preface and no closing remarks."
+    },
+    {
+      "role": "user",
+      "content": "You write a nonfiction passage that turns one statistic into the story of the person behind it.\n\nCore idea: Expertise grows from planned practice, not from the hours alone.\nStatistic: Seven of the twelve people in the study practised with a teacher setting the task.\nLength: 800 words.\nMaterial:\nperson person-a (entities/person-a.md)\nPerson A set the practice tasks in the study and kept the results in a notebook.\nsource notes-a (sources/notes-a.md)\nNotes A say that each practice session in the study was planned in advance, with a teacher setting the task.\nclaim claim-a (entities/claim-a.md)\nClaim A says that the practice hours in the study were estimates made from memory.\nstyle-profile style-a (entities/style-a.md)\n---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the evidence shows, and say where it stops.\n\nSteps:\n1. State the statistic: give the number in the words above, with what it counts.\n2. Introduce the person behind it: name the person and their part in the work that produced the number, using only the material.\n3. Tell their story: follow the person through the events the material gives, in order.\n4. Return to what the number means: end on what the statistic says about the core idea, in plain words.\n\nConstraints:\n- Use only the material above.\n- Cite each factual sentence with its entity or source ID in the form [@id].\n- Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.\n- Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.\n"
+    }
+  ]
+}

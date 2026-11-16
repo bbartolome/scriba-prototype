@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Turn the ten-thousand-hour figure in chapter 3 into the story of the person behind it, using my notes.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["numbers_to_people"],
+    "citations": "present"
+  }
+}

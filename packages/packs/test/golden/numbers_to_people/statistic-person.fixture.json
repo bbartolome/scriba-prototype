@@ -1,0 +1,35 @@
+{
+  "arguments": {
+    "coreIdea": "Expertise grows from planned practice, not from the hours alone.",
+    "entityIds": ["notes-a", "claim-a"],
+    "styleProfile": "style-a",
+    "statistic": "Seven of the twelve people in the study practised with a teacher setting the task.",
+    "person": "person-a"
+  },
+  "entities": [
+    {
+      "ref": "person-a",
+      "type": "person",
+      "path": "entities/person-a.md",
+      "content": "Person A set the practice tasks in the study and kept the results in a notebook."
+    },
+    {
+      "ref": "notes-a",
+      "type": "source",
+      "path": "sources/notes-a.md",
+      "content": "Notes A say that each practice session in the study was planned in advance, with a teacher setting the task."
+    },
+    {
+      "ref": "claim-a",
+      "type": "claim",
+      "path": "entities/claim-a.md",
+      "content": "Claim A says that the practice hours in the study were estimates made from memory."
+    },
+    {
+      "ref": "style-a",
+      "type": "style-profile",
+      "path": "entities/style-a.md",
+      "content": "---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the evidence shows, and say where it stops."
+    }
+  ]
+}

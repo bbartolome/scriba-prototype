@@ -1,0 +1,75 @@
+schemaVersion: 1
+name: numbers_to_people
+description: Turn one statistic into the story of one person behind it.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    statistic:
+      type: string
+      title: Statistic
+      x-scriba-type: text
+      x-scriba-port: true
+    person:
+      type: string
+      title: Person
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [person]
+  required: [coreIdea, statistic, person]
+output: draft
+enabled: true
+prompt: |
+  You write a nonfiction passage that turns one statistic into the story of the person behind it.
+
+  Core idea: {{coreIdea}}
+  Statistic: {{statistic}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}
+  Material:
+  {{entity person}}
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. State the statistic: give the number in the words above, with what it counts.
+  2. Introduce the person behind it: name the person and their part in the work that produced the number, using only the material.
+  3. Tell their story: follow the person through the events the material gives, in order.
+  4. Return to what the number means: end on what the statistic says about the core idea, in plain words.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.
