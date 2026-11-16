@@ -6,7 +6,9 @@ import {
   Param,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
+import type { ServerResponse } from 'node:http';
 import {
   ENTITY_TYPES_ROUTE,
   FUNCTIONS_ROUTE,
@@ -15,23 +17,31 @@ import {
   TOOL_BUILTIN_ROUTE,
   TOOL_DELETE_ROUTE,
   TOOL_ENABLED_ROUTE,
+  TOOL_EXECUTE_ROUTE,
+  TOOL_RENDER_ROUTE,
   TOOL_ROUTE,
   TOOL_SAVE_ROUTE,
   TOOL_USER_ROUTE,
   TOOL_VALIDATE_ROUTE,
   lintRequestSchema,
+  toolCallRequestSchema,
   toolEnabledRequestSchema,
   toolListQuerySchema,
+  toolRenderRequestSchema,
   toolSaveRequestSchema,
   toolValidateRequestSchema,
   type EntityTypeList,
   type FunctionList,
   type LintRequest,
   type LintResponse,
+  type ToolCallRequest,
+  type ToolCallResult,
   type ToolDetail,
   type ToolEnabledRequest,
   type ToolList,
   type ToolListQuery,
+  type ToolRenderRequest,
+  type ToolRenderResult,
   type ToolSaveRequest,
   type ToolSummary,
   type ToolValidateRequest,
@@ -40,14 +50,16 @@ import {
 import { ZodValidationPipe } from '../platform/platform.module';
 import { ActiveGenreService } from './active-genre.service';
 import { CatalogService } from './catalog.service';
+import { ExecutorService } from './executor.service';
 
-// The tool read, switch and validate HTTP API, behind Setup & auth's guard. GET reads and never mutates; POST is the
-// command. An unknown tool is TOOL_NOT_FOUND on every per-tool route.
+// The tool read, switch, validate, render and execute HTTP API, behind Setup & auth's guard. GET reads and never
+// mutates; POST is the command. An unknown tool is TOOL_NOT_FOUND on every per-tool route.
 @Controller()
 export class ToolsController {
   constructor(
     private readonly catalog: CatalogService,
     private readonly genre: ActiveGenreService,
+    private readonly executor: ExecutorService,
   ) {}
 
   @Get(TOOLS_ROUTE)
@@ -127,5 +139,32 @@ export class ToolsController {
   @HttpCode(200)
   delete(@Param('name') name: string): void {
     this.catalog.delete(name);
+  }
+
+  // The prompt a call would send. No model call.
+  @Post(TOOL_RENDER_ROUTE)
+  @HttpCode(200)
+  render(
+    @Param('name') name: string,
+    @Body(new ZodValidationPipe(toolRenderRequestSchema))
+    body: ToolRenderRequest,
+  ): ToolRenderResult {
+    return this.executor.render(name, body);
+  }
+
+  // Calls the model with the rendered prompt. A client that goes away before the reply is finished aborts the model
+  // request.
+  @Post(TOOL_EXECUTE_ROUTE)
+  @HttpCode(200)
+  async execute(
+    @Param('name') name: string,
+    @Body(new ZodValidationPipe(toolCallRequestSchema)) body: ToolCallRequest,
+    @Res({ passthrough: true }) response: ServerResponse,
+  ): Promise<ToolCallResult> {
+    const controller = new AbortController();
+    response.on('close', () => {
+      if (!response.writableFinished) controller.abort();
+    });
+    return this.executor.execute(name, body, controller.signal);
   }
 }

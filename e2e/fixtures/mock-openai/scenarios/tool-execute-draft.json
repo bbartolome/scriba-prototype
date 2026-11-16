@@ -1,0 +1,11 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat", "turnIndex": 0 },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["The cold open opens on the ", "bench at dawn.\n"]
+      }
+    }
+  ]
+}

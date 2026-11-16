@@ -1,0 +1,27 @@
+schemaVersion: 1
+name: render_probe
+description: Renders a fixed prompt from its core idea, an optional tone and its entities.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [person]
+    tone:
+      type: string
+      title: Tone
+  required: [coreIdea]
+output: draft
+enabled: true
+prompt: 'Core idea: {{coreIdea}}. Tone: {{tone}}.{{#each entityIds}} [{{entity this}}]{{/each}}'

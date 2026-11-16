@@ -144,6 +144,12 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/tool-registry/tools/:name/delete': {
     path: '/api/tool-registry/tools/no-such-tool/delete',
   },
+  '/api/tool-registry/tools/:name/render': {
+    path: '/api/tool-registry/tools/no-such-tool/render',
+  },
+  '/api/tool-registry/tools/:name/execute': {
+    path: '/api/tool-registry/tools/no-such-tool/execute',
+  },
   '/api/setup-auth/steps/:step': {
     path: '/api/setup-auth/steps/access',
   },

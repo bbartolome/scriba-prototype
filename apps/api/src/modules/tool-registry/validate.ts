@@ -99,22 +99,21 @@ export function validateArguments(
   }
 
   const validate = params ? compiled.params : compiled.full;
-  if (!validate(args)) {
-    const issues = (validate.errors ?? []).map((error) =>
-      issueOf(error, args, fields),
-    );
-    throw argsInvalid(spec.name, fields, issues);
-  }
+  const ajvPassed = validate(args);
+  const issues: ToolArgsIssue[] = ajvPassed
+    ? []
+    : (validate.errors ?? []).map((error) => issueOf(error, args, fields));
 
-  // After Ajv passes, every entity or style value must be an entity ID (each item of a list).
+  // Every entity or style value must be an entity ID (each item of a list). After an Ajv failure, only string values are checked, so every bad field is named once by Ajv or here.
   const entityRefs: EntityToResolve[] = [];
-  const issues: ToolArgsIssue[] = [];
   for (const field of fields) {
     if (!field.isEntity && !field.isStyle) continue;
     const value = args[field.key];
     if (value === undefined) continue;
+    if (!ajvPassed && field.list && !Array.isArray(value)) continue;
     const items: unknown[] = field.list ? (value as unknown[]) : [value];
     items.forEach((item, index) => {
+      if (!ajvPassed && typeof item !== 'string') return;
       const parsed = entityRefSchema.safeParse(item);
       if (parsed.success) {
         entityRefs.push({
