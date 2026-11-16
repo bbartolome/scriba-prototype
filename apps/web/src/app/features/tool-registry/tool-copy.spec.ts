@@ -1,10 +1,17 @@
 import {
   toolCallResultSchema,
+  LINT_ROUTE,
+  lintResponseSchema,
   toolDetailSchema,
+  TOOL_BUILTIN_ROUTE,
+  TOOL_DELETE_ROUTE,
   TOOL_ENABLED_ROUTE,
   TOOL_EXECUTE_ROUTE,
+  TOOL_NAME_PATTERN as CONTRACT_TOOL_NAME_PATTERN,
   TOOL_ORIGINS,
   TOOL_ROUTE,
+  TOOL_SAVE_ROUTE,
+  TOOL_USER_ROUTE,
   TOOL_VALIDATE_ROUTE,
   toolListSchema,
   toolSummarySchema,
@@ -14,16 +21,25 @@ import {
 import { describe, expect, it } from 'vitest';
 import {
   toolCallResultCopy,
+  LINT_PATH,
+  lintDetailsCopy,
+  lintResponseCopy,
+  toolBuiltinPath,
+  toolDeletePath,
   toolDetailCopy,
   toolEnabledPath,
   toolExecutePath,
   toolListCopy,
   toolPath,
+  toolSavePath,
+  toolSourceCopy,
   toolSummaryCopy,
+  toolUserPath,
   toolValidateCopy,
   toolValidatePath,
   TOOL_ENABLED_PATH_TEMPLATE,
   TOOL_EXECUTE_PATH_TEMPLATE,
+  TOOL_NAME_PATTERN,
   TOOL_ORIGIN_ORDER,
   TOOL_PATH_TEMPLATE,
   TOOL_VALIDATE_PATH_TEMPLATE,
@@ -262,5 +278,60 @@ describe('tool-registry execute copies', () => {
     expect(toolCallResultCopy.safeParse(accepted).success).toBe(true);
     expect(toolCallResultSchema.safeParse(refused).success).toBe(false);
     expect(toolCallResultCopy.safeParse(refused).success).toBe(false);
+  });
+});
+
+describe('tool-registry copies of the editor routes', () => {
+  it('S2a the paths equal the routes with :name in place', () => {
+    expect(LINT_PATH).toBe(LINT_ROUTE);
+    expect(toolBuiltinPath('cold_open')).toBe(
+      TOOL_BUILTIN_ROUTE.replace(':name', 'cold_open'),
+    );
+    expect(toolUserPath('cold_open')).toBe(
+      TOOL_USER_ROUTE.replace(':name', 'cold_open'),
+    );
+    expect(toolSavePath('cold_open')).toBe(
+      TOOL_SAVE_ROUTE.replace(':name', 'cold_open'),
+    );
+    expect(toolDeletePath('cold_open')).toBe(
+      TOOL_DELETE_ROUTE.replace(':name', 'cold_open'),
+    );
+  });
+
+  it('S2b TOOL_NAME_PATTERN equals the contract pattern', () => {
+    expect(TOOL_NAME_PATTERN.source).toBe(CONTRACT_TOOL_NAME_PATTERN.source);
+    expect(TOOL_NAME_PATTERN.flags).toBe(CONTRACT_TOOL_NAME_PATTERN.flags);
+  });
+
+  it('S2c the lint and source copies accept the contract samples and refuse a diagnostic with no line', () => {
+    const diagnostic = {
+      severity: 'error',
+      rule: 'file-name',
+      message: 'the name "x" must match the file name "cold_open"',
+      line: 3,
+      column: 1,
+    };
+    const lint = { lint: [diagnostic], views: null };
+    expect(lintResponseSchema.safeParse(lint).success).toBe(true);
+    expect(lintResponseCopy.safeParse(lint).success).toBe(true);
+    expect(
+      toolSourceCopy.safeParse({
+        source: 'schemaVersion: 1\nname: cold_open\n',
+        origin: 'user',
+        spec: null,
+        views: VIEWS,
+        lint: [],
+      }).success,
+    ).toBe(true);
+    const noLine = { ...diagnostic, line: undefined };
+    expect(
+      lintResponseCopy.safeParse({ lint: [noLine], views: null }).success,
+    ).toBe(false);
+    expect(
+      toolSourceCopy.safeParse({ source: 'x', lint: [noLine], views: null })
+        .success,
+    ).toBe(false);
+    expect(lintDetailsCopy({ lint: [diagnostic] })).toEqual([diagnostic]);
+    expect(lintDetailsCopy({})).toBeUndefined();
   });
 });

@@ -1,10 +1,12 @@
 import type {
   ToolCallResult,
+  LintDiagnostic,
   ToolDetail,
   ToolList,
   ToolOrigin,
   ToolSummary,
   ToolValidateResult,
+  ToolViews,
 } from '@bbartolome/scriba-contracts/tool-registry';
 import type { ApiPath, ResponseSchema } from '../../shell';
 
@@ -210,5 +212,151 @@ export const toolSummaryCopy: ResponseSchema<ToolSummary> = {
       return { success: true, data };
     }
     return { success: false, error: 'not a tool summary' };
+  },
+};
+
+/** A tool name: lower snake case, 1 to 64 characters, starting with a letter (a copy of `TOOL_NAME_PATTERN`). */
+export const TOOL_NAME_PATTERN = /^[a-z][a-z0-9_]{0,63}$/;
+
+/** `POST` the lint of a source (`LINT_ROUTE`). Writes nothing. */
+export const LINT_PATH = '/api/tool-registry/lint' as ApiPath;
+
+/** `GET` the built-in source of one tool (`TOOL_BUILTIN_ROUTE`), with `:name` in place. */
+export const TOOL_BUILTIN_PATH_TEMPLATE =
+  '/api/tool-registry/tools/:name/builtin';
+
+/** `GET` the user copy of one tool (`TOOL_USER_ROUTE`), with `:name` in place. */
+export const TOOL_USER_PATH_TEMPLATE = '/api/tool-registry/tools/:name/user';
+
+/** `POST` the save of one tool (`TOOL_SAVE_ROUTE`), with `:name` in place. */
+export const TOOL_SAVE_PATH_TEMPLATE = '/api/tool-registry/tools/:name/save';
+
+/** `POST` the delete of one user copy (`TOOL_DELETE_ROUTE`), with `:name` in place. */
+export const TOOL_DELETE_PATH_TEMPLATE =
+  '/api/tool-registry/tools/:name/delete';
+
+/** The built-in source path of one tool, with its name encoded as one path segment. */
+export function toolBuiltinPath(name: string): ApiPath {
+  return TOOL_BUILTIN_PATH_TEMPLATE.replace(
+    ':name',
+    encodeURIComponent(name),
+  ) as ApiPath;
+}
+
+/** The user copy path of one tool, with its name encoded as one path segment. */
+export function toolUserPath(name: string): ApiPath {
+  return TOOL_USER_PATH_TEMPLATE.replace(
+    ':name',
+    encodeURIComponent(name),
+  ) as ApiPath;
+}
+
+/** The save path of one tool, with its name encoded as one path segment. */
+export function toolSavePath(name: string): ApiPath {
+  return TOOL_SAVE_PATH_TEMPLATE.replace(
+    ':name',
+    encodeURIComponent(name),
+  ) as ApiPath;
+}
+
+/** The delete path of one tool, with its name encoded as one path segment. */
+export function toolDeletePath(name: string): ApiPath {
+  return TOOL_DELETE_PATH_TEMPLATE.replace(
+    ':name',
+    encodeURIComponent(name),
+  ) as ApiPath;
+}
+
+/** One lint diagnostic (`lintDiagnosticSchema`): severity, rule, message, and a line and column of at least 1. */
+export type ToolLintDiagnostic = LintDiagnostic;
+
+/** Whether a value has the shape of one lint diagnostic (`lintDiagnosticSchema`). */
+function isDiagnostic(value: unknown): value is LintDiagnostic {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const { severity, rule, message, line, column } = value;
+  return (
+    (severity === 'error' || severity === 'warning') &&
+    typeof rule === 'string' &&
+    typeof message === 'string' &&
+    Number.isInteger(line) &&
+    (line as number) >= 1 &&
+    Number.isInteger(column) &&
+    (column as number) >= 1
+  );
+}
+
+/** The source of one tool with its lint and views: the built-in, the user copy, and the save answer. */
+export type ToolSourceView = {
+  source: string;
+  lint: LintDiagnostic[];
+  views: ToolViews | null;
+};
+
+/** Response of GET `/builtin`, GET `/user` and POST save: a source, its lint and its views (null when invalid). */
+export const toolSourceCopy: ResponseSchema<ToolSourceView> = {
+  safeParse(data) {
+    const fields: Record<string, unknown> = isRecord(data) ? data : {};
+    const { source, lint, views } = fields;
+    if (
+      typeof source === 'string' &&
+      Array.isArray(lint) &&
+      lint.every(isDiagnostic) &&
+      (views === null || isViews(views))
+    ) {
+      return {
+        success: true,
+        data: {
+          source,
+          lint: lint as LintDiagnostic[],
+          views: views as ToolViews | null,
+        },
+      };
+    }
+    return { success: false, error: 'not a tool source' };
+  },
+};
+
+/** Response of POST lint (`lintResponseSchema`): the diagnostics and the views. Writes nothing. */
+export const lintResponseCopy: ResponseSchema<{
+  lint: LintDiagnostic[];
+  views: ToolViews | null;
+}> = {
+  safeParse(data) {
+    const fields: Record<string, unknown> = isRecord(data) ? data : {};
+    const { lint, views } = fields;
+    if (
+      Array.isArray(lint) &&
+      lint.every(isDiagnostic) &&
+      (views === null || isViews(views))
+    ) {
+      return {
+        success: true,
+        data: {
+          lint: lint as LintDiagnostic[],
+          views: views as ToolViews | null,
+        },
+      };
+    }
+    return { success: false, error: 'not a lint response' };
+  },
+};
+
+/** The diagnostics of a 422 `details` (`{lint}`), or undefined when the details carry none. */
+export function lintDetailsCopy(
+  details: unknown,
+): LintDiagnostic[] | undefined {
+  if (!isRecord(details) || !Array.isArray(details['lint'])) {
+    return undefined;
+  }
+  const lint = details['lint'];
+  return lint.every(isDiagnostic) ? (lint as LintDiagnostic[]) : undefined;
+}
+
+/** The delete answer is empty, so any body is accepted and the result is undefined. */
+export const toolDeleteCopy: ResponseSchema<undefined> = {
+  safeParse() {
+    return { success: true, data: undefined };
   },
 };
