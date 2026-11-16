@@ -32,9 +32,10 @@ const NO_USABLE_PROVIDER_TEXT =
  * The setup wizard at `/setup`. It shows who the caller is, then the five steps with their states.
  * Next moves on and writes nothing. Mark done and Skip write the step's state and move on. On the
  * providers step, Continue writes done only when a usable provider exists, and otherwise shows a
- * message; its Skip writes skipped. Skip the rest and Finish complete setup and go to the landing. A
- * 401 shows the sign-in notice; the two tailnet codes show their explanations; any other error shows
- * its message.
+ * message; its Skip writes skipped. On the first-project step, an activation marks the step done, and
+ * Mark done there is enabled only while a listed project is active. Skip the rest and Finish complete
+ * setup and go to the landing. A 401 shows the sign-in notice; the two tailnet codes show their
+ * explanations; any other error shows its message.
  */
 @Component({
   imports: [ComposeWarning, MatButton, SignInNotice, StepBody],
@@ -68,12 +69,18 @@ const NO_USABLE_PROVIDER_TEXT =
             <li>{{ item.title }}: {{ loaded.steps[item.key] }}</li>
           }
         </ol>
-        <app-step-body [step]="step()" [who]="who" />
+        <app-step-body
+          [step]="step()"
+          [who]="who"
+          (firstProjectActive)="onFirstProjectActive($event)"
+          (firstProjectActivated)="onFirstProjectActivated()"
+          (firstProjectFailed)="onFirstProjectFailed($event)"
+        />
         <div class="controls">
           @if (isLastStep()) {
             <button
               mat-flat-button
-              [disabled]="busy()"
+              [disabled]="busy() || !hasActiveProject()"
               (click)="writeState('done')"
             >
               Mark done
@@ -149,6 +156,7 @@ export class SetupPage {
   protected readonly explanation = signal<string | undefined>(undefined);
   protected readonly failure = signal<string | undefined>(undefined);
   protected readonly busy = signal(false);
+  protected readonly hasActiveProject = signal(false);
 
   private readonly position = computed(() =>
     WIZARD_STEPS.findIndex((item) => item.key === this.step()),
@@ -224,6 +232,26 @@ export class SetupPage {
       });
   }
 
+  /** The first-project step reports whether a listed project is active. */
+  protected onFirstProjectActive(active: boolean): void {
+    this.hasActiveProject.set(active);
+  }
+
+  /**
+   * The first-project step activated a project: writes the step as done. The page stays on the step,
+   * so the author can still click Mark done or Finish.
+   */
+  protected onFirstProjectActivated(): void {
+    if (this.contract === undefined) return;
+    this.begin();
+    this.markFirstProjectDone();
+  }
+
+  /** The first-project step reports a failed request: shows its message. */
+  protected onFirstProjectFailed(error: unknown): void {
+    this.fail(error);
+  }
+
   /** Skip the rest and Finish: completes setup and goes to the landing. */
   protected finish(): void {
     const contract = this.contract;
@@ -255,6 +283,29 @@ export class SetupPage {
   private begin(): void {
     this.busy.set(true);
     this.failure.set(undefined);
+  }
+
+  /** Writes `firstProject` as done. It does not move on: the step stays on the page. */
+  private markFirstProjectDone(): void {
+    const contract = this.contract;
+    if (contract === undefined) return;
+    const path = contract.SETUP_STEP_ROUTE.replace(
+      ':step',
+      'firstProject',
+    ) as ApiPath;
+    this.api
+      .post(path, { state: 'done' }, contract.setupStatusSchema)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (status) => {
+          this.status.set(status);
+          this.busy.set(false);
+        },
+        error: (error: unknown) => {
+          this.busy.set(false);
+          this.fail(error);
+        },
+      });
   }
 
   private async load(): Promise<void> {
