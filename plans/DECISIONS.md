@@ -5207,3 +5207,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Free ids GNP-25 to GNP-29:** checked free; none used (no split was needed).
 - **Open, awaiting the Navigator:** the AC 3 reading (a data-only test; the real-model run recorded as not run; the run belongs to GNP-12 done-when) follows plans/GNP-09.md section 8 point 1. It is the same question as GNP-08 AC3 and GNP-09 AC4. Navigator session 8a43a36b415949f89ef1d21f4ea58eca.
 - **Review parts:** Part 1 is the whole plan (steps 0 to 16; tests AC1, AC2, AC3).
+
+## 2026-11-16 — GNP-09 — Sonnet code review: APPROVED, patch id 3a3286dc12c1cc87de3513a80841cfc3e2e3b12a (orchestrator record)
+
+- **Result:** one reviewer, the plan has one review part (Part 1 of plans/GNP-09.md, the whole plan), APPROVED for the patch id above. Checked on unit/GNP-09 at 327d4a3 (three commits c2203a9, 7c1fb1a, 327d4a3, on base b718208). The reviewer checked the 8 paths of plans/GNP-09.md section 4 (no unlisted file; nothing in plans/ or units/), steps 2 to 5, 8, 9 and 10 against the code, and the tests AC 1 to AC 4 by running them.
+- **Implementer report (COMPLETE):** `npm run lint:packs` exit 0; `npm test -w @bbartolome/scriba-packs` 14 of 14 in 4 files; `apps/api` `test/packs/myth-buster.test.ts` 2 of 2; `node --test scripts/eval-case-myth-buster.test.mjs` 1 of 1; `node --test scripts/eval-cases.test.mjs` 2 of 2; root build, test (92 pass), lint, prettier, e2e 12 of 12. Reported by the implementer; the reviewer re-ran the targeted commands above.
+- **Differences from the plan:** three commits, one per part (accepted; not a rework item). `npx prettier --write` on the golden folder matched no file; the golden diff is one added line and `prettier --check` passes. Prettier formatted the scenario JSON and the test file.
+- **Not run:** the real-model run of the eval case with a small and a larger local model (plan section 8, point 1). It needs a local model server. AC 4 is not ticked until the Navigator confirms the data-only reading (Navigator session 8a43a36b415949f89ef1d21f4ea58eca, open).
+- **Next:** Step 3 for GNP-09: rebase onto main, the three checks, the patch id again, the checkboxes and status on the branch, then the fast-forward. The checkbox of AC 4 waits for the Navigator.
