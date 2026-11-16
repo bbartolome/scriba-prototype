@@ -14,8 +14,8 @@ unblocks: [GNP-20, GNP-21, GNP-22, "Tool registry editor-ui gate (TRG-17)", "Age
 Merging this **closes Genre packs `phase:nonfiction-workhorses`**.
 
 ## Acceptance criteria (the phase checklist)
-- [ ] All four tools pass the validation suite, and their common inputs are identical.
-- [ ] Each tool's golden test passes (entities with IDs, citation and placeholder instructions, `sourcesUsed` from entity inputs).
+- [x] All four tools pass the validation suite, and their common inputs are identical.
+- [x] Each tool's golden test passes (entities with IDs, citation and placeholder instructions, `sourcesUsed` from entity inputs).
 - [ ] Sample entities validate and every reference resolves.
 - [ ] **Done when:** each of the four workhorses produces a draft that cites its source files — in CI through `sourcesUsed` and draft provenance; with a real model through the manual eval (the draft contains `[@id]` citations whose IDs are among the input entities and sources).
 
