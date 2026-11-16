@@ -5353,3 +5353,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Suggested plan fix from the implementer (not applied):** use a non-string `targetPath` (for example `3`) as the invalid sample, or drop the non-empty rule of D11 and keep only the type check. The plan reviser chooses, under the Revise rules.
 - **Not run:** gates, criteria G1 to G6, F12, X1 and X1b. Nothing is committed on `unit/AGL-18`.
 - **Next:** the plan goes back to `status: draft`, and a new Opus reviser corrects it. A new implementer then continues from the branch commits (none yet).
+
+## 2026-11-16 — AGL-18 — code review: APPROVED, patch id 5cf43d49596539f78cc48e1031a034a08d6cb7dc (orchestrator record)
+
+- **Result (Sonnet reviewer, medium, the one part of plan section 9, branch `unit/AGL-18` at `2fa2cf8` on main `05ec9d7`):** APPROVED. The reviewer computed patch id `5cf43d49596539f78cc48e1031a034a08d6cb7dc`, the same value as before the rebase. The rebase was done with cherry-picks after a stuck `git rebase` (todo-state bug); the three code commits were picked in order, and the patch id is unchanged.
+- **Tests (reviewer, `apps/web`, `ng test`, 60 files and 415 tests passed):** G1 (C1), G2 (C2), G3, G4, G5, G6, F12, X1 (agent-contract) and X1b pass. The X1 and X1b invalid samples use `targetPath: 3`, and X1b has the valid `grounding-result` sample with `targetPath: ''`, as plan revision 3 requires.
+- **Implementer differences accepted by the reviewer:** (a) `GROUNDING_VERDICT_VALUES` is exported from `agent-contract.ts`, next to the other value tuples; (b) `chat-page.spec.ts` uses `as Element` casts for `compareDocumentPosition`, with no assertion changed; (c) the separate prettier commit `dec8ff4` (formatting of three spec files).
+- **Source of the differences:** the implementer's COMPLETE report is not stored in the repository. The orchestrator gave the reviewer the three differences from its own record of the previous cycle, and the reviewer checked each one in the code.
+- **Build budget (orchestrator check):** the web build shows `Initial total 574.94 kB` and the 500 kB budget warning. The same warning appears on main `05ec9d7` before the AGL-18 code (build of `@bbartolome/scriba-web` on main). It is not new.
