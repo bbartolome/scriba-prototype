@@ -1,6 +1,7 @@
 import {
   PROJECT_ENTITY_RESOLVE_ROUTE,
   entityResolutionSchema,
+  projectStoreEventSchema,
 } from '@bbartolome/scriba-contracts/project-store';
 import {
   AGENT_CARD_STATUSES,
@@ -42,6 +43,7 @@ import {
   entityResolutionReply,
   entityResolvePath,
   isChatEvent,
+  isQueueEvent,
   PROJECT_ENTITY_RESOLVE_PATH,
   RUN_END_REASON_VALUES,
   RUN_STATUS_VALUES,
@@ -443,6 +445,57 @@ describe('agent contract copies', () => {
     for (const sample of invalid) {
       expect(isChatEvent(sample)).toBe(false);
       expect(agentLoopEventSchema.safeParse(sample).success).toBe(false);
+    }
+  });
+
+  it('Q2 isQueueEvent agrees with the Project store event schema for the three queue events', () => {
+    const change = {
+      id: 'pc1',
+      projectId: 'p1',
+      targetPath: 'drafts/ch01.md',
+      kind: 'create',
+      diff: '',
+      capturedBase: null,
+      proposed: 'x',
+      origin: { kind: 'agent-run', runId: 'r1', toolCallId: 'c1' },
+      status: 'pending',
+      conflict: null,
+      createdAt: '2026-11-16T10:00:00Z',
+      updatedAt: '2026-11-16T10:00:00Z',
+    };
+    const queue = (
+      type: string,
+      data: unknown,
+      module: string = 'project-store',
+    ): unknown => ({ module, type, data });
+    const data = { projectId: 'p1', pendingChange: change };
+    const valid: unknown[] = [
+      queue('pending-created', data),
+      queue('pending-updated', {
+        ...data,
+        pendingChange: { ...change, status: 'accepted' },
+      }),
+      queue('pending-resolved', {
+        ...data,
+        pendingChange: { ...change, status: 'rejected' },
+      }),
+    ];
+    const invalid: unknown[] = [
+      queue('pending-created', {
+        ...data,
+        pendingChange: { ...change, status: 'done' },
+      }),
+      queue('pending-created', { projectId: 'p1' }),
+      queue('pending-created', data, 'agent-loop'),
+    ];
+
+    for (const sample of valid) {
+      expect(isQueueEvent(sample)).toBe(true);
+      expect(projectStoreEventSchema.safeParse(sample).success).toBe(true);
+    }
+    for (const sample of invalid) {
+      expect(isQueueEvent(sample)).toBe(false);
+      expect(projectStoreEventSchema.safeParse(sample).success).toBe(false);
     }
   });
 

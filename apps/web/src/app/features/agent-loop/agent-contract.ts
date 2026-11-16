@@ -186,6 +186,16 @@ function isErrorBody(value: unknown): boolean {
   );
 }
 
+/** The before and after text of a write: `base` is '' for a file that does not exist yet (AGL-14 D2). */
+function isDiffPreview(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    isFilled(value['path']) &&
+    isText(value['base']) &&
+    isText(value['proposed'])
+  );
+}
+
 /** One tool-call card of a run state or a history turn. `arguments` and `output` take any value. */
 function isCard(value: unknown): boolean {
   return (
@@ -196,7 +206,7 @@ function isCard(value: unknown): boolean {
     isOneOf(CARD_STATUS_VALUES, value['status']) &&
     isOptional(value['valid'], isBoolean) &&
     isOptional(value['summary'], isText) &&
-    isOptional(value['diffPreview'], isRecord) &&
+    isOptional(value['diffPreview'], isDiffPreview) &&
     isOptional(value['sourcesUsed'], Array.isArray) &&
     isOptional(value['provenance'], isRecord) &&
     isOptional(value['error'], isErrorBody)
@@ -390,7 +400,7 @@ export function isChatEvent(value: unknown): value is ChatEvent {
       return (
         isFilled(data['callId']) &&
         isText(data['summary']) &&
-        isOptional(data['diffPreview'], isRecord) &&
+        isOptional(data['diffPreview'], isDiffPreview) &&
         isOptional(data['sourcesUsed'], Array.isArray) &&
         isOptional(data['provenance'], isRecord)
       );
@@ -419,4 +429,35 @@ export function isChatEvent(value: unknown): value is ChatEvent {
     default:
       return false;
   }
+}
+
+// The statuses a pending change can have (the Project store's pendingStatusSchema).
+const PENDING_STATUS_VALUES = ['pending', 'accepted', 'rejected'] as const;
+
+/**
+ * Whether an SSE envelope is one of the three queue events of the Project store that the chat page reads (AGL-14 P8):
+ * the project and the pending change's id and status are checked, and no other field.
+ */
+export function isQueueEvent(value: unknown): boolean {
+  if (!isRecord(value) || value['module'] !== 'project-store') {
+    return false;
+  }
+  const type = value['type'];
+  if (
+    type !== 'pending-created' &&
+    type !== 'pending-updated' &&
+    type !== 'pending-resolved'
+  ) {
+    return false;
+  }
+  const data = value['data'];
+  if (!isRecord(data) || !isFilled(data['projectId'])) {
+    return false;
+  }
+  const change = data['pendingChange'];
+  return (
+    isRecord(change) &&
+    isFilled(change['id']) &&
+    isOneOf(PENDING_STATUS_VALUES, change['status'])
+  );
 }
