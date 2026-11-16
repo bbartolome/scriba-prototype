@@ -4875,3 +4875,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
   - New criterion 3, the next free number: "- [ ] With `editable`, a change of line endings only (LF base, CRLF proposed) shows a visible mark in the diff, in both layouts.", with a note. The criterion is not checked. Its test is C6 in plan section 4.
   - Reason: Navigator decision of 2026-11-16 (SHL-16 open point 1, option (e)), which requires a criterion for the visible LF-to-CRLF mark in editable mode.
 - **Next:** Haiku implementer in the worktree of unit/SHL-16 (created from main at this commit), then Sonnet review.
+
+## 2026-11-16 — SHL-16 — Implementation report and Sonnet code review (part 1 of 1, the whole plan): APPROVED (orchestrator record)
+
+- **Implementer (Haiku, medium), COMPLETE**, commit `1d7fba1` on `unit/SHL-16` (on top of `4fb56b5`). It changed only `apps/web/src/app/shell/diff-view.ts` and the new `apps/web/src/app/shell/diff-view-editable.spec.ts`. `diff-view.spec.ts` is unchanged (C5). Completion gate C6 (LF base, CRLF proposed, editable) PASSED in both layouts; no PLAN DOES NOT WORK; the widening rule was kept as written. Full suite: 58 files, 372 tests passed. Lint, build and tsc pass. Controls M1 to M6 each failed as the plan expected.
+- **Sonnet reviewer (medium), part 1 of 1 (the whole plan): APPROVED.** It checked the two files of plan section 2 against `git diff --name-only`, the steps of section 3, and the tests of section 4 by their assertions. It did not rerun the tests; it relies on the reported output, which matches the spec file.
+- **Patch id:** `26799830d91fc026cac1ef53c74980fec52c4361` (`git diff main...unit/SHL-16 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 1d7fba1, main 4fb56b5).
+- **Next:** step 3 for SHL-16 (rebase onto main, the three checks, patch id again, criteria and plan marks, fast-forward).
