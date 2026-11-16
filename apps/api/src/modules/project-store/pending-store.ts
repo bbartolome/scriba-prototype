@@ -1,55 +1,41 @@
 import { randomBytes } from 'node:crypto';
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  realpathSync,
-} from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  PROJECT_ERROR_CODES,
   pendingChangeSchema,
   type PendingChange,
 } from '@bbartolome/scriba-contracts/project-store';
 import { writeFileAtomic } from './atomic-write';
 import type { DiscoveredProject } from './project-discovery';
-import { fail, PATH_MESSAGES } from './path-safety';
+import { ownFolder } from './own-folder';
 
 const STATE_DIR = '.scriba';
 const PENDING_DIR = 'pending';
+const RESOLVED_DIR = 'resolved';
+
+// The form of a pending id that newPendingId makes: the UTC time, a dash, six hex digits (PST-16 D3).
+export const PENDING_ID_PATTERN = /^\d{8}T\d{9}Z-[0-9a-f]{6}$/;
+
+// True when id has the form of a pending id. Ids of any other form never reach a path.
+export function isPendingId(id: string): boolean {
+  return PENDING_ID_PATTERN.test(id);
+}
 
 // The folder of the open changes of one project, .scriba/pending/. With create false, a missing folder is
-// undefined and nothing is created (GETs never mutate). The folders are checked to lie inside the project's own
-// .scriba (P13), as stateDir does.
+// undefined and nothing is created (GETs never mutate). The folders lie inside the project's own .scriba (P13).
 export function pendingFolder(
   project: DiscoveredProject,
   create: boolean,
 ): string | undefined {
-  const realRoot = realpathSync.native(project.root);
-  const scriba = join(project.root, STATE_DIR);
-  if (
-    existsSync(scriba) &&
-    realpathSync.native(scriba) !== join(realRoot, STATE_DIR)
-  ) {
-    throw fail(PROJECT_ERROR_CODES.PATH_OUTSIDE, PATH_MESSAGES.OUTSIDE);
-  }
-  const folder = join(scriba, PENDING_DIR);
-  if (!existsSync(folder)) {
-    if (!create) return undefined;
-    try {
-      mkdirSync(folder, { recursive: true });
-    } catch (error) {
-      const code = (error as NodeJS.ErrnoException).code ?? 'unknown';
-      throw new Error(`The project folder could not be created (${code}).`, {
-        cause: error,
-      });
-    }
-  }
-  if (realpathSync.native(folder) !== join(realRoot, STATE_DIR, PENDING_DIR)) {
-    throw fail(PROJECT_ERROR_CODES.PATH_OUTSIDE, PATH_MESSAGES.OUTSIDE);
-  }
-  return folder;
+  return ownFolder(project, [STATE_DIR, PENDING_DIR], create);
+}
+
+// The folder of the resolved changes, .scriba/pending/resolved/ (PST-16 D2). The same rules as pendingFolder.
+export function resolvedFolder(
+  project: DiscoveredProject,
+  create: boolean,
+): string | undefined {
+  return ownFolder(project, [STATE_DIR, PENDING_DIR, RESOLVED_DIR], create);
 }
 
 // A time-based id: the UTC time as YYYYMMDDTHHMMSSmmmZ, then - and six lower-case hex characters (PST-16 form).
@@ -74,6 +60,24 @@ export function readOpenChanges(folder: string | undefined): PendingChange[] {
     }
     return parsed.data;
   });
+}
+
+// One open or resolved change of a folder, by id, or undefined when the file is missing. The file is parsed the
+// same way as readOpenChanges.
+export function readChange(
+  folder: string | undefined,
+  id: string,
+): PendingChange | undefined {
+  if (folder === undefined) return undefined;
+  const path = join(folder, `${id}.json`);
+  if (!existsSync(path)) return undefined;
+  const parsed = pendingChangeSchema.safeParse(
+    JSON.parse(readFileSync(path, 'utf8')) as unknown,
+  );
+  if (!parsed.success) {
+    throw new Error('A pending change file could not be read.');
+  }
+  return parsed.data;
 }
 
 // Writes one change as pretty-printed JSON with a final LF, atomically.

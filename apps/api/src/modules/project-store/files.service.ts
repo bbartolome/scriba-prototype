@@ -151,7 +151,7 @@ export function readFileAt(target: ResolvedProjectPath): {
 
 // The atomic write (P14). A folder in the way, or a file above the target, is a path error; any other errno is an
 // unexpected error that carries the errno code only.
-function writeText(target: string, text: string): void {
+export function writeText(target: string, text: string | Buffer): void {
   let failure: string | undefined;
   try {
     writeFileAtomic(target, text);
@@ -346,6 +346,10 @@ export class FilesService {
       type: 'files-changed',
       data: { projectId: project.id, paths: [target.relativePath] },
     });
+    this.store.notifyFilesChanged({
+      projectId: project.id,
+      paths: [target.relativePath],
+    });
   }
 
   // The rename of one file (P5). The entry is renamed as named, so a link keeps its target (P2). A missing parent
@@ -385,6 +389,10 @@ export class FilesService {
         projectId: project.id,
         paths: [from.relativePath, to.relativePath],
       },
+    });
+    this.store.notifyFilesChanged({
+      projectId: project.id,
+      paths: [from.relativePath, to.relativePath],
     });
   }
 
@@ -538,6 +546,10 @@ export class FilesService {
       module: 'project-store',
       type: 'files-changed',
       data: { projectId: project.id, paths: [target.relativePath] },
+    });
+    this.store.notifyFilesChanged({
+      projectId: project.id,
+      paths: [target.relativePath],
     });
     return { path: target.relativePath, hash: hashOf(bytes), mtime };
   }

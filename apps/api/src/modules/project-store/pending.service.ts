@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { Injectable } from '@nestjs/common';
 import {
@@ -10,12 +10,14 @@ import {
   PROJECT_ERROR_CODES,
   proposeInputSchema,
   type PendingChange,
+  type PendingDecision,
   type PendingList,
   type PendingListQuery,
   type PendingOrigin,
   type ProposeInput,
 } from '@bbartolome/scriba-contracts/project-store';
 import { EventsPublisher, ModuleError } from '../platform/platform.module';
+import { isTopLevelDraft, saveVersion } from './draft-versions';
 import {
   decodeText,
   FILE_MESSAGES,
@@ -24,12 +26,16 @@ import {
   notAFile,
   readFileAt,
   refuse,
+  writeText,
 } from './files.service';
 import {
+  isPendingId,
   newPendingId,
   patternToRegExp,
   pendingFolder,
+  readChange,
   readOpenChanges,
+  resolvedFolder,
   writeChange,
 } from './pending-store';
 import type { DiscoveredProject } from './project-discovery';
@@ -54,6 +60,10 @@ interface RegisteredValidator {
 const PENDING_MESSAGES = {
   INVALID: 'The proposed change is not valid.',
   VALIDATION: 'The proposed content does not pass the check for that file.',
+  NOT_FOUND: 'No pending change has that id.',
+  NOT_OPEN: 'That change is already resolved.',
+  CONFLICT:
+    'The file no longer matches the base of this change. Refresh the change, or accept it anyway.',
 } as const;
 
 // Two origins name the same change when they have the same kind and run; a recipe run also has the same node.
@@ -74,7 +84,10 @@ export class PendingService {
     private readonly store: ProjectStoreService,
     private readonly projects: ProjectsService,
     private readonly events: EventsPublisher,
-  ) {}
+  ) {
+    // A write of a project file rechecks the open changes of its paths (PST-16 D17).
+    this.store.onFilesChanged((event) => this.recheckQuietly(event));
+  }
 
   // Registers a check for every project path that matches pattern (PST-15 decision 11). All matching checks run in
   // registration order; the first failure refuses the proposal.
@@ -151,6 +164,160 @@ export class PendingService {
     return hashOf(readFileSync(target.realPath)) === base.hash
       ? null
       : 'base-changed';
+  }
+
+  // Accepts an open change (PST-16 D1, D4, D5, D12). The three-way check runs first; a conflict is persisted and
+  // refused. Otherwise the replaced draft is versioned, the target is written, and the change is resolved.
+  accept(projectId: string, id: string, body: PendingDecision): PendingChange {
+    const { project, change } = this.openChangeOf(projectId, id);
+    const target = this.store.resolvePath(project.root, change.targetPath);
+    const now = new Date();
+    const reason = this.conflictReason(project, change);
+    if (reason !== null) {
+      this.persistConflict(project, change, now);
+      throw refuse(
+        PROJECT_ERROR_CODES.PENDING_CONFLICT,
+        PENDING_MESSAGES.CONFLICT,
+        {
+          reason,
+        },
+      );
+    }
+    const content = body.content ?? change.proposed;
+    if (change.kind === 'modify' && isTopLevelDraft(target.relativePath)) {
+      saveVersion(
+        project,
+        target.relativePath,
+        readFileSync(target.realPath),
+        now,
+      );
+    }
+    this.writeProposal(target, content);
+    const resolved = this.resolveChange(project, change, 'accepted', now);
+    this.events.publish({
+      module: 'project-store',
+      type: 'pending-resolved',
+      data: { projectId: project.id, pendingChange: resolved },
+    });
+    this.events.publish({
+      module: 'project-store',
+      type: 'files-changed',
+      data: { projectId: project.id, paths: [target.relativePath] },
+    });
+    this.store.notifyFilesChanged({
+      projectId: project.id,
+      paths: [target.relativePath],
+    });
+    return resolved;
+  }
+
+  // Rejects an open change (PST-16 D2). Reject does not read or write the target.
+  reject(projectId: string, id: string): PendingChange {
+    const { project, change } = this.openChangeOf(projectId, id);
+    const resolved = this.resolveChange(
+      project,
+      change,
+      'rejected',
+      new Date(),
+    );
+    this.events.publish({
+      module: 'project-store',
+      type: 'pending-resolved',
+      data: { projectId: project.id, pendingChange: resolved },
+    });
+    return resolved;
+  }
+
+  // Rechecks the open changes whose target is one of paths (PST-16 D4, D17). It writes and publishes only when a
+  // conflict changed. Nothing happens for a project that is not found or not ok.
+  recheck(projectId: string, paths: readonly string[]): void {
+    const project = this.projects.find(projectId);
+    if (project === undefined || project.yaml.status !== 'ok') return;
+    const now = new Date();
+    for (const change of readOpenChanges(pendingFolder(project, false))) {
+      if (paths.includes(change.targetPath)) {
+        this.persistConflict(project, change, now);
+      }
+    }
+  }
+
+  // The hook of files-changed. The write has already happened, so an error here must not change its answer.
+  private recheckQuietly(event: { projectId: string; paths: string[] }): void {
+    try {
+      this.recheck(event.projectId, event.paths);
+    } catch {
+      // Accept and the list compute the conflict themselves, so nothing depends on this recheck.
+    }
+  }
+
+  // The active check, the project lookup, the form of the id, and the open change (PST-16 D3, D8). A resolved
+  // change is PROJECT_PENDING_NOT_OPEN; an unknown id is PROJECT_NOT_FOUND.
+  private openChangeOf(
+    projectId: string,
+    id: string,
+  ): { project: DiscoveredProject; change: PendingChange } {
+    this.store.requireActive(projectId);
+    const project = this.projects.find(projectId);
+    if (project === undefined) {
+      throw refuse(PROJECT_ERROR_CODES.NOT_FOUND, PROJECT_MESSAGES.NOT_FOUND);
+    }
+    if (!isPendingId(id)) {
+      throw refuse(PROJECT_ERROR_CODES.NOT_FOUND, PENDING_MESSAGES.NOT_FOUND);
+    }
+    const change = readChange(pendingFolder(project, false), id);
+    if (change !== undefined) return { project, change };
+    if (readChange(resolvedFolder(project, false), id) !== undefined) {
+      throw refuse(
+        PROJECT_ERROR_CODES.PENDING_NOT_OPEN,
+        PENDING_MESSAGES.NOT_OPEN,
+      );
+    }
+    throw refuse(PROJECT_ERROR_CODES.NOT_FOUND, PENDING_MESSAGES.NOT_FOUND);
+  }
+
+  // Stores a changed conflict and publishes pending-updated (PST-16 D4, D15). The stored updatedAt is kept.
+  private persistConflict(
+    project: DiscoveredProject,
+    change: PendingChange,
+    now: Date,
+  ): PendingChange {
+    const conflict = this.conflictOf(project, change, change.conflict, now);
+    if (conflict?.reason === change.conflict?.reason) {
+      return { ...change, conflict };
+    }
+    const updated: PendingChange = { ...change, conflict };
+    writeChange(pendingFolder(project, false) as string, updated);
+    this.events.publish({
+      module: 'project-store',
+      type: 'pending-updated',
+      data: { projectId: project.id, pendingChange: updated },
+    });
+    return updated;
+  }
+
+  // Writes the resolved record (PST-16 D22) and removes the open file. The record keeps the proposed text.
+  private resolveChange(
+    project: DiscoveredProject,
+    change: PendingChange,
+    status: 'accepted' | 'rejected',
+    now: Date,
+  ): PendingChange {
+    const resolved: PendingChange = {
+      ...change,
+      status,
+      conflict: null,
+      updatedAt: now.toISOString(),
+    };
+    writeChange(resolvedFolder(project, true) as string, resolved);
+    unlinkSync(
+      join(pendingFolder(project, false) as string, `${change.id}.json`),
+    );
+    return resolved;
+  }
+
+  // The one write of an accept (PST-16 D19). PST-23 adds its migration before this call.
+  private writeProposal(target: ResolvedProjectPath, content: string): void {
+    writeText(target.realPath, content);
   }
 
   // Proposes a full new text for one file of an ok project. Nothing at the target is changed. A change of the same

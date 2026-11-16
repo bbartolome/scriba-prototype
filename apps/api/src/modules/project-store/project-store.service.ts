@@ -12,9 +12,13 @@ import {
   type ScribaEnv,
 } from '../platform/platform.module';
 import { resolveProjectPath, type ResolvedProjectPath } from './path-safety';
+import type { FilesChangedData } from '@bbartolome/scriba-contracts/project-store';
 
 // A handler of project-switched. It runs before the switch is persisted, so it reads the new id from the event.
 export type ProjectSwitchedHandler = (event: ProjectSwitchedData) => void;
+
+// A handler of files-changed from the file API or the watcher. It must catch its own errors (PST-16 D17).
+export type FilesChangedHandler = (event: FilesChangedData) => void;
 
 // The two messages of the active-project check. Fixed strings only; no input value is echoed.
 const ACTIVE_MESSAGES = {
@@ -26,6 +30,7 @@ const ACTIVE_MESSAGES = {
 @Injectable()
 export class ProjectStoreService {
   private readonly switchHandlers: ProjectSwitchedHandler[] = [];
+  private readonly filesChangedHandlers: FilesChangedHandler[] = [];
 
   constructor(
     @Inject(SCRIBA_ENV) private readonly env: ScribaEnv,
@@ -58,6 +63,18 @@ export class ProjectStoreService {
   // Calls every handler with the switch. No exception is caught here: a throw fails the switch.
   notifyProjectSwitched(event: ProjectSwitchedData): void {
     for (const handler of this.switchHandlers) {
+      handler(event);
+    }
+  }
+
+  // Adds a handler of files-changed. Handlers run in registration order, once per notification.
+  onFilesChanged(handler: FilesChangedHandler): void {
+    this.filesChangedHandlers.push(handler);
+  }
+
+  // Calls every handler with the paths that changed on disk (PST-16 D17). No exception is caught here.
+  notifyFilesChanged(event: FilesChangedData): void {
+    for (const handler of this.filesChangedHandlers) {
       handler(event);
     }
   }
