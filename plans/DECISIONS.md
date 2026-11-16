@@ -4508,3 +4508,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Patch id: `6ec99c2c3bbfcdc5f071dbc6ad66d0fbfeec85dc` (`git diff main...unit/PLT-21 -- . ':!plans' ':!units' | git patch-id --stable`). Branch unit/PLT-21, base aae7026, commits 28fdfaa (feat) and 81c1f76 (test).
 - The reviewer checked by reading the diff against the plan: the four files of section 2 and no other file; D1 to D11; tests C1 to C4 and E1 to E6 each assert the exit code and the stderr text the plan names. Tests were not re-run by the reviewer; the implementer reported 10 of 10 graph tests, 86 of 86 in `npm test` on a fresh export, and lint and build exit 0.
 - Next: step 3 (rebase onto main, the three checks, unit and plan marks, fast-forward).
+
+## 2026-11-16 — PLT-21 — Merged to main (orchestrator)
+
+- Failed check, step 3 item 2: `git rebase main` on unit/PLT-21 stopped with "Your local changes to the following files would be overwritten by merge: scripts/examples-check/index.mjs" (git 2.43). It stopped in the old worktree and in a fresh detached worktree, with no conflict and a clean tree. The rebase was aborted. The two commits were replayed with `git cherry-pick` onto main f4051bc: 28fdfaa became 3c0ea77, 81c1f76 became 57857cb. The patch id of the replayed diff is unchanged: `6ec99c2c3bbfcdc5f071dbc6ad66d0fbfeec85dc`, the approved one.
+- Checks on 57857cb: `npm run lint` exit 0; `npm test` 86 of 86 pass; `npm run build` exit 0.
+- Unit and plan marks in 30a5fa9: the four criteria ticked; plan `status: done`.
+- Fast-forward: main moved f4051bc to 30a5fa9. The worktree and the branch unit/PLT-21 were removed after the fast-forward.
