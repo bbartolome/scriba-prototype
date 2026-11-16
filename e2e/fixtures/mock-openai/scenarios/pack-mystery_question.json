@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Two people kept the same hours, yet one of them pulled ahead [@claim-a]."
+        ]
+      }
+    }
+  ]
+}

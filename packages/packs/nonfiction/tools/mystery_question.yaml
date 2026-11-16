@@ -1,0 +1,75 @@
+schemaVersion: 1
+name: mystery_question
+description: Open with a puzzle, then unravel it to a surprising finding.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    puzzle:
+      type: string
+      title: Puzzle
+      x-scriba-type: text
+      x-scriba-port: true
+    surprisingFinding:
+      type: string
+      title: Surprising finding
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [coreIdea, puzzle]
+output: draft
+enabled: true
+prompt: |
+  You write a nonfiction passage that opens with a puzzle and unravels it to a surprising finding.
+
+  Core idea: {{coreIdea}}
+  Puzzle: {{puzzle}}
+  {{#if surprisingFinding}}Surprising finding: {{surprisingFinding}}
+  {{/if}}Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}
+  Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. Pose the puzzle: state it in the opening lines, in the words given above.
+  2. Deepen it: show why the puzzle is harder than it looks, using only the material.
+  3. Unravel it: work through the material step by step toward the answer.
+  4. Land the surprising finding: state the finding the material supports. When a surprising finding is given above, land on that one.
+  5. Tie it to the idea: end by connecting the finding to the core idea, in plain words.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

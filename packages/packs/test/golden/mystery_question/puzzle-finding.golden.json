@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Write the answer as Markdown prose. Return only the text of the answer, with no preface and no closing remarks."
+    },
+    {
+      "role": "user",
+      "content": "You write a nonfiction passage that opens with a puzzle and unravels it to a surprising finding.\n\nCore idea: Expertise grows from planned practice, not from the hours alone.\nPuzzle: Why do two people with the same hours reach different levels?\nSurprising finding: The hours were never the difference; the planning was.\nLength: 800 words.\nMaterial:\nsource notes-a (sources/notes-a.md)\nNotes A say that each practice session was planned in advance, with a teacher setting the task.\nclaim claim-a (entities/claim-a.md)\nClaim A says that the practice hours alone did not predict the level that people reached in the study.\nstyle-profile style-a (entities/style-a.md)\n---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the evidence shows, and say where it stops.\n\nSteps:\n1. Pose the puzzle: state it in the opening lines, in the words given above.\n2. Deepen it: show why the puzzle is harder than it looks, using only the material.\n3. Unravel it: work through the material step by step toward the answer.\n4. Land the surprising finding: state the finding the material supports. When a surprising finding is given above, land on that one.\n5. Tie it to the idea: end by connecting the finding to the core idea, in plain words.\n\nConstraints:\n- Use only the material above.\n- Cite each factual sentence with its entity or source ID in the form [@id].\n- Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.\n- Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.\n"
+    }
+  ]
+}

@@ -61,3 +61,25 @@ test('AC 3: the cold-open eval case is in the eval data and uses the documented 
   assert.equal(cold.data.expect.reason, 'completed');
   assert.equal(cold.data.expect.citations, 'present');
 });
+
+test('AC 3: the mystery-question eval case is in the eval data and uses the documented keys and values', () => {
+  const mystery = loadCases().find(({ id }) => id === 'mystery-question');
+  assert.ok(mystery, 'the case file mystery-question.json exists');
+  for (const key of Object.keys(mystery.data)) {
+    assert.ok(CASE_KEYS.includes(key), `unknown key ${key}`);
+  }
+  for (const key of Object.keys(mystery.data.expect ?? {})) {
+    assert.ok(EXPECT_KEYS.includes(key), `unknown expect key ${key}`);
+  }
+  assert.ok(RUN_END_REASONS.includes(mystery.data.expect.reason), 'reason');
+  assert.ok(
+    CITATION_MODES.includes(mystery.data.expect.citations),
+    'citations',
+  );
+  assert.equal(mystery.data.sample, 'nonfiction');
+  assert.equal(typeof mystery.data.intent, 'string');
+  assert.ok(mystery.data.intent.length > 0, 'intent is not empty');
+  assert.deepEqual(mystery.data.expect.tools, ['mystery_question']);
+  assert.equal(mystery.data.expect.reason, 'completed');
+  assert.equal(mystery.data.expect.citations, 'present');
+});

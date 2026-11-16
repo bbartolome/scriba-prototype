@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Open chapter 4 with a puzzle about why progress stalls, using my notes.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["mystery_question"],
+    "citations": "present"
+  }
+}

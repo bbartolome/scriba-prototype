@@ -1,0 +1,29 @@
+{
+  "arguments": {
+    "coreIdea": "Expertise grows from planned practice, not from the hours alone.",
+    "entityIds": ["notes-a", "claim-a"],
+    "styleProfile": "style-a",
+    "puzzle": "Why do two people with the same hours reach different levels?",
+    "surprisingFinding": "The hours were never the difference; the planning was."
+  },
+  "entities": [
+    {
+      "ref": "notes-a",
+      "type": "source",
+      "path": "sources/notes-a.md",
+      "content": "Notes A say that each practice session was planned in advance, with a teacher setting the task."
+    },
+    {
+      "ref": "claim-a",
+      "type": "claim",
+      "path": "entities/claim-a.md",
+      "content": "Claim A says that the practice hours alone did not predict the level that people reached in the study."
+    },
+    {
+      "ref": "style-a",
+      "type": "style-profile",
+      "path": "entities/style-a.md",
+      "content": "---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the evidence shows, and say where it stops."
+    }
+  ]
+}
