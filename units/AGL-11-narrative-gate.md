@@ -19,7 +19,7 @@ Merging this **closes Agent loop `phase:narrative-tools`**.
 
 ## Acceptance criteria
 - [ ] **Done when** each of the four workhorses (cold open, mystery question, myth-buster, numbers-to-people), called by the agent from an intent, produces a draft that cites its source files (asserted via `sourcesUsed` and provenance with the mock; via `[@id]` citations in the manual eval).
-- [ ] AGL-09 and AGL-10 criteria pass on `main`.
+- [x] AGL-09 and AGL-10 criteria pass on `main`.
 
 ## Demo (under 5 min)
 Ask "draft a cold open about the person in my notes on the 10,000 hour idea". Show the card's entity IDs and sources used. Disable myth-buster in the registry, ask for one, and show the agent can't call it.

@@ -1,6 +1,6 @@
 ---
 id: AGL-11
-status: planned
+status: done
 ---
 # AGL-11 plan — narrative gate (closes Agent loop `phase:narrative-tools`)
 
