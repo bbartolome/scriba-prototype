@@ -5286,3 +5286,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Output:** `npm run e2e -w @bbartolome/scriba-e2e -- tools-editor.e2e.ts` (Node v26.13.0): E1 fails at `expect(locator).toContainText(expected)`, expected "Saved.", received "". E2 passes.
 - **Plan change needed:** C9 and E1 must agree. Either E1 waits for the moved row's state, or C9 keeps a "Saved." message after a New, Duplicate or Customize save. Also check `plans/TRG-16.md` (planned), whose case B follows TRG-14's C9.
 - **Other results:** `npm test -w @bbartolome/scriba-web`: 62 files, 416 tests passed, 0 failed. Web build exit 0, with the existing "bundle initial exceeded maximum budget" warning (574.95 kB against 500 kB).
+
+## 2026-11-16 — AGL-11 — Review (Sonnet, medium), Part 1 (the whole plan): REWORK
+
+- **Branch:** `unit/AGL-11`, commit 7611b4d (based on main 38dcdce). Patch id at review: 6d0e88a0404cecaac571bea2f24f0f7157b7cacb.
+- **Result:** REWORK, one reviewer, part 1 of 1.
+- **REWORK list:**
+  1. Step 7c of `plans/AGL-11.md` says to assert the events of the run starting with `run-started`. The test file never mentions `run-started`, so it is not asserted in the C1 test. Correction: in the C1 test, add an assertion that `events` holds a `run-started` event (for example, `expect(events.some((e) => e.type === 'run-started')).toBe(true)`), then run the file again and expect 5 passed.
+- **Other checks by the reviewer:** the diff changes only `apps/api/test/agent-loop-workhorses.test.ts`; `units/` and `plans/` are untouched; `examples/` does not appear; the four C1 rows match section 5, table 2.
