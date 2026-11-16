@@ -4599,3 +4599,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Criteria 1 and 2 pass (tests PR1 and PR2). Extras PR3 to PR8 pass. Full web tests 336 of 336 (328 baseline plus 8). e2e 9 passed, including setup-phone. Lint and build exit 0. Mutations M1 to M6 each fail the expected tests; the sources were reverted each time.
 - Differences from the plan, as the implementer reported them: per-part commits instead of one commit (step 13); M4 fails PR1 to PR7, not PR1 and PR7; M6 uses `@if (step() === 'preferences' && isLastStep())`, because `never` does not compile in the Angular template; the setup-page spec override is `remove`/`add` of imports only. No other differences. Nothing in plans/, units/, modules/ or DECISIONS.md was changed by the implementer.
 - Not done: the review (two parts, per the plan's Review parts) and step 3. The limit stopped new subagents after SAU-12 reached main.
+
+## 2026-11-16 — SAU-13 — Sonnet code review (two parts): APPROVED
+
+- Patch id: `a769e98726484a50615404b23c3cfe4733cc7551` (`git diff main...unit/SAU-13 -- . ':!plans' ':!units' | git patch-id --stable`). Branch unit/SAU-13, head 626a147. Worktree /Users/bbartolome/workspace/scriba-prototype-wt/SAU-13.
+- Part 1 (steps 0, 1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 13; tests PR1 to PR8): APPROVED for the patch id. The reviewer ran the web suite (336 of 336) and `preferences-step.spec.ts` (8 of 8). Lint reported no errors; its exit status was not captured, so lint is re-run at step 3. The diff touches only section 2 paths. The mutation checks of step 12 were not re-run. The M4 result (PR1 to PR7 fail) is accepted as the consequence of removing the `load()` call.
+- Part 2 (steps 8, 10; tests R1, E1): APPROVED for the patch id. The reviewer ran the setup-auth specs (24 of 24, 6 files) and the e2e suite (9 of 9, including setup-phone C2 and C3). Port 8080 was free for the run.
+- Note for step 3: main now has SAU-12 merged. `setup-page.spec.ts` may conflict with SAU-12's `StepBody` override at the rebase. The plan's rule applies: add `PreferencesStep` and the stub to that one override, not a second call.
+- Next: step 3 for SAU-13 (rebase onto main, the three checks, patch id again, unit and plan marks, fast-forward).
