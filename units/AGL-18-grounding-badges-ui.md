@@ -20,5 +20,5 @@ Readable badges in sunlight and without colour vision (38), a one-line summary p
 - Phone: chip collapsed by default; tap targets ≥ 44 px.
 
 ## Acceptance criteria (Vitest + fakes)
-- [ ] Badges render with text labels at phone width.
-- [ ] The summary counts match a fake `grounding-result`; expanding shows passages with source links.
+- [x] Badges render with text labels at phone width.
+- [x] The summary counts match a fake `grounding-result`; expanding shows passages with source links.

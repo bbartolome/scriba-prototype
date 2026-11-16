@@ -1,6 +1,6 @@
 ---
 id: AGL-18
-status: planned
+status: done
 ---
 # AGL-18 plan — grounding badges in the chat: summary chip and per-claim list
 
