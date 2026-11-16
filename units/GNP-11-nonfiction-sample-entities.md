@@ -21,4 +21,4 @@ unblocks: [GNP-12, "Agent loop grounding-claims sample (AGL-19)", PLT-22]
 
 ## Acceptance criteria
 - [ ] Sample entities validate against their types (Platform's examples check, pack layer), and every entity reference resolves to an existing file in the sample.
-- [ ] Platform's examples check passes; the e2e still passes unchanged.
+- [x] Platform's examples check passes; the e2e still passes unchanged.

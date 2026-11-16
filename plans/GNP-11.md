@@ -1,6 +1,6 @@
 ---
 id: GNP-11
-status: planned
+status: done
 ---
 # GNP-11 plan — nonfiction sample entities and Source front matter on the skeleton sources
 
