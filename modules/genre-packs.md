@@ -28,7 +28,7 @@ GNP-02 golden-test harness (TRG-12 execute, PLT-12 mock server)
 ```
 
 ### Parallelism
-- After GNP-01 + GNP-02: GNP-03, GNP-04, GNP-06, GNP-13 in parallel.
+- After GNP-01 + GNP-02: GNP-03, GNP-04, GNP-13 in parallel; GNP-06 after GNP-03.
 - After GNP-06: the four workhorses and the sample entities in parallel.
 - After GNP-13: the four fiction tool units and the fiction sample in parallel.
 - GNP-20, GNP-21, GNP-22 in parallel once GNP-12 closes.
