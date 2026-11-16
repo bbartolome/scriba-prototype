@@ -5241,3 +5241,13 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Not run:** the eval-agent real-model run (plan section 8 point 1; the data-only reading of the Navigator decision above applies; carried by GNP-12 criterion 4); step 15 (Playwright `tools-preview`; no browser cache).
 - **Differences from the plan:** Prettier re-wrapped one array and one assert line (content unchanged). The branch already existed at c2c8c40, so `git switch -c` was not run. `myth_buster.yaml` was on the base, so the catalogue line goes after `myth_buster`.
 - **Review (Sonnet, medium), Part 1 (the whole plan):** APPROVED. Patch id `aa061300f6ea2e7425f5853dd96e038917849f93` (matches the command of step 3). The diff holds the 8 files of plan section 4 and no `plans/` or `units/` file.
+
+## 2026-11-16 — GNP-10 — Merged to main (orchestrator)
+
+- **Step 3:** the approved patch id `aa061300f6ea2e7425f5853dd96e038917849f93` held through each move. `git rebase main` on unit/GNP-10 stopped in the todo state ("Could not execute the todo command", with "Your local changes to the following files would be overwritten by merge: packages/packs/test/golden/propose_graph/recipe.golden.json"). It was aborted; the branch was reset to main (c1a0f06) and the one code commit was cherry-picked, 311bc54 to 0c2b965. The patch id of the cherry-picked branch is the same.
+- **Checks:** on 0c2b965 (Node v26.13.0, npm 11.20.0): `npm run lint` exit 0; `npm run build` exit 0; `npm test` exit 0 (contracts 248 of 248, API 399 of 399 in 111 files, web 397 of 397 in 59 files, packs 14 of 14 in 4 files, e2e 12 of 12, root `node --test scripts/*.test.mjs` 93 of 93). Logs: /tmp/gnp10-lint.log, /tmp/gnp10-build.log, /tmp/gnp10-test.log (not in the repo).
+- **Step 8:** AC 1, AC 2 and AC 3 ticked on unit/GNP-10 (AC 3 under the data-only reading of the Navigator decision above). Plan status set to done. Commit fc86af8 on the branch, "docs(GNP-10): criteria checked, plan status done".
+- **Step 9:** `git merge --ff-only unit/GNP-10` on main, c1a0f06 to fc86af8.
+- **Step 10:** the branch unit/GNP-10 and its worktree scriba-prototype-wt/GNP-10 are deleted.
+- **Not run:** the eval-agent real-model run of the numbers-to-people case (no local model server; carried by GNP-12 criterion 4); step 15 (Playwright `tools-preview`; no browser cache).
+- **Limit:** GNP-10 is the one unit on main in this cycle. No subagent is started after this point.
