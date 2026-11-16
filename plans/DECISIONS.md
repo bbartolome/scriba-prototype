@@ -4607,3 +4607,8 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 2 (steps 8, 10; tests R1, E1): APPROVED for the patch id. The reviewer ran the setup-auth specs (24 of 24, 6 files) and the e2e suite (9 of 9, including setup-phone C2 and C3). Port 8080 was free for the run.
 - Note for step 3: main now has SAU-12 merged. `setup-page.spec.ts` may conflict with SAU-12's `StepBody` override at the rebase. The plan's rule applies: add `PreferencesStep` and the stub to that one override, not a second call.
 - Next: step 3 for SAU-13 (rebase onto main, the three checks, patch id again, unit and plan marks, fast-forward).
+
+## 2026-11-16 — SAU-13 — Failed check: rebase onto main conflicts (orchestrator)
+
+- Step 3, rebase of unit/SAU-13 (626a147) onto main (bc16309). `git rebase --apply main` stopped at the fifth commit, `feat(SAU-13): render the preferences step in the step body`, with a conflict in `apps/web/src/app/features/setup-auth/step-body.ts`. Cause: SAU-12 (fb0897c) embedded the providers panel in the same file (the `ProvidersPanel` import, the providers case and `panelAvailable`). The rebase was aborted. unit/SAU-13 is unchanged at 626a147.
+- Next: a new Haiku implementer does the rebase and resolves the conflict. It keeps the SAU-12 providers case and the SAU-13 preferences import, outputs and case, changes nothing else, runs lint, test and build on the rebased head, and commits to unit/SAU-13. The conflict resolution can change the patch id. If it changes, new Sonnet reviewers for all parts are needed before step 3 continues.
