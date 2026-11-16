@@ -10,11 +10,13 @@ import { AgentSettingsController } from './agent-settings.controller';
 import { AGENT_SETTINGS_SECTION_DEF } from './agent-settings.section';
 import { AgentSettingsService } from './agent-settings.service';
 import { AgentToolsService } from './agent-tools.service';
+import { GroundingEngine } from './grounding-engine';
 import { AgentTranscriptsService } from './transcript-reader';
 
 // Modules outside agent-loop import these from this entry file only.
 export { AgentSettingsService } from './agent-settings.service';
 export { AgentToolsService } from './agent-tools.service';
+export { GroundingEngine, GroundingFailure } from './grounding-engine';
 export type { ToolRun } from './tools/tool-run';
 export type {
   DispatchResult,
@@ -29,8 +31,8 @@ export type {
 const AGENT_SETTINGS_REGISTRATION = 'AGENT_SETTINGS_REGISTRATION';
 
 // Agent loop: the agent section of settings.yaml, its settings API, the tool dispatcher, the run loop with its start and
-// stop commands, the run transcripts in logs/agent-runs, and the conversation history rebuilt from them. Grounding lands
-// in a later unit.
+// stop commands, the run transcripts in logs/agent-runs, and the conversation history rebuilt from them. Grounding: its
+// engine is registered here; the wiring of the checks lands in a later unit.
 @Module({
   imports: [
     PlatformModule,
@@ -54,9 +56,10 @@ const AGENT_SETTINGS_REGISTRATION = 'AGENT_SETTINGS_REGISTRATION';
     },
     AgentSettingsService,
     AgentToolsService,
+    GroundingEngine,
     AgentTranscriptsService,
     AgentRunsService,
   ],
-  exports: [AgentSettingsService, AgentToolsService],
+  exports: [AgentSettingsService, AgentToolsService, GroundingEngine],
 })
 export class AgentLoopModule {}
