@@ -3,13 +3,17 @@ import type {
   ConnectionTestError,
   ConnectionTestResult,
   ConnectionTestStage,
+  EffectiveModel,
+  ModelChoice,
   ModelList,
   Preset,
   PresetList,
+  ProjectModelResponse,
   ProviderErrorCode,
   ProviderList,
   ProviderRead,
 } from '@bbartolome/scriba-contracts/providers';
+import type { ActiveProject } from '@bbartolome/scriba-contracts/project-store';
 import type { ApiPath, ResponseSchema } from '../../shell';
 
 // Hand-written copies of the providers route constants, defaults, error codes, response schemas and
@@ -407,3 +411,86 @@ export const OLLAMA_CONTEXT_NOTE =
 /** The pull note under the model picker when the list is empty (MPR-10 D6): the Ollama preset's pull line. */
 export const OLLAMA_PULL_NOTE =
   'Pull a model on the host with `ollama pull <model>`.';
+
+/** `GET /api/project-store/active` (`ACTIVE_PROJECT_ROUTE`). Read by the "This project" section. */
+export const ACTIVE_PROJECT_PATH: ApiPath = '/api/project-store/active';
+/** `GET /api/providers/effective-model` (`EFFECTIVE_MODEL_ROUTE`). Takes the `projectId` query. */
+export const EFFECTIVE_MODEL_PATH: ApiPath = '/api/providers/effective-model';
+/** `POST /api/providers/project-model` (`PROJECT_MODEL_ROUTE`). */
+export const PROJECT_MODEL_PATH: ApiPath = '/api/providers/project-model';
+/** `POST /api/providers/project-model/clear` (`PROJECT_MODEL_CLEAR_ROUTE`). */
+export const PROJECT_MODEL_CLEAR_PATH: ApiPath =
+  '/api/providers/project-model/clear';
+
+/** The three sources of an effective model, as a literal tuple (`EFFECTIVE_MODEL_SOURCES`). */
+export const EFFECTIVE_MODEL_SOURCE_NAMES = ['project', 'app', 'auto'] as const;
+
+/** A model choice: a non-empty provider id and a model text, which may be empty (`modelChoiceSchema`). */
+function readChoice(value: unknown): ModelChoice | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const { providerId, model } = value;
+  if (typeof providerId !== 'string' || providerId === '' || !isString(model)) {
+    return undefined;
+  }
+  return { providerId, model };
+}
+
+/** Response of `GET /api/project-store/active` (`activeProjectSchema`): `active` is null or an id. */
+export const activeProjectCopy: ResponseSchema<ActiveProject> = guard(
+  (data) => {
+    if (!isRecord(data)) {
+      return undefined;
+    }
+    const active = data['active'];
+    if (active === null) {
+      return { active: null };
+    }
+    return typeof active === 'string' && active !== '' ? { active } : undefined;
+  },
+);
+
+/** Response of `GET /api/providers/effective-model` (`effectiveModelSchema`). */
+export const effectiveModelCopy: ResponseSchema<EffectiveModel> = guard(
+  (data) => {
+    if (!isRecord(data)) {
+      return undefined;
+    }
+    const choice = readChoice(data['choice']);
+    const source = data['source'];
+    const context = integerAtLeast(data['contextSize'], 1);
+    const warning = data['warning'];
+    if (
+      choice === undefined ||
+      !EFFECTIVE_MODEL_SOURCE_NAMES.some((name) => name === source) ||
+      context === undefined ||
+      (warning !== undefined && !isString(warning))
+    ) {
+      return undefined;
+    }
+    const effective: EffectiveModel = {
+      choice,
+      source: source as EffectiveModel['source'],
+      contextSize: context,
+    };
+    if (warning !== undefined) {
+      effective.warning = warning;
+    }
+    return effective;
+  },
+);
+
+/** Response of `POST .../project-model` and `POST .../project-model/clear` (`projectModelResponseSchema`). */
+export const projectModelResponseCopy: ResponseSchema<ProjectModelResponse> =
+  guard((data) => {
+    if (!isRecord(data)) {
+      return undefined;
+    }
+    const projectModel = data['projectModel'];
+    if (projectModel === null) {
+      return { projectModel: null };
+    }
+    const choice = readChoice(projectModel);
+    return choice === undefined ? undefined : { projectModel: choice };
+  });

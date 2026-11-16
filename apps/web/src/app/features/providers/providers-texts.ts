@@ -87,4 +87,16 @@ export const TEXTS = {
   latency: (ms: number): string => `Latency ${ms} ms`,
   modelCount: (count: number): string =>
     count === 1 ? '1 model listed.' : `${count} models listed.`,
+  projectHeading: 'This project',
+  projectLoadFailed: 'The project model could not be loaded.',
+  projectProviderLabel: 'Provider for this project',
+  projectModelLabel: 'Model for this project',
+  projectModelHint: "Leave empty to use the provider's own model.",
+  useAppDefault: 'Use app default',
+  saveProject: 'Save for this project',
+  modelInUse: (model: string, providerId: string): string =>
+    `Model in use: ${model} from ${providerId}.`,
+  sourceProject: 'Set for this project',
+  sourceApp: 'From the app default',
+  sourceAuto: "The provider's first listed model",
 } as const;

@@ -83,6 +83,7 @@ describe('/providers route', () => {
       presets: [],
       appDefault: null,
     });
+    doubles.api.respond('GET', '/api/project-store/active', { active: null });
     TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter(APP_ROUTES), ...doubles.providers],
@@ -132,6 +133,7 @@ describe('/providers route', () => {
       presets: [],
       appDefault: { providerId: first.id, model: '' },
     });
+    doubles.api.respond('GET', '/api/project-store/active', { active: null });
     doubles.api.respond('POST', '/api/providers/app-default', {
       appDefault: { providerId: second.id, model: '' },
     });

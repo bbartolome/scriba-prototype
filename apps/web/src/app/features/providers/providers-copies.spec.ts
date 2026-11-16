@@ -1,14 +1,24 @@
 import {
+  ACTIVE_PROJECT_ROUTE,
+  activeProjectSchema,
+} from '@bbartolome/scriba-contracts/project-store';
+import {
   APP_DEFAULT_ROUTE,
   appDefaultSchema,
   CONNECTION_TEST_ROUTE,
   connectionTestResultSchema,
+  EFFECTIVE_MODEL_ROUTE,
+  EFFECTIVE_MODEL_SOURCES,
+  effectiveModelSchema,
   KEY_CLEAR_ROUTE,
   KEY_SET_ROUTE,
   MODELS_ROUTE,
   modelListSchema,
   PRESETS_ROUTE,
   presetListSchema,
+  PROJECT_MODEL_CLEAR_ROUTE,
+  PROJECT_MODEL_ROUTE,
+  projectModelResponseSchema,
   PROVIDER_DEFAULTS,
   PROVIDER_DELETE_ROUTE,
   PROVIDER_ERROR_CODE_VALUES,
@@ -23,11 +33,16 @@ import {
 import { describe, expect, it } from 'vitest';
 import type { ResponseSchema } from '../../shell/api-client';
 import {
+  ACTIVE_PROJECT_PATH,
+  activeProjectCopy,
   APP_DEFAULT_PATH,
   appDefaultCopy,
   CONNECTION_TEST_PATH,
   connectionTestResultCopy,
   DEFAULT_IN_USE_CODE,
+  EFFECTIVE_MODEL_PATH,
+  EFFECTIVE_MODEL_SOURCE_NAMES,
+  effectiveModelCopy,
   emptyBodyCopy,
   isOllamaProvider,
   KEY_CLEAR_PATH,
@@ -39,6 +54,9 @@ import {
   OLLAMA_PULL_NOTE,
   PRESETS_PATH,
   presetListCopy,
+  PROJECT_MODEL_CLEAR_PATH,
+  PROJECT_MODEL_PATH,
+  projectModelResponseCopy,
   PROVIDER_DEFAULTS_COPY,
   PROVIDER_DELETE_PATH,
   PROVIDER_ERROR_CODE_NAMES,
@@ -307,6 +325,115 @@ describe('providers copies', () => {
     ];
     for (const [config, expected] of rows) {
       expect(isOllamaProvider(config), config.id).toBe(expected);
+    }
+  });
+
+  it('P4 the project-model paths, the active and effective-model guards and the source names agree with the contract', () => {
+    expect(ACTIVE_PROJECT_PATH).toBe(ACTIVE_PROJECT_ROUTE);
+    expect(EFFECTIVE_MODEL_PATH).toBe(EFFECTIVE_MODEL_ROUTE);
+    expect(PROJECT_MODEL_PATH).toBe(PROJECT_MODEL_ROUTE);
+    expect(PROJECT_MODEL_CLEAR_PATH).toBe(PROJECT_MODEL_CLEAR_ROUTE);
+    expect(EFFECTIVE_MODEL_SOURCE_NAMES).toEqual(EFFECTIVE_MODEL_SOURCES);
+
+    const cases: {
+      name: string;
+      copy: ResponseSchema<unknown>;
+      schema: Checker;
+      accepted: unknown[];
+      refused: unknown[];
+    }[] = [
+      {
+        name: 'activeProjectCopy',
+        copy: activeProjectCopy,
+        schema: activeProjectSchema,
+        accepted: [{ active: null }, { active: 'b' }],
+        refused: [{ active: '' }, {}, { active: 3 }],
+      },
+      {
+        name: 'effectiveModelCopy',
+        copy: effectiveModelCopy,
+        schema: effectiveModelSchema,
+        accepted: [
+          {
+            choice: { providerId: 'mock', model: 'gemma3' },
+            source: 'project',
+            contextSize: 64000,
+          },
+          {
+            choice: { providerId: 'mock', model: '' },
+            source: 'auto',
+            contextSize: 1,
+            warning: 'A warning.',
+          },
+          {
+            choice: { providerId: 'mock', model: 'x' },
+            source: 'app',
+            contextSize: 4096,
+            extra: 1,
+          },
+        ],
+        refused: [
+          {
+            choice: { providerId: 'mock', model: 'x' },
+            source: 'other',
+            contextSize: 64000,
+          },
+          {
+            choice: { providerId: 'mock', model: 'x' },
+            source: 'app',
+            contextSize: 0,
+          },
+          {
+            choice: { providerId: '', model: 'x' },
+            source: 'app',
+            contextSize: 64000,
+          },
+          {
+            choice: { providerId: 'mock', model: 3 },
+            source: 'app',
+            contextSize: 64000,
+          },
+          {
+            choice: { providerId: 'mock', model: 'x' },
+            source: 'app',
+            contextSize: 64000,
+            warning: 3,
+          },
+          { source: 'app', contextSize: 64000 },
+        ],
+      },
+      {
+        name: 'projectModelResponseCopy',
+        copy: projectModelResponseCopy,
+        schema: projectModelResponseSchema,
+        accepted: [
+          { projectModel: null },
+          { projectModel: { providerId: 'mock', model: 'gemma3' } },
+        ],
+        refused: [
+          { projectModel: { providerId: '' } },
+          {},
+          { projectModel: { providerId: 'mock' } },
+        ],
+      },
+    ];
+    for (const testCase of cases) {
+      for (const fixture of testCase.accepted) {
+        expect(testCase.copy.safeParse(fixture).success, testCase.name).toBe(
+          true,
+        );
+        expect(testCase.schema.safeParse(fixture).success, testCase.name).toBe(
+          true,
+        );
+      }
+      for (const fixture of testCase.refused) {
+        expect(testCase.copy.safeParse(fixture).success, testCase.name).toBe(
+          false,
+        );
+        expect(testCase.schema.safeParse(fixture).success, testCase.name).toBe(
+          false,
+        );
+      }
     }
   });
 });
