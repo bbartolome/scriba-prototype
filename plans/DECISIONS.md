@@ -4660,3 +4660,16 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Patch id: `4574c72b5e4ed90298e7d5d17b6bf9261884f30e` (`git diff main...unit/SAU-14 -- . ':!plans' ':!units' | git patch-id --stable`). Branch unit/SAU-14, head f45c6be, rebased onto main f9c97f5 with no conflict (the patch id is the same as before the rebase). Worktree /Users/bbartolome/workspace/scriba-prototype-wt/SAU-14.
 - The reviewer changed no file and checked the eight files against the plan's section 2 list, the steps of the review part, and the six differences the implementer reported. It accepted all six. It ran the web workspace tests (54 files, 344 tests passed), lint, prettier, tsc, build (the CommonJS warnings only) and the setup-phone e2e (C2 and C3 passed). It did not re-run mutations M1 to M6; it accepted the implementer's report that each fails the expected tests.
 - Next: step 3 of the pipeline for SAU-14 (rebase onto main, root lint, test and build, patch id again).
+
+## 2026-11-16 — SAU-13 — Implementer report COMPLETE (orchestrator)
+
+- Branch unit/SAU-13, head 74574eb, rebased onto main f9c97f5 (ten commits, 0931827 to 74574eb). Worktree /Users/bbartolome/workspace/scriba-prototype-wt/SAU-13, clean. Patch id `ee1a012923219ce59778782f8726797c43b6bdb4`. The rebase and the fix changed the patch id, so the earlier approval of a769e98726484a50615404b23c3cfe4733cc7551 no longer holds.
+- The four stale assertions were replaced as plan section 5 says (setup-page.spec.ts around lines 747 and 783; preferences-step.spec.ts around lines 177 and 367). Checks on the rebased head: lint exit 0; test exit 0 (web 53 files and 346 tests, contracts 248, API 300, scripts 12, no failing test); build exit 0 with the bundle-budget and CommonJS warnings only.
+- The report says that SAU-12 is not on main. That is wrong: SAU-12 is an ancestor of main. The providers case is intact in step-body.ts (both cases present), so the code is not affected.
+- Not run by the implementer: step 10 (the phone e2e), steps 11 and 12 (prettier and lint of the web workspace, and the mutation checks). The two reviewers are asked to run them.
+- Next: two Sonnet reviewers (review part 1 and part 2 of plan section 8) on this patch id.
+
+## 2026-11-16 — SAU-14 — Merged to main (orchestrator)
+
+- Review APPROVED (above). Rebased again onto main 96d5078 with the same patch id. Checks on the rebased head: lint exit 0, test exit 0 (root: 18, 92, 54 and 1 and 12 test files pass), build exit 0 with the warnings above. Criteria 1 (test F1) and 2 (test F2) ticked; plan set to done. Fast-forward of main to 8258ba8. Branch unit/SAU-14 and its worktree removed.
+- SAU-13 is not on the base of SAU-14, so SAU-14 uses the markFirstProjectDone() fallback as the plan allows. SAU-13 must be rebased onto main 8258ba8, and the rebase must keep both the SAU-14 first-project step and the SAU-13 preferences step.
