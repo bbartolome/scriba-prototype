@@ -26,8 +26,8 @@ Accept or reject each change (25); flag a conflict when disk no longer matches t
 - Accept/reject are POSTs behind the guard.
 
 ## Acceptance criteria
-- [ ] Accepting with edited `content` writes that content.
-- [ ] Applying a change whose base matches disk writes the proposal and, for an existing top-level draft, writes the previous content to `drafts/.versions/<name>/…`; a new draft writes no version.
-- [ ] Editing the target on the host before apply flags `base-changed` and apply is refused; deleting it flags `target-missing`; creating a create-target flags `target-exists`.
-- [ ] Listing after a host edit returns the conflict but leaves `.scriba/pending/` byte-identical and publishes nothing.
-- [ ] Event sequence: `pending-updated` on persisted conflict, `pending-resolved` + `files-changed` on apply, `pending-resolved` on reject.
+- [x] Accepting with edited `content` writes that content.
+- [x] Applying a change whose base matches disk writes the proposal and, for an existing top-level draft, writes the previous content to `drafts/.versions/<name>/…`; a new draft writes no version.
+- [x] Editing the target on the host before apply flags `base-changed` and apply is refused; deleting it flags `target-missing`; creating a create-target flags `target-exists`.
+- [x] Listing after a host edit returns the conflict but leaves `.scriba/pending/` byte-identical and publishes nothing.
+- [x] Event sequence: `pending-updated` on persisted conflict, `pending-resolved` + `files-changed` on apply, `pending-resolved` on reject.

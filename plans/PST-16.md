@@ -1,6 +1,6 @@
 ---
 id: PST-16
-status: planned
+status: done
 ---
 # PST-16 plan — apply, reject, the three-way check, eager conflicts and versions on apply
 
