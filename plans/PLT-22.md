@@ -1,6 +1,6 @@
 ---
 id: PLT-22
-status: planned
+status: done
 ---
 # PLT-22 plan — examples/ check, pack layer (tool refs and params, entity front matter, reference resolution)
 

@@ -23,8 +23,8 @@ Merging this and PLT-21 (in either order) **closes `phase:examples-check`** (lat
 - Recipe checks apply once graph files exist (PLT-21 parses them); if PLT-21 hasn't landed, this unit reads recipe files through the Graph runner contract itself.
 
 ## Acceptance criteria
-- [ ] Every recipe tool node names a built-in tool, and its params validate against that tool's inputs.
-- [ ] Entity front matter validates against pack entity-type schemas.
-- [ ] An unresolved `[@id]` citation or reference field fails with the file path and the id.
+- [x] Every recipe tool node names a built-in tool, and its params validate against that tool's inputs.
+- [x] Entity front matter validates against pack entity-type schemas.
+- [x] An unresolved `[@id]` citation or reference field fails with the file path and the id.
 - [ ] A deliberately broken sample file fails CI with the file path and the schema issue.
-- [ ] The check passes on `examples/` with only the nonfiction skeleton and keeps passing as later milestones add content.
+- [x] The check passes on `examples/` with only the nonfiction skeleton and keeps passing as later milestones add content.
