@@ -4848,3 +4848,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Changed in the plan: header; D17; section 2 file row; step 0 revision 5 continuation (`git mv` at 2163d52, commit `test(SHL-15)`); step 6; step 7 (command, expected full suite 11 passed, stop rule); section 4 C2 and X2 file and commands; section 5 SHL-16 note; open point 7; F27; section 8. No criterion, test assertion or other file changes.
 - Follow-up: `plans/SHL-16.md` line 35 names the old spec file. The SHL-16 agreement holds (SHL-16 changes neither name); its reviser may update the name.
 - Limit recorded: a future spec that sorts after `touch-editor.e2e.ts` starts with `touch-book` active. `tools-preview` already leaves `tools-spike` active, so this is not a new constraint.
+
+## 2026-11-16 — SHL-15 — Sonnet code review (part 1 of 1, the whole plan): APPROVED (orchestrator record)
+
+- Reviewer (Sonnet, medium), part 1 (the whole plan: steps 0 to 11; tests C1, C2, X1, X2, M1): APPROVED. It checked the eight files of plan section 2 against `git diff --name-only main...unit/SHL-15 -- . ':!plans' ':!units'`, decisions 1 to 17, and the reported test results. It did not rerun the build or the tests; it relies on the implementer's reported results, which match the files.
+- Patch id: `a2e68d8d8d893eee776e1859785a3afe87e1eff7` (`git diff main...unit/SHL-15 -- . ':!plans' ':!units' | git patch-id --stable`, branch head 7c2353c, main 98db190).
+- Next: step 3 for SHL-15 (rebase onto main, the three checks, patch id again, criteria and plan marks, fast-forward).
