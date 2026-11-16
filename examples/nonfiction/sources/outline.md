@@ -31,7 +31,7 @@ Follows a popular figure back to its source. The reading notes are in `sources/t
 
 ### Chapter 4: The Plateau Is Not the End
 
-Draft: not started.
+Draft: `drafts/the-plateau-is-not-the-end.md`.
 
 Why progress stalls and what a stall often means. The early research on the subject is in `sources/learning-plateaus-notes.md`.
 
