@@ -4808,3 +4808,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - The implementer also reports: the build of the main checkout was denied by the permission classifier; the base size comes from a scratch copy of 8b7a5f2. The untracked file `e2e/specs/editor-touch.e2e.ts` in the worktree is not committed.
 - Options the implementer names: (a) lazy-load the editor layout in `core-gate.ts` (a dynamic import or a deferred block); (b) a change of the budget in `apps/web/angular.json`, outside plan section 2.
 - Next: the plan goes back to an Opus reviser (status draft). It examines the commits on `unit/SHL-15`. When the plan is `planned` again, a new implementer continues from those commits.
+
+## 2026-11-16 — SHL-15 — reviser, revision 3 after PLAN DOES NOT WORK (orchestrator record)
+
+- Decision: keep the 1 MB initial budget (`plans/DECISIONS.md` line 1087, "No budget change"; line 2683). Keep the Shell barrel out of the initial bundle by changing two imports: `apps/web/src/app/active-project-nav.ts` line 8 to `../../shell/project-scope`, and `projects-state.ts` line 11 to `../../shell/tokens`. The barrel, the mount (D14) and the core-gate import stay as they are. The code stage continues from 2e891eb with step 5a.
+- Reason, measured in scratch copies: a `@defer` or a direct import in `core-gate.ts` still gives 1.10 to 1.11 MB, because the barrel loaded at startup re-exports `MarkdownEditor` and `DiffView`. Removing them from the barrel would change the D5 spec files and PST-34's import. The two-line fix gives 574.42 kB with the editor lazy; the Vitest suite and lint pass.
+- Scope: the plan's file list grows from six to eight files. No criterion text, settled decision or unit changes.
+- Downstream note for PST-34's planner: no file loaded at startup may import the Shell barrel.
