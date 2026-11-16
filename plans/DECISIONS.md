@@ -4515,3 +4515,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Checks on 57857cb: `npm run lint` exit 0; `npm test` 86 of 86 pass; `npm run build` exit 0.
 - Unit and plan marks in 30a5fa9: the four criteria ticked; plan `status: done`.
 - Fast-forward: main moved f4051bc to 30a5fa9. The worktree and the branch unit/PLT-21 were removed after the fast-forward.
+
+## 2026-11-16 — MPR-11 — Sonnet code review (one part): APPROVED
+
+- Patch id: `200d7b05ee396fe8ee281ee1045fa544bc5e7aa3` (`git diff main...unit/MPR-11 -- . ':!plans' ':!units' | git patch-id --stable`). Branch unit/MPR-11, base e079fb8, commits 6b7cf51 (test, red), c422fe2 (feat), d826ce6 (style), f880284 (test, e2e).
+- Implementer report (COMPLETE, branch head f880284): criteria 1 and 2 passed; no criterion untested. Tests: providers specs 23 of 23 (criterion 1); R1, R2, R3 and E1 pass (criterion 2); B1 a to d hold on the build; controls M1 to M5 each fail the expected test and were reverted; lint, tsc, prettier and `npm run e2e` (9 of 9) pass. The implementer's worktree is /Users/bbartolome/workspace/scriba-prototype-wt/MPR-11, reused because the earlier session's worktree could not be removed.
+- The reviewer read the plan's steps 0 to 11 and the tests of part 1 against the diff, and checked that the code touches only the six section-2 files. The reviewer did not re-run tests. Reply: APPROVED for patch id 200d7b05ee396fe8ee281ee1045fa544bc5e7aa3.
+- Review parts: one part, so one reviewer.
+- Next: step 3 (rebase onto main, the three checks, the patch id again, unit and plan marks, fast-forward).
