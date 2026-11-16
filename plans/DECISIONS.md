@@ -4564,3 +4564,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Part 2 (criterion 2: step 5; tests T2 and T3): APPROVED. Each test passed when run alone in the worktree (T2 1 of 1, T3 1 of 1). `scripts/eval-agent/README.md` covers every item of step 5.
 - Other checks by the reviewers: the diff touches only the section 2 files (`.gitignore`, `package.json`, `scripts/eval-agent/{README.md, cases/summarize-outline.json, run.mjs, run.test.mjs}`); the `eval:agent` script entry, the `.gitignore` line and the case file match the plan.
 - Next: a new Haiku implementer continues on unit/AGL-25 with this list. Then new reviewers for all the parts, because the code changes.
+
+## 2026-11-16 — SAU-12 — Sonnet code review (two parts): APPROVED
+
+- Patch id: `15f3e1a7d6152a9611f3ff1c8fb192c5773717f0` (`git diff main...unit/SAU-12 -- . ':!plans' ':!units' | git patch-id --stable`). Branch unit/SAU-12, head 532e232 (842c00a Part 1, 532e232 Part 2). Worktree /Users/bbartolome/workspace/scriba-prototype-wt/SAU-12.
+- Implementer report (COMPLETE): the test runs had 5000 ms timeouts in unrelated specs (shell/unsaved-text, chat-page T1, tool-form AC2b). They passed on rerun. The reviewers did not run them.
+- Part 1 (steps 1, 2, 3, 4, 7, 9, 10; tests P1, P2, P7): APPROVED for the patch id. The reviewer ran P1 and P2 (`providers-step.spec.ts`, 2 of 2) and P7 (`providers-copy.spec.ts`, 3 of 3), each with `ng test --watch=false --include <file>`. The diff changes only the seven section 8 paths.
+- Part 2 (steps 5, 6, 8; tests P3, P4, P5, P6, P8, W1, E1): APPROVED for the patch id. The reviewer ran `setup-page.spec.ts` (17 of 17, covering P3, P4, P5, P6, P8 and W1) and the e2e `setup-phone.e2e.ts` (2 of 2: C2 and C3, C3 being E1). No timeouts in those runs.
+- Next: step 3 for SAU-12 (rebase onto main, the three checks, patch id again, unit and plan marks, fast-forward).
