@@ -19,5 +19,5 @@ Source editor with live preview on tablet/desktop (22); one-tap edit/preview tog
 - Tablet touch, the on-screen keyboard and a hardware keyboard all work. No feature depends on a hardware-only shortcut (the save button covers Cmd/Ctrl-S).
 
 ## Acceptance criteria
-- [ ] Tablet and desktop show the split view with a live preview; phones show the toggle.
-- [ ] On a tablet viewport with touch emulation (Playwright): tap to place the cursor, select by touch, type with the on-screen keyboard, and save, all without a hardware key.
+- [x] Tablet and desktop show the split view with a live preview; phones show the toggle.
+- [x] On a tablet viewport with touch emulation (Playwright): tap to place the cursor, select by touch, type with the on-screen keyboard, and save, all without a hardware key.
