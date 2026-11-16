@@ -1,6 +1,6 @@
 ---
 id: AGL-08
-status: planned
+status: done
 ---
 # AGL-08 plan — file-tools-chat gate: summarize-outline scenario, the e2e agent-run step, two scripted turns
 

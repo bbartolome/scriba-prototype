@@ -18,8 +18,8 @@ Merging this **closes Agent loop `phase:file-tools-chat`** (M1).
 - **Turn on the e2e "agent run" step** (PLT-13): configure a provider through the Model providers API pointing at the mock scenario URL, start from the sample, send the intent, assert the cards and the answer.
 
 ## Acceptance criteria (the phase checklist)
-- [ ] **Done when** the author types "summarize my outline" in the nonfiction sample and gets a correct answer with visible tool calls.
-- [ ] Step cap, stop timing, outside-path refusal, malformed-turn withdrawal, reload-restores-state and transcript-schema criteria (AGL-02…AGL-07) pass on `main`.
+- [x] **Done when** the author types "summarize my outline" in the nonfiction sample and gets a correct answer with visible tool calls.
+- [x] Step cap, stop timing, outside-path refusal, malformed-turn withdrawal, reload-restores-state and transcript-schema criteria (AGL-02…AGL-07) pass on `main`.
 - [ ] The e2e agent-run step passes in CI.
 
 ## Demo (under 5 min)
