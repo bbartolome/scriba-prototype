@@ -1,11 +1,13 @@
 ---
 id: AGL-17
-status: draft
+status: planned
 ---
 
 # AGL-17 plan — grounding wiring: check after drafts, check_grounding, the on-demand run, summary on pending changes, events
 
 Revision 1, planner, from main at `5e0d94f` (clean tree when drafting began). Main moved to `b0dfa8d` while the plan was written: two PLT-22 commits (a Navigator decision in `plans/DECISIONS.md`, a unit tick). They change no file this plan names and no fact in section 2, so the facts hold at `b0dfa8d`. Status stays `draft` until the reviser and the orchestrator move it on.
+
+Revision 2, reviser (Opus), on main at `c18662a` (only `plans/AGL-17.md` differs from `b0dfa8d`). Corrections: `agent-loop-tools.test.ts` is not changed (its kit offers only the `project` family); `agent-loop-narrative.test.ts` and `agent-loop-workhorses.test.ts` are added to step 3 (their draft outputs land under `drafts/`); `finish` keeps its status guard and has no `finishing` flag; the four open points are settled in section 7; section 8 gives the review parts. No unit file is changed. In-flight branches `unit/PST-15`, `unit/SAU-13`, `unit/TRG-07`, `unit/TRG-14` change no file of this plan (`git diff --name-only main...unit/<ID>`).
 
 AGL-17 wires the AGL-16 engine into the run. The engine's behaviour does not change: `GroundingEngine.check` keeps its input, its result and its artefact write, because AGL-16's tests and AGL-19's criterion 2 call it through the test kit. The run gains a `check_grounding` tool, one on-demand run behind `POST /api/agent-loop/grounding`, a check of every `drafts/` path at run end before the pending changes are filed, the grounding summary on those pending changes, the two grounding events, and the transcript lines that rebuild the grounding results after a restart.
 
@@ -77,7 +79,10 @@ Tests and kits:
 - [CHECKED] `apps/api/test/agent-loop-transcript.kit.ts`: `openHarness` (line 87; `modules` option lines 65 to 73, added by AGL-16); `post` (149), `get` (160), `observe` (169), `startRun` (174), `readUntilEnded` (184, reads until `run-ended` and parses each `agent-loop` envelope with `agentLoopEventSchema`), `requestsOf` (219); `Harness.restart` (lines 74 to 82).
 - [CHECKED] `apps/api/test/agent-loop-grounding.kit.ts`: `POST /api/agent-loop-test/grounding` calls `GroundingEngine.check({projectId, runId, targetPath, overlay})` and answers the result or `{failure}`. It imports `AgentLoopModule`, `GroundingEngine`, `GroundingFailure` from the entry file and `WriteOverlay` from `tools/write-overlay`.
 - [CHECKED] `apps/api/test/agent-loop-grounding.test.ts` (AGL-16, approved): G1 to G4 use the kit, the scenario steps `{match: {endpoint:'chat', lastMessageContent: EXTRACT_MARKER | JUDGE_MARKER}, reply: {kind:'stream', deltas:[json]}}`.
-- [CHECKED] Tests that assert tool names offered to the model: `agent-loop-run.test.ts` lines 374 and 391 (`toolNamesOf` sorts the names), `agent-loop-tools.test.ts` lines 303 and 359.
+- [CHECKED] Tests that assert the full list of tool names offered to the model in a composed run: `agent-loop-run.test.ts` lines 374 and 391 (`toolNamesOf` sorts the names). `agent-loop-tools.test.ts` lines 303 and 359 list the tools of the AGL-02 kit's `ToolRun`, which the kit starts with `enabledFamilies: ['project']` (`agent-loop-tools.kit.ts` line 45); `ToolRun` offers only tools of an enabled family (`tool-run.ts` constructor), so `check_grounding` (family `grounding`) is not in those lists and that file does not change (reviser). `agent-loop-narrative.test.ts` line 323 uses `arrayContaining` and does not change.
+- [CHECKED] (reviser) Runs whose narrative `draft` output lands at a generated `drafts/` path (AGL-13 routing): `agent-loop-narrative.test.ts` T2 and T4 (`draftSteps`, line 230: `cold_open` with no `target`); `agent-loop-workhorses.test.ts` C1 (`it.each`, line 284: each workhorse's `draft` output, with no `target`). Their turn steps match by `turnIndex: 0` or `toolResultPresent: false`, which an extract request (no assistant and no tool message) also matches, so without an extract step listed first the run-end extract gets a tool-call reply and fails after three attempts. Workhorses C1 asserts `records` has length 3 (line 387) and reads `bodies[0]` and `bodies[2]`. Narrative T3 writes no draft (its calls are refused), T1 calls no tool.
+- [CHECKED] (reviser) `readUntilEnded` (`agent-loop-transcript.kit.ts` line 184) gives up after 5 s, and keeps only `agent-loop` envelopes.
+- [CHECKED] (reviser) The mock's steps are not consumed: `findStepIndex` picks the first matching step on each request (`server.mjs` lines 133 to 139), so one extract step answers every extract request of a scenario.
 - [CHECKED] Tests that write `drafts/` through a run: `agent-loop-writes.test.ts` (`drafts/new-chapter.md`), `agent-loop-diff-preview.test.ts` (`drafts/new-note.md`, `drafts/long-note.md`, `drafts/chapter-one.md`), `agent-loop-output-routing.test.ts` (AC1 at line 280 and its later scenarios, `drafts/chapter-one.md`). `agent-loop-search.test.ts` mentions `drafts/` only in a fixture and in an assertion that drafts never appear (it writes none). `agent-loop-output-routing.test.ts` helper `filesOf` (line 250) skips `logs`, so the artefact does not disturb its tree comparisons.
 - [CHECKED] Event-sequence assertions (`typesOf` and `events.map(...)`) exist in `agent-loop-run.test.ts` (line 223), `agent-loop-history.test.ts` (line 327) and `agent-loop-search.test.ts` (lines 302 and 338); none of these runs writes `drafts/`.
 - [CHECKED] Mock server `e2e/fixtures/mock-openai/server.mjs`: matchers `turnIndex` counts the assistant messages of the request (lines 117 to 121), `lastMessageContent` checks the last message (lines 103 to 131); `findStepIndex` takes the first matching step in list order (lines 133 to 139); a request with no matching step gets HTTP 500 `no scenario step matches` (lines 305 to 306); a step's `delayMs` is honoured before its reply (after line 306).
@@ -87,19 +92,20 @@ Other units' outputs used as they are on main:
 - [CHECKED] AGL-16 section 4.1 (algorithm steps 1 and 2) says the engine reads the checked text through the overlay's `contentOf` and resolves the model once per check; the AGL-16 implementation on main matches (`grounding-engine.ts` lines 84 to 87).
 - [CHECKED] AGL-18 (done) reads `grounding-started`, `grounding-result` and `groundingResults` from the run state; its web code is not in this plan's file list.
 
-### 2.2 Decisions made by the planner (smaller choices, not recorded in DECISIONS)
+### 2.2 Decisions made by the planner and the reviser (smaller choices, not recorded in DECISIONS)
 
-- Automatic checks run at run end, one per `drafts/` path, on the final overlay text (open point 2 asks the Navigator to confirm the timing against the unit's "after every draft tool output").
+- Automatic checks run at run end, one per `drafts/` path, on the final overlay text (settled by the reviser, section 7 point 2).
 - A check whose result for the same path and the same text already exists in the run is not repeated.
-- A failed check emits no grounding event (the contract has none; open point 1).
-- A grounding-only run gets a new conversation id, because `groundingRequestSchema` has no `conversationId` (open point 4).
+- A failed check emits no grounding event (the contract has none; settled, section 7 point 1).
+- A grounding-only run gets a new conversation id, because `groundingRequestSchema` has no `conversationId` (settled, section 7 point 4).
 - The endpoint accepts any existing text file of the project. The UI offers only `drafts/` (AGL-18 point 7).
+- A stopped or project-switched run (its signal aborted) files its pending changes without a check (reviser: the abort cancels model work; `agent-loop-writes.test.ts` AC1 and AC3 end this way and keep their assertions).
 
 ### 2.3 Assumed
 
 - [ASSUMED] A1. `npm test -w @bbartolome/scriba-api -- agent-loop-grounding-wiring` runs only the new test file (vitest treats the argument as a filename filter), as AGL-16 A1. Not run.
-- [ASSUMED] A2. A mock 500 for an unmatched request is retryable, so the provider client retries it with the backoff of `retry.ts` before it fails. The classification of 500 as `retryable` was not read. This matters for the existing drafts-writing tests (step 3 gives them an extract step, so the question should not arise there).
-- [ASSUMED] A3. The existing agent-loop tests that are not in section 5 pass unchanged after step 2 (the added `check_grounding` tool) and step 3 (run-end checks). Only the drafts-writing scenarios and the tool-name lists are CHECKED as affected. Not run.
+- [ASSUMED] A2. A mock 500 for an unmatched request is retryable, so the provider client retries it with the backoff of `retry.ts` before it fails. The classification of 500 as `retryable` was not read. No test of this plan depends on it: step 3 gives every scenario whose run checks a `drafts/` path an extract step listed first (reviser).
+- [ASSUMED] A3. The existing agent-loop tests that are not named in sections 3 and 4.3 pass unchanged after step 2 (the added `check_grounding` tool) and step 3 (run-end checks). The affected files were found by `grep -l "drafts/"`, by the narrative `draft` outputs (`cold_open`, the workhorses) and by the full tool-name assertions (2.1). Not run.
 - [ASSUMED] A4. Vitest's default timeout is enough for a run that makes two more model calls at run end. Not measured.
 - [ASSUMED] A5. The first `sources/notes.md` block has passage offset 0, as in AGL-16's approved tests G1 to G3 (they assert offset 0; the approval is CHECKED, the run is ASSUMED here).
 - [ASSUMED] A6. The Playwright e2e suite is not part of this plan's gate. Whether an e2e scenario writes `drafts/` through an agent run was checked for `e2e/specs/journey.e2e.ts` (no such write) and `e2e/fixtures/mock-openai/scenarios/` (only `pack-propose_graph.json` names `drafts/`, a graph-pack fixture, not an agent write). Not run.
@@ -121,16 +127,18 @@ Other units' outputs used as they are on main:
 | `apps/api/src/modules/agent-loop/conversation-history.ts` | edit | `replayTurns` skips a run with `checkPath` (a check run has no model turn) |
 | `apps/api/test/agent-loop-grounding-wiring.test.ts` | new | Tests C1, C2, C2b, X1 to X4 (section 5) |
 | `apps/api/test/agent-loop-run.test.ts` | edit | The two tool-name lists (lines 374 and 391) gain `check_grounding` in sorted position (first) |
-| `apps/api/test/agent-loop-tools.test.ts` | edit | The offered-tool lists (lines 303 and 359) gain `check_grounding` last |
 | `apps/api/test/agent-loop-writes.test.ts` | edit | Each scenario whose run writes a `drafts/` path gets the empty-claims extract step (4.3, step 3) |
 | `apps/api/test/agent-loop-diff-preview.test.ts` | edit | Same rule |
 | `apps/api/test/agent-loop-output-routing.test.ts` | edit | Same rule |
+| `apps/api/test/agent-loop-narrative.test.ts` | edit | Same rule, in `draftSteps` (T2 and T4) |
+| `apps/api/test/agent-loop-workhorses.test.ts` | edit | Same rule, in the C1 scenario; the request count at line 387 becomes 4, and `bodies[3]` is the extract request (its last message contains `EXTRACT_MARKER`) |
 | `units/AGL-17-grounding-wiring.md` | edit, last commit only | The two `- [ ]` boxes become `- [x]`; no text changes |
 | `plans/AGL-17.md` | edit, last commit only | `status: done` |
 
 Not changed:
 - `packages/contracts/**`: every schema, route, constant and kind this plan needs exists (2.1).
 - `apps/api/test/agent-loop-grounding.kit.ts`, `apps/api/test/agent-loop-grounding.test.ts` (AGL-16's file), `apps/api/test/create-test-app.ts`, `apps/api/test/agent-loop-transcript.kit.ts`.
+- `apps/api/test/agent-loop-tools.test.ts` and its kit (the kit's runs offer the `project` family only, 2.1).
 - `apps/web/**` (AGL-18 is done and reads the events and the start reply as they are).
 - `e2e/**`, `examples/**`, `packages/packs/**`, `package.json`, `package-lock.json`.
 - `apps/api/src/modules/project-store/**`, `providers/**`, `tool-registry/**`.
@@ -153,9 +161,9 @@ Not changed:
   4. On success: `emit('grounding-result', {...result})` (the event adds `runId` and `seq`), then `transcript.append('grounding', seq, {targetPath: path, result})`; return the result.
   `apply` for `grounding-result` pushes a copy of the result, without `seq`, to `state.groundingResults`. The branch goes before the card lookup of `apply` (line 510 today), because that lookup returns early for an event with no `callId`.
 - `AgentRun.groundingOf(path, content): GroundingResult | undefined`: the last entry of `state.groundingResults` whose `targetPath` is `path` and whose `contentHash` is `contentHashOf(content)`.
-- `AgentRun.groundDrafts()`: when the run is not aborted, for each overlay entry whose path starts with `drafts/` and for which `groundingOf` finds nothing, `await groundOne(path, controller.signal)`. A throw is already in the transcript; the loop continues with the next path, and stops when the run is aborted.
+- `AgentRun.groundDrafts()`: when the run is not aborted, for each overlay entry whose path starts with `drafts/` and for which `groundingOf` finds nothing, `await groundOne(path, controller.signal)`. Each `groundOne` is in its own `try`/`catch`: a throw is already in the transcript; the loop continues with the next path, and stops when the run is aborted. `groundDrafts` never rejects.
 - `flushWrites`: for each entry, `grounding = groundingOf(entry.path, entry.content)`; when found, the propose input gets `grounding: summaryOf(result)`, next to `provenance`. Nothing else in `flushWrites` changes.
-- `finish(reason, message?)` becomes `async` and returns `Promise<void>`. It returns at once when `state.status === 'ended'` or when a private `finishing` flag is set, which it sets first. Then: `writeIntent`, `writeStepText`, `await groundDrafts()`, `flushWrites()`, then the existing order (state ended, `released`, `run-ended`, transcript `run-end`). Every `return this.finish(...)` in `execute` becomes `return await this.finish(...)`, and the `catch` becomes `await this.finish('error', messageOf(error))`.
+- `finish(reason, message?)` becomes `async` and returns `Promise<void>`. It keeps its one guard: it returns at once when `state.status === 'ended'`. There is no `finishing` flag (reviser: `execute` is the only caller and awaits each call, so no second call can overlap; a flag set before a throw inside `finish` would make the `catch`'s `finish('error')` return at once and leave the run active with its slot held). Then: `writeIntent`, `writeStepText`, `await groundDrafts()`, `flushWrites()`, then the existing order (state ended, `released`, `run-ended`, transcript `run-end`). Every `return this.finish(...)` in `execute` becomes `return await this.finish(...)`, and the `catch` becomes `await this.finish('error', messageOf(error))`.
 - `messageOf(error)`: a `GroundingFailure` gives `error.message`; the rest is as now.
 - `AgentRunsService`:
   - `start` keeps its refusals and its order (NO_ACTIVE_PROJECT, RUN_ACTIVE, NO_PROVIDER). Its `enabledFamilies` become `['project', 'narrative', 'grounding']`, plus `'research'` when research is enabled. The body from the `TranscriptWriter` to `return` moves into `private launch(options)`, which `start` and `checkGrounding` both call.
@@ -193,12 +201,13 @@ Step 2. Commit `feat(AGL-17): check_grounding and the run's grounding check`.
 - `agent-run.ts`: `AgentRunDeps.ground`, `AgentRunInit.checkPath` (declared, not yet used), `ToolRun.groundingCheck` in the constructor, `messageOf`, `groundOne`, `apply` for `grounding-result`, the transcript `grounding` lines.
 - `agent-runs.service.ts`: inject `GroundingEngine`, bind `deps.ground`, offer the `grounding` family in `start`.
 - `agent-loop.module.ts`: comment lines 33 to 35.
-- Update the tool-name lists of `agent-loop-run.test.ts` (lines 374 and 391) and `agent-loop-tools.test.ts` (lines 303 and 359): `check_grounding` is added. In `agent-loop-tools.test.ts` it goes last (offer order); in `agent-loop-run.test.ts` it goes first (`toolNamesOf` sorts the names).
+- Update the tool-name lists of `agent-loop-run.test.ts` (lines 374 and 391): `check_grounding` is added first (`toolNamesOf` sorts the names). `agent-loop-tools.test.ts` is not changed (2.1).
 - Run `npx tsc --noEmit -p apps/api/tsconfig.json`, then `npm test -w @bbartolome/scriba-api -- agent-loop`. Expected: C2b passes; C1, C2, X1 to X4 still fail; the other agent-loop tests pass (A3 checked here).
 
 Step 3. Commit `feat(AGL-17): check drafts at run end and attach the summary to their pending changes`.
-- `agent-run.ts`: `finish` async with the `finishing` flag; `groundDrafts`; `groundingOf`; `flushWrites` passes `grounding`; `execute` awaits `finish` at every call site and in `catch`.
-- In each scenario of `agent-loop-writes.test.ts`, `agent-loop-diff-preview.test.ts` and `agent-loop-output-routing.test.ts` whose run writes a `drafts/` path, add as the FIRST step `{match: {endpoint: 'chat', lastMessageContent: EXTRACT_MARKER}, reply: {kind: 'stream', deltas: ['{"claims":[]}']}}` (the import of `EXTRACT_MARKER` is from `../src/modules/agent-loop/grounding-prompts`). With no claims there is no judge call, the artefact is written with zero counts, and the existing assertions do not change. Without this step the run-end check meets the mock's HTTP 500 and the provider client retries it (A2).
+- `agent-run.ts`: `finish` async (status guard only, no flag); `groundDrafts`; `groundingOf`; `flushWrites` passes `grounding`; `execute` awaits `finish` at every call site and in `catch`.
+- In each scenario of `agent-loop-writes.test.ts`, `agent-loop-diff-preview.test.ts`, `agent-loop-output-routing.test.ts`, `agent-loop-narrative.test.ts` (`draftSteps`) and `agent-loop-workhorses.test.ts` (C1) whose run puts a `drafts/` path in the overlay (a `write_file` or `edit_file` to `drafts/`, or a narrative `draft` output), add as the FIRST step `{match: {endpoint: 'chat', lastMessageContent: EXTRACT_MARKER}, reply: {kind: 'stream', deltas: ['{"claims":[]}']}}` (the import of `EXTRACT_MARKER` is from `../src/modules/agent-loop/grounding-prompts`). With no claims there is no judge call, and the artefact is written with zero counts. Without this step the extract request matches a turn step (`turnIndex: 0` or `toolResultPresent: false`) or none (HTTP 500, A2), and the check fails.
+- The only existing assertion that changes: `agent-loop-workhorses.test.ts` line 387, `toHaveLength(3)` becomes `toHaveLength(4)`, with an added assertion that the last message of `bodies[3]` contains `EXTRACT_MARKER` (the run-end extract comes after the agent's last turn, so `bodies[0]` and `bodies[2]` keep their meaning). No other existing assertion changes.
 - Run `npm test -w @bbartolome/scriba-api -- agent-loop`. Expected: C1 passes; the rest as before.
 
 Step 4. Commit `feat(AGL-17): the on-demand grounding run`.
@@ -222,7 +231,7 @@ Step 6. Commit `docs(AGL-17): criteria checked, plan status done`.
 
 The `turnIndex` matcher counts assistant messages, and a grounding request has none, so `turnIndex: 0` also matches an extract or judge request. Grounding steps must come before the turn steps in each scenario. The extract and judge steps match by `lastMessageContent` markers, which only grounding requests carry.
 
-Gate for the whole unit (after step 5, and before the orchestrator's review): `npm run build`, `npm test` and `npm run lint` at the root, each exits 0. The Playwright e2e suite is not in this gate (A7).
+Gate for the whole unit (after step 5, and before the orchestrator's review): `npm run build`, `npm test` and `npm run lint` at the root, each exits 0. The Playwright e2e suite is not in this gate (A6).
 
 ## 5. Tests
 
@@ -257,7 +266,8 @@ Existing tests changed by this plan (listed in 3 and 4.3): the tool-name lists (
 - AGL-19's criterion 2 runs the engine through the AGL-16 kit (`POST /api/agent-loop-test/grounding`, body `{projectId, runId, targetPath, overlay?}`). This plan keeps the kit file, its route, `GroundingEngine.check`'s signature and behaviour, the `GroundingEngine` and `GroundingFailure` exports, and `WriteOverlay.put`. The kit works whether AGL-19 merges before or after AGL-17.
 - AGL-19's mock scripts must match the message formats of AGL-16 section 4.1 (markers, the extract and judge JSON, the claim index, `RETRIEVAL_LIMIT`, `JUDGE_BATCH_SIZE`). This plan does not change those formats.
 - Files: AGL-19 changes `examples/nonfiction/drafts/**`, `e2e/fixtures/mock-openai/scenarios/**` and the sample's `sources/outline.md`. This plan changes none of them and its tests use inline scenarios. No file in common.
-- Interplay: once AGL-17 is on main, an e2e run that writes `drafts/` gets extract and judge calls at run end. AGL-19's scripted replies answer them, and without them the mock's 500 is retried (A2). Either merge order is correct for both units.
+- Interplay: once AGL-17 is on main, an e2e run that writes `drafts/` gets extract and judge calls at run end. A scenario must list its extract and judge steps before its turn steps (4.4), else an extract request takes a `turnIndex: 0` step's reply or the mock's 500, and the check fails (the run and its pending change still complete, with no summary). Either merge order is correct for both units.
+- AGL-19's heading says the engine is tested through the kit "until AGL-17 exists". After AGL-17 merges, AGL-19's plan may use the real route (test C2 shows the reply, the events and the artefact it would read) or the kit, which stays.
 
 ### AGL-20 (grounding gate; `blocked_by` AGL-15, AGL-16, AGL-17, AGL-18, AGL-19, PST-14)
 
@@ -269,7 +279,7 @@ Existing tests changed by this plan (listed in 3 and 4.3): the tool-name lists (
 
 ### AGL-15 (pending-writes gate; no plan; parallel)
 
-- AGL-15 is e2e only, with no `unit/` branch. It shares no file with this plan. If its e2e scenario writes a `drafts/` path through an agent run, the run-end check adds extract and judge requests (same note as AGL-19). The accept step is unchanged. Either order is correct.
+- AGL-15 is e2e only, with no `unit/` branch. It shares no file with this plan. Its scope ("the agent edits a draft") writes a `drafts/` path through an agent run, so if AGL-17 merges first, its scenario needs an extract step listed first (same note as AGL-19). The accept step is unchanged. Either order is correct. AGL-15's criterion 1 names the AGL-12 and AGL-13 tests, which this plan changes only by adding that step.
 
 ### AGL-16 kit, AGL-16 tests and CEX-06
 
@@ -281,10 +291,19 @@ Existing tests changed by this plan (listed in 3 and 4.3): the tool-name lists (
 - `plans/TRG-14.md` (planned) changes only web, e2e and lock files (section 3 of that plan). No overlap.
 - Units with no plan and no branch (AGL-15, AGL-19) are covered above. No `draft` or `planned` plan other than TRG-14 exists.
 
-## 7. Open points
+## 7. Open points (settled by the reviser, revision 2)
 
-1. **How a failed check shows (AGL-16 open point 5; the orchestrator's question).** Default in this plan: a failure is written to the transcript (a `grounding` line with `failure`); a `check_grounding` failure is a `tool-call-error` with the readable text; an on-demand failure ends the run with reason `error` and that text as `message`; an automatic check's failure leaves the pending change without a summary, and the run goes on. The contract has no failure event, so no grounding event is sent. Consequence: AGL-18's chip keeps `Checking <path>` after an automatic or on-demand failure until reload (AGL-18 D9). Options for the Navigator: (a) keep this default and make a one-line change to AGL-18's web code that clears a checking entry at run end (outside this plan's file list; recommended); (b) add a `grounding-failed` event (expand, then a web change); (c) send `grounding-started` only for on-demand and `check_grounding` checks. This must be settled before the plan is `planned`.
-2. **Timing of automatic checks.** The unit says "after every `draft` tool output and for every `drafts/` path the overlay touched, before pending changes are created at run end". The default is one check per `drafts/` path at run end, on the final text, which also covers `write_file` and `edit_file`. The alternative is a check right after each draft output, which costs more model calls, and checks a text that a later edit may change. Navigator to confirm.
-3. **AGL-16's four tests stay on the kit.** The default keeps `agent-loop-grounding.test.ts` on `POST /api/agent-loop-test/grounding`, as the AGL-16 decision of 2026-11-16 allows. Moving them to the real route would change their assertions (the route answers the start response, not the result, and a failure is an event, not `{failure}`). The AGL-19 use is unaffected either way. Navigator to confirm, since the orchestrator note asks that AGL-17 "replace the kit's use with the real route".
-4. **Whether a grounding-only run joins the author's conversation.** `groundingRequestSchema` has no `conversationId`, so the default gives the check run its own conversation. The page then continues in that conversation after the check (AGL-18 `applyStart`). The default keeps the check out of the model's history (`replayTurns` skips it, test X4). The alternative is to add an optional `conversationId` to `groundingRequestSchema` (an expand of the contract, plus the web's body). Navigator to confirm.
-Points 1 to 4 need the Navigator's answer before this plan moves to `planned`. Each default above is what the implementer builds unless the answer differs; the answer changes only the lines the point names.
+None is left for the Navigator: no settled decision of the module, no criterion, no protected decision and no code of a done unit has to change. Each default of revision 1 is kept.
+
+1. **How a failed check shows (AGL-16 open point 5).** Settled: the revision 1 default. A failure is a `grounding` transcript line with `failure`; a `check_grounding` failure is a `tool-call-error` with the readable text; an on-demand failure ends the run with reason `error` and that text as `message` (X2); an automatic check's failure leaves the pending change without a summary, and the run goes on. No grounding event is sent for a failure. Source: `plans/AGL-16.md` section 8 point 5 makes this AGL-17's choice; the contract has no failure event, and no criterion of AGL-17 or AGL-20 tests a failure. Known effect, not a defect of a criterion: AGL-18 (done) keeps its `Checking <path>` chip after a failed check until reload (AGL-18 D9, D10). Options (a) (an AGL-18 web change) and (b) (a new event and a contract expand) change a done unit or a contract that nothing needs now, so they are not taken (YAGNI).
+2. **Timing of automatic checks.** Settled: one check per `drafts/` path at run end, on the final overlay text, before `flushWrites`. The unit's text ("after every `draft` tool output and for every `drafts/` path the overlay touched, **before** pending changes are created at run end") is met: every draft output is an overlay entry under `drafts/` (`narrative-tools.ts` lines 204 and 205), the check comes after every output and before the pending change, and the text checked is the text proposed, so the summary describes the change it sits on (criterion 1, test C1). Module line 3 ("runs a grounding check after any draft") agrees. A check after each output would check texts that are never proposed.
+3. **AGL-16's four tests stay on the kit.** Settled: `agent-loop-grounding.test.ts` and the kit are not changed. Source: `plans/DECISIONS.md` line 5420 ("AGL-17's plan retires the kit's use in favour of the real `POST …/grounding` route, and the kit file may remain, as AGL-02's does"). AGL-02's kit still serves AGL-02's tests (`agent-loop-tools.test.ts` line 35), which is the precedent named. This plan's tests use the real route only (C2, X1 to X4), so the kit gains no new use. Moving AGL-16's tests would change a done unit's approved tests with no criterion needing it.
+4. **Whether a grounding-only run joins the author's conversation.** Settled: the check run gets a new conversation id; `replayTurns` skips a check run (X4). Source: `groundingRequestSchema` is `{path}` only (`grounding.ts` line 51) and AGL-18 (done) posts `{path}` and records the run with `applyStart` (AGL-18 D8). Adding `conversationId` would expand the contract and change done AGL-18 code, which no criterion needs. Known effect: the page continues in the check run's conversation after a check (AGL-18 `applyStart`, `chat-state.ts` line 386).
+
+## 8. Review parts
+
+One part. Step 1 writes every test of this plan in one new file, and steps 2 to 5 all change `agent-run.ts`, so the steps cannot be reviewed apart without splitting that file's change.
+
+| Part | Steps | Tests |
+|---|---|---|
+| P1 — grounding wiring | 0, 1, 2, 3, 4, 5, 6 (4.3) | C1 (criterion 1); C2 and C2b (criterion 2); X1, X2, X3, X4 (extra); the existing-test edits of steps 2 and 3 |
