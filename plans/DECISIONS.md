@@ -5259,3 +5259,15 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Reason:** the unticked-box precedents are SAU-16 (lines 4935 to 4937, option A) and GNP-11 (line 5071, option (c)). The split, option (c), was rejected on cost (line 5072). GNP-08, GNP-09 and GNP-10 are not unticked-box precedents: their eval-case boxes were ticked under the data-only reading (lines 5220 to 5222), and their real-model runs are carried by GNP-12 criterion 4. That reading does not apply to criterion 4, whose text requires a real model.
 - **Effect:** the phase closes at the merge. GNP-20, GNP-21, GNP-22, AGL-11 and TRG-17 are unblocked. AGL-11's own done-when still needs a real-model `[@id]` run.
 - **Navigator corrections:** the first carry-forward wrongly listed GNP-08, GNP-09 and GNP-10 as unticked-box precedents, and wrongly read the plan's default (a) as a hold of the merge. The confirming challenge corrected both. Plan section 8, point 2, default (a) is "a person runs the procedure before line 20 is ticked".
+
+## 2026-11-16 — GNP-12 — Navigator decision (session `a7c89fb8fdaa4d6a8e1976f1f2be5f9b`): the patch id of a unit with no code is the empty output of the command
+
+- **Question (orchestrator):** the branch change of GNP-12 is two checkbox ticks in `units/GNP-12-workhorses-gate.md` (lines 17 and 18), with no code. The command in `prompt.md` lines 29 to 31 excludes `plans/` and `units/`, so it prints nothing for this unit.
+- **Decision (Navigator, option b):** the patch id is the empty output of that command. The approval holds while the command prints nothing, and is invalidated if code is later added. This applies to every unit with no code.
+- **Reason:** the command already excludes `plans/` and `units/` by design. For a unit whose diff is documentation, it correctly prints no patch id. Options (a) and (c) would change the defined command and key the approval to a status document, whose later edits would invalidate it.
+
+## 2026-11-16 — GNP-12 — Review (Sonnet, medium), Part 1 (the whole plan): APPROVED
+
+- **Result:** APPROVED, one reviewer, part 1 of 1 (the whole plan, `plans/GNP-12.md` status planned at 2a1cd09). The branch `unit/GNP-12` (commit ca88baa) changes only `units/GNP-12-workhorses-gate.md`, lines 17 and 18. Lines 19 and 20 stay unticked, as section 8 points 1 and 2 decided.
+- **Patch id:** empty (the command prints nothing; see the decision above).
+- **Checks by the reviewer:** `npm run lint:packs` exit 0; packs test 14 of 14; golden test T2 5 of 5; the three eval data test files exit 0. Not re-run by the reviewer: the root gates, the agent-loop-narrative test and R1 (the implementer's reports for these).
