@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -10,11 +11,18 @@ import { join } from 'node:path';
 import { expect, it } from 'vitest';
 import { stringify } from 'yaml';
 import {
+  AGENT_RUN_STOP_ROUTE,
   AGENT_RUNS_ROUTE,
   agentLoopEventSchema,
   agentStartResponseSchema,
   type AgentLoopEvent,
 } from '@bbartolome/scriba-contracts/agent-loop';
+import {
+  ACTIVE_PROJECT_ROUTE,
+  PROJECT_PENDING_ROUTE,
+  pendingListSchema,
+  type PendingChange,
+} from '@bbartolome/scriba-contracts/project-store';
 import { PROVIDER_DEFAULTS } from '@bbartolome/scriba-contracts/providers';
 import { createTestApp, type TestApp } from './create-test-app';
 import { send, sessionCookie, type Reply } from './guard-request';
@@ -217,3 +225,290 @@ it('AC4: an edit with zero matches and an edit with two matches return distinct 
 function readFileText(...parts: string[]): string {
   return readFileSync(join(...parts), 'utf8');
 }
+
+type Typed<T extends AgentLoopEvent['type']> = Extract<
+  AgentLoopEvent,
+  { type: T }
+>;
+
+function eventsOf<T extends AgentLoopEvent['type']>(
+  events: AgentLoopEvent[],
+  type: T,
+): Typed<T>[] {
+  return events.filter((event): event is Typed<T> => event.type === type);
+}
+
+function get(h: Harness, path: string): Promise<Reply> {
+  return send(h.app.baseUrl, {
+    host: LOOPBACK_HOST,
+    cookie: h.cookie,
+    method: 'GET',
+    path,
+  });
+}
+
+// The open pending changes of project book, parsed with the contract.
+async function pendingOfBook(h: Harness): Promise<PendingChange[]> {
+  const reply = await get(
+    h,
+    PROJECT_PENDING_ROUTE.replace(':projectId', 'book'),
+  );
+  expect(reply.status).toBe(200);
+  return pendingListSchema.parse(JSON.parse(reply.body)).changes;
+}
+
+// The agent-loop events read from the stream until `done` says the list so far is enough.
+async function readUntil(
+  stream: Observer,
+  done: (seen: AgentLoopEvent[]) => boolean,
+): Promise<AgentLoopEvent[]> {
+  const events: AgentLoopEvent[] = [];
+  const deadline = Date.now() + 5000;
+  while (!done(events)) {
+    if (Date.now() > deadline)
+      throw new Error('Expected events not seen in 5 s.');
+    for (const block of await stream.take(20)) {
+      const envelope: unknown = JSON.parse(dataOf(block));
+      if ((envelope as { module?: unknown }).module === 'agent-loop') {
+        events.push(agentLoopEventSchema.parse(envelope));
+      }
+    }
+  }
+  return events;
+}
+
+const hasEnded = (events: AgentLoopEvent[]): boolean =>
+  events.some((event) => event.type === 'run-ended');
+
+const hasResults =
+  (count: number) =>
+  (events: AgentLoopEvent[]): boolean =>
+    eventsOf(events, 'tool-call-result').length >= count;
+
+// A chat step that waits five seconds before it streams, so a stop always lands while the model call is in flight.
+function stallAt(turnIndex: number) {
+  return {
+    match: { endpoint: 'chat', turnIndex },
+    delayMs: 5000,
+    reply: { kind: 'stream', deltas: ['late'] },
+  };
+}
+
+function writeCall(turnIndex: number, name: string, args: string) {
+  return {
+    match: { endpoint: 'chat', turnIndex },
+    reply: { kind: 'toolCalls', calls: [{ name, argumentChunks: [args] }] },
+  };
+}
+
+it('AC1: no agent write changes a file on disk before the author accepts it', async () => {
+  const h = await openHarness('writes-disk', [
+    writeCall(
+      0,
+      'write_file',
+      '{"path":"drafts/new-chapter.md","content":"# Chapter\\n"}',
+    ),
+    writeCall(
+      1,
+      'edit_file',
+      '{"path":"sources/outline.md","old":"# Outline","new":"# Changed"}',
+    ),
+    stallAt(2),
+  ]);
+  try {
+    const book = join(h.fixture.library, 'book');
+    const draft = join(book, 'drafts', 'new-chapter.md');
+    const outline = join(book, 'sources', 'outline.md');
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
+    try {
+      const { runId } = await startRun(h, { intent: 'Write the chapter' });
+      await readUntil(stream, hasResults(2));
+
+      expect(existsSync(draft)).toBe(false);
+      expect(readFileSync(outline, 'utf8')).toBe('# Outline\n');
+
+      const stop = await post(h, AGENT_RUN_STOP_ROUTE, { runId });
+      expect(stop.status).toBe(200);
+      await readUntil(stream, hasEnded);
+
+      expect(existsSync(draft)).toBe(false);
+      expect(readFileSync(outline, 'utf8')).toBe('# Outline\n');
+
+      const changes = await pendingOfBook(h);
+      expect(changes).toHaveLength(2);
+      expect(changes).toContainEqual(
+        expect.objectContaining({
+          targetPath: 'drafts/new-chapter.md',
+          kind: 'create',
+          capturedBase: null,
+          status: 'pending',
+        }),
+      );
+      expect(changes).toContainEqual(
+        expect.objectContaining({
+          targetPath: 'sources/outline.md',
+          kind: 'modify',
+          capturedBase: expect.objectContaining({ content: '# Outline\n' }),
+        }),
+      );
+    } finally {
+      await stream.close();
+    }
+  } finally {
+    await h.close();
+  }
+});
+
+it('AC2: two edits to one file in one run yield one pending change against the first base, and a read between them sees the first edit', async () => {
+  const h = await openHarness('two-edits', [
+    writeCall(
+      0,
+      'edit_file',
+      '{"path":"sources/outline.md","old":"# Outline","new":"# Outline A"}',
+    ),
+    writeCall(1, 'read_file', '{"path":"sources/outline.md"}'),
+    writeCall(
+      2,
+      'edit_file',
+      '{"path":"sources/outline.md","old":"Outline A","new":"Outline B"}',
+    ),
+    {
+      match: { endpoint: 'chat', turnIndex: 3 },
+      reply: { kind: 'stream', deltas: ['Done.'] },
+    },
+  ]);
+  try {
+    const outline = join(h.fixture.library, 'book', 'sources', 'outline.md');
+    const stream = await observeEvents(h.app.baseUrl, LOOPBACK_HOST, h.cookie);
+    try {
+      const { runId } = await startRun(h, { intent: 'Revise the outline' });
+      const events = await readUntil(stream, hasEnded);
+
+      const results = eventsOf(events, 'tool-call-result');
+      expect(results).toHaveLength(3);
+      expect(results[1].data.output).toEqual({
+        path: 'sources/outline.md',
+        content: '# Outline A\n',
+      });
+      const secondEdit = results[2].data.callId;
+
+      const ended = eventsOf(events, 'run-ended');
+      expect(ended[0].data).toMatchObject({
+        reason: 'completed',
+      });
+      expect(ended[0].data.pendingChangeIds).toHaveLength(1);
+
+      const changes = await pendingOfBook(h);
+      expect(changes).toHaveLength(1);
+      expect(changes[0]).toMatchObject({
+        targetPath: 'sources/outline.md',
+        kind: 'modify',
+        capturedBase: { content: '# Outline\n' },
+        proposed: '# Outline B\n',
+        origin: { kind: 'agent-run', runId, toolCallId: secondEdit },
+      });
+      expect(readFileSync(outline, 'utf8')).toBe('# Outline\n');
+    } finally {
+      await stream.close();
+    }
+  } finally {
+    await h.close();
+  }
+});
+
+it('AC3: a stopped agent run still creates its pending changes, and a project-switched one creates them in the original project', async () => {
+  // Run A: stopped after its write.
+  const stopped = await openHarness('stop-after-write', [
+    writeCall(
+      0,
+      'write_file',
+      '{"path":"drafts/stopped.md","content":"# Stopped\\n"}',
+    ),
+    stallAt(1),
+  ]);
+  try {
+    const stream = await observeEvents(
+      stopped.app.baseUrl,
+      LOOPBACK_HOST,
+      stopped.cookie,
+    );
+    try {
+      const { runId } = await startRun(stopped, { intent: 'Draft the stop' });
+      await readUntil(stream, hasResults(1));
+      expect(
+        (await post(stopped, AGENT_RUN_STOP_ROUTE, { runId })).status,
+      ).toBe(200);
+      const events = await readUntil(stream, hasEnded);
+
+      expect(eventsOf(events, 'run-ended')[0].data).toMatchObject({
+        reason: 'stopped',
+      });
+      expect(
+        eventsOf(events, 'run-ended')[0].data.pendingChangeIds,
+      ).toHaveLength(1);
+      expect(await pendingOfBook(stopped)).toContainEqual(
+        expect.objectContaining({
+          targetPath: 'drafts/stopped.md',
+          origin: { kind: 'agent-run', runId, toolCallId: expect.any(String) },
+        }),
+      );
+    } finally {
+      await stream.close();
+    }
+  } finally {
+    await stopped.close();
+  }
+
+  // Run B: the project is switched after its write.
+  const switched = await openHarness('switch-after-write', [
+    writeCall(
+      0,
+      'write_file',
+      '{"path":"drafts/switched.md","content":"# Switched\\n"}',
+    ),
+    stallAt(1),
+  ]);
+  try {
+    const other = join(switched.fixture.library, 'other');
+    mkdirSync(other);
+    writeFileSync(
+      join(other, 'project.yaml'),
+      'schemaVersion: 1\ntitle: Other\ngenrePack: nonfiction\n',
+    );
+    const stream = await observeEvents(
+      switched.app.baseUrl,
+      LOOPBACK_HOST,
+      switched.cookie,
+    );
+    try {
+      const { runId } = await startRun(switched, {
+        intent: 'Draft the switch',
+      });
+      await readUntil(stream, hasResults(1));
+      expect(
+        (await post(switched, ACTIVE_PROJECT_ROUTE, { projectId: 'other' }))
+          .status,
+      ).toBe(200);
+      const events = await readUntil(stream, hasEnded);
+
+      const ended = eventsOf(events, 'run-ended')[0];
+      expect(ended.data).toMatchObject({ reason: 'project-switched' });
+      expect(ended.data.pendingChangeIds).toHaveLength(1);
+
+      expect(
+        (await post(switched, ACTIVE_PROJECT_ROUTE, { projectId: 'book' }))
+          .status,
+      ).toBe(200);
+      expect(await pendingOfBook(switched)).toContainEqual(
+        expect.objectContaining({
+          targetPath: 'drafts/switched.md',
+          origin: { kind: 'agent-run', runId, toolCallId: expect.any(String) },
+        }),
+      );
+    } finally {
+      await stream.close();
+    }
+  } finally {
+    await switched.close();
+  }
+});
