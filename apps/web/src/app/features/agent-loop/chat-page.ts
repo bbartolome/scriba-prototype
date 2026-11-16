@@ -6,7 +6,12 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import {
+  takeUntilDestroyed,
+  toObservable,
+  toSignal,
+} from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 import type {
   AgentRunState,
   AgentSettings,
@@ -26,6 +31,7 @@ import {
 } from '../../shell';
 import {
   AGENT_CONVERSATIONS_PATH,
+  AGENT_GROUNDING_PATH,
   AGENT_NO_PROVIDER_CODE,
   AGENT_RUN_ACTIVE_CODE,
   AGENT_RUN_CURRENT_PATH,
@@ -51,13 +57,16 @@ import {
   applyRunState,
   applyStart,
   canContinue,
+  type ChatGrounding,
   type ChatState,
   type ChatTurn,
   cardSources,
   cardView,
+  checkPathOf,
   stepLabel,
   turnsOfHistory,
 } from './chat-state';
+import { GroundingChip } from './grounding-chip';
 
 /** A notice for the page: its text, and whether it links to the providers page. */
 interface Notice {
@@ -73,11 +82,17 @@ type Refresh =
 interface CardEntry {
   readonly key: string;
   readonly view: ToolCallView;
+  /** The path of the card's Check grounding action, for a draft card (D8). */
+  readonly checkPath?: string;
+  /** The chip of the turn's entry for the card's path, shown after the card (D3). */
+  readonly grounding?: ChatGrounding;
 }
 
 interface TurnEntry {
   readonly turn: ChatTurn;
   readonly cards: readonly CardEntry[];
+  /** The chips of entries that match no card of the turn, shown after the cards (D3). */
+  readonly grounding: readonly ChatGrounding[];
   readonly reviewHref?: string;
 }
 
@@ -117,7 +132,7 @@ function checkedOf(event: Event): boolean {
  */
 @Component({
   selector: 'app-chat-page',
-  imports: [MarkdownPreview, ToolCallCard],
+  imports: [GroundingChip, MarkdownPreview, ToolCallCard],
   styles: `
     :host {
       display: block;
@@ -313,6 +328,17 @@ function checkedOf(event: Event): boolean {
         </p>
       }
 
+      @if (checkQuery(); as path) {
+        <button
+          type="button"
+          class="control"
+          [disabled]="running()"
+          (click)="checkGrounding(path)"
+        >
+          Check grounding: {{ path }}
+        </button>
+      }
+
       <section class="stream" aria-label="Messages">
         @for (entry of entries(); track entry.turn.runId) {
           <article class="turn">
@@ -324,6 +350,22 @@ function checkedOf(event: Event): boolean {
             }
             @for (card of entry.cards; track card.key) {
               <app-tool-call-card [call]="card.view" />
+              @if (card.grounding; as grounding) {
+                <app-grounding-chip [entry]="grounding" />
+              }
+              @if (card.checkPath; as path) {
+                <button
+                  type="button"
+                  class="control"
+                  [disabled]="running()"
+                  (click)="checkGrounding(path)"
+                >
+                  Check grounding
+                </button>
+              }
+            }
+            @for (grounding of entry.grounding; track grounding.targetPath) {
+              <app-grounding-chip [entry]="grounding" />
             }
             @if (entry.reviewHref; as href) {
               <p><a [href]="href">Review the changes of this run</a></p>
@@ -396,20 +438,55 @@ export class ChatPage {
   protected readonly continuable = computed(() => canContinue(this.chat()));
   protected readonly step = computed(() => stepLabel(this.chat()));
 
-  /** The stream's entries. Computed, so the shared card gets a new view only when a turn changes. */
+  /** The `check` query of the Files link (D14): a draft path to check, when it starts with `drafts/`. */
+  private readonly route = inject(ActivatedRoute);
+  private readonly checkParam = toSignal(
+    this.route.queryParamMap.pipe(
+      map((params) => params.get('check') ?? undefined),
+    ),
+    { requireSync: true },
+  );
+  protected readonly checkQuery = computed(() => {
+    const path = this.checkParam();
+    return path !== undefined && path.startsWith('drafts/') ? path : undefined;
+  });
+
+  /**
+   * The stream's entries. Computed, so the shared card gets a new view only when a turn changes. A
+   * grounding entry is shown after the first card whose diff preview path is its target (D3).
+   */
   protected readonly entries = computed<readonly TurnEntry[]>(() => {
     const project = this.projectId();
-    return this.chat().turns.map((turn) => ({
-      turn,
-      cards: turn.cards.map((card) => ({
-        key: card.callId,
-        view: cardView(card, cardSources(card, this.sourcePaths())),
-      })),
-      reviewHref:
-        project !== undefined && turn.pendingChangeIds.length > 0
-          ? `/projects/${encodeURIComponent(project)}/review?run=${encodeURIComponent(turn.runId)}`
-          : undefined,
-    }));
+    return this.chat().turns.map((turn) => {
+      const placed = new Set<string>();
+      const cards = turn.cards.map((card): CardEntry => {
+        const path = card.diffPreview?.path;
+        const grounding =
+          path === undefined || placed.has(path)
+            ? undefined
+            : turn.grounding.find((entry) => entry.targetPath === path);
+        if (grounding !== undefined && path !== undefined) {
+          placed.add(path);
+        }
+        return {
+          key: card.callId,
+          view: cardView(card, cardSources(card, this.sourcePaths())),
+          checkPath: checkPathOf(card),
+          grounding,
+        };
+      });
+      return {
+        turn,
+        cards,
+        grounding: turn.grounding.filter(
+          (entry) => !placed.has(entry.targetPath),
+        ),
+        reviewHref:
+          project !== undefined && turn.pendingChangeIds.length > 0
+            ? `/projects/${encodeURIComponent(project)}/review?run=${encodeURIComponent(turn.runId)}`
+            : undefined,
+      };
+    });
   });
 
   /** The settings the page last received; the save compares its fields against these. */
@@ -526,6 +603,21 @@ export class ChatPage {
     this.api
       .post(AGENT_RUN_STOP_PATH, { runId }, anyReply)
       .subscribe({ error: (error: unknown) => this.showError(error) });
+  }
+
+  /**
+   * Check grounding posts the file's path (D8). The reply starts a run, which the stream then shows;
+   * the run's intent label is the action, and the label is not sent.
+   */
+  protected checkGrounding(path: string): void {
+    this.notice.set(undefined);
+    this.api.post(AGENT_GROUNDING_PATH, { path }, startReply).subscribe({
+      next: (start) =>
+        this.chat.update((state) =>
+          applyStart(state, start, `Check grounding: ${path}`),
+        ),
+      error: (error: unknown) => this.showError(error),
+    });
   }
 
   /** New conversation clears the stream and the page's conversation (D14). */

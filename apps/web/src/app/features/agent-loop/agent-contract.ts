@@ -20,6 +20,8 @@ export const AGENT_RUNS_PATH: ApiPath = '/api/agent-loop/runs';
 export const AGENT_RUN_STOP_PATH: ApiPath = '/api/agent-loop/runs/stop';
 /** `GET` the current run state (`AGENT_RUN_CURRENT_ROUTE`). */
 export const AGENT_RUN_CURRENT_PATH: ApiPath = '/api/agent-loop/runs/current';
+/** `POST` the on-demand grounding check of a file (`AGENT_GROUNDING_ROUTE`); the reply starts a run. */
+export const AGENT_GROUNDING_PATH: ApiPath = '/api/agent-loop/grounding';
 /** `GET` the conversation list (`AGENT_CONVERSATIONS_ROUTE`). */
 export const AGENT_CONVERSATIONS_PATH: ApiPath =
   '/api/agent-loop/conversations';
@@ -70,8 +72,13 @@ export const RUN_END_REASON_VALUES = [
   'error',
   'project-switched',
 ] as const;
+export const GROUNDING_VERDICT_VALUES = [
+  'supported',
+  'weak',
+  'unsupported',
+] as const;
 
-/** The eight event types the page handles. The grounding types are not among them (D18). */
+/** The ten event types the page handles. */
 export type ChatEventType =
   | 'run-started'
   | 'token-delta'
@@ -80,9 +87,11 @@ export type ChatEventType =
   | 'tool-call-result'
   | 'tool-call-error'
   | 'step-cap-reached'
-  | 'run-ended';
+  | 'run-ended'
+  | 'grounding-started'
+  | 'grounding-result';
 
-/** One of the eight handled members of the agent loop's SSE union. */
+/** One of the ten handled members of the agent loop's SSE union. */
 export type ChatEvent = Extract<AgentLoopEvent, { type: ChatEventType }>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -117,6 +126,43 @@ function isOptional(
   check: (value: unknown) => boolean,
 ): boolean {
   return value === undefined || check(value);
+}
+
+/** A passage the verdict cites: its path (any string, as the contract has it), offset and snippet. */
+function isPassage(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    isText(value['path']) &&
+    isInteger(value['offset'], 0) &&
+    isText(value['snippet'])
+  );
+}
+
+/** One checked claim: the text is filled, the verdict is one of the three, the passage is optional. */
+function isGroundingClaim(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    isFilled(value['text']) &&
+    isOneOf(GROUNDING_VERDICT_VALUES, value['verdict']) &&
+    isOptional(value['passage'], isPassage)
+  );
+}
+
+/**
+ * A grounding result (the claims artefact, D11). The target path is any string, as the contract's
+ * projectPathSchema is z.string(), so an empty path is accepted.
+ */
+export function isGroundingResult(value: unknown): boolean {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const claims = value['claims'];
+  return (
+    value['schemaVersion'] === 1 &&
+    isText(value['targetPath']) &&
+    Array.isArray(claims) &&
+    claims.every(isGroundingClaim)
+  );
 }
 
 function isHttpUrl(value: unknown): boolean {
@@ -163,6 +209,7 @@ function isRunState(value: unknown): boolean {
   }
   const cards = value['cards'];
   const pending = value['pendingChangeIds'];
+  const grounding = value['groundingResults'];
   return (
     isFilled(value['runId']) &&
     isFilled(value['conversationId']) &&
@@ -172,8 +219,8 @@ function isRunState(value: unknown): boolean {
     isText(value['assistantText']) &&
     Array.isArray(cards) &&
     cards.every(isCard) &&
-    // groundingResults is checked as an array only (D18).
-    Array.isArray(value['groundingResults']) &&
+    Array.isArray(grounding) &&
+    grounding.every(isGroundingResult) &&
     Array.isArray(pending) &&
     pending.every(isFilled) &&
     isInteger(value['lastSeq'], 0) &&
@@ -313,10 +360,7 @@ export const entityResolutionReply: ResponseSchema<EntityResolution> =
 /** The stop reply is ignored, so every body is accepted (D8). */
 export const anyReply: ResponseSchema<unknown> = replyOf(() => true);
 
-/**
- * Whether an SSE envelope is one of the eight events the page handles, with the fields the page reads
- * checked. The grounding events are refused (D18).
- */
+/** Whether an SSE envelope is one of the ten events the page handles, with the fields the page reads checked. */
 export function isChatEvent(value: unknown): value is ChatEvent {
   if (!isRecord(value) || value['module'] !== 'agent-loop') {
     return false;
@@ -368,6 +412,10 @@ export function isChatEvent(value: unknown): value is ChatEvent {
         pending.every(isFilled)
       );
     }
+    case 'grounding-started':
+      return isText(data['targetPath']);
+    case 'grounding-result':
+      return isGroundingResult(data);
     default:
       return false;
   }

@@ -8,6 +8,7 @@ import type {
   AgentToolFamily,
   ConversationHistory,
   ConversationTurn,
+  GroundingResult,
 } from '@bbartolome/scriba-contracts/agent-loop';
 import type { ToolCallOutput, ToolCallStatus, ToolCallView } from '../../shell';
 import type { ChatEvent } from './agent-contract';
@@ -42,12 +43,24 @@ export interface ChatCard {
   readonly error?: ChatCardError;
 }
 
+/**
+ * The grounding of one target file in a turn (D9): a check that runs (`checking`), or the latest
+ * result for the path. A turn holds one entry per path, in order of first appearance.
+ */
+export interface ChatGrounding {
+  readonly targetPath: string;
+  readonly checking: boolean;
+  readonly result?: GroundingResult;
+}
+
 /** One run's turn in the stream: its intent, text, cards and the state the page shows. */
 export interface ChatTurn {
   readonly runId: string;
   readonly intent?: string;
   readonly text: string;
   readonly cards: readonly ChatCard[];
+  /** The grounding entries of the turn. History turns carry none (D10). */
+  readonly grounding: readonly ChatGrounding[];
   readonly status: 'running' | 'ended';
   readonly reason?: AgentRunEndReason;
   readonly step?: number;
@@ -72,6 +85,7 @@ function newTurn(runId: string, intent?: string): ChatTurn {
     intent,
     text: '',
     cards: [],
+    grounding: [],
     status: 'running',
     lastSeq: 0,
     pendingChangeIds: [],
@@ -127,6 +141,18 @@ function changeCard(
   change: (card: ChatCard) => ChatCard,
 ): readonly ChatCard[] {
   return cards.map((card) => (card.callId === callId ? change(card) : card));
+}
+
+/** The entries with `entry` in place of the one of its path, or appended when the path has none. */
+function withGrounding(
+  entries: readonly ChatGrounding[],
+  entry: ChatGrounding,
+): readonly ChatGrounding[] {
+  return entries.some((current) => current.targetPath === entry.targetPath)
+    ? entries.map((current) =>
+        current.targetPath === entry.targetPath ? entry : current,
+      )
+    : [...entries, entry];
 }
 
 function startCard(
@@ -214,6 +240,33 @@ export function applyChatEvent(state: ChatState, event: ChatEvent): ChatState {
       const { step, cap } = event.data;
       return changeTurn(state, event, (turn) => ({ ...turn, step, cap }));
     }
+    case 'grounding-started': {
+      const { targetPath } = event.data;
+      return changeTurn(state, event, (turn) => {
+        const current = turn.grounding.find(
+          (entry) => entry.targetPath === targetPath,
+        );
+        return {
+          ...turn,
+          grounding: withGrounding(turn.grounding, {
+            targetPath,
+            checking: true,
+            result: current?.result,
+          }),
+        };
+      });
+    }
+    case 'grounding-result': {
+      const result = event.data;
+      return changeTurn(state, event, (turn) => ({
+        ...turn,
+        grounding: withGrounding(turn.grounding, {
+          targetPath: result.targetPath,
+          checking: false,
+          result,
+        }),
+      }));
+    }
     case 'run-ended': {
       const { runId, reason, pendingChangeIds } = event.data;
       const next = changeTurn(state, event, (turn) => ({
@@ -247,6 +300,33 @@ function cardOfState(card: AgentCard): ChatCard {
 }
 
 /**
+ * The grounding entries of a run state (D10): one per path, the last result of the path winning, in
+ * order of first appearance. A checking entry whose path has no result is kept.
+ */
+function groundingOfState(
+  results: readonly GroundingResult[],
+  existing: readonly ChatGrounding[],
+): ChatGrounding[] {
+  let entries: readonly ChatGrounding[] = [];
+  for (const result of results) {
+    entries = withGrounding(entries, {
+      targetPath: result.targetPath,
+      checking: false,
+      result,
+    });
+  }
+  for (const entry of existing) {
+    const hasResult = entries.some(
+      (current) => current.targetPath === entry.targetPath,
+    );
+    if (entry.checking && !hasResult) {
+      entries = [...entries, entry];
+    }
+  }
+  return [...entries];
+}
+
+/**
  * Replaces the view's turn of the run with the run state (S9, D6). A null state (no run) changes
  * nothing. The state's conversation becomes the page's conversation.
  */
@@ -264,6 +344,10 @@ export function applyRunState(
     intent: existing?.intent,
     text: run.assistantText,
     cards: run.cards.map(cardOfState),
+    grounding: groundingOfState(
+      run.groundingResults,
+      existing?.grounding ?? [],
+    ),
     status: ended ? 'ended' : 'running',
     reason: run.reason,
     step: run.step,
@@ -311,6 +395,7 @@ export function turnsOfHistory(history: ConversationHistory): ChatTurn[] {
     intent: turn.intent,
     text: turn.assistantText,
     cards: turn.cards.map(cardOfState),
+    grounding: [],
     status: 'ended',
     reason: turn.reason,
     lastSeq: 0,
@@ -396,4 +481,54 @@ export function cardView(
     error: card.error === undefined ? undefined : errorText(card.error),
     sources,
   };
+}
+
+/** The verdict counts of a result's claims (D4). */
+export function verdictCounts(result: GroundingResult | undefined): {
+  readonly supported: number;
+  readonly weak: number;
+  readonly unsupported: number;
+} {
+  const counts = { supported: 0, weak: 0, unsupported: 0 };
+  for (const claim of result?.claims ?? []) {
+    counts[claim.verdict] += 1;
+  }
+  return counts;
+}
+
+/**
+ * The chip's text (D4): "Checking <path>" while a check runs, otherwise the counts of the latest
+ * result as "N supported · N weak · N unsupported".
+ */
+export function summaryText(entry: ChatGrounding): string {
+  if (entry.checking) {
+    return `Checking ${entry.targetPath}`;
+  }
+  const counts = verdictCounts(entry.result);
+  return `${counts.supported} supported · ${counts.weak} weak · ${counts.unsupported} unsupported`;
+}
+
+/** The text and the icon name of a verdict's badge (D5). Its colours are set by the chip's styles. */
+export function verdictView(
+  verdict: GroundingResult['claims'][number]['verdict'],
+): { readonly label: string; readonly icon: string } {
+  switch (verdict) {
+    case 'supported':
+      return { label: 'Supported', icon: 'check_circle' };
+    case 'weak':
+      return { label: 'Weak', icon: 'warning' };
+    case 'unsupported':
+      return { label: 'Unsupported', icon: 'cancel' };
+  }
+}
+
+/**
+ * The path a draft card can be checked by (D8): its diff preview's path, when it is a string under
+ * `drafts/`. Undefined otherwise. The contract's guard checks the preview as a record only.
+ */
+export function checkPathOf(card: ChatCard): string | undefined {
+  const path: unknown = card.diffPreview?.path;
+  return typeof path === 'string' && path.startsWith('drafts/')
+    ? path
+    : undefined;
 }

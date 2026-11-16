@@ -177,6 +177,12 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
       min-width: 0;
     }
 
+    .check {
+      display: inline-block;
+      min-height: 44px;
+      padding-block: 0.5rem;
+    }
+
     .editor[hidden] {
       display: none;
     }
@@ -212,6 +218,14 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
         }
       </ul>
       <section class="preview">
+        @if (checkId(); as id) {
+          <a
+            class="check"
+            [routerLink]="['/projects', id, 'chat']"
+            [queryParams]="{ check: selected() }"
+            >Check grounding</a
+          >
+        }
         @if (selected() === undefined) {
           <p>Choose a file in the tree to read it.</p>
         }
@@ -255,6 +269,15 @@ export class FilesPage {
   protected readonly selected = signal<string | undefined>(undefined);
   protected readonly content = signal<string | undefined>(undefined);
   protected readonly fileFailure = signal<string | undefined>(undefined);
+
+  /** The project of the Check grounding link: shown for a draft file (`drafts/`) of a known project (D14). */
+  protected readonly checkId = computed(() => {
+    const path = this.selected();
+    const id = this.projectId();
+    return id !== undefined && path !== undefined && path.startsWith('drafts/')
+      ? id
+      : undefined;
+  });
 
   private readonly devices = inject(DeviceClassService);
   protected readonly phone = computed(
