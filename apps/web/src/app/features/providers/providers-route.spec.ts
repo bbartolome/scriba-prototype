@@ -46,7 +46,8 @@ function providersLink(root: HTMLElement): HTMLAnchorElement | undefined {
   return [
     ...root.querySelectorAll<HTMLAnchorElement>('a[href="/providers"]'),
   ].find(
-    (anchor) => anchor.querySelector('span')?.textContent?.trim() === 'Providers',
+    (anchor) =>
+      anchor.querySelector('span')?.textContent?.trim() === 'Providers',
   );
 }
 
