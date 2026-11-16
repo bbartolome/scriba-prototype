@@ -1,6 +1,6 @@
 ---
 id: SHL-15
-status: planned
+status: draft
 ---
 # SHL-15 plan — editor layout: split view with live preview, phone toggle, tablet touch checks
 
