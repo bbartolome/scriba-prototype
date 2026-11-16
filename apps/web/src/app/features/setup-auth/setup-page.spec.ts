@@ -41,7 +41,12 @@ import {
 } from '../../shell/testing/test-doubles';
 import { API_CLIENT } from '../../shell/tokens';
 import { ProvidersPanel } from '../providers/providers.routes';
+import { PreferencesStep } from './preferences-step';
 import { StepBody } from './step-body';
+
+/** Stands in for the preferences step, which makes its own reads. */
+@Component({ selector: 'app-preferences-step', template: '' })
+class PreferencesStepStub {}
 
 const version = {
   version: '1.2.3',
@@ -96,8 +101,8 @@ async function renderSetup(
   providers: ShellTestDoubles['providers'],
 ): Promise<RouterTestingHarness> {
   TestBed.overrideComponent(StepBody, {
-    remove: { imports: [ProvidersPanel] },
-    add: { imports: [ProvidersStub] },
+    remove: { imports: [ProvidersPanel, PreferencesStep] },
+    add: { imports: [ProvidersStub, PreferencesStepStub] },
   });
   TestBed.configureTestingModule({
     providers: [
