@@ -23,6 +23,10 @@ import {
   toolSummaryCopy,
 } from './tool-copy';
 import { ToolsPreviewPage } from './tools-preview';
+import { ToolsTryPanel } from './tools-try';
+
+/** The tabs of a tool's detail. */
+type DetailTab = 'preview' | 'try';
 
 /** The heading of each origin's group. */
 const ORIGIN_LABELS: Record<ToolOrigin, string> = {
@@ -95,7 +99,7 @@ function rowOf(tool: ToolSummary): ToolRow {
  */
 @Component({
   selector: 'app-tools-list',
-  imports: [MatSlideToggle, ToolsPreviewPage],
+  imports: [MatSlideToggle, ToolsPreviewPage, ToolsTryPanel],
   template: `
     <h1>Tools</h1>
 
@@ -149,20 +153,55 @@ function rowOf(tool: ToolSummary): ToolRow {
     @if (!phone() && selectedList().length > 0) {
       <section aria-label="Tool detail">
         <div role="tablist">
-          <button type="button" role="tab" aria-selected="true">Preview</button>
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="tab() === 'preview'"
+            (click)="tab.set('preview')"
+          >
+            Preview
+          </button>
+          @if (tryOffered()) {
+            <button
+              type="button"
+              role="tab"
+              data-tab="try"
+              [attr.aria-selected]="tab() === 'try'"
+              (click)="tab.set('try')"
+            >
+              Try
+            </button>
+          }
         </div>
         <div role="tabpanel">
           @for (row of selectedList(); track row.key) {
-            @if (row.valid) {
-              <app-tools-preview [tool]="row.name" />
-            } @else {
-              <p data-detail-status>
-                <span>Invalid</span>
-                @if (row.errorMessage !== undefined) {
-                  <span>{{ row.errorMessage }}</span>
+            @switch (tab()) {
+              @case ('preview') {
+                @if (row.valid) {
+                  <app-tools-preview [tool]="row.name" />
+                } @else {
+                  <p data-detail-status>
+                    <span>Invalid</span>
+                    @if (row.errorMessage !== undefined) {
+                      <span>{{ row.errorMessage }}</span>
+                    }
+                    <span>{{ row.lintText }}</span>
+                  </p>
                 }
-                <span>{{ row.lintText }}</span>
-              </p>
+              }
+              @case ('try') {
+                @if (row.valid) {
+                  <app-tools-try [tool]="row.name" />
+                } @else {
+                  <p data-detail-status>
+                    <span>Invalid</span>
+                    @if (row.errorMessage !== undefined) {
+                      <span>{{ row.errorMessage }}</span>
+                    }
+                    <span>{{ row.lintText }}</span>
+                  </p>
+                }
+              }
             }
           }
         </div>
@@ -187,6 +226,8 @@ export class ToolsListPage {
   protected readonly switchFailed = signal(false);
   /** The key of the row whose detail is open, or undefined when none is. */
   private readonly selectedKey = signal<string | undefined>(undefined);
+  /** The selected tab of the detail. Preview is the default. */
+  protected readonly tab = signal<DetailTab>('preview');
 
   /** True on a phone: the names are not buttons and no detail is shown. */
   protected readonly phone = computed(
@@ -199,6 +240,12 @@ export class ToolsListPage {
     const tools = this.list();
     if (tools === undefined) return 'Loading the tools';
     return tools.length === 0 ? 'No tools.' : undefined;
+  });
+
+  /** Try is offered only while the detail shows one valid row: a draft is not in the list, so it has none. */
+  protected readonly tryOffered = computed(() => {
+    const rows = this.selectedList();
+    return rows.length === 1 && rows[0].valid;
   });
 
   /** The groups of the list, in the origin order, each with at least one row. */
@@ -250,6 +297,7 @@ export class ToolsListPage {
   /** Opens the detail of a row (C2: the selection is page state). */
   protected select(row: ToolRow): void {
     this.selectedKey.set(row.key);
+    this.tab.set('preview');
   }
 
   /** Posts the author's switch for a row, then reads the list again. */

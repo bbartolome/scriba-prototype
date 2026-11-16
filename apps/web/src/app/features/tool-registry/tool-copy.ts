@@ -1,4 +1,5 @@
 import type {
+  ToolCallResult,
   ToolDetail,
   ToolList,
   ToolOrigin,
@@ -24,6 +25,10 @@ export const TOOL_VALIDATE_PATH_TEMPLATE =
 /** `POST` the enabled switch of one tool (`TOOL_ENABLED_ROUTE`), with `:name` in place. */
 export const TOOL_ENABLED_PATH_TEMPLATE =
   '/api/tool-registry/tools/:name/enabled';
+
+/** `POST` the execute command of one tool (`TOOL_EXECUTE_ROUTE`), with `:name` in place. */
+export const TOOL_EXECUTE_PATH_TEMPLATE =
+  '/api/tool-registry/tools/:name/execute';
 
 /** The origins in the order the list shows its groups (a copy of `TOOL_ORIGINS`). */
 export const TOOL_ORIGIN_ORDER: readonly ToolOrigin[] = [
@@ -51,6 +56,14 @@ export function toolEnabledPath(name: string): ApiPath {
 /** The detail path of one tool, with its name encoded as one path segment. */
 export function toolPath(name: string): ApiPath {
   return TOOL_PATH_TEMPLATE.replace(
+    ':name',
+    encodeURIComponent(name),
+  ) as ApiPath;
+}
+
+/** The execute path of one tool, with its name encoded as one path segment. */
+export function toolExecutePath(name: string): ApiPath {
+  return TOOL_EXECUTE_PATH_TEMPLATE.replace(
     ':name',
     encodeURIComponent(name),
   ) as ApiPath;
@@ -104,6 +117,30 @@ export const toolDetailCopy: ResponseSchema<ToolDetailView> = {
       };
     }
     return { success: false, error: 'not a tool detail' };
+  },
+};
+
+/** Response of POST execute (`toolCallResultSchema`): the output and the ids of the sources it drew on. */
+export const toolCallResultCopy: ResponseSchema<ToolCallResult> = {
+  safeParse(data) {
+    const fields: Record<string, unknown> = isRecord(data) ? data : {};
+    const { output, sourcesUsed } = fields;
+    if (
+      isRecord(output) &&
+      typeof output['kind'] === 'string' &&
+      typeof output['content'] === 'string' &&
+      Array.isArray(sourcesUsed) &&
+      sourcesUsed.every((source) => typeof source === 'string')
+    ) {
+      return {
+        success: true,
+        data: {
+          output: { kind: output['kind'], content: output['content'] },
+          sourcesUsed: sourcesUsed as ToolCallResult['sourcesUsed'],
+        },
+      } as { success: true; data: ToolCallResult };
+    }
+    return { success: false, error: 'not a call result' };
   },
 };
 

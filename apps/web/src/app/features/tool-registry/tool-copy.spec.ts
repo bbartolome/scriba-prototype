@@ -1,6 +1,8 @@
 import {
+  toolCallResultSchema,
   toolDetailSchema,
   TOOL_ENABLED_ROUTE,
+  TOOL_EXECUTE_ROUTE,
   TOOL_ORIGINS,
   TOOL_ROUTE,
   TOOL_VALIDATE_ROUTE,
@@ -11,14 +13,17 @@ import {
 } from '@bbartolome/scriba-contracts/tool-registry';
 import { describe, expect, it } from 'vitest';
 import {
+  toolCallResultCopy,
   toolDetailCopy,
   toolEnabledPath,
+  toolExecutePath,
   toolListCopy,
   toolPath,
   toolSummaryCopy,
   toolValidateCopy,
   toolValidatePath,
   TOOL_ENABLED_PATH_TEMPLATE,
+  TOOL_EXECUTE_PATH_TEMPLATE,
   TOOL_ORIGIN_ORDER,
   TOOL_PATH_TEMPLATE,
   TOOL_VALIDATE_PATH_TEMPLATE,
@@ -240,3 +245,22 @@ const sampleRows: Record<string, unknown>[] = [
     lintCounts: { errors: 2, warnings: 0 },
   },
 ];
+
+describe('tool-registry execute copies', () => {
+  // S3a: the execute path and the call result agree with the contract.
+  it('S3a toolExecutePath and toolCallResultCopy agree with the contract', () => {
+    expect(TOOL_EXECUTE_PATH_TEMPLATE).toBe(TOOL_EXECUTE_ROUTE);
+    expect(toolExecutePath('cold_open')).toBe(
+      TOOL_EXECUTE_ROUTE.replace(':name', 'cold_open'),
+    );
+    const accepted = {
+      output: { kind: 'draft', content: 'The cold open.' },
+      sourcesUsed: ['ada'],
+    };
+    const refused = { output: { kind: 'draft', content: 'The cold open.' } };
+    expect(toolCallResultSchema.safeParse(accepted).success).toBe(true);
+    expect(toolCallResultCopy.safeParse(accepted).success).toBe(true);
+    expect(toolCallResultSchema.safeParse(refused).success).toBe(false);
+    expect(toolCallResultCopy.safeParse(refused).success).toBe(false);
+  });
+});

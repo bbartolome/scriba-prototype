@@ -3,8 +3,10 @@ import {
   activeProjectSchema,
   ENTITY_ID_PATTERN as CONTRACT_ENTITY_ID_PATTERN,
   entityListSchema,
+  entityResolutionSchema,
   fileReadSchema,
   PROJECT_ENTITIES_ROUTE,
+  PROJECT_ENTITY_RESOLVE_ROUTE,
   PROJECT_FILE_ROUTE,
 } from '@bbartolome/scriba-contracts/project-store';
 import { ENTITY_KIND_PATTERN } from '@bbartolome/scriba-contracts/tool-registry';
@@ -14,8 +16,11 @@ import {
   activeCopy,
   ENTITY_ID_PATTERN,
   entityListCopy,
+  entityResolutionCopy,
+  entityResolvePath,
   fileReadCopy,
   PROJECT_ENTITIES_TEMPLATE,
+  PROJECT_ENTITY_RESOLVE_TEMPLATE,
   PROJECT_FILE_TEMPLATE,
   projectEntitiesPath,
   projectFilePath,
@@ -163,5 +168,29 @@ describe('styleProfileOf', () => {
     expect(styleProfileOf('title: Book\r\nstyleProfile: plain\r\n')).toBe(
       'plain',
     );
+  });
+});
+
+describe('project-store resolution copies', () => {
+  // R1: the resolution path and answer agree with the contract.
+  it('R1 entityResolvePath and entityResolutionCopy agree with the contract', () => {
+    expect(PROJECT_ENTITY_RESOLVE_TEMPLATE).toBe(PROJECT_ENTITY_RESOLVE_ROUTE);
+    expect(entityResolvePath('p1', ['a', 'b'])).toBe(
+      `${PROJECT_ENTITY_RESOLVE_ROUTE.replace(':projectId', 'p1')}?ids=a&ids=b`,
+    );
+    expect(entityResolvePath('a b/c', ['x'])).toBe(
+      '/api/project-store/projects/a%20b%2Fc/entities/resolve?ids=x',
+    );
+    const accepted = {
+      resolved: [
+        { id: 'ada', type: 'person', path: 'entities/ada.md', content: 'Ada.' },
+      ],
+      errors: [{ id: 'bob', code: 'unknown' }],
+    };
+    const refused = { resolved: [], errors: [{ id: 'bob', code: 'other' }] };
+    expect(entityResolutionSchema.safeParse(accepted).success).toBe(true);
+    expect(entityResolutionCopy.safeParse(accepted).success).toBe(true);
+    expect(entityResolutionSchema.safeParse(refused).success).toBe(false);
+    expect(entityResolutionCopy.safeParse(refused).success).toBe(false);
   });
 });

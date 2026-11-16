@@ -53,7 +53,7 @@ function chipOf(entity: EntityItem): Chip {
 }
 
 /** The issues of a refused validate: the `issues` of ApiError.details, each with a path and a message. */
-function issuesOf(details: unknown): ToolArgsIssue[] {
+export function issuesOf(details: unknown): ToolArgsIssue[] {
   if (!isRecord(details)) {
     return [];
   }

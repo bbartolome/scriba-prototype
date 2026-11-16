@@ -1,6 +1,7 @@
 import type {
   ActiveProject,
   EntityList,
+  EntityResolution,
   FileRead,
 } from '@bbartolome/scriba-contracts/project-store';
 import type { ApiPath, ResponseSchema } from '../../shell';
@@ -28,12 +29,32 @@ export function projectEntitiesPath(projectId: string): ApiPath {
   ) as ApiPath;
 }
 
+/** `GET` the resolution of entity ids in a project (`PROJECT_ENTITY_RESOLVE_ROUTE`), with `:projectId` in place. */
+export const PROJECT_ENTITY_RESOLVE_TEMPLATE =
+  '/api/project-store/projects/:projectId/entities/resolve';
+
 /** The file read path of one project, with its id encoded as one path segment. */
 export function projectFilePath(projectId: string): ApiPath {
   return PROJECT_FILE_TEMPLATE.replace(
     ':projectId',
     encodeURIComponent(projectId),
   ) as ApiPath;
+}
+
+/**
+ * The resolution path of a project for some ids. The `ids` key repeats, so the query is in the path: the
+ * Shell's `get` takes one value per key. Each id is encoded, and the ids keep their order.
+ */
+export function entityResolvePath(
+  projectId: string,
+  ids: readonly string[],
+): ApiPath {
+  const base = PROJECT_ENTITY_RESOLVE_TEMPLATE.replace(
+    ':projectId',
+    encodeURIComponent(projectId),
+  );
+  const query = ids.map((id) => `ids=${encodeURIComponent(id)}`).join('&');
+  return `${base}?${query}` as ApiPath;
 }
 
 // ENTITY_ID_PATTERN: lower-case letters, digits and hyphens, starting with a letter or digit.
@@ -136,6 +157,58 @@ export const fileReadCopy: ResponseSchema<FileRead> = {
       };
     }
     return { success: false, error: 'not a file read' };
+  },
+};
+
+/** One entry of `resolved`, checked as entityResolutionSchema does. */
+function isResolved(
+  value: unknown,
+): value is EntityResolution['resolved'][number] {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const { id, type, path, content } = value;
+  return (
+    typeof id === 'string' &&
+    ENTITY_ID_PATTERN.test(id) &&
+    typeof type === 'string' &&
+    type !== '' &&
+    typeof path === 'string' &&
+    typeof content === 'string'
+  );
+}
+
+/** One entry of `errors`, checked as entityResolutionSchema does. */
+function isResolutionError(
+  value: unknown,
+): value is EntityResolution['errors'][number] {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const { id, code, paths } = value;
+  return (
+    typeof id === 'string' &&
+    ENTITY_ID_PATTERN.test(id) &&
+    (code === 'unknown' || code === 'duplicate') &&
+    (paths === undefined ||
+      (Array.isArray(paths) && paths.every((path) => typeof path === 'string')))
+  );
+}
+
+/** Response of GET .../entities/resolve (`entityResolutionSchema`). Each id is resolved or reported. */
+export const entityResolutionCopy: ResponseSchema<EntityResolution> = {
+  safeParse(data) {
+    const fields: Record<string, unknown> = isRecord(data) ? data : {};
+    const { resolved, errors } = fields;
+    if (
+      Array.isArray(resolved) &&
+      resolved.every(isResolved) &&
+      Array.isArray(errors) &&
+      errors.every(isResolutionError)
+    ) {
+      return { success: true, data: { resolved, errors } };
+    }
+    return { success: false, error: 'not an entity resolution' };
   },
 };
 
