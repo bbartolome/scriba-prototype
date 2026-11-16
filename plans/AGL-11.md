@@ -1,6 +1,6 @@
 ---
 id: AGL-11
-status: draft
+status: planned
 ---
 # AGL-11 plan — narrative gate (closes Agent loop `phase:narrative-tools`)
 
@@ -8,10 +8,13 @@ Revision 1, written by the planner at main `ad3a421`. The planner changed no cod
 
 Revision 2, by the reviser at main `ddd4879`. No unit, module or code change. Corrections: T5 is rewritten, because a call to a tool that is not offered emits no card events (C20; A5 was wrong); A1 is now checked (C19); the executor's request is found by its system prompt, as T2 does, and matcher A uses the rendered `Core idea: ` line; the cold_open row uses the demo's ask as its intent; I1 is withdrawn; open points 2 to 6 are settled (section 7); section 8, Review parts, is added. Open point 1 is for the Navigator.
 
+Revision 3, by the reviser at main `47448da`. No unit, module or code change. Open point 1 is settled by the Navigator, option (a) (`plans/DECISIONS.md`, 2026-11-16, AGL-11). Changes: section 7 point 1 records the decision; step 13 records the `[@id]` part as not run; step 14 (new) says which boxes are marked; the line-21 `[@id]` row of section 5 follows the decision; C2, C17 and step 1 are corrected for the repository as it now stands; section 8 is checked.
+
 ## 1. Decisions this plan follows
 
 - **Criteria, quoted as written.** Two criteria: unit lines 21 and 22. Nothing is weakened. Source: `units/AGL-11-narrative-gate.md` lines 21 to 22.
 - **Criterion 1 has two parts.** The mock part (`sourcesUsed` and provenance through the mock) is CI. The `[@id]` part is the manual eval. Real models are not in CI. Source: unit line 21; `modules/agent-loop.md` line 67.
+- **Line 21 stays unticked at the merge.** The `[@id]` part is recorded as "not run: no model server"; a person with a local model server later runs the four eval cases of `plans/GNP-12.md` section 8, point 2, which ticks GNP-12 line 20 and AGL-11 line 21. Source: `plans/DECISIONS.md`, 2026-11-16, AGL-11 Navigator decision, option (a).
 - **The four workhorses** are the built-in tools `cold_open`, `mystery_question`, `myth_buster` and `numbers_to_people`. Source: unit line 21; `packages/packs/nonfiction/tools/*.yaml`.
 - **Test seam: the composed app with Platform's mock OpenAI server and scripted turns.** The unit heading has no seam parenthetical, so the module default applies. Source: `units/README.md` line 57; `modules/agent-loop.md` line 62.
 - **Drafts are shown in the chat with provenance at M2.** No pending change exists yet, so no test asserts one. Draft provenance is `{runId, toolCallId, tool, entityIds, sourcesUsed, model, at}`. Source: `units/AGL-09-narrative-tools.md` line 22; `modules/agent-loop.md` line 80; `packages/contracts/src/agent-loop/provenance.ts` line 6.
@@ -31,7 +34,7 @@ Revision 2, by the reviser at main `ddd4879`. No unit, module or code change. Co
 ### CHECKED
 
 - C1. Branch `main`. The only uncommitted change is `units/SAU-12-providers-step.md` (`git status --short`). The unit file has one commit (`2fed3f4`) and no change note; its full text was read (26 lines).
-- C2. `status: done` in `plans/AGL-09.md`, `plans/AGL-10.md`, `plans/GNP-12.md`, `plans/PST-14.md`. No plan has `status: draft` or `planned` apart from this one (`grep` over `plans/*.md`; `plans/DECISIONS.md` and `plans/QUEUE.md` have no status key). `plans/AGL-11.md` did not exist.
+- C2. `status: done` in `plans/AGL-09.md`, `plans/AGL-10.md`, `plans/GNP-12.md`, `plans/PST-14.md`. When the planner wrote revision 1, no plan had `status: draft` or `planned` apart from this one and `plans/AGL-11.md` did not exist. Corrected at revision 3: `plans/TRG-14.md` (`planned`, committed) and `plans/TRG-16.md` (untracked) now also carry such a status; neither is AGL-11's blocker or downstream unit (`plans/DECISIONS.md` and `plans/QUEUE.md` have no status key).
 - C3. The four tools: `packages/packs/nonfiction/tools/{cold_open,mystery_question,myth_buster,numbers_to_people}.yaml`, each with `enabled: true` and `output: draft`. Required inputs: cold_open `[coreIdea, person]`; mystery_question `[coreIdea, puzzle]`; myth_buster `[coreIdea, belief, claimIds]`; numbers_to_people `[coreIdea, statistic, person]`. Each prompt has one `[@` citation rule. Entity inputs: `entityIds` (all four), `person` of kind `person` (cold_open, numbers_to_people), `claimIds` of kind `claim` (myth_buster), `styleProfile` of style kind (all four).
 - C4. Built-in origins are `core`, `nonfiction`, `fiction` (`packages/contracts/src/tool-registry/constants.ts` line 55). A project with `genrePack: nonfiction` is offered `core` and `nonfiction` (`apps/api/src/modules/tool-registry/catalog.service.ts` lines 65 to 69). `packages/packs/fiction/` has empty `tools` and `entity-types`. `core/tools/propose_graph.yaml` is `enabled: true` and is offered too (its output kind is not re-checked here).
 - C5. Sample entities in `examples/nonfiction/entities/`: `book-style` (style-profile), `deliberate-practice` (concept), `hours-figure-is-average` (claim), `k-anders-ericsson` (person), `plateau-is-reorganising` (claim). Sample sources in `examples/nonfiction/sources/`: `deliberate-practice-notes`, `learning-plateaus-notes`, `outline`, `ten-thousand-hours-notes`, each with `type: source`.
@@ -46,7 +49,7 @@ Revision 2, by the reviser at main `ddd4879`. No unit, module or code change. Co
 - C14. No real-model server here. `command -v ollama` finds nothing. `127.0.0.1:11434` and `127.0.0.1:8080` do not answer (HTTP 000). Same finding as GNP-12 plan section 2, item 13.
 - C15. The eval cases of the four workhorses exist: `scripts/eval-agent/cases/{cold-open,mystery-question,myth-buster,numbers-to-people}.json`. The script checks citation presence, not the IDs (`scripts/eval-agent/README.md`; GNP-12 plan section 2, item 12).
 - C16. GNP-12's criteria 1 and 2 are ticked, and criteria 3 and 4 (lines 19 and 20) are not (`units/GNP-12-workhorses-gate.md` lines 17 to 20). The merge closed the phase with lines 19 and 20 open. `plans/DECISIONS.md` line 5260 says that AGL-11's own done-when still needs a real-model `[@id]` run.
-- C17. No unit's `blocked_by` names AGL-11 (`grep` over `units/`). AGL-12, AGL-13 and AGL-14 name AGL-11 only in `parallel_with`. `plans/DECISIONS.md` names AGL-11 only at line 5260.
+- C17. No unit's `blocked_by` names AGL-11 (`grep` over `units/`). AGL-12, AGL-13 and AGL-14 name AGL-11 only in `parallel_with`. `plans/DECISIONS.md` names AGL-11 at line 5260 (GNP-12 effect) and in the AGL-11 Navigator decision (lines 5275 to 5279; corrected at revision 3, the entry was added after revision 2).
 - C18. The mock names every scenario by its file name, and `recordsOf(mock, name)` returns its requests in arrival order (`apps/api/test/providers-client.kit.ts` line 61).
 
 - C19. (Was A1.) `sourcesUsed` follows YAML property order for all four tools. The YAML orders are: cold_open `entityIds, styleProfile, …, person`; mystery_question `entityIds, styleProfile, …`; myth_buster `entityIds, styleProfile, …, claimIds`; numbers_to_people `entityIds, styleProfile, …, person`. The golden tests agree: `mystery-question.test.ts` line 30 `['notes-a', 'claim-a']`, `myth-buster.test.ts` line 71 `['notes-a', 'claim-a', 'claim-b']`, `numbers-to-people.test.ts` line 31 `['notes-a', 'claim-a', 'person-a']`, and C8.
@@ -79,7 +82,7 @@ Nothing else changes. Not changed: `units/**`, `modules/**`, other `plans/**`, `
 
 ## 4. Procedure
 
-1. Check the state. `git branch --show-current` prints `main`. `git status --short` shows only `units/SAU-12-providers-step.md`. Do not stage or touch that file.
+1. Check the state. `git branch --show-current` prints `main`. `git status --short` shows no change of this unit; files of others (at revision 3: `units/SAU-12-providers-step.md` modified and `plans/TRG-16.md` untracked) may appear. Do not stage or touch them.
 2. Criterion 2 first, before writing anything. From `apps/api`, run `npx vitest run test/agent-loop-narrative.test.ts test/agent-loop-search.test.ts`. Expected: 6 passed (T1 to T4, AC1, AC2). From the root, run `npm test -w @bbartolome/scriba-web -- --include src/app/features/agent-loop/chat-page.spec.ts` and the same with `agent-contract.spec.ts`. Expected: W1 and W2 pass. If any fails, stop and report "PLAN DOES NOT WORK" with the failing test name.
 3. Create `apps/api/test/agent-loop-workhorses.test.ts`. Define `PACKS_ROOT = join(__dirname, '..', '..', '..', 'packages', 'packs')`.
 4. Copy the helpers listed in C13 from `agent-loop-narrative.test.ts`. In `openHarness`, change the `env` to `{ SCRIBA_PACKS_DIR: PACKS_ROOT }`. Use `writeWorkhorseProject` (step 5) in place of `writeNarrativeProject`. Do not edit the old file.
@@ -106,7 +109,8 @@ Nothing else changes. Not changed: `units/**`, `modules/**`, other `plans/**`, `
 10. If a C1 row's `sourcesUsed` or `entityIds` differs from the run, stop and report "PLAN DOES NOT WORK" with the event and the row. Do not change the expected values to fit the code (C19).
 11. Format and lint. From the root, run `npx prettier --check apps/api/test/agent-loop-workhorses.test.ts` and `npm run lint -w @bbartolome/scriba-api`. Run `grep -n "examples/" apps/api/test/agent-loop-workhorses.test.ts`, which must print nothing (the rule in `scripts/examples-check/m1.mjs`).
 12. Gates. `npm test -w @bbartolome/scriba-api` exits 0. Root `npm test` and root `npm run lint` exit 0 (the lint includes `lint:examples`).
-13. Report the results. List the C1 rows and T5 as passed. List criterion 2's six API tests and two web specs as passed. Record the `[@id]` part of criterion 1 as "not run: no model server", with the C14 evidence. How line 21's box is handled is the Navigator's decision (section 7, point 1); the implementer ticks no box.
+13. Report the results. List the C1 rows and T5 as passed. List criterion 2's six API tests and two web specs as passed. Record the `[@id]` part of criterion 1 as "not run: no model server", with the C14 evidence (Navigator decision, section 7, point 1). Tick no box of line 21.
+14. Boxes. Line 22 (AGL-09 and AGL-10 criteria pass on `main`) is ticked only when every test of step 2 passes. Line 21 is never ticked in this unit: it stays unticked at the merge, with the cause "not run: no model server", even though the C1 mock test passes (section 7, point 1). The orchestrator marks the boxes at the merge: line 22 ticked, line 21 unticked. The criterion text is not changed.
 
 ## 5. Tests
 
@@ -115,7 +119,7 @@ Table 1. One test for each criterion, with the unit line.
 | Criterion (unit line) | Test (file, name) | What it asserts | Runnable here |
 |---|---|---|---|
 | 21, mock part | `apps/api/test/agent-loop-workhorses.test.ts`, `C1 <tool>: ...` (`it.each`, four rows) | Procedure step 7 (c and d): the tool is offered and called from an intent; the `tool-call-result` has `draft` output, exact `sourcesUsed` and the provenance; the executor's prompt holds each ID and `[@` | Yes |
-| 21, `[@id]` part | none in CI | The manual eval with a real model (GNP-12 plan section 8, point 2; `scripts/eval-agent`) | No: open point 1 |
+| 21, `[@id]` part | none in CI | The manual eval with a real model (GNP-12 plan section 8, point 2; `scripts/eval-agent`) | No: not run here ("not run: no model server", C14). The box of line 21 stays unticked under the Navigator decision (section 7, point 1) |
 | 22 | existing: `agent-loop-narrative.test.ts` T1, T2, T3, T4; `agent-loop-search.test.ts` AC1, AC2; `chat-page.spec.ts` W1; `agent-contract.spec.ts` W2 | The assertions of AGL-09 section 4 and AGL-10 section 4, as they stand | Yes |
 | Demo step 2 (not a criterion) | `apps/api/test/agent-loop-workhorses.test.ts`, T5 | Procedure step 8 (d) | Yes |
 | Demo steps 1 and 3 (not a criterion) | the C1 `cold_open` row (its intent is the demo's ask) | With the mock: the `tool-call-result` holds the entity IDs (provenance) and `sourcesUsed`. The live ask with a real model is not run (section 7, point 5) | Mock: yes. Real model: no |
@@ -133,7 +137,7 @@ Each row's `coreIdea` is a short phrase of the test's own, with no full stop, an
 
 ## 6. Agreement with downstream units
 
-- **GNP-12** (closed by its merge; `units/GNP-12-workhorses-gate.md`). Criterion 4 of GNP-12 owes the same real-model run as criterion 1 here (GNP-12 plan section 8, point 2). This plan provides nothing new for it. The run is open point 1.
+- **GNP-12** (closed by its merge; `units/GNP-12-workhorses-gate.md`). Criterion 4 of GNP-12 owes the same real-model run as criterion 1 here (GNP-12 plan section 8, point 2). This plan provides nothing new for it. The same later run ticks GNP-12 line 20 and AGL-11 line 21 (section 7, point 1, settled).
 - **TRG-17** (`units/TRG-17-editor-ui-gate.md`). Its `blocked_by` does not name AGL-11, so it needs nothing from this gate. The unit's quoted unblocks entry is informative only (I1).
 - **GNP-20, GNP-21, GNP-22** name only GNP-12 and the Genre packs gates. Nothing from AGL-11 is needed.
 - **AGL-12, AGL-13, AGL-14** (`parallel_with` AGL-11). None of them names AGL-11 in `blocked_by`. AGL-12 is blocked by AGL-02, AGL-08 and PST-15; AGL-13 by AGL-09, AGL-12 and GRR-01; AGL-14 by AGL-07, AGL-12 and SHL-12. This plan changes only a new test file and no shared file, so no merge conflict is expected. Provided.
@@ -144,7 +148,8 @@ Each row's `coreIdea` is a short phrase of the test's own, with no full stop, an
 
 ## 7. Open points
 
-1. **Open, for the Navigator: criterion 1, the `[@id]` part, cannot run here** (C14). The criterion text joins the mock part and the real-model part in one box, so the box cannot be ticked on the mock evidence alone. Options: (a) merge with line 21 unticked and "not run: no model server" as the cause, as the Navigator decided for GNP-12 line 20 (`plans/DECISIONS.md` lines 5255 to 5260); a person with a local model server later runs the four eval cases of GNP-12 plan section 8, point 2, and ticks GNP-12 line 20 and AGL-11 line 21; (b) hold the merge until that run is recorded; (c) split criterion 1 with scope item 1 into a subunit (the text cannot be divided, so the mock test moves with it). The plan's code and tests are the same under (a) and (b). Under (c) the C1 test belongs to the subunit.
+1. **Settled by the Navigator, option (a): criterion 1, the `[@id]` part, cannot run here** (C14). The criterion text joins the mock part and the real-model part in one box, so the box cannot be ticked on the mock evidence alone. Options: (a) merge with line 21 unticked and "not run: no model server" as the cause, as the Navigator decided for GNP-12 line 20 (`plans/DECISIONS.md` lines 5255 to 5260); a person with a local model server later runs the four eval cases of GNP-12 plan section 8, point 2, and ticks GNP-12 line 20 and AGL-11 line 21; (b) hold the merge until that run is recorded; (c) split criterion 1 with scope item 1 into a subunit (the text cannot be divided, so the mock test moves with it). The plan's code and tests are the same under (a) and (b). Under (c) the C1 test belongs to the subunit.
+   **Decided: option (a)** (`plans/DECISIONS.md`, 2026-11-16, AGL-11 Navigator decision). AGL-11 merges with line 21 unticked and the cause "not run: no model server" in the implementer report; the box is ticked later, when a person with a local model server runs the four eval cases of `plans/GNP-12.md` section 8, point 2. No unit text and no criterion text changes (steps 13 and 14).
 2. **Settled: blocker `"Project store phase:search (PST-14)"`** (I2). Not changed. All four blockers are done (C2), so the blocker form is not in the way of any plan; the revision rules change no part that is not in the way. No `blocked_by` change is a plan matter.
 3. **Settled: `unblocks`** (I1). Not an inconsistency: the unit's two entries are quoted without a unit id and are informative only, and no unit's `blocked_by` names AGL-11 (`units/README.md` lines 64 and 65). Not changed.
 4. **Settled: reading of "cites its source files"** (I3). The criterion names the mock evidence itself: `sourcesUsed` and provenance. Each row's exact `sourcesUsed` holds at least one ID of a `sources/` file, so the test passes under the strict and the loose reading, and no choice between them is needed. This matches the AGL-09 Navigator decision that the card resolves `sourcesUsed` entity IDs to file paths in the browser (`plans/DECISIONS.md`, AGL-09 OP1).
@@ -155,4 +160,4 @@ Each row's `coreIdea` is a short phrase of the test's own, with no full stop, an
 
 The plan is small: one part.
 
-- **Part 1 (the whole plan).** Steps 1 to 13 of section 4. Tests: criterion 1, mock part, the C1 `it.each` (four rows) in `apps/api/test/agent-loop-workhorses.test.ts`; criterion 2, the existing T1, T2, T3, T4 (`agent-loop-narrative.test.ts`), AC1, AC2 (`agent-loop-search.test.ts`), W1 (`chat-page.spec.ts`) and W2 (`agent-contract.spec.ts`), run unchanged; the demo test T5. The real-model part of criterion 1 has no test here (section 7, point 1). Review: the diff holds only the new test file; the C1 rows match section 5, table 2; T5 matches step 8 d; no test file names `examples/`.
+- **Part 1 (the whole plan).** Steps 1 to 14 of section 4. Tests: criterion 1, mock part, the C1 `it.each` (four rows) in `apps/api/test/agent-loop-workhorses.test.ts`; criterion 2, the existing T1, T2, T3, T4 (`agent-loop-narrative.test.ts`), AC1, AC2 (`agent-loop-search.test.ts`), W1 (`chat-page.spec.ts`) and W2 (`agent-contract.spec.ts`), run unchanged; the demo test T5. The real-model part of criterion 1 has no test here; it is recorded as not run and line 21 stays unticked (section 7, point 1). Review: the diff holds only the new test file; the C1 rows match section 5, table 2; T5 matches step 8 d; no test file names `examples/`; the report ticks line 22 only on passing tests and leaves line 21 unticked (step 14).
