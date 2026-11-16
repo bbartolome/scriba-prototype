@@ -7,6 +7,7 @@ import {
   GROUNDING_RESULT_SCHEMA_VERSION,
   groundingResultSchema,
   type GroundingClaim,
+  type GroundingPassage,
   type GroundingResult,
 } from '@bbartolome/scriba-contracts/agent-loop';
 import {
@@ -23,9 +24,16 @@ import {
   EXTRACT_FAILED_MESSAGE,
   EXTRACT_MARKER,
   EXTRACT_SYSTEM_PROMPT,
+  JUDGE_BATCH_SIZE,
+  JUDGE_FAILED_MESSAGE,
+  JUDGE_MARKER,
+  JUDGE_SYSTEM_PROMPT,
   MODEL_ATTEMPTS,
   NO_PASSAGE_REASON,
+  RETRIEVAL_LIMIT,
+  UNCITED_REASON,
   extractReplySchema,
+  judgeReplySchema,
 } from './grounding-prompts';
 import type { WriteOverlay } from './tools/write-overlay';
 
@@ -52,6 +60,15 @@ function parseReply<T>(reply: string, schema: z.ZodType<T>): T | undefined {
   }
 }
 
+// A claim of the extract reply, and the sources/ passages retrieved for it.
+interface JudgeClaim {
+  index: number;
+  text: string;
+  passages: GroundingPassage[];
+}
+
+type JudgeVerdict = z.infer<typeof judgeReplySchema>['verdicts'][number];
+
 // The grounding check of one target file: extract the claims, retrieve sources/ passages per claim, judge the claims,
 // build the result and write the claims artefact. It is not part of the run loop: no step is counted, no event is
 // emitted and no transcript line is written.
@@ -69,12 +86,40 @@ export class GroundingEngine {
       this.files.read(input.projectId, input.targetPath).content;
     const target = await this.resolver.resolve({ projectId: input.projectId });
     const extracted = await this.extract(target, text, input.signal);
-    const claims: GroundingClaim[] = extracted.map((claim) => ({
-      text: claim.text,
-      span: claim.span,
-      verdict: 'unsupported',
-      reason: NO_PASSAGE_REASON,
-    }));
+    // Retrieval: the sources/ passages of each claim. A claim with none is never sent to the judge.
+    const passages: GroundingPassage[][] = extracted.map((claim) =>
+      this.search
+        .search(input.projectId, {
+          query: claim.text,
+          scope: ['sources'],
+          limit: RETRIEVAL_LIMIT,
+        })
+        .map((passage) => ({
+          path: passage.path,
+          offset: passage.offset,
+          snippet: passage.snippet,
+        })),
+    );
+    const judged = new Map<number, JudgeVerdict>();
+    const toJudge = extracted
+      .map((_, index) => index)
+      .filter((index) => (passages[index] ?? []).length > 0);
+    for (let start = 0; start < toJudge.length; start += JUDGE_BATCH_SIZE) {
+      const batch = toJudge.slice(start, start + JUDGE_BATCH_SIZE);
+      const verdicts = await this.judge(
+        target,
+        batch.map((index) => ({
+          index,
+          text: extracted[index]?.text ?? '',
+          passages: passages[index] ?? [],
+        })),
+        input.signal,
+      );
+      for (const [index, verdict] of verdicts) judged.set(index, verdict);
+    }
+    const claims: GroundingClaim[] = extracted.map((claim, index) =>
+      this.verdictOf(claim, passages[index] ?? [], judged.get(index)),
+    );
     const result = groundingResultSchema.parse({
       schemaVersion: GROUNDING_RESULT_SCHEMA_VERSION,
       targetPath: input.targetPath,
@@ -115,5 +160,75 @@ export class GroundingEngine {
       if (event.type === 'text-delta') text += event.text;
     }
     return text;
+  }
+
+  // One judge call for a batch, up to MODEL_ATTEMPTS times. A reply must give exactly one verdict for each claim of
+  // the batch, with no other claim number; otherwise it is a failed attempt.
+  private async judge(
+    target: ResolvedModel,
+    batch: JudgeClaim[],
+    signal: AbortSignal | undefined,
+  ): Promise<Map<number, JudgeVerdict>> {
+    let content = `${JUDGE_MARKER}\n\n`;
+    for (const claim of batch) {
+      content += `Claim ${claim.index}: ${claim.text}\n`;
+      for (const passage of claim.passages) {
+        content += `Passage ${passage.path} at ${passage.offset}: ${passage.snippet}\n`;
+      }
+      content += '\n';
+    }
+    const messages: ChatMessage[] = [
+      { role: 'system', content: JUDGE_SYSTEM_PROMPT },
+      { role: 'user', content },
+    ];
+    const expected = new Set(batch.map((claim) => claim.index));
+    for (let attempt = 0; attempt < MODEL_ATTEMPTS; attempt++) {
+      const reply = await this.replyText(target, messages, signal);
+      const parsed = parseReply(reply, judgeReplySchema);
+      if (parsed === undefined) continue;
+      const byClaim = new Map<number, JudgeVerdict>();
+      let covers = parsed.verdicts.length === expected.size;
+      for (const verdict of parsed.verdicts) {
+        if (!expected.has(verdict.claim) || byClaim.has(verdict.claim)) {
+          covers = false;
+        }
+        byClaim.set(verdict.claim, verdict);
+      }
+      if (covers) return byClaim;
+    }
+    throw new GroundingFailure(JUDGE_FAILED_MESSAGE);
+  }
+
+  // The verdict of one claim after the rules of the engine: a claim with no passage is unsupported; a supported or
+  // weak verdict is kept only with a passage retrieved for this claim, and the passage is the retrieved one.
+  private verdictOf(
+    claim: z.infer<typeof extractReplySchema>['claims'][number],
+    passages: GroundingPassage[],
+    judged: JudgeVerdict | undefined,
+  ): GroundingClaim {
+    const base = { text: claim.text, span: claim.span };
+    if (passages.length === 0 || judged === undefined) {
+      return { ...base, verdict: 'unsupported', reason: NO_PASSAGE_REASON };
+    }
+    if (judged.verdict === 'unsupported') {
+      return { ...base, verdict: 'unsupported', reason: judged.reason };
+    }
+    const cited = judged.passage;
+    const retrieved =
+      cited === undefined || cited === null
+        ? undefined
+        : passages.find(
+            (passage) =>
+              passage.path === cited.path && passage.offset === cited.offset,
+          );
+    if (retrieved === undefined) {
+      return { ...base, verdict: 'unsupported', reason: UNCITED_REASON };
+    }
+    return {
+      ...base,
+      verdict: judged.verdict,
+      reason: judged.reason,
+      passage: retrieved,
+    };
   }
 }
