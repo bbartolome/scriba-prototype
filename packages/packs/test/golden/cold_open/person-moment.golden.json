@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Write the answer as Markdown prose. Return only the text of the answer, with no preface and no closing remarks."
+    },
+    {
+      "role": "user",
+      "content": "You write the cold open of a nonfiction chapter: a short passage that starts in the middle of one scene.\n\nCore idea: Expertise grows from planned practice, not from the hours alone.\nMoment: A lab bench at dusk, one stopwatch on the table and a notebook held open.\nLength: 800 words.\nMaterial:\nperson researcher-a (entities/researcher-a.md)\nResearcher A times each practice session and writes the result in a notebook.\nsource notes-a (sources/notes-a.md)\nNotes A say that each practice session was planned in advance, with a teacher setting the task.\nsource notes-b (sources/notes-b.md)\nNotes B say that the practice hours in the study were estimates made from memory.\nstyle-profile style-a (entities/style-a.md)\n---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the evidence shows, and say where it stops.\n\nSteps:\n1. The moment: open in the middle of one scene, at the moment given above when there is one, with the person in it.\n2. The person: show the person doing one thing in that moment, using only what the material says about them.\n3. The pull-back: step back from the scene to the question the chapter raises.\n4. The idea: end on the core idea, in plain words.\n\nConstraints:\n- Use only the material above.\n- Cite each factual sentence with its entity or source ID in the form [@id].\n- Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.\n- Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.\n"
+    }
+  ]
+}

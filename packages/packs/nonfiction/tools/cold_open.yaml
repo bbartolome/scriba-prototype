@@ -1,0 +1,75 @@
+schemaVersion: 1
+name: cold_open
+description: Open mid-scene with one person at one moment, then pull back to the idea.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    person:
+      type: string
+      title: Person
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [person]
+    moment:
+      type: string
+      title: Moment
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [coreIdea, person]
+output: draft
+enabled: true
+prompt: |
+  You write the cold open of a nonfiction chapter: a short passage that starts in the middle of one scene.
+
+  Core idea: {{coreIdea}}
+  {{#if moment}}Moment: {{moment}}
+  {{/if}}Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}
+  Material:
+  {{entity person}}
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. The moment: open in the middle of one scene, at the moment given above when there is one, with the person in it.
+  2. The person: show the person doing one thing in that moment, using only what the material says about them.
+  3. The pull-back: step back from the scene to the question the chapter raises.
+  4. The idea: end on the core idea, in plain words.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

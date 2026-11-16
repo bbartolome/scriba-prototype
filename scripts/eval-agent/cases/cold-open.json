@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Draft the cold open of chapter 3 about K. Anders Ericsson, using my notes.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["cold_open"],
+    "citations": "present"
+  }
+}
