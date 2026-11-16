@@ -4,6 +4,7 @@ import {
   agentToolFamilySchema,
   diffPreviewSchema,
   draftProvenanceSchema,
+  groundingResultSchema,
   toolCallIdSchema,
   type AgentTranscriptKind,
 } from '@bbartolome/scriba-contracts/agent-loop';
@@ -27,13 +28,15 @@ export function cutText(
 
 // The payload of each transcript kind (D2). Each mirrors the stream event of the same name without runId and seq, plus
 // the fields the transcript adds (step, rawArguments, modelText). The contract types `data` as unknown; these are the
-// writer's and the reader's schemas. The grounding kind is not written here (AGL-16).
+// writer's and the reader's schemas. The grounding kind is written at each check (AGL-17).
 const step = z.number().int().min(1);
 
 const intentPayloadSchema = z.object({
   intent: z.string(),
   // The registry tools left out of the run, because their names clash with a reserved name (AGL-09 OP2).
   excludedTools: z.array(z.string()).optional(),
+  // The file of an on-demand check run; written only by such a run (AGL-17).
+  checkPath: z.string().min(1).optional(),
 });
 
 const stepPayloadSchema = z.object({
@@ -88,11 +91,20 @@ const pendingChangePayloadSchema = z.object({
   refusal: z.string().min(1).optional(),
 });
 
+// One grounding check of a file (AGL-17): its result, or the readable failure that ended it. A failed check has no
+// result and writes no grounding event (AGL-16, AGL-17 plan section 7).
+const groundingPayloadSchema = z.object({
+  targetPath: z.string().min(1),
+  result: groundingResultSchema.optional(),
+  failure: z.string().min(1).optional(),
+});
+
 // The payload schema of each kind this module writes and reads.
 export const transcriptPayloadSchemas: Partial<
   Record<AgentTranscriptKind, z.ZodType>
 > = {
   intent: intentPayloadSchema,
+  grounding: groundingPayloadSchema,
   step: stepPayloadSchema,
   'assistant-text': assistantTextPayloadSchema,
   'tool-call': toolCallPayloadSchema,

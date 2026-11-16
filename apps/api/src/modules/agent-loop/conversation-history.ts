@@ -21,6 +21,8 @@ function answerTextOf(call: TranscriptCall): string {
 export function replayTurns(runs: TranscriptRun[]): ChatMessage[] {
   const messages: ChatMessage[] = [];
   for (const run of runs) {
+    // A check run has no model turn: the conversation keeps it, but the model is not sent it (AGL-17).
+    if (run.checkPath !== undefined) continue;
     messages.push({ role: 'user', content: run.intent });
     for (const step of run.steps) {
       const answered = step.calls.filter((call) => call.answer !== undefined);

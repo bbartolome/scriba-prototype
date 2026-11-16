@@ -550,6 +550,7 @@ export class AgentRun {
     this.transcript.append('intent', this.state.lastSeq, {
       intent: this.intent,
       ...(excluded.length > 0 ? { excludedTools: [...excluded] } : {}),
+      ...(this.checkPath === undefined ? {} : { checkPath: this.checkPath }),
     });
   }
 

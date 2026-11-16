@@ -8,6 +8,7 @@ import {
   type AgentTranscriptKind,
   type ConversationSummary,
   type ConversationTurn,
+  type GroundingResult,
 } from '@bbartolome/scriba-contracts/agent-loop';
 import {
   PROJECT_ERROR_CODES,
@@ -52,6 +53,8 @@ export interface TranscriptRun {
   lastSeq: number; // the largest seq of the file's lines (AGL-05)
   cap?: number; // the cap of the last step line (AGL-05)
   pendingChangeIds: string[]; // from the run-end line; empty without one (AGL-05)
+  groundingResults: GroundingResult[]; // from the grounding lines that carry a result, in order (AGL-17)
+  checkPath?: string; // from the intent line of an on-demand check run (AGL-17)
 }
 
 export type FinishedTranscriptRun = TranscriptRun & {
@@ -116,7 +119,10 @@ function runOf(lines: ParsedLine[], file: string): TranscriptRun | undefined {
     steps: [],
     lastSeq: 0,
     pendingChangeIds: [],
+    groundingResults: [],
   };
+  const checkPath = (intent.data as { checkPath?: string }).checkPath;
+  if (checkPath !== undefined) run.checkPath = checkPath;
   const steps = new Map<number, TranscriptStep>();
   const stepOf = (number: number): TranscriptStep => {
     let step = steps.get(number);
@@ -203,8 +209,14 @@ function runOf(lines: ParsedLine[], file: string): TranscriptRun | undefined {
           run.pendingChangeIds = data.pendingChangeIds as string[];
         }
         break;
+      case 'grounding': {
+        // A check that gave a result adds it to the run's results; a failed check has none (AGL-17).
+        const result = data.result as GroundingResult | undefined;
+        if (result !== undefined) run.groundingResults.push(result);
+        break;
+      }
       default:
-        // grounding and pending-change lines are kept out of the turns (AGL-16, AGL-12).
+        // pending-change lines are kept out of the turns (AGL-12).
         break;
     }
   }

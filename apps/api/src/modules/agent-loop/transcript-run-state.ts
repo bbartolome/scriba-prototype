@@ -15,7 +15,7 @@ export function runStateOfTranscript(run: TranscriptRun): AgentRunState {
     cap: run.cap ?? AGENT_DEFAULT_STEP_CAP,
     assistantText: run.assistantText,
     cards: run.cards,
-    groundingResults: [],
+    groundingResults: run.groundingResults,
     pendingChangeIds: run.pendingChangeIds,
     lastSeq: run.lastSeq,
     reason: run.reason ?? 'stopped',
