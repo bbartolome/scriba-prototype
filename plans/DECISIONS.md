@@ -4746,3 +4746,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Criteria 1 and 2 checked (PR1, PR2). Plan status `done`. Commit 14c0e6e (`docs(SAU-13): criteria checked, plan status done`), then fast-forward main 829b8f9 to 14c0e6e.
 - Branch `unit/SAU-13` and worktree `/Users/bbartolome/workspace/scriba-prototype-wt/SAU-13` are kept, as the parent asked (not removed in this cycle).
 - Open for the next cycle: SAU-14's `postStep` switch (plans/SAU-14.md S8) is still not made. It is a code change and needs its own unit change and review.
+
+## 2026-11-16 — PST-15 — Implementer report COMPLETE; Sonnet reviewers started (orchestrator)
+
+- Branch unit/PST-15 at 87e551b, two commits on main 19f3f03: 0b51804 (part 1, propose, pending store, validators) and 87e551b (part 2, queue listing and the gate row). Worktree /Users/bbartolome/workspace/scriba-prototype-wt/PST-15, clean. Patch id `de3980a0ab3edccc12960ebfe7cecda274d42342` (`git diff main...unit/PST-15 -- . ':!plans' ':!units' | git patch-id --stable`). No plans/ or units/ file changed on the branch.
+- Implementer's gate on 87e551b, as reported: build exit 0; `npm test -w @bbartolome/scriba-api` exit 0, 95 files and 342 tests; lint exit 0 (after removing an unused import, the first run failed); prettier check exit 0. Criteria P1 to P5, L1 and the extra E1 to E4 pass as the report gives them.
+- Differences from the plan, as the implementer reports them, for the reviewers to judge: message constant in project-status.ts; refuse exported; mkdir -p of the pending folder before the containment check; the fold reuses the lookup folder; the id collision retry stops after five tries; the E4 texts have no trailing LF (the header reads -1,3001, not the -1,3000 the plan gives); P3 imports addOkProject from the active kit; the validator throw path has no separate test.
+- Sonnet reviewers, medium, started in parallel: part 1 (plan section 8 steps 1 to 7; P1 to P5, E1 to E4) and part 2 (steps 8 to 11; L1, the F3 row, the sweep fixture key, the full gate). Results to be recorded when they reply.
