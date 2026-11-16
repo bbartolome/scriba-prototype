@@ -5232,3 +5232,5 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Step 9:** `git merge --ff-only unit/GNP-09` on main, aedb4e9 to da6a341.
 - **Step 10:** the branch unit/GNP-09 and its worktree are deleted. The real-model run of the AC 4 case was not run (no local model server).
 - **Limit:** GNP-09 is the first unit on main in this cycle, so the limit applies. No new subagent is started after this point.
+
+- **Correction to the check entry above (orchestrator):** the package counts from /tmp/gnp09-checks.log are: contracts 248 of 248 (18 files); API 398 of 398 (110 files); web 397 of 397 (59 files); packs 14 of 14 (4 files); e2e 12 of 12; root `node --test scripts/*.test.mjs` 92 of 92 pass, 0 fail. The "scripts 14 of 14" in the entry above is the packs count, and the web count was missing. `npm run lint`, `npm test` and `npm run build` each exit 0 (LINT_EXIT=0, TEST_EXIT=0, BUILD_EXIT=0).
