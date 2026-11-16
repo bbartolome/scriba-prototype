@@ -1,10 +1,4 @@
-import {
-  Component,
-  DestroyRef,
-  inject,
-  output,
-  signal,
-} from '@angular/core';
+import { Component, DestroyRef, inject, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButton } from '@angular/material/button';
 import type {
@@ -122,7 +116,9 @@ import { loadSetupAuthContract } from './setup-contract';
       <button
         mat-flat-button
         [disabled]="busy()"
-        (click)="startFromSample(sample.value, sampleTitle.value, sampleFolder.value)"
+        (click)="
+          startFromSample(sample.value, sampleTitle.value, sampleFolder.value)
+        "
       >
         Start from sample
       </button>

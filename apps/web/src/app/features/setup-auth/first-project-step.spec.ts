@@ -111,9 +111,17 @@ class ProvidersRouteStub {}
  * The projects answer is L0 until a test sets another.
  */
 function respondAll(doubles: ShellTestDoubles): void {
-  doubles.api.respond('GET', IDENTITY_ROUTE, SETUP_AUTH_EXAMPLES.identityLoopback);
+  doubles.api.respond(
+    'GET',
+    IDENTITY_ROUTE,
+    SETUP_AUTH_EXAMPLES.identityLoopback,
+  );
   doubles.api.respond('GET', SETUP_STATUS_ROUTE, atFirstProject);
-  doubles.api.respond('GET', PREFERENCES_ROUTE, SETUP_AUTH_EXAMPLES.preferences);
+  doubles.api.respond(
+    'GET',
+    PREFERENCES_ROUTE,
+    SETUP_AUTH_EXAMPLES.preferences,
+  );
   doubles.api.respond('GET', PROJECTS_ROUTE, L0);
   doubles.api.respond('GET', SAMPLES_ROUTE, [sample]);
   doubles.api.respond('POST', PROJECT_NEW_ROUTE, {
@@ -457,7 +465,11 @@ describe('first-project step with the fake API', () => {
   it('F5 New sends no genre pack when none is stored', async () => {
     const doubles = createShellTestDoubles();
     respondAll(doubles);
-    doubles.api.respond('GET', PREFERENCES_ROUTE, SETUP_AUTH_EXAMPLES.preferencesEmpty);
+    doubles.api.respond(
+      'GET',
+      PREFERENCES_ROUTE,
+      SETUP_AUTH_EXAMPLES.preferencesEmpty,
+    );
     const harness = await renderSetup(doubles);
 
     await enterStep(harness, doubles);
