@@ -194,7 +194,9 @@ it('C1 a paragraph the agent writes to drafts/ is checked at run end, and its pe
 
     const artefact = artefactOf(h, DRAFT_CH02);
     expect(artefact).toEqual(result);
-    expect(GROUNDING_ARTEFACT_PATH_PATTERN.test(`logs/grounding/${DRAFT_CH02}.json`)).toBe(true);
+    expect(
+      GROUNDING_ARTEFACT_PATH_PATTERN.test(`logs/grounding/${DRAFT_CH02}.json`),
+    ).toBe(true);
 
     const changes = await pendingOfBook(h);
     expect(changes).toHaveLength(1);
