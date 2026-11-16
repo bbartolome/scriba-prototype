@@ -25,6 +25,6 @@ The live login link in-app (15), the state (16), the tailnet URL (18), prerequis
 - **Test double:** a small fake Unix-socket server serving recorded payloads: logged out, `NeedsLogin` with `AuthURL`, `Running` with certs, `Running` without certs. It's the only double for tailscaled.
 
 ## Acceptance criteria
-- [ ] Without a socket, status reads `available: false` and loopback access is unaffected.
-- [ ] Against the fixtures: `NeedsLogin` exposes `authURL`; `Running` exposes `dnsName` (no trailing dot) and `tailnetURL`; empty `CertDomains` → `httpsCertsEnabled: false`; `ownerLogin` resolved from the `User` map.
-- [ ] Repeated calls within the cache window hit the socket once.
+- [x] Without a socket, status reads `available: false` and loopback access is unaffected.
+- [x] Against the fixtures: `NeedsLogin` exposes `authURL`; `Running` exposes `dnsName` (no trailing dot) and `tailnetURL`; empty `CertDomains` → `httpsCertsEnabled: false`; `ownerLogin` resolved from the `User` map.
+- [x] Repeated calls within the cache window hit the socket once.

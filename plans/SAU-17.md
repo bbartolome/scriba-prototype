@@ -1,6 +1,6 @@
 ---
 id: SAU-17
-status: planned
+status: done
 ---
 # SAU-17 plan — LocalAPI client and normalised Tailscale status endpoint
 
