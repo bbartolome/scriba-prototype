@@ -17,6 +17,7 @@ import type {
   AgentSettings,
   AgentSettingsUpdate,
   ConversationSummary,
+  DiffPreview,
 } from '@bbartolome/scriba-contracts/agent-loop';
 import type { EntityResolution } from '@bbartolome/scriba-contracts/project-store';
 import { catchError, filter, map, of, Subject, switchMap, tap } from 'rxjs';
@@ -24,6 +25,7 @@ import {
   ActiveProjectSignal,
   API_CLIENT,
   ApiError,
+  DiffView,
   MarkdownPreview,
   SSE_CLIENT,
   ToolCallCard,
@@ -47,6 +49,7 @@ import {
   entityResolutionReply,
   entityResolvePath,
   isChatEvent,
+  isQueueEvent,
   runStateReply,
   settingsReply,
   startReply,
@@ -79,9 +82,22 @@ type Refresh =
   | { readonly ok: true; readonly run: AgentRunState | null }
   | { readonly ok: false; readonly error: unknown };
 
+/** A status of a pending change that closes it: an accepted or a rejected change needs no review (AGL-14 P9). */
+function isClosed(status: string | undefined): boolean {
+  return status === 'accepted' || status === 'rejected';
+}
+
+/** The data of a queue event, as isQueueEvent checks it: the project, and the change's ID and status. */
+interface QueueData {
+  readonly projectId: string;
+  readonly pendingChange: { readonly id: string; readonly status: string };
+}
+
 interface CardEntry {
   readonly key: string;
   readonly view: ToolCallView;
+  /** The before and after text of a write, shown in the card's content slot (AGL-14 P5). */
+  readonly diff?: DiffPreview;
   /** The path of the card's Check grounding action, for a draft card (D8). */
   readonly checkPath?: string;
   /** The chip of the turn's entry for the card's path, shown after the card (D3). */
@@ -132,7 +148,7 @@ function checkedOf(event: Event): boolean {
  */
 @Component({
   selector: 'app-chat-page',
-  imports: [GroundingChip, MarkdownPreview, ToolCallCard],
+  imports: [DiffView, GroundingChip, MarkdownPreview, ToolCallCard],
   styles: `
     :host {
       display: block;
@@ -349,7 +365,15 @@ function checkedOf(event: Event): boolean {
               <app-markdown-preview [content]="entry.turn.text" />
             }
             @for (card of entry.cards; track card.key) {
-              <app-tool-call-card [call]="card.view" />
+              <app-tool-call-card [call]="card.view">
+                @if (card.diff; as diff) {
+                  <app-diff-view
+                    [path]="diff.path"
+                    [base]="diff.base"
+                    [proposed]="diff.proposed"
+                  />
+                }
+              </app-tool-call-card>
               @if (card.grounding; as grounding) {
                 <app-grounding-chip [entry]="grounding" />
               }
@@ -414,6 +438,8 @@ export class ChatPage {
   private readonly projectId = inject(ActiveProjectSignal).projectId;
 
   protected readonly chat = signal<ChatState>({ turns: [] });
+  /** The last status the queue events of the active project gave each pending change, by change ID (AGL-14 P9). */
+  private readonly queue = signal<ReadonlyMap<string, string>>(new Map());
   protected readonly notice = signal<Notice | undefined>(undefined);
   protected readonly conversations = signal<readonly ConversationSummary[]>([]);
   protected readonly settingsOpen = signal(false);
@@ -457,6 +483,7 @@ export class ChatPage {
    */
   protected readonly entries = computed<readonly TurnEntry[]>(() => {
     const project = this.projectId();
+    const statuses = this.queue();
     return this.chat().turns.map((turn) => {
       const placed = new Set<string>();
       const cards = turn.cards.map((card): CardEntry => {
@@ -471,6 +498,7 @@ export class ChatPage {
         return {
           key: card.callId,
           view: cardView(card, cardSources(card, this.sourcePaths())),
+          diff: card.diffPreview,
           checkPath: checkPathOf(card),
           grounding,
         };
@@ -481,8 +509,10 @@ export class ChatPage {
         grounding: turn.grounding.filter(
           (entry) => !placed.has(entry.targetPath),
         ),
+        // The link stays while one change of the run is not known to be accepted or rejected (AGL-14 P9).
         reviewHref:
-          project !== undefined && turn.pendingChangeIds.length > 0
+          project !== undefined &&
+          turn.pendingChangeIds.some((id) => !isClosed(statuses.get(id)))
             ? `/projects/${encodeURIComponent(project)}/review?run=${encodeURIComponent(turn.runId)}`
             : undefined,
       };
@@ -545,6 +575,18 @@ export class ChatPage {
         next: (envelope) => {
           if (isChatEvent(envelope)) {
             this.receive(envelope);
+          }
+        },
+        error: (error: unknown) => this.showError(error),
+      });
+
+    this.events
+      .stream('project-store')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (envelope) => {
+          if (isQueueEvent(envelope)) {
+            this.receiveQueue(envelope.data as QueueData);
           }
         },
         error: (error: unknown) => this.showError(error),
@@ -707,9 +749,20 @@ export class ChatPage {
     });
   }
 
+  /** Takes a queue event of the active project: the status of its change is kept (AGL-14 P9). */
+  private receiveQueue(data: QueueData): void {
+    if (data.projectId !== this.projectId()) {
+      return;
+    }
+    this.queue.update((statuses) =>
+      new Map(statuses).set(data.pendingChange.id, data.pendingChange.status),
+    );
+  }
+
   private resetView(): void {
     this.notice.set(undefined);
     this.buffered = [];
+    this.queue.set(new Map());
     this.chat.set({ turns: [] });
     this.sourcePaths.set(new Map());
     this.requestedSources.clear();
