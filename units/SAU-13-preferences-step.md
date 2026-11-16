@@ -17,5 +17,5 @@ unblocks: [SAU-16]
 - Saves only changed fields (preferences POST) and marks the step `done`, or `skipped`.
 
 ## Acceptance criteria
-- [ ] Prefills saved values; changing only the genre pack sends only that field.
-- [ ] The theme toggle is the Shell's component and makes no server call.
+- [x] Prefills saved values; changing only the genre pack sends only that field.
+- [x] The theme toggle is the Shell's component and makes no server call.

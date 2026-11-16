@@ -1,6 +1,6 @@
 ---
 id: SAU-13
-status: planned
+status: done
 ---
 # SAU-13 plan — /setup Preferences step
 
