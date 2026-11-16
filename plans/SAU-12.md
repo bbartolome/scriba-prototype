@@ -1,6 +1,6 @@
 ---
 id: SAU-12
-status: planned
+status: done
 ---
 # SAU-12 plan — /setup Model providers step (embedded panel)
 

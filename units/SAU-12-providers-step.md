@@ -17,5 +17,5 @@ unblocks: [SAU-16]
 - Marks the `providers` step `done` when the author continues with a usable provider, or `skipped`.
 
 ## Acceptance criteria
-- [ ] The step renders the Model providers component (a stub of it in tests) and contains no provider form of its own.
-- [ ] Before the panel exists, the step shows a link to `/providers`.
+- [x] The step renders the Model providers component (a stub of it in tests) and contains no provider form of its own.
+- [x] Before the panel exists, the step shows a link to `/providers`.
