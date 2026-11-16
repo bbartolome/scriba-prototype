@@ -1,3 +1,10 @@
+---
+type: source
+title: Notes on deliberate practice
+citation: K. Anders Ericsson, Ralf Krampe and Clemens Tesch-Römer, 1993, The Role of Deliberate Practice in the Acquisition of Expert Performance, Psychological Review
+reliability: Reading notes on the account of deliberate practice in the 1993 article; the notes give no numbers
+---
+
 # Notes on deliberate practice
 
 Reading notes for chapter 2. Paraphrase only; the wording is mine.

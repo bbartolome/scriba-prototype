@@ -1,3 +1,10 @@
+---
+type: source
+title: Notes on the ten-thousand-hour idea
+citation: K. Anders Ericsson, Ralf Krampe and Clemens Tesch-Römer, 1993, The Role of Deliberate Practice in the Acquisition of Expert Performance, Psychological Review
+reliability: Reading notes on the 1993 study, which had few students at one school and estimated its practice hours from memory
+---
+
 # Notes on the ten-thousand-hour idea
 
 Reading notes for chapter 3. Paraphrase only; the wording is mine.

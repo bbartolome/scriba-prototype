@@ -1,3 +1,10 @@
+---
+type: source
+title: Notes on learning plateaus
+citation: Bryan and Harter, studies of telegraph learners from 1897 and 1899
+reliability: Reading from memory; the full texts have not been read, so the speed and word-habit claims are unverified
+---
+
 # Notes on learning plateaus
 
 Reading notes for chapter 4. Paraphrase only; the wording is mine.

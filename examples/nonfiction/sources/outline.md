@@ -1,3 +1,10 @@
+---
+type: source
+title: The Long Apprenticeship outline notes
+citation: The author's working outline for this book
+reliability: The author's own plan for the book; it is not a research source
+---
+
 # The Long Apprenticeship: outline notes
 
 This book asks why expertise takes years and what the practice in those years actually looks like. It starts from the common idea that some people are simply natural at things, and asks what the research and everyday experience say about that idea. The aim is a short book that an adult can read in an evening and use for the next decade of learning.
