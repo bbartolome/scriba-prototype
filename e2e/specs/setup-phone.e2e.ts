@@ -254,7 +254,7 @@ test('C3 the wizard walks its five steps at 390 by 844 and completes setup', asy
     await expectPhoneLayout(page);
     await nextButton(page).click();
     await expect(
-      page.getByText('The first project is not set up yet.', { exact: true }),
+      page.getByRole('button', { name: 'Start from sample', exact: true }),
     ).toBeVisible();
     await expectPhoneLayout(page);
   });
