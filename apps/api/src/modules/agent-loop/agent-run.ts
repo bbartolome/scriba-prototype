@@ -4,6 +4,7 @@ import type {
   AgentRunEndReason,
   AgentRunState,
   AgentToolFamily,
+  DiffPreview,
   DraftProvenance,
 } from '@bbartolome/scriba-contracts/agent-loop';
 import type {
@@ -272,6 +273,24 @@ export class AgentRun {
     };
   }
 
+  // The before and after text of the write this call made (AGL-14 P1, P2). The entry is the overlay's entry of the
+  // call's callId. A path whose base was not captured gets no diff, so the file is not shown as new by mistake.
+  private diffPreviewOf(callId: string): { diffPreview?: DiffPreview } {
+    const entry = this.tools.overlay
+      .entriesInOrder()
+      .find((item) => item.callId === callId);
+    if (entry === undefined) return {};
+    const base = this.tools.overlay.baseOf(entry.path);
+    if (base === undefined) return {};
+    return {
+      diffPreview: {
+        path: entry.path,
+        base: base ?? '',
+        proposed: entry.content,
+      },
+    };
+  }
+
   // One tool call (D8). An offered name gets its card events; any call is answered to the model. The call's lines are
   // written after its events (D4).
   private async runCall(call: ToolCall): Promise<ChatMessage> {
@@ -305,6 +324,8 @@ export class AgentRun {
         : {}),
       ...(provenance === undefined ? {} : { provenance }),
     };
+    // The diff of a write made by this call (AGL-14 P1). Only a result has one.
+    const preview = outcome.kind === 'result' ? this.diffPreviewOf(callId) : {};
     if (family !== undefined) {
       this.emit('tool-call-args', {
         callId,
@@ -317,6 +338,7 @@ export class AgentRun {
           summary: outcome.summary,
           output: outcome.output,
           ...extras,
+          ...preview,
         });
       } else {
         this.emit('tool-call-error', {
@@ -344,6 +366,7 @@ export class AgentRun {
         output: outcome.output,
         modelText: outcome.modelText,
         ...extras,
+        ...preview,
       });
     } else {
       this.transcript.append('tool-error', this.state.lastSeq, {
@@ -495,6 +518,9 @@ export class AgentRun {
       card.output = data.output;
       if (data.sourcesUsed !== undefined) {
         card.sourcesUsed = data.sourcesUsed as AgentCard['sourcesUsed'];
+      }
+      if (data.diffPreview !== undefined) {
+        card.diffPreview = data.diffPreview as DiffPreview;
       }
       if (data.provenance !== undefined) {
         card.provenance = data.provenance as DraftProvenance;
