@@ -1,0 +1,129 @@
+---
+unit: GNP-12
+status: draft
+---
+# GNP-12 plan — workhorses gate (closes Genre packs `phase:nonfiction-workhorses`)
+
+Written at main `3d5180e` (2026-11-16). Status stays draft until the reviser approves. This plan writes no code.
+
+## 1. Decisions this plan obeys
+
+- **The unit is a gate with no code.** Merging GNP-12 closes `phase:nonfiction-workhorses`. Source: `units/GNP-12-workhorses-gate.md` line 14; `units/README.md` line 69 (a phase closes when its gate unit is merged) and line 106 (the phase row: GNP-06 to GNP-12, gate GNP-12).
+- **The four criteria are the checklist, quoted as written.** Source: `units/GNP-12-workhorses-gate.md` lines 17 to 20. Nothing here weakens, rewords or removes a criterion.
+- **The module holds content and tests only.** Source: `modules/genre-packs.md` line 3 (no runtime code); line 85 (assert behaviour the other modules and the model see); line 86 (content checks in `packages/packs/test/`); line 87 (golden tests in `apps/api/test/packs/` through `POST /api/tool-registry/tools/:name/execute`; golden files change only on purpose).
+- **Common inputs are identical, and CI asserts it.** Source: `modules/genre-packs.md` line 56 and the table at lines 58 to 64 ("repeated verbatim; CI asserts identity"); `plans/GNP-01.md` line 28 (D8: the five keys, their schema, hints and `required` membership, compared with the first draft tool); `packages/packs/test/checks.ts` lines 35 to 41 and 177 to 222.
+- **No unit test reads `examples/`.** Source: `modules/genre-packs.md` line 88; `scripts/examples-check/m1.mjs` lines 201 to 203 (the examples check fails a test file that names `examples/`); `apps/api/test/packs/golden.kit.ts` line 43.
+- **The real-model check of a workhorse is citation presence in the eval script.** Source: `modules/genre-packs.md` line 90; `scripts/eval-agent/README.md` line 76 (the script checks presence only).
+- **Navigator decision, option (a), data-only reading.** Source: `plans/DECISIONS.md` line 5222 (session `8a43a36b415949f89ef1d21f4ea58eca`). Quoted: "the criterion is satisfied when the case is in the eval script data and the data test passes. The real-model run is recorded as not run in the implementer report and is carried by GNP-12 criterion 4 ("with a real model through the manual eval"). No unit file text changes." Effect, line 5223: the GNP-08 tick stands; GNP-09 AC 4 and GNP-10 AC 3 may be ticked on their data tests. So the real-model run of the four workhorses is owed by criterion 4 of this unit, and nowhere else. The runs not made are recorded at `plans/DECISIONS.md` lines 5200, 5241 and 5252.
+- **Navigator decision on GNP-11 criterion 1, option (c).** Source: `plans/DECISIONS.md` line 5071 (a sample-entity criterion waiting for PLT-22 stays unticked until `npm run lint:examples` passes on a main with PLT-22's pack layer; the recorded R1 check is the work pass) and line 5072 (GNP-12 needs only GNP-11 merged; option (d) "makes GNP-12 wait for PLT-22 under its criterion 3"). This decides how criterion 3 of this plan is ticked (section 5).
+- **Small choices are plan choices, not DECISIONS entries.** The simplest option is taken: no new test file and no new code. The gate runs the existing suites and records the results.
+
+## 2. Facts checked and facts assumed
+
+### CHECKED
+
+1. Main is at `3d5180e`. The working tree differs from main only by `units/SAU-12-providers-step.md` (`git status --short`). The implementer must not stage that file.
+2. Blockers: `git show main:plans/<ID>.md` gives `status: done` in the front matter of GNP-05, GNP-06, GNP-07, GNP-08, GNP-09, GNP-10 and GNP-11. Each of them lists GNP-12 in `unblocks`: `units/GNP-05-core-gate.md`, `units/GNP-06-nonfiction-entity-types.md`, `units/GNP-07-cold-open.md`, `units/GNP-08-mystery-question.md`, `units/GNP-09-myth-buster.md`, `units/GNP-10-numbers-to-people.md`, `units/GNP-11-nonfiction-sample-entities.md` (line 9).
+3. The four tools exist on main as `packages/packs/nonfiction/tools/{cold_open,mystery_question,myth_buster,numbers_to_people}.yaml`. Each has `output: draft` (lines 46, 45, 48, 46) and `enabled: true` (lines 47, 46, 49, 47).
+4. Identity check: `packages/packs/test/checks.ts` `COMMON_INPUTS` (lines 35 to 41) and `checkCommonInputs` (lines 192 to 222), which compares each draft tool with the first draft in sorted file order (`yamlFilesIn`, lines 134 to 145), `required` included. Its tests: `packages/packs/test/content-checks.test.ts` line 109 ("draft tools whose common inputs differ are a finding") and line 128 ("identical common inputs pass").
+5. `packages/packs/test/real-packs.test.ts` lines 9 to 15: no `error` finding from `lintPacks`, and `contentChecks` returns `[]`. Its comment at line 5 says "still empty of tools", which is stale. GNP-12 does not change it.
+6. Scripts: `packages/packs/package.json` line 7 (`test` builds contracts and API, then runs `vitest run`); `apps/api/package.json` line 7 (`test` runs the build, then `vitest run`); root `package.json` line 25 (`test`), line 26 (`lint`, which runs `lint:examples`, `lint:packs` and `prettier --check .`), line 27 (`lint:examples`), line 28 (`lint:packs`), line 31 (`eval:agent`).
+7. Golden tests, each file's first test (AC 2): `apps/api/test/packs/cold-open.test.ts` line 23; `mystery-question.test.ts` line 23; `myth-buster.test.ts` line 64 (its second test, AC 3, is at line 89 and is run with the file); `numbers-to-people.test.ts` line 24. Golden files: `packages/packs/test/golden/{cold_open,mystery_question,myth_buster,numbers_to_people}/` (two files each, `git ls-tree -r main`). Mock scenarios `e2e/fixtures/mock-openai/scenarios/pack-{cold_open,mystery_question,myth_buster,numbers_to_people}.json` exist.
+8. Eval cases: `scripts/eval-agent/cases/{cold-open,mystery-question,myth-buster,numbers-to-people}.json`. Each has `sample: nonfiction`, `expect.reason: completed`, `expect.tools: [<tool>]` and `expect.citations: present`. Data tests: `scripts/eval-cases.test.mjs` line 34 (cold-open) and line 65 (mystery-question); `scripts/eval-case-myth-buster.test.mjs` line 15; `scripts/eval-case-numbers-to-people.test.mjs` line 15.
+9. The examples check on main: `scripts/examples-check/index.mjs` line 16 sets `LAYERS = [m1, graph]`, and line 13 says PLT-22 will append its layer. The M1 layer checks entity front matter only against the Project store base schema (`scripts/examples-check/m1.mjs` line 196). So on main nothing validates the sample entities against the pack entity-type schemas, and nothing checks their references.
+10. PLT-22 (`units/PLT-22-examples-check-pack-layer.md`) has no plan on main. Its blockers are PLT-20, TRG-11 and GNP-11 (line 7). All three are done, so PLT-22 can be planned now. Its criteria (lines 26 to 30) are the pack-layer checks: entity front matter against pack schemas, and reference resolution.
+11. GNP-11's R1 check: `plans/GNP-11.md` line 204 (the criterion row, with the recorded counts "9 entity file(s) checked, 4 reference(s) checked, 0 issue(s)"), line 207 (the R1 spec: a recorded check, not committed), line 214 (the summary line). On main, `examples/nonfiction/entities/` holds five entity files, the five of GNP-11's decisions.
+12. Eval script: `scripts/eval-agent/run.mjs` line 22 (default base URL `http://127.0.0.1:11434/v1`). `scripts/eval-agent/README.md` line 7 (start a local model server), line 15 (`--model` is required and no model name is built in), line 21 (the API boots on port 8080), line 71 (`cards` are copied unchanged from the turn), line 76 (the script checks citation presence only; to check ids, compare `citationIds` with each card's arguments and `sourcesUsed`).
+13. Local environment, checked by the planner: `node -v` prints v26.13.0; `npm -v` prints 11.20.0; `command -v ollama` finds nothing; `curl` to `127.0.0.1:11434` and to `127.0.0.1:8080` gets no connection (HTTP 000); `~/.ollama` does not exist; the repository has no `eval-reports/` folder.
+14. Agent loop: `plans/AGL-09.md` and `plans/AGL-10.md` have `status: done`. `units/AGL-09-narrative-tools.md` line 22: draft outputs are shown in the chat with their provenance, and "they become pending changes in AGL-13". `units/AGL-11-narrative-gate.md` has no plan on main and is not merged. There is no plan on main for AGL-12 to AGL-16 or PST-22.
+15. The Agent loop's CI tests for narrative tools use the fixture packs: `apps/api/test/agent-loop-narrative.test.ts` line 48 (`FIXTURE_PACKS`) and line 145 (`SCRIBA_PACKS_DIR: FIXTURE_PACKS`). Its test T4 (line 458) drafts through `cold_open` (line 478). No test on main runs a shipped pack tool through the agent.
+16. Unit change notes: no file in `units/` on main records a change of GNP-12. A grep for "by revision", "Loosened", "Reworded", "Moved to" and "Removed by" matches only PST-07, PST-08 and PST-10.
+17. Plans with status draft or planned: `grep '^status:'` on the working tree and on main finds none (the only files without a status are `plans/DECISIONS.md` and `plans/QUEUE.md`). Local branches hold a few draft or planned plans (MPR-13, PST-15, SAU-13, PLT-16, and older TRG-05, AGL-10, GRR-01, MPR-08, SAU-11, PST-14 copies). None changes a pack file or any of the four tools. `unit/TRG-07` `plans/SAU-13.md` cites `modules/genre-packs.md` line 40 but changes no pack file. The older `unit/TRG-05-backup` copy of `plans/TRG-05.md` (planned) reads `cold_open` as a spike fixture; main's `plans/TRG-05.md` is done, so that copy is stale.
+18. Module lines 13 and 19 (the dependency graph) are not used by this plan. It takes GNP-12's blockers from `units/GNP-12-workhorses-gate.md` line 7 and the done plans.
+19. Front matter: the brief names `unit:`. `plans/PLT-02.md` uses `id:`; `plans/GNP-08.md`, `plans/GNP-09.md` and `plans/GNP-10.md` use `unit:`. This plan uses the brief's keys, `unit` and `status`.
+
+### ASSUMED
+
+- A1. The four golden files pass on main at `3d5180e`. The planner did not run them. Their plans have `status: done`. The implementer checks this in step 6.
+- A2. Root `npm run build`, `npm test` and `npm run lint` pass on main. Not run by the planner. Checked in step 11.
+- A3. The five entity files in `examples/nonfiction/entities/` have not changed since GNP-11, so R1 gives the recorded result. Checked in step 8.
+- A4. A real model run writes `eval-reports/<stamp>/report.json` with the fields described in `scripts/eval-agent/README.md`, section "The report". Not run, so not checked.
+
+## 3. Files to change
+
+No code, test, pack, golden, example or script file changes. The gate verifies by running the existing suites.
+
+| Path | Change | Why |
+|---|---|---|
+| `units/GNP-12-workhorses-gate.md` | tick the checkboxes on lines 17 and 18 when T1 and T2 pass; line 19 only when the T3 rule in section 5 is met; line 20 only when the T4 rule in section 5 is met | the unit's own checklist. Precedent: `plans/DECISIONS.md` line 5231 (GNP-09 ticks on its unit branch) |
+| `plans/GNP-12.md` | `status: done` in the front matter, after steps 0 to 12 of section 4 | precedent: `plans/DECISIONS.md` line 5231 |
+
+Not changed: `plans/DECISIONS.md` (the orchestrator records decisions), `modules/*.md`, other `units/*.md`, and every code folder.
+
+## 4. Procedure
+
+Run from `/Users/bbartolome/workspace/scriba-prototype` unless a step says otherwise. Record each command with its exit code.
+
+0. Preconditions. `for id in GNP-05 GNP-06 GNP-07 GNP-08 GNP-09 GNP-10 GNP-11; do git show main:plans/$id.md | grep -m1 '^status:'; done`. Expected: seven lines, each `status: done`. Also `git show main:plans/AGL-09.md` and `main:plans/AGL-10.md` give `status: done` (used in section 7).
+1. Branch. `git worktree add /Users/bbartolome/workspace/scriba-prototype-wt/GNP-12 -b unit/GNP-12 main`. Do all later steps in that worktree. Expected: the worktree is created on a new branch `unit/GNP-12`. The main worktree keeps its `units/SAU-12-providers-step.md` change, untouched.
+2. Runtime and dependencies. In the worktree: `node -v` (expected `v26.x`), `npm -v` (expected `11.x`), then `npm ci`. Expected: exit 0.
+3. Build the two workspaces the pack and golden tests import. `npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api`. Expected: exit 0.
+4. T1, part a. `npm run lint:packs`. Expected: exit 0.
+5. T1, part b. `npm test -w @bbartolome/scriba-packs`. Expected: exit 0. The test "the suite passes on the real packs" in `packages/packs/test/real-packs.test.ts` passes; so do the other files in `packages/packs/test/`, including the `common-inputs` cases of `content-checks.test.ts`.
+6. T2. `cd apps/api && npx vitest run test/packs/cold-open.test.ts test/packs/mystery-question.test.ts test/packs/myth-buster.test.ts test/packs/numbers-to-people.test.ts`. Expected: four files, five tests, all passing. Do not pass `--update-goldens`. Then, from the worktree root, `git status --short packages/packs/test/golden` prints nothing, so no golden was written.
+7. T3, part a. `npm run lint:examples`. Expected: exit 0. This runs the M1 and graph layers only (section 2, item 9).
+8. T3, part b, the work pass. `T=$(mktemp -d)`. Write R1 to `$T/r1.mjs` from the spec in `plans/GNP-11.md` line 207 (a file outside the repository; do not commit it). From the repository root run `node "$T/r1.mjs" examples/nonfiction`. Expected: exit 0 and a summary line `R1: <n> entity file(s) checked, <m> reference(s) checked, 0 issue(s)`. The recorded counts are 9 and 4 (`plans/GNP-11.md` line 204); a different count is recorded with its reason. Then check whether the pack layer is on main: `git show main:scripts/examples-check/index.mjs | grep -n 'LAYERS = '`. If `LAYERS` lists more than `[m1, graph]`, rebase onto that main, run `npm run lint:examples` again (expected exit 0 with no pack-layer finding), and T3 can be ticked. If `LAYERS` is still `[m1, graph]` (the state at `3d5180e`), line 19 stays unticked and the cause "PLT-22 not merged" goes into the implementer report.
+9. T4, data part (supporting, not the criterion). `node --test scripts/eval-cases.test.mjs scripts/eval-case-myth-buster.test.mjs scripts/eval-case-numbers-to-people.test.mjs`. Expected: exit 0, all tests passing.
+10. T4, real-model run. Not run in this environment (section 5). Run it only when open point 2 is decided, using the procedure written there. Its result goes into the implementer report.
+11. Root gates. From the repository root: `npm run build`, `npm test`, `npm run lint`. Expected: each exits 0. `npm run lint` ends with `All matched files use Prettier code style!`. `npm test` includes the packs and API tests, including the golden tests of step 6.
+12. Demo. Not run. Section 7 gives the reason.
+13. Ticks and status. Apply the rules of section 3 and section 5. Set `status: done` in `plans/GNP-12.md` when steps 0 to 12 are done. A box that is not met stays unticked, and the cause is written in the implementer report (GNP-11 did the same, `plans/DECISIONS.md` line 5071).
+14. Commit. Commit only `units/GNP-12-workhorses-gate.md` and `plans/GNP-12.md` on `unit/GNP-12`, following the orchestrator's procedure. Do not stage `units/SAU-12-providers-step.md`.
+15. Report. Give the Node and npm versions, each command with its exit code, the R1 summary line, whether the PLT-22 pack layer is on main, and the state of T4 with the reason (section 2, item 13).
+
+## 5. Tests
+
+One test per criterion. The criterion text is copied from `units/GNP-12-workhorses-gate.md` lines 17 to 20.
+
+| Criterion (unit line) | Test (file and name) | Steps | Pass condition | Runnable here |
+|---|---|---|---|---|
+| "All four tools pass the validation suite, and their common inputs are identical." (17) | **T1.** `packages/packs/test/real-packs.test.ts`, "the suite passes on the real packs". Plus `npm run lint:packs` | 4, 5 | `lintPacks` gives no finding with severity `error`, and `contentChecks` returns `[]`. That includes the `common-inputs` rule across the four draft tools (`checks.ts` lines 192 to 222) | Yes |
+| "Each tool's golden test passes (entities with IDs, citation and placeholder instructions, `sourcesUsed` from entity inputs)." (18) | **T2.** The AC 2 test of `apps/api/test/packs/cold-open.test.ts` (line 23), `mystery-question.test.ts` (line 23), `myth-buster.test.ts` (line 64) and `numbers-to-people.test.ts` (line 24). The files also run myth-buster's AC 3 test (line 89) | 6 | All five tests pass. Each golden matches, so none is written. `sourcesUsed` equals the value the case declares, which leaves out the style profile. The prompt holds each entity with its ID and the citation and placeholder rules. Invalid arguments return `TOOL_ARGS_INVALID` | Yes (mock OpenAI server and a temporary library; no real model) |
+| "Sample entities validate and every reference resolves." (19) | **T3.** Platform's examples check, pack layer (PLT-22), run as `npm run lint:examples`. Until PLT-22 is on main, the work pass is R1 (`plans/GNP-11.md` line 207) | 7, 8 | The box is ticked only when `npm run lint:examples` exits 0 on a main that has PLT-22's pack layer, and that layer checks the five nonfiction entity files and their references. Until then R1 must give 0 issues, and the box stays unticked | Partly. R1 can run here. The box cannot be ticked on main at `3d5180e` (open point 1) |
+| "**Done when:** each of the four workhorses produces a draft that cites its source files — in CI through `sourcesUsed` and draft provenance; with a real model through the manual eval (the draft contains `[@id]` citations whose IDs are among the input entities and sources)." (20) | **T4.** The CI part is T2 (`sourcesUsed`) plus the provenance question of open point 3. The real-model part is the manual eval of the four cases through `npm run eval:agent`, read from the report | 9 (data), 10 (real run) | For each of the four cases and each model: `reason` is `completed`; the workhorse's card has status `done`; citation presence passes. Then the manual id check: every id in `citationIds` is an entity or source ID that appears in that card's inputs or in its `sourcesUsed` (the script does not check ids, `scripts/eval-agent/README.md` line 76) | No (section 5, T4 below) |
+
+**T4 is not run here.** Section 2, item 13 gives the checks: no `ollama` on PATH, nothing listening on the default endpoint `127.0.0.1:11434` (`scripts/eval-agent/run.mjs` line 22) or on port 8080, and no `~/.ollama`. The script has no default model (`scripts/eval-agent/README.md` line 15), so a model pair must be named. The run procedure is open point 2. Criterion 4 is neither weakened nor deleted, and its box stays unticked until the run is recorded.
+
+Tick rules: line 17 when T1 passes; line 18 when T2 passes; line 19 under the T3 rule; line 20 when T4 passes in full (its CI part under open point 3 and its real-model part under open point 2).
+
+## 6. Agreement with downstream units
+
+- **GNP-20, `throughline_check`** (`units/GNP-20-throughline-check.md` line 7: `blocked_by` GNP-02, GNP-12; criteria at lines 20 and 21). It needs the phase closed on main, and the suite and golden conventions that GNP-12 checks. GNP-12 provides the closed phase, T1 (the suite run on the four draft tools) and T2 (the golden harness on four tools). Its tool has `output: check`, so the common-input rule does not apply to it. Agreed; nothing else from GNP-12 is needed.
+- **GNP-21, `named_concept`, `comparison_set`, `objection_handler`** (`units/GNP-21-tier2-entity-and-argument-shapes.md` line 7; criteria at lines 22 to 24). It needs the two draft tools to carry identical common inputs, enforced by the suite (`plans/GNP-01.md` line 28, D8), and the golden convention. GNP-12 provides T1 (the rule holds across four drafts) and T2 (the golden convention on four tools). Its claim and concept kinds come from GNP-06, not from GNP-12. Agreed.
+- **GNP-22, nine tier 2–3 draft shapes** (`units/GNP-22-tier2-3-draft-shapes.md` line 7; criteria at lines 31 to 34). The same as GNP-21: identical common inputs (line 31) and one golden test per tool (line 32). GNP-12 provides the same T1 and T2. Agreed.
+- **AGL-11, narrative gate** (`units/AGL-11-narrative-gate.md` line 7: `blocked_by` "Genre packs phase:nonfiction-workhorses (GNP-12)"; done-when at line 21). It needs the four workhorses shipped and enabled, so the agent offers them as functions; each producing a draft with `sourcesUsed`; and the real-model citations. GNP-12 provides four enabled built-in tools (`enabled: true`, section 2 item 3), the golden tests and mock scenarios (T2), and the real-model run (T4). AGL-11's own mock scenarios for the agent path are in AGL-11's Scope, not in GNP-12. AGL-11's done-when asks for the same real-model citations as T4, so AGL-11 waits on the same run. Agreed.
+- **TRG-17, editor-UI gate** (`units/TRG-17-editor-ui-gate.md` line 7: `blocked_by` "Genre packs phase:nonfiction-workhorses (GNP-12)"; M2 done-when at line 18). It needs the four workhorses as shipped by Genre packs, built in and enabled (its demo switches `mystery_question` off and opens `cold_open` read-only), each producing a draft that cites its sources. GNP-12 provides T1, T2 and T4, the same as AGL-11. Agreed.
+
+No downstream unit needs a file from GNP-12. GNP-12 adds none.
+
+## 7. Demo
+
+- **Agent loop `phase:narrative-tools` on main.** AGL-09 is done and AGL-10 is done. AGL-11, the gate of the phase, has no plan and is not merged. AGL-11 is blocked by GNP-12 (`units/AGL-11-narrative-gate.md` line 7), so the phase closes after this gate, not before it.
+- **Steps 4 and 6 need pending changes.** `units/AGL-09-narrative-tools.md` line 22: drafts become pending changes only in AGL-13 (phase `pending-writes`; no plan on main). Reviewing and rejecting them needs the review queue of Project store `phase:pending-review` (PST-15 is done; PST-22 has no plan).
+- **Verdict: the demo cannot run now.** It cannot run as written after GNP-12 merges either, because steps 4 and 6 need AGL-13 and the review queue. Steps 1 to 3 and 5 could run on main with a model (real or the mock server), because the chat loop and the narrative tools are on main. The demo is not a test of GNP-12, and no criterion requires it. Open point 4.
+
+## 8. Open points
+
+1. **Criterion 3 (sample entities) and PLT-22.** The pack-layer check that tests criterion 3 is PLT-22, which is not on main. Options: (a) PLT-22 merges before GNP-12; that needs PLT-22 added to GNP-12's `blocked_by`, a unit change made by the orchestrator. PLT-22 can be planned now. (b) GNP-12 merges with line 19 unticked, the cause "PLT-22 not merged", and the R1 work pass recorded; the box is ticked later, when `npm run lint:examples` passes with PLT-22's layer. This is the GNP-11 precedent (`plans/DECISIONS.md` line 5071). (c) Tick line 19 on R1 as a stand-in. Not recommended: `plans/DECISIONS.md` line 5072 cites the SAU-16 precedent against stand-ins. **Plan default: (b).**
+
+2. **Criterion 4, the real-model run, cannot run here.** Options: (a) a person with a local model server runs the procedure below before line 20 is ticked. (b) GNP-12 merges with line 20 unticked and "not run: no model server" as the cause, as GNP-08, GNP-09 and GNP-10 did (`plans/DECISIONS.md` lines 5200, 5241, 5252). That leaves the phase's done-when owed. (c) Hold the GNP-12 merge until (a). **Plan default: (a).** The procedure for (a):
+   1. Start a local OpenAI-compatible model server (Ollama at `127.0.0.1:11434`) with a model that accepts tool calls. Keep port 8080 free.
+   2. The Navigator names two models (a small one and a larger one); the script has no default (`scripts/eval-agent/README.md` line 15).
+   3. From the worktree root, run `npm run eval:agent -- --model <small> --model <larger> --case cold-open --case mystery-question --case myth-buster --case numbers-to-people`.
+   4. Open `eval-reports/<stamp>/report.json`. For each result (four cases times two models), check that `expect.reason`, `expect.tools` and `expect.citations` are `pass`, and that `citationIds` is not empty.
+   5. Manual id check (the script does not do it, `scripts/eval-agent/README.md` line 76). For each id in `citationIds`, find it among the `entityIds` in the card's arguments or among the `sourcesUsed` of the card's result. An id not found there fails criterion 4.
+   6. Record the report path, the two models, and the result of each case in the implementer report. The orchestrator records it in `plans/DECISIONS.md`.
+
+3. **Criterion 4, CI part: draft provenance for the shipped tools.** The CI part names `sourcesUsed` and draft provenance. `sourcesUsed` is covered by T2. Provenance on main is tested only with the fixture packs (`apps/api/test/agent-loop-narrative.test.ts` lines 48, 145 and 458). Options: (a) accept that test as the CI evidence, because AGL-09 attaches provenance to every draft output (`units/AGL-09-narrative-tools.md` line 22), and the four tools take the same path. (b) Add a test that runs one shipped tool through the agent with the real packs; this is new code and overlaps AGL-11's scope. (c) Line 20 waits for AGL-11, which is blocked by GNP-12, so criterion 4 stays unticked after GNP-12 merges. **Plan default: (a), subject to the Navigator's confirmation,** because criterion 4 names the shipped tools.
+
+4. **Demo steps 4 and 6.** The demo needs AGL-13 and the review queue, which are outside `phase:narrative-tools` (section 7). Options: (a) keep the demo with steps 1 to 3 and 5 after AGL-11 merges, and show steps 4 and 6 when AGL-13 and the review queue are on main (M3). (b) The Navigator moves steps 4 and 6 to a later demo, an edit the orchestrator makes to the unit. (c) Run steps 1 to 3 and 5 now with the mock server, to check the chat path before AGL-11. **Plan default: (a).** The demo gates no criterion, so this does not change any test in section 5.
