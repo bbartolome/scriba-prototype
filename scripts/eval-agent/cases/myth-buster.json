@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Bust the myth that ten thousand hours of practice make anyone an expert, using my notes.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["myth_buster"],
+    "citations": "present"
+  }
+}
