@@ -21,8 +21,8 @@ Customize a built-in into a user copy (16), revert (18), create and delete own t
 - **`catalog-changed {names}`** published after save, delete, toggle (TRG-09) or a host-side user-pack change detected by the manifest re-scan.
 
 ## Acceptance criteria
-- [ ] `save` on a built-in writes the user-pack file and never touches the packs root.
-- [ ] Saving YAML with an unknown `x-scriba-*` key, a template variable that isn't an input, or an out-of-subset keyword returns 422 with line-numbered diagnostics and writes no file.
-- [ ] `delete` of a user copy restores the built-in; delete of a plain built-in returns `TOOL_BUILTIN_READONLY`.
-- [ ] `catalog-changed` arrives on `/events` after save, delete, toggle and a host-side file add.
-- [ ] `lint` writes nothing and returns views for valid YAML.
+- [x] `save` on a built-in writes the user-pack file and never touches the packs root.
+- [x] Saving YAML with an unknown `x-scriba-*` key, a template variable that isn't an input, or an out-of-subset keyword returns 422 with line-numbered diagnostics and writes no file.
+- [x] `delete` of a user copy restores the built-in; delete of a plain built-in returns `TOOL_BUILTIN_READONLY`.
+- [x] `catalog-changed` arrives on `/events` after save, delete, toggle and a host-side file add.
+- [x] `lint` writes nothing and returns views for valid YAML.

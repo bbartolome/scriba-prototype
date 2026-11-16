@@ -1,7 +1,7 @@
 ---
 id: TRG-10
 title: Lint, save (copy-on-write) and delete endpoints, and the catalog-changed event
-status: planned
+status: done
 ---
 # TRG-10 plan — lint, save, delete and catalog-changed
 
