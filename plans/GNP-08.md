@@ -1,6 +1,6 @@
 ---
 unit: GNP-08
-status: draft
+status: planned
 module: genre-packs
 milestone: M2
 blocked_by: [GNP-02, GNP-03, GNP-06]
@@ -9,6 +9,8 @@ unblocks: [GNP-12, GNP-23]
 # GNP-08 plan — mystery_question nonfiction draft tool, golden case and eval case
 
 Batch: [GNP-08] (Genre packs, phase:nonfiction-workhorses, M2), a batch of one. Planner draft at main `9e4a879` (HEAD when read). The working tree holds only `units/SAU-12-providers-step.md` (modified, not this plan's). No `unit/GNP-08` branch and no GNP-08 worktree exist. The unit file was read in full (lines 1 to 24). It has no change note: a search of `units/GNP-08-mystery-question.md` for "revision", "Removed by", "Loosened by", "Reworded by" and "Moved to" finds nothing. The planner changed no file, committed nothing and ran no build, install or test.
+
+Revision 1 (reviser, 2026-11-16, at main `a8e01e9`): each statement was checked against the unit, the module, `units/GNP-12-workhorses-gate.md`, `units/GNP-23-remix.md` and the code on main. Corrections: A2 (the order of entity refs), step 0 (the base commit), step 11 (the list of API pack tests), step 13 (what the e2e run shows), section 7 (each open point settled or given an owner), and the new section "Review parts". No unit file was changed. `plans/DECISIONS.md` has no entry that names GNP-08. No other plan has front-matter `status: draft` or `planned`.
 
 ## 1. Decisions this plan obeys
 
@@ -63,7 +65,7 @@ Labels: **U** = unit file; **M** = module file; **D** = a settled decision of a 
 ### Assumed (each one is checked by the step named)
 
 - **A1** Node v26.x and npm 11.x are on the PATH (step 1).
-- **A2** `sourcesUsed` is `['notes-a', 'claim-a']`: entity refs follow argument order, and `entityIds` comes before `styleProfile` in the property order (steps 5 and 6).
+- **A2** `sourcesUsed` is `['notes-a', 'claim-a']`: `validate.ts` (lines 107 to 122) collects the entity refs in the order of the compiled fields and, for a list, in item order; `executor.service.ts` (lines 149 and 150) drops the style ref and keeps unique IDs. The only non-style entity input is `entityIds` (steps 5 and 6).
 - **A3** `{{length}}` renders `800` for the default, because Ajv applies `useDefaults` (step 6; as `plans/GNP-07.md` A9).
 - **A4** `lint.ts` gives no error or warning for the new spec (step 10).
 - **A5** The catalogue line is exactly the line of step 7 (step 7 reads the diff).
@@ -90,7 +92,7 @@ The file `packages/packs/nonfiction/tools/.gitkeep` does not exist on main, so n
 
 Run from `/Users/bbartolome/workspace/scriba-prototype`. Create the branch with `git switch -c unit/GNP-08` from `main`. Record `node -v` and `npm -v` with each result. Do not push. Do not use `git add -A` or `git commit -a`.
 
-0. **Base.** `git rev-parse --short HEAD` (expected `9e4a879`, or a later main that still holds GNP-07 and GNP-04). `test ! -e packages/packs/nonfiction/tools/mystery_question.yaml` exits 0. `ls packages/packs/nonfiction/tools` lists only `cold_open.yaml`. If a check fails, re-read the changed files before editing.
+0. **Base.** `git rev-parse --short HEAD` (expected the main commit that holds this plan with `status: planned`, a descendant of `a8e01e9`, or a later main that still holds GNP-07 and GNP-04). `test ! -e packages/packs/nonfiction/tools/mystery_question.yaml` exits 0. `ls packages/packs/nonfiction/tools` lists only `cold_open.yaml`. If a check fails, re-read the changed files before editing.
 1. **Runtime and build.** `npm ci` if `node_modules/` is absent. Then `npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api`. Expected: exit 0; `node -v` prints `v26.x` (A1).
 2. **Tool spec (U1 to U3, M1 to M3, C1, C2, C4, C5).** Create `packages/packs/nonfiction/tools/mystery_question.yaml` with this content. The five common-input properties are copied verbatim from `cold_open.yaml`. Then `npx prettier --write` on the file.
 
@@ -248,9 +250,9 @@ prompt: |
    Then `npx prettier --write` on it.
 9. **Eval test (AC 3, C8).** Add one `test` to `scripts/eval-cases.test.mjs`, after the existing one, named `AC 3: the mystery-question eval case is in the eval data and uses the documented keys and values`. It calls `loadCases()`, finds the case with id `mystery-question`, and asserts: every key of the file is in `CASE_KEYS`; every `expect` key is in `EXPECT_KEYS`; `reason` is in `RUN_END_REASONS`; `citations` is in `CITATION_MODES`; `sample` is `nonfiction`; `intent` is a non-empty string; `expect.tools` deep-equals `['mystery_question']`; `expect.reason` is `completed`; `expect.citations` is `present`. The existing test is not changed. Then `npx prettier --write scripts/eval-cases.test.mjs`.
 10. **Pack checks (AC 1, A4).** From the root, `npm run lint:packs` exits 0 and prints no finding that names `mystery_question`. Then `npm test -w @bbartolome/scriba-packs` exits 0: the real-packs test and the content checks pass (common inputs identical to `cold_open`; the description starts with `Open` and is under 120 characters).
-11. **Type check, lint and API pack tests.** `npm run build -w @bbartolome/scriba-api && npm run lint -w @bbartolome/scriba-api` exit 0. `cd apps/api && npx vitest run test/packs` exits 0: the core-gate, propose-graph, cold-open, nonfiction-entity-types and the new test all pass.
+11. **Type check, lint and API pack tests.** `npm run build -w @bbartolome/scriba-api && npm run lint -w @bbartolome/scriba-api` exit 0. `cd apps/api && npx vitest run test/packs` exits 0: the core-entity-types, core-gate, golden-harness, propose-graph, cold-open, nonfiction-entity-types and the new test all pass.
 12. **Eval test run.** `node --test scripts/eval-cases.test.mjs` exits 0 with two tests passed (GNP-07's and the new one).
-13. **Format and root gates.** `npx prettier --check packages/packs/nonfiction/tools/mystery_question.yaml packages/packs/test/golden/mystery_question packages/packs/test/golden/propose_graph e2e/fixtures/mock-openai/scenarios/pack-mystery_question.json apps/api/test/packs/mystery-question.test.ts scripts/eval-agent/cases/mystery-question.json scripts/eval-cases.test.mjs` exits 0. From the root, `npm run build`, `npm test`, `npm run lint` and `npx prettier --check .` exit 0. `npm test -w @bbartolome/scriba-e2e` exits 0, which shows that the mock loads the new scenario.
+13. **Format and root gates.** `npx prettier --check packages/packs/nonfiction/tools/mystery_question.yaml packages/packs/test/golden/mystery_question packages/packs/test/golden/propose_graph e2e/fixtures/mock-openai/scenarios/pack-mystery_question.json apps/api/test/packs/mystery-question.test.ts scripts/eval-agent/cases/mystery-question.json scripts/eval-cases.test.mjs` exits 0. From the root, `npm run build`, `npm test`, `npm run lint` and `npx prettier --check .` exit 0. `npm test -w @bbartolome/scriba-e2e` exits 0: the mock-openai test starts the mock with the `scenarios/` folder (`e2e/fixtures/mock-openai/test/mock-openai.test.ts` line 72), and the server parses every `.json` in it, so a malformed new scenario fails this run.
 14. **Commit (implementer only).** `git add` each path of section 3 by name. `git diff --cached --stat` lists only those paths, and no `plans/` or `units/` file. Commit with `feat(GNP-08): mystery_question nonfiction draft tool, golden case and eval case`. Do not push.
 
 ## 5. Tests
@@ -283,9 +285,13 @@ Each acceptance criterion has exactly one test. The text is copied from `units/G
 
 ## 7. Open points
 
-1. **AC 3, the run with a small and a larger local model.** This part of the criterion is not tested and is not run here. It needs a local model server (`scripts/eval-agent/README.md`: `npm run eval:agent -- --model <small> --model <larger>`), and the eval is not part of CI. The test covers the data part, "is added to the Agent loop's eval script data", as `plans/GNP-07.md` C9 did for GNP-07. The run is recorded as not run. GNP-12's "done when" with a real model depends on it, so the orchestrator must schedule it.
-2. **GRR-16 port keys.** Which port keys GRR-16 wires between the workhorses is not decided here. Cause: GRR-16 has no plan, and the unit names the tools only as "e.g.". Owner: GRR-16.
-3. **Example recipe in the contracts package.** `packages/contracts/src/graph-runner/examples.ts` uses `mystery_question` at line 114 with `text` and `output` ports (lines 132 and 133), and `cold-open.question`, `cold-open.people`, `cold-open.style` and a `words` param. The shipped specs have none of these (`cold_open` has `person`, `styleProfile` and `moment`; the length param is `length`). The mismatch predates GNP-08, the contract tests check only the schema, and this plan does not change the file. Owner: GRR-01 and GRR-16.
-4. **Done plan statement.** `plans/GNP-06.md` line 176 says GNP-08 "uses only the common inputs". The unit also adds `puzzle` and `surprisingFinding`. The statement is wrong, but it has no effect: text ports need no entity kind from GNP-06. Not changed here (done plan).
+All points are settled by this revision (smaller choices with the simplest option) or belong to another unit. None needs the Navigator.
 
-Sections 1 to 7 are complete.
+1. **AC 3, the run with a small and a larger local model (settled by this revision).** The criterion asks that the case "is added to the Agent loop's eval script data"; the test covers exactly that, as `plans/GNP-07.md` C9 did. The run needs a local model server (`scripts/eval-agent/README.md`: `npm run eval:agent -- --model <small> --model <larger>`) and is not part of CI, so the implementer records it as not run. The real-model run belongs to GNP-12's "done when" (its criterion 4), which reads this case.
+2. **GRR-16 port keys (owner GRR-16, no action here).** GRR-16 has no plan and names the tools only as "e.g.". This plan gives the text ports `coreIdea`, `puzzle`, `surprisingFinding` and output `draft` (section 6).
+3. **Example recipe in the contracts package (owner GRR-01 and GRR-16, no action here).** `packages/contracts/src/graph-runner/examples.ts` uses `mystery_question` with ports that no shipped spec has. The mismatch predates GNP-08, the contract tests check only the schema, and this plan does not change the file.
+4. **Done plan statement (no action).** `plans/GNP-06.md` line 176 says GNP-08 "uses only the common inputs"; the unit also adds the text ports `puzzle` and `surprisingFinding`, which need no entity kind. A done plan is not changed. Likewise `plans/GNP-02.md` line 133 suggests `invalidWithout: 'coreIdea'`; C1 uses `puzzle`, which the helper accepts (any key of the fixture) and which tests the tool's own required input.
+
+## Review parts
+
+**Part 1** (the whole plan; a small plan): steps 0 to 14 of section 4, and the tests AC1, AC2 and AC3 of section 5.
