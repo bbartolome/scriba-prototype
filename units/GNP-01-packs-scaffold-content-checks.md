@@ -23,4 +23,4 @@ unblocks: [GNP-03, GNP-04, GNP-05, GNP-06, GNP-13, "every content unit"]
 
 ## Acceptance criteria
 - [ ] CI runs the suite on every push, and it fails on each broken-spec fixture.
-- [ ] The suite passes on the (still empty) real packs.
+- [x] The suite passes on the (still empty) real packs.

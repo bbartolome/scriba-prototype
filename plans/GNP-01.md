@@ -1,7 +1,7 @@
 ---
 id: GNP-01
 title: packages/packs scaffold and the pack content-check suite
-status: planned
+status: done
 ---
 # GNP-01 plan — packs scaffold and the pack content-check suite
 
