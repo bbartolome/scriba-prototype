@@ -1,6 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { Type } from '@nestjs/common';
 import { expect } from 'vitest';
 import { stringify } from 'yaml';
 import {
@@ -66,6 +67,8 @@ export interface HarnessOptions extends ProviderOptions {
   steps: unknown[];
   // Writes files into the fixture library before the app boots.
   prepare?: (fixture: ProjectsLibrary) => void;
+  // Replaces the composed modules when set, as `TestAppOptions.modules`.
+  modules?: Type<unknown>[];
 }
 
 export interface Harness {
@@ -112,14 +115,20 @@ export async function openHarness(options: HarnessOptions): Promise<Harness> {
     }
     await app?.close();
     app = undefined;
-    app = await createTestApp({ libraryDir: fixture.library });
+    app = await createTestApp({
+      libraryDir: fixture.library,
+      modules: options.modules,
+    });
     harness.app = app;
     harness.cookie = await sessionCookie(app, fixture.library);
   };
   try {
     fixture = buildProjectsLibrary({ settings });
     options.prepare?.(fixture);
-    app = await createTestApp({ libraryDir: fixture.library });
+    app = await createTestApp({
+      libraryDir: fixture.library,
+      modules: options.modules,
+    });
     const cookie = await sessionCookie(app, fixture.library);
     harness = {
       app,
