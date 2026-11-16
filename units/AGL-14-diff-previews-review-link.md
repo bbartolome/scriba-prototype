@@ -16,5 +16,5 @@ unblocks: [AGL-15]
 - At `run-ended`, a link to `/projects/:projectId/review?run=<runId>`; refresh it on the Project store's queue-update events.
 
 ## Acceptance criteria
-- [ ] Component test: a write card shows the diff; the review link appears with pending change IDs.
-- [ ] Phone viewport: the diff is unified and the card collapsed by default.
+- [x] Component test: a write card shows the diff; the review link appears with pending change IDs.
+- [x] Phone viewport: the diff is unified and the card collapsed by default.

@@ -1,6 +1,6 @@
 ---
 id: AGL-14
-status: planned
+status: done
 ---
 # AGL-14 plan — write-card diff previews and the review-link refresh
 
