@@ -18,7 +18,7 @@ unblocks: ["Graph runner sample recipe (GRR-16)"]
 - Failures name the file path and the issue. Keeps passing as later milestones add content (nonfiction recipe at M4, fiction sample at M6).
 
 ## Acceptance criteria
-- [ ] Every `graphs/` file parses with the Graph runner schema.
-- [ ] A story node whose `path` points at a missing file fails with the graph file and node id.
-- [ ] A graph fixture with a schema violation fails with the path and issue.
-- [ ] Passes on a sample with no `graphs/` folder.
+- [x] Every `graphs/` file parses with the Graph runner schema.
+- [x] A story node whose `path` points at a missing file fails with the graph file and node id.
+- [x] A graph fixture with a schema violation fails with the path and issue.
+- [x] Passes on a sample with no `graphs/` folder.

@@ -1,6 +1,6 @@
 ---
 id: PLT-21
-status: planned
+status: done
 ---
 # PLT-21 plan — examples/ check, graph layer (graphs/ schema, story-node paths)
 
