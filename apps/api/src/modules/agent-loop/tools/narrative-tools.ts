@@ -12,6 +12,7 @@ import {
   type ResolvedEntity,
   type ToolCallResult,
 } from '@bbartolome/scriba-contracts/tool-registry';
+import { GRAPH_ID_PATTERN } from '@bbartolome/scriba-contracts/graph-runner';
 import { ModuleError } from '../../platform/platform.module';
 import type {
   EntitiesService,
@@ -29,7 +30,13 @@ import {
   isTooLarge,
   targetOf,
 } from './builtin-tools';
-import { routedFolder, stampOf, withSuffix } from './output-routing';
+import {
+  checkGraph,
+  routedFolder,
+  slugOf,
+  stampOf,
+  withSuffix,
+} from './output-routing';
 import {
   ToolArgumentError,
   type NarrativeToolDefinition,
@@ -164,6 +171,9 @@ function withTarget(
   };
 }
 
+const GRAPH_TARGET_MESSAGE =
+  'The target must be graphs/<id>.json, where <id> is lower-case letters, digits and hyphens.';
+
 // The arguments without `target` (AGL-13 P12). The executor refuses an unknown argument, so it never sees it.
 function withoutTarget(args: Record<string, unknown>): Record<string, unknown> {
   const copy = { ...args };
@@ -176,6 +186,7 @@ function withoutTarget(args: Record<string, unknown>): Record<string, unknown> {
 function explicitTargetOf(
   deps: NarrativeDeps,
   ctx: ToolContext,
+  kind: OutputKind,
   folder: string,
   value: unknown,
 ): ResolvedProjectPath | undefined {
@@ -195,6 +206,11 @@ function explicitTargetOf(
     ) {
       throw new ToolArgumentError(notInFolder);
     }
+    if (kind === 'graph' && !isGraphTarget(target.relativePath)) {
+      throw new ToolArgumentError([
+        { path: '/target', message: GRAPH_TARGET_MESSAGE },
+      ]);
+    }
     if (isFolder(target)) {
       throw new ToolArgumentError([
         { path: '/target', message: FOLDER_MESSAGE },
@@ -212,16 +228,36 @@ function explicitTargetOf(
   }
 }
 
-// The default path of a routed call (AGL-13 P8): `<folder>/<tool-name>-<stamp>.md`, with `-2`, `-3`, ... before the
-// extension until the path is free on disk and in this run's overlay.
+// A graph target is graphs/<id>.json, with no other slash and an id that matches the graph id pattern (AGL-13 P5 (d)).
+function isGraphTarget(relativePath: string): boolean {
+  const match = /^graphs\/([^/]+)\.json$/.exec(relativePath);
+  return match !== null && GRAPH_ID_PATTERN.test(match[1] ?? '');
+}
+
+// The default path of a routed call before its suffix (AGL-13 P8). A graph takes the slug of its name; a draft or an
+// entity takes its tool name and the UTC stamp of the call.
+function defaultBaseOf(
+  kind: OutputKind,
+  folder: string,
+  name: string,
+  content: string,
+  now: Date,
+): string {
+  if (kind === 'graph') {
+    // The content has passed checkGraph, so it is a graph file with a name.
+    const graph = JSON.parse(content) as { name: string };
+    return `${folder}/${slugOf(graph.name)}.json`;
+  }
+  return `${folder}/${name}-${stampOf(now)}.md`;
+}
+
+// The default path of a routed call (AGL-13 P8): the base, with `-2`, `-3`, ... before the extension until the path is
+// free on disk and in this run's overlay.
 function defaultTargetOf(
   deps: NarrativeDeps,
   ctx: ToolContext,
-  folder: string,
-  name: string,
-  now: Date,
+  base: string,
 ): ResolvedProjectPath {
-  const base = `${folder}/${name}-${stampOf(now)}.md`;
   const resolve = (path: string): ResolvedProjectPath =>
     targetOf(deps.store, deps.projects, ctx.run.projectId, path);
   const taken = (target: ResolvedProjectPath): boolean =>
@@ -262,7 +298,7 @@ export function narrativeDefinition(
       const explicit =
         routing === undefined
           ? undefined
-          : explicitTargetOf(deps, ctx, routing, raw.target);
+          : explicitTargetOf(deps, ctx, kind, routing, raw.target);
       const values = filledArguments(
         routing === undefined ? raw : withoutTarget(raw),
         fields,
@@ -327,8 +363,18 @@ export function narrativeDefinition(
       if (isTooLarge(result.output.content)) {
         throw new ToolArgumentError([{ path: '', message: SIZE_MESSAGE }]);
       }
+      // A graph must parse with the graph file schema (AGL-13 P9). Its issues are counted and the model retries.
+      if (kind === 'graph') {
+        const issues = checkGraph(result.output.content);
+        if (issues.length > 0) throw new ToolArgumentError(issues);
+      }
       const target =
-        explicit ?? defaultTargetOf(deps, ctx, routing, name, new Date());
+        explicit ??
+        defaultTargetOf(
+          deps,
+          ctx,
+          defaultBaseOf(kind, routing, name, result.output.content, new Date()),
+        );
       if (explicit === undefined) {
         captureOf(ctx.run, deps.files, ctx.run.projectId, target);
       }
