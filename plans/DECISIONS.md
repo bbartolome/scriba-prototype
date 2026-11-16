@@ -4983,3 +4983,17 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Not rerun by the reviewer:** step 8 (mutation checks, which change files) and step 13 (fresh clone). The reviewer's report gives no result for them.
 - **Consistency:** `units/GNP-06-nonfiction-entity-types.md` has `blocked_by: [GNP-01, GNP-03]` (commit c45cd5e). The code relies on the kind `source` from GNP-03, and AC1 (v) asserts it.
 - **Next:** step 3 (rebase onto main, three checks, patch id again, marks and status, fast-forward).
+
+## 2026-11-16 — SAU-17 — Implementer report COMPLETE, branch `unit/SAU-17` at `71caa38` on `061ca66` (orchestrator record; not yet reviewed)
+
+- **Result:** COMPLETE. Criteria 1 to 3 pass, in apps/api/test/setup-auth-localapi.test.ts (4 tests: T1, the extra case "criterion 1 (extra)" for a regular file at the socket path, T2 and T3). Nothing in the criteria is untestable here; real tailscaled is SAU-21's, as the unit says. The logged-out fixture rests on assumption A13 of plans/SAU-17.md.
+- **Files:** the 11 section 2 paths of plans/SAU-17.md (localapi-client.ts, tailscale-status.service.ts, tailscale-status.controller.ts, the setup-auth.module.ts edit, localapi-fake.ts, five fixtures under apps/api/test/fixtures/localapi/, and the test file). `git diff --stat main...unit/SAU-17`: 11 files, 564 insertions.
+- **Differences from the plan (implementer's report):**
+  1. The extra case is a separate `it`, so the file has 4 tests, not 3.
+  2. needs-login.json, logged-out.json and the running-*.json fixtures carry extra keys (HaveNodeKey, HostName, Online, MagicDNSSuffix). The plan described two of the fixtures in words only. The key-set rules still hold, and unknown keys are ignored.
+  3. Prettier reformatted the fixture JSON and some sources (plan steps 4 and 14). No content change.
+  4. One commit (plan step 17), not one per part as the implementation rules say.
+  5. The cache check is a private helper fresh(windowMs), shared by status() and refresh(). Same logic as plan step 7.
+- **Mutation checks (plan step 12), each restored and confirmed with cmp:** M1 CACHE_MS=0 fails T3. M2 httpsCertsEnabled from CertDomains !== undefined fails T2. M3 no trailing-dot removal fails T2 and T3. M4 ownerLogin from the first User entry fails T2. M5 no error handler fails T1 and the extra case; the 500 status was not checked in the log.
+- **Checks (implementer, Node v26.13.0, npm 11.20.0):** `npm run build -w @bbartolome/scriba-contracts` exit 0; api test 101 files, 375 tests, exit 0; api lint exit 0; root lint exit 0; root test exit 0 (packages 18 files, 248 tests; api 101 files, 375; then 58 files, 379; 4 files, 14; 1 file, 12); root build exit 0; `npm run e2e` exit 0 (11 passed).
+- **Next:** Sonnet review, one reviewer for the one part of plans/SAU-17.md "Review parts" (steps 1 to 18, tests T1 to T3 and mutations M1 to M5). The branch and worktree /Users/bbartolome/workspace/scriba-prototype-wt/SAU-17 are kept until step 3.
