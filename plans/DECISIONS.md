@@ -4592,3 +4592,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - The rework implementer committed fb56238 on unit/AGL-25, `feat(AGL-25): wait for the API's setup URL and live child before sign-in`. Only `scripts/eval-agent/run.mjs` changed, which is item 1 of the REWORK list. The waitForApi readiness check now needs the live child, `<library>/.scriba/setup-url` and `/healthz` 200; the child is checked again before sign-in.
 - The implementer's checks: `npm run lint` exit 0; T1 passed on an idle port 8080 (2853 ms); T2 and T3 passed when each ran alone. M1 was not run (no Ollama on this host).
 - New patch id: `079103303b50048bbd36ff6214db4d29376152d2`. The reviewers have not started on this code yet: the limit stopped new subagents after SAU-12 reached main. The next cycle starts new Sonnet reviewers for both parts (rule 2 of step 2 of prompt.md).
+
+## 2026-11-16 — SAU-13 — Implementer report COMPLETE (orchestrator)
+
+- Branch unit/SAU-13, head 626a147, created from main at 6e25be7 (main has moved since: the rebase is step 3). Worktree /Users/bbartolome/workspace/scriba-prototype-wt/SAU-13. Patch id on that base: `a769e98726484a50615404b23c3cfe4733cc7551`. The patch id is to be checked again after the reviewers and the rebase.
+- Criteria 1 and 2 pass (tests PR1 and PR2). Extras PR3 to PR8 pass. Full web tests 336 of 336 (328 baseline plus 8). e2e 9 passed, including setup-phone. Lint and build exit 0. Mutations M1 to M6 each fail the expected tests; the sources were reverted each time.
+- Differences from the plan, as the implementer reported them: per-part commits instead of one commit (step 13); M4 fails PR1 to PR7, not PR1 and PR7; M6 uses `@if (step() === 'preferences' && isLastStep())`, because `never` does not compile in the Angular template; the setup-page spec override is `remove`/`add` of imports only. No other differences. Nothing in plans/, units/, modules/ or DECISIONS.md was changed by the implementer.
+- Not done: the review (two parts, per the plan's Review parts) and step 3. The limit stopped new subagents after SAU-12 reached main.
