@@ -1,6 +1,6 @@
 ---
 id: AGL-17
-status: planned
+status: draft
 ---
 
 # AGL-17 plan — grounding wiring: check after drafts, check_grounding, the on-demand run, summary on pending changes, events
