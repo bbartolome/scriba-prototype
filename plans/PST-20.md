@@ -1,6 +1,6 @@
 ---
 id: PST-20
-status: planned
+status: done
 unit: units/PST-20-review-queue-ui.md
 sources: units/PST-20-review-queue-ui.md (last changed by 098add9); units/README.md; modules/project-store.md; modules/shell.md; prompt.md (Draft, Revise, "Changes of units that the reviser can make"); plans/PLT-02.md (structure); plans/PST-14.md and plans/PST-10.md (route, Shell and phone-test precedents); done plans read for the contract they set: plans/PST-16.md, PST-17.md, PST-19.md, SHL-12.md, SHL-16.md, SHL-07.md, AGL-07.md, AGL-14.md, SHL-11.md; planned and draft plans read for file overlap: plans/TRG-14.md, plans/SAU-18.md, plans/SAU-22.md; plans/DECISIONS.md lines 941, 2557, 4084, 4864 (grep for PST-20, PST-21, PST-22); downstream units PST-21, PST-22, PST-23, GRR-13, GRR-06, AGL-07
 ---

@@ -20,6 +20,6 @@ unblocks: [PST-22, "Graph runner run UI (GRR-13)"]
 - Phone-friendly: one column, unified diff by default on narrow screens, sticky large action buttons.
 
 ## Acceptance criteria
-- [ ] Component tests (fake API/SSE): grouping by run, `?run=` filter, live insertion/update/removal from events, conflict badge, refresh and accept-anyway flows.
-- [ ] Narrow (phone) viewport test: list, diff, accept and reject work.
-- [ ] With the merge view present, edited text is sent as `content`.
+- [x] Component tests (fake API/SSE): grouping by run, `?run=` filter, live insertion/update/removal from events, conflict badge, refresh and accept-anyway flows.
+- [x] Narrow (phone) viewport test: list, diff, accept and reject work.
+- [x] With the merge view present, edited text is sent as `content`.
