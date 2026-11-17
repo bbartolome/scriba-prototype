@@ -81,6 +81,7 @@ The steps and commands are in `deploy/RUNBOOK.md`, section `## SAU-21: socket an
 | R6 `t1 - t0` and `StartedAt` | not run | not run |
 | Image revision (T0) | Mac, 2026-11-17 | `20f6eac` (built as `bbartolome/scriba:sau21-check`) |
 | Socket fallback applied | 2026-11-17 | no: S2 passed on variant B, so step 13 did not run |
+| Teardown (plan step 17) | Mac, 2026-11-17 | not run: pending. The stack `sau21-check`, `/tmp/sau21-install` and `/tmp/sau21-fresh` are still up for the login. Teardown, and the note that the machine stays in the tailnet's machine list, are pending |
 
 ### Testing principles
 - External behaviour only: HTTP status codes, headers, cookies, redirects, files on disk, rendered UI — never internal services, the token store or the signing helper.

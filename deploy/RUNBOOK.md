@@ -94,7 +94,7 @@ Socket smoke test (criterion 6), on each host:
 
 - **S1.** `docker compose <P> exec -T scriba id -u` prints `1001`, not `0`.
 - **S2.** `docker compose <P> exec -T scriba node -e "const h=require('http');h.get({socketPath:'/var/run/tailscale/tailscaled.sock',path:'/localapi/v0/status',headers:{Host:'local-tailscaled.sock'}},(r)=>{let d='';r.on('data',(c)=>{d+=c});r.on('end',()=>console.log(r.statusCode,JSON.parse(d).BackendState))}).on('error',(e)=>{console.error(e.code);process.exit(1)})"`. Expected: `200 NeedsLogin`. If it prints `NoState` or `Starting`, retry for up to 60 s.
-- **S3. Write endpoints, for information.** A write request whose body cannot parse, so nothing changes even if writes are allowed: `docker compose <P> exec -T scriba node -e "const h=require('http');const q=h.request({socketPath:'/var/run/tailscale/tailscaled.sock',method:'PATCH',path:'/localapi/v0/prefs',headers:{Host:'local-tailscaled.sock','Content-Type':'application/json'}},(r)=>{let d='';r.on('data',(c)=>{d+=c});r.on('end',()=>console.log(r.statusCode,d.trim().slice(0,80)))});q.on('error',(e)=>{console.error(e.code);process.exit(1)});q.end('x')"`. 403 means writes are refused for this UID; 400 means the write was allowed and refused only for the bad body. Record the printed line, then repeat S2 to confirm the state did not change.
+- **S3. Write endpoints, for information.** A write request whose body cannot parse, so nothing changes even if writes are allowed: `docker compose <P> exec -T scriba node -e "const h=require('http');const q=h.request({socketPath:'/var/run/tailscale/tailscaled.sock',method:'PATCH',path:'/localapi/v0/prefs',headers:{Host:'local-tailscaled.sock','Content-Type':'application/json'}},(r)=>{let d='';r.on('data',(c)=>{d+=c});r.on('end',()=>console.log(r.statusCode,d.trim().slice(0,80)))});q.on('error',(e)=>{console.error(e.code);process.exit(1)});q.end('x')"`. Reading (ASSUMED A6): 403 means writes are refused for this UID; 400 means the write was allowed and refused only for the bad body. Any other result is recorded as printed. Record the printed line, then repeat S2 to confirm the state did not change.
 
 Real tailnet (criterion 5):
 
@@ -108,6 +108,8 @@ Real tailnet (criterion 5):
 - **R6. No restart, within the budget.** From `t0`, run R4(a) every 2 s until it prints 200 (or 403 `AUTH_TAILNET_IDENTITY_MISSING` from a tagged reader). Note `t1`; `t1 - t0` must be at most 60. Then `docker inspect -f '{{.State.StartedAt}}' sau21-check-scriba-1` must equal `StartedAt0`.
 
 Teardown: `docker compose -p sau21-check --project-directory /tmp/sau21-install down -v`, then remove `/tmp/sau21-fresh` and `/tmp/sau21-install`. The test machine stays in the tailnet's machine list until the person removes it.
+
+Status: teardown is pending. The stack `sau21-check`, `/tmp/sau21-install` and `/tmp/sau21-fresh` are still up for the login (R2). Teardown and the note about the machine in the tailnet list are still to do.
 
 ## ST-4 (userspace networking)
 
