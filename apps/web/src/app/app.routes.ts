@@ -48,6 +48,18 @@ export const PROJECT_ROUTES: Routes = [
         (feature) => feature.reviewRoutes,
       ),
   },
+  {
+    path: 'graphs',
+    data: {
+      scope: 'project',
+      minDeviceClass: 'phone',
+      nav: { label: 'Graphs', icon: 'account_tree', order: 35 },
+    } satisfies ShellRouteData,
+    loadChildren: () =>
+      import('./features/graph-runner/graph-runner.routes').then(
+        (feature) => feature.graphsRoutes,
+      ),
+  },
 ];
 
 /**
