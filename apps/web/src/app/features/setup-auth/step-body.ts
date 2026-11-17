@@ -7,16 +7,23 @@ import type {
 import { FirstProjectStep } from './first-project-step';
 import { ProvidersPanel } from '../providers/providers.routes';
 import { PreferencesStep } from './preferences-step';
+import { TailscalePanel } from './tailscale-panel';
 
 /**
  * The body of one wizard step. Access shows the current identity. The providers case embeds the
  * Model providers panel, or a link to `/providers` until that route exists. The first-project case
  * embeds the first-project step and forwards its three events. Preferences embeds its own step
- * component, which reports a save or a failure to the page. The other two steps are placeholders
- * for now; each of their own units replaces its own case.
+ * component, which reports a save or a failure to the page. The Tailscale case embeds the Tailscale
+ * panel, which shows the state and the links.
  */
 @Component({
-  imports: [FirstProjectStep, ProvidersPanel, RouterLink, PreferencesStep],
+  imports: [
+    FirstProjectStep,
+    ProvidersPanel,
+    RouterLink,
+    PreferencesStep,
+    TailscalePanel,
+  ],
   selector: 'app-step-body',
   template: `
     @switch (step()) {
@@ -25,7 +32,7 @@ import { PreferencesStep } from './preferences-step';
         <p>You're in.</p>
       }
       @case ('tailscale') {
-        <p>Tailscale is unavailable.</p>
+        <app-tailscale-panel />
       }
       @case ('providers') {
         @if (panelAvailable()) {

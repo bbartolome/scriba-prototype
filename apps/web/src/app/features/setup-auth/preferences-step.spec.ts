@@ -8,6 +8,7 @@ import {
   PREFERENCES_ROUTE,
   SETUP_AUTH_EXAMPLES,
   SETUP_STATUS_ROUTE,
+  TAILSCALE_STATUS_ROUTE,
   type SetupStatus,
 } from '@bbartolome/scriba-contracts/setup-auth';
 import { BUILTIN_ORIGINS } from '@bbartolome/scriba-contracts/tool-registry';
@@ -157,6 +158,11 @@ async function renderAtPreferences(
     SETUP_AUTH_EXAMPLES.identityLoopback,
   );
   doubles.api.respond('GET', SETUP_STATUS_ROUTE, atPreferences);
+  doubles.api.respond(
+    'GET',
+    TAILSCALE_STATUS_ROUTE,
+    SETUP_AUTH_EXAMPLES.tailscaleUnavailable,
+  );
   doubles.api.respond(
     'GET',
     PREFERENCES_ROUTE,
@@ -347,6 +353,11 @@ describe('preferences step with the fake API', () => {
       SETUP_AUTH_EXAMPLES.identityLoopback,
     );
     doubles.api.respond('GET', SETUP_STATUS_ROUTE, atPreferences);
+    doubles.api.respond(
+      'GET',
+      TAILSCALE_STATUS_ROUTE,
+      SETUP_AUTH_EXAMPLES.tailscaleUnavailable,
+    );
     doubles.api.respond(
       'GET',
       PREFERENCES_ROUTE,

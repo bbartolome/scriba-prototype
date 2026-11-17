@@ -19,6 +19,7 @@ import {
   SETUP_AUTH_EXAMPLES,
   SETUP_CONTINUE_ROUTE,
   SETUP_STATUS_ROUTE,
+  TAILSCALE_STATUS_ROUTE,
   type SetupStatus,
 } from '@bbartolome/scriba-contracts/setup-auth';
 import { Observable, Subject, of, throwError, take, mergeMap } from 'rxjs';
@@ -488,6 +489,11 @@ describe('W wizard with the fake API', () => {
       SETUP_AUTH_EXAMPLES.identityLoopback,
     );
     doubles.api.respond('GET', SETUP_STATUS_ROUTE, fresh);
+    doubles.api.respond(
+      'GET',
+      TAILSCALE_STATUS_ROUTE,
+      SETUP_AUTH_EXAMPLES.tailscaleUnavailable,
+    );
 
     const harness = await renderSetup(doubles.providers);
     const router = TestBed.inject(Router);
@@ -661,6 +667,11 @@ describe('P providers step with the fake API', () => {
       SETUP_AUTH_EXAMPLES.identityLoopback,
     );
     doubles.api.respond('GET', SETUP_STATUS_ROUTE, pending);
+    doubles.api.respond(
+      'GET',
+      TAILSCALE_STATUS_ROUTE,
+      SETUP_AUTH_EXAMPLES.tailscaleUnavailable,
+    );
 
     const harness = await renderSetup(doubles.providers);
     await settle(harness, (root) =>
