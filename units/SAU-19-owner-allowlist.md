@@ -23,6 +23,6 @@ People the node is shared with can't use Scriba unless added (21); the author ca
 - GET/POST endpoints under `/api/setup-auth/`.
 
 ## Acceptance criteria
-- [ ] With the allowlist on, a login not in the list gets 403 with `AUTH_TAILNET_NOT_ALLOWED`.
-- [ ] Enabling from a login that wouldn't be included is refused; enabling with an empty list seeds the owner.
-- [ ] Loopback with a cookie still works with the allowlist on.
+- [x] With the allowlist on, a login not in the list gets 403 with `AUTH_TAILNET_NOT_ALLOWED`.
+- [x] Enabling from a login that wouldn't be included is refused; enabling with an empty list seeds the owner.
+- [x] Loopback with a cookie still works with the allowlist on.

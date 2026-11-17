@@ -1,6 +1,6 @@
 ---
 id: SAU-19
-status: planned
+status: done
 unit: units/SAU-19-owner-allowlist.md
 sources: units/SAU-19-owner-allowlist.md (no change notes; 28 lines); units/README.md; modules/setup-auth.md; units/SAU-18-tailnet-guard-path.md and plans/SAU-18.md (done); units/SAU-17-localapi-client-status.md and plans/SAU-17.md (done); units/SAU-20-tailscale-ui.md; units/SAU-21-tailnet-gate.md; units/SAU-22-guard-dev-mode.md and plans/SAU-22.md (draft, same guard); plans/SAU-01.md (done, status assumption); plans/SAU-05.md (done, merge rule); units/SAU-06, SAU-15 and their plans (done, web and recovery text); plans/PLT-02.md (layout); plans/DECISIONS.md (grep, matching lines read); the code, fixtures and tests named in section 2a
 ---
