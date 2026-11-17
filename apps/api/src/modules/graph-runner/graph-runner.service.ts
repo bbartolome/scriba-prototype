@@ -56,7 +56,7 @@ const UNREADABLE_CODES: readonly string[] = [
 ];
 
 // A graph refusal: a graph-runner code with its contract status and a fixed message.
-function graphError(
+export function graphError(
   code: keyof typeof GRAPH_ERROR_CODES,
   message: string,
 ): ModuleError {
@@ -198,7 +198,7 @@ export class GraphRunnerService {
   }
 
   // The active project's id (P2).
-  private activeProjectId(): string {
+  activeProjectId(): string {
     const projectId = this.store.activeId();
     if (projectId === null) {
       throw new ModuleError(
