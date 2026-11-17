@@ -1,16 +1,16 @@
 # Queue
-Written by the scout at main commit 48ddaaf (current state). Lists only units with no plan file, in queue order. Format: <ID> | <milestone> | available | <reason>. First incomplete milestone: M1 (open: SAU-22, plan status draft; no listed unit depends on it).
+Written by the scout at main commit 232dd45 (current state). Lists only units with no plan file, in queue order.
+First incomplete milestone: M1 (its only not-done unit is SAU-22, plan status draft, which has a plan file and is not listed). Demo units of M1: AGL-08, MPR-08, PLT-11, PLT-18, PST-12, SAU-08, SHL-09. M1 has no plan-less units, so the queue starts at M2 (next incomplete milestone).
 TRG-15 | M2 | available: no | waits on not-done TRG-14
 TRG-17 | M2 | available: no | waits on not-done TRG-14, TRG-15
-GRR-03 | M4 | available: yes | all blocked_by units done
-GRR-04 | M4 | available: no | waits on not-done GRR-03
+GRR-04 | M4 | available: yes | all blocked_by units done
 GRR-05 | M4 | available: no | waits on not-done GRR-04
 GRR-06 | M4 | available: no | waits on not-done GRR-04
 GRR-07 | M4 | available: no | waits on not-done GRR-04
-GRR-08 | M4 | available: no | waits on not-done GRR-03, GRR-04, GRR-05, GRR-06, GRR-07
+GRR-08 | M4 | available: no | waits on not-done GRR-04, GRR-05, GRR-06, GRR-07
 GRR-09 | M4 | available: yes | all blocked_by units done
 GRR-10 | M4 | available: yes | all blocked_by units done
-GRR-11 | M4 | available: no | waits on not-done GRR-03, GRR-10
+GRR-11 | M4 | available: no | waits on not-done GRR-10
 GRR-12 | M4 | available: no | waits on not-done GRR-11
 GRR-13 | M4 | available: no | waits on not-done GRR-04, GRR-05, GRR-06, GRR-11
 GRR-14 | M4 | available: no | waits on not-done GRR-10
@@ -18,13 +18,13 @@ GRR-15 | M4 | available: no | waits on not-done GRR-11, GRR-12, GRR-13, GRR-14
 GRR-16 | M4 | available: yes | all blocked_by units done
 GRR-17 | M4 | available: no | waits on not-done GRR-08, GRR-09, GRR-10, GRR-11, GRR-12, GRR-13, GRR-14, GRR-15, GRR-16
 CEX-01 | M5 | available: yes | all blocked_by units done
-CEX-08 | M5 | available: no | waits on not-done CEX-01
 CEX-02 | M5 | available: no | waits on not-done CEX-01
+CEX-03 | M5 | available: no | waits on not-done CEX-02
 CEX-04 | M5 | available: no | waits on not-done CEX-02
 CEX-05 | M5 | available: no | waits on not-done CEX-02
-CEX-03 | M5 | available: no | waits on not-done CEX-02
 CEX-06 | M5 | available: no | waits on not-done CEX-05
 CEX-07 | M5 | available: no | waits on not-done CEX-05
+CEX-08 | M5 | available: no | waits on not-done CEX-01
 CEX-09 | M5 | available: no | waits on not-done CEX-02, CEX-03, CEX-04, CEX-05, CEX-06, CEX-07, CEX-08
 CEX-10 | M5 | available: no | waits on not-done CEX-04, CEX-05, CEX-09
 CEX-11 | M5 | available: no | waits on not-done CEX-10
