@@ -21,6 +21,7 @@ import {
   tailnetExplanation,
 } from './sign-in-notice';
 import { TailscalePanel } from './tailscale-panel';
+import { AllowlistPanel } from './allowlist-panel';
 
 type SettingsContract = Awaited<ReturnType<typeof loadSettingsContract>>;
 
@@ -38,12 +39,13 @@ const signOutCopy: ResponseSchema<null> = {
 
 /**
  * The settings page at `/settings`. It shows this device's connection, the Tailscale status and its
- * login link, the preferences, the model providers, the versions with the compose warning, the
+ * login link, the owner allowlist, the preferences, the model providers, the versions with the compose warning, the
  * recovery steps, a way to run setup again, and sign-out for this browser. Each read is independent; a
  * tailnet code shows its explanation and any other error shows its message.
  */
 @Component({
   imports: [
+    AllowlistPanel,
     ComposeWarning,
     MatButton,
     PreferencesForm,
@@ -89,6 +91,11 @@ const signOutCopy: ResponseSchema<null> = {
     <section>
       <h3>Tailscale</h3>
       <app-tailscale-panel />
+    </section>
+
+    <section>
+      <h3>Allowlist</h3>
+      <app-allowlist-panel />
     </section>
 
     <section>

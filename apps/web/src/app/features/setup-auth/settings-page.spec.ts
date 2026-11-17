@@ -7,6 +7,7 @@ import {
   type VersionInfo,
 } from '@bbartolome/scriba-contracts/platform';
 import {
+  ALLOWLIST_ROUTE,
   IDENTITY_ROUTE,
   PREFERENCES_ROUTE,
   SETUP_AUTH_EXAMPLES,
@@ -14,9 +15,11 @@ import {
   SIGN_OUT_ROUTE,
   TAILSCALE_STATUS_ROUTE,
   type SetupStatus,
+  type TailscaleStatus,
 } from '@bbartolome/scriba-contracts/setup-auth';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { APP_ROUTES } from '../../app.routes';
+import { ApiError } from '../../shell/api-error';
 import {
   restoreMatchMedia,
   stubMatchMedia,
@@ -155,6 +158,38 @@ async function settle(
   );
 }
 
+/**
+ * Canned answers for the settings page's reads, as S1 step 1: the identity, the status, the
+ * versions, the Tailscale status, the allowlist (off and empty) and the preferences.
+ */
+function respondSettingsReads(
+  doubles: ShellTestDoubles,
+  tailscale: TailscaleStatus,
+): void {
+  doubles.api.respond(
+    'GET',
+    IDENTITY_ROUTE,
+    SETUP_AUTH_EXAMPLES.identityLoopback,
+  );
+  doubles.api.respond(
+    'GET',
+    SETUP_STATUS_ROUTE,
+    statusWith(SETUP_AUTH_EXAMPLES.composeOk),
+  );
+  doubles.api.respond('GET', VERSION_ROUTE, version);
+  doubles.api.respond('GET', TAILSCALE_STATUS_ROUTE, tailscale);
+  doubles.api.respond(
+    'GET',
+    ALLOWLIST_ROUTE,
+    SETUP_AUTH_EXAMPLES.setupAuthSection.allowlist,
+  );
+  doubles.api.respond(
+    'GET',
+    PREFERENCES_ROUTE,
+    SETUP_AUTH_EXAMPLES.preferences,
+  );
+}
+
 describe('S1 settings page with the fake API', () => {
   it('S1 the settings page shows the identity variants, the versions, the compose warning for mismatch and unknown and not for ok, posts the sign-out, and navigates to /setup on re-run', async () => {
     const doubles = createShellTestDoubles();
@@ -174,6 +209,11 @@ describe('S1 settings page with the fake API', () => {
       'GET',
       TAILSCALE_STATUS_ROUTE,
       SETUP_AUTH_EXAMPLES.tailscaleUnavailable,
+    );
+    doubles.api.respond(
+      'GET',
+      ALLOWLIST_ROUTE,
+      SETUP_AUTH_EXAMPLES.setupAuthSection.allowlist,
     );
     doubles.api.respond(
       'GET',
@@ -359,27 +399,7 @@ describe('S3 settings page polling', () => {
     setVisibility('visible');
     const doubles = createShellTestDoubles();
     // Canned answers as S1 step 1, with the status read answering NeedsLogin with a login link.
-    doubles.api.respond(
-      'GET',
-      IDENTITY_ROUTE,
-      SETUP_AUTH_EXAMPLES.identityLoopback,
-    );
-    doubles.api.respond(
-      'GET',
-      SETUP_STATUS_ROUTE,
-      statusWith(SETUP_AUTH_EXAMPLES.composeOk),
-    );
-    doubles.api.respond('GET', VERSION_ROUTE, version);
-    doubles.api.respond(
-      'GET',
-      PREFERENCES_ROUTE,
-      SETUP_AUTH_EXAMPLES.preferences,
-    );
-    doubles.api.respond(
-      'GET',
-      TAILSCALE_STATUS_ROUTE,
-      SETUP_AUTH_EXAMPLES.tailscaleNeedsLogin,
-    );
+    respondSettingsReads(doubles, SETUP_AUTH_EXAMPLES.tailscaleNeedsLogin);
     const harness = await renderSettings(doubles);
 
     // (a) The Tailscale section shows the login link to its authURL.
@@ -431,5 +451,69 @@ describe('S3 settings page polling', () => {
     vi.advanceTimersByTime(3 * TAILSCALE_POLL_MS);
     await flushTurns(harness);
     expect(statusReads(doubles)).toBe(readsWhenLeft);
+  });
+});
+
+/** The text the allowlist panel shows for a refused change (C7). */
+const LOCKOUT_TEXT =
+  'This change would leave this Tailscale login out of the allowlist, so it was refused. Make the change from the computer that runs Scriba.';
+
+describe('S2 settings page allowlist', () => {
+  it('S2 the allowlist toggle posts the change, a 403 SETUP_ALLOWLIST_LOCKOUT shows the lockout text and sets the toggle back, and a 200 shows the saved state and logins', async () => {
+    const doubles = createShellTestDoubles();
+    respondSettingsReads(doubles, SETUP_AUTH_EXAMPLES.tailscaleUnavailable);
+    const harness = await renderSettings(doubles);
+
+    /** The switch of the Allowlist section, as the browser reports it. */
+    const switchState = (root: HTMLElement): string | null =>
+      sectionNamed(root, 'Allowlist')
+        .querySelector('button[role="switch"]')
+        ?.getAttribute('aria-checked') ?? null;
+
+    await settle(harness, (root) => {
+      expect(switchState(root)).toBe('false');
+      expect(paragraphs(sectionNamed(root, 'Allowlist'))).toContain(
+        'No logins are listed.',
+      );
+    });
+
+    // (a) A refused change: one POST with the new value, the lockout text, no server text, and the
+    // switch back to the saved state.
+    doubles.api.fail(
+      'POST',
+      ALLOWLIST_ROUTE,
+      new ApiError(403, 'SETUP_ALLOWLIST_LOCKOUT', 'server text'),
+    );
+    sectionNamed(rootOf(harness), 'Allowlist')
+      .querySelector<HTMLButtonElement>('button[role="switch"]')
+      ?.click();
+    await settle(harness, (root) => {
+      expect(paragraphs(sectionNamed(root, 'Allowlist'))).toContain(
+        LOCKOUT_TEXT,
+      );
+      expect(switchState(root)).toBe('false');
+    });
+    expect(postsTo(doubles, ALLOWLIST_ROUTE)).toEqual([
+      { method: 'POST', path: ALLOWLIST_ROUTE, body: { enabled: true } },
+    ]);
+    expect(rootOf(harness).textContent).not.toContain('server text');
+
+    // (b) An accepted change: the saved state and its logins are shown, and the lockout text goes.
+    doubles.api.respond('POST', ALLOWLIST_ROUTE, SETUP_AUTH_EXAMPLES.allowlist);
+    sectionNamed(rootOf(harness), 'Allowlist')
+      .querySelector<HTMLButtonElement>('button[role="switch"]')
+      ?.click();
+    await settle(harness, (root) => {
+      const section = sectionNamed(root, 'Allowlist');
+      expect(switchState(root)).toBe('true');
+      expect(
+        [...section.querySelectorAll('li')].map((li) => li.textContent.trim()),
+      ).toEqual(['ada@example.com']);
+      expect(paragraphs(section)).not.toContain(LOCKOUT_TEXT);
+    });
+    expect(postsTo(doubles, ALLOWLIST_ROUTE)).toEqual([
+      { method: 'POST', path: ALLOWLIST_ROUTE, body: { enabled: true } },
+      { method: 'POST', path: ALLOWLIST_ROUTE, body: { enabled: true } },
+    ]);
   });
 });
