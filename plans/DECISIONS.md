@@ -5604,3 +5604,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Not re-run by the reviewer:** the criterion 5 app-side test (the implementer reports 1 passed, 4 skipped).
 - **Known fact (both reviewers and the implementer):** the ADR's tailnet evidence was recorded on commits 9f76fcc and 0dd5234, which have no setup-auth code. No real-tailnet run has tested the guard on main.
 - **Next:** a Haiku implementer continues on unit/SAU-21 with the REWORK list. After a new COMPLETE report, the reviewers start again for both parts.
+
+## 2026-11-17 — SAU-21 — Review (Sonnet, medium), Parts 1 and 2, after rework: APPROVED
+
+- **Branch:** `unit/SAU-21`, four commits on top of main at `fb55b88`: 20f6eac, 7d5b084, b6a8d59, e08419b (the rework). Worktree `scriba-prototype-wt/SAU-21`.
+- **Patch id:** 5d5430c514e1a938e4d9d458d0ec03f06b5233fb (`git diff main...unit/SAU-21 -- . ':!plans' ':!units' | git patch-id --stable`). The approval of the earlier patch id e528d0ea… is superseded by this one.
+- **Result:** APPROVED by both reviewers for the same patch id. Part 1 (criteria 1 to 4): the reviewer re-ran the tests and found the diff within the three listed files. Part 2 (criteria 5 and 6 runs): REWORK items 1 and 2 are satisfied. Item 1: the S3 bullet ends with the reading rule (ASSUMED A6) and "repeat S2 to confirm the state did not change". Item 2: teardown is recorded as pending, in the RUNBOOK and in the module table row "Teardown (plan step 17)".
+- **Not closed by this approval:** criteria 5 and 6 stay unticked. R2 to R6 need a person's login approval, and the Linux leg needs a Linux Docker Engine host. The stack `sau21-check`, /tmp/sau21-install and /tmp/sau21-fresh are still up, and the test machine stays in the tailnet machine list until removed. Whether the unit can go to `main` with these criteria unticked is an open question for the Navigator (see the next entry for this unit).
