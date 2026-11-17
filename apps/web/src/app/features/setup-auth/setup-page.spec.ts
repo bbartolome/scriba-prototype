@@ -21,6 +21,7 @@ import {
   SETUP_STATUS_ROUTE,
   TAILSCALE_STATUS_ROUTE,
   type SetupStatus,
+  type TailscaleStatus,
 } from '@bbartolome/scriba-contracts/setup-auth';
 import { Observable, Subject, of, throwError, take, mergeMap } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -150,6 +151,14 @@ function buttonNamed(
 }
 
 /** The wizard's list items, each as `title: state`. */
+/** The links of the page: the text and the href of each `<a>`. */
+function linksOf(root: HTMLElement): { text: string; href: string | null }[] {
+  return [...root.querySelectorAll('a')].map((a) => ({
+    text: a.textContent.trim(),
+    href: a.getAttribute('href'),
+  }));
+}
+
 function stepItems(root: HTMLElement): string[] {
   return [...root.querySelectorAll('li')].map((li) => li.textContent.trim());
 }
@@ -580,6 +589,118 @@ describe('W wizard with the fake API', () => {
       path: TAILSCALE_STEP_PATH,
       body: { state: 'done' },
     });
+  });
+
+  it("W3 the Tailscale step shows each state's text, link or hint, and a Skip that writes skipped", async () => {
+    const doubles = createShellTestDoubles();
+    doubles.api.respond(
+      'GET',
+      IDENTITY_ROUTE,
+      SETUP_AUTH_EXAMPLES.identityLoopback,
+    );
+    doubles.api.respond('GET', SETUP_STATUS_ROUTE, fresh);
+
+    const harness = await renderSetup(doubles.providers);
+
+    /** Shows the Tailscale step with the given status, and checks its text, links and buttons. */
+    const showStep = async (
+      status: TailscaleStatus,
+      check: (root: HTMLElement) => void,
+    ): Promise<void> => {
+      doubles.api.respond('GET', TAILSCALE_STATUS_ROUTE, status);
+      await harness.navigateByUrl('/no-such-page');
+      await harness.navigateByUrl('/setup');
+      await settle(harness, (root) =>
+        expect(buttonTexts(root)).toEqual(['Next', 'Skip the rest']),
+      );
+      buttonNamed(rootOf(harness), 'Next')?.click();
+      await settle(harness, (root) => {
+        expect(buttonTexts(root)).toEqual([
+          'Mark done',
+          'Skip',
+          'Next',
+          'Skip the rest',
+        ]);
+        check(root);
+      });
+    };
+
+    await showStep(SETUP_AUTH_EXAMPLES.tailscaleNeedsLogin, (root) => {
+      expect(paragraphs(root)).toContain('Tailscale is waiting for login.');
+      expect(linksOf(root)).toEqual([
+        {
+          text: 'Log in to Tailscale',
+          href: SETUP_AUTH_EXAMPLES.tailscaleNeedsLogin.authURL,
+        },
+      ]);
+    });
+
+    await showStep({ available: true, backendState: 'NeedsLogin' }, (root) => {
+      expect(paragraphs(root)).toContain('Tailscale is logged out.');
+      expect(linksOf(root)).toEqual([]);
+    });
+
+    await showStep(SETUP_AUTH_EXAMPLES.tailscaleRunning, (root) => {
+      expect(paragraphs(root)).toContain('Tailscale is running.');
+      expect(linksOf(root)).toEqual([
+        {
+          text: 'Open Scriba over the tailnet',
+          href: SETUP_AUTH_EXAMPLES.tailscaleRunning.tailnetURL,
+        },
+      ]);
+      expect(paragraphs(root).some((text) => text.includes('MagicDNS'))).toBe(
+        false,
+      );
+      expect(paragraphs(root).some((text) => text.includes('HTTPS'))).toBe(
+        false,
+      );
+    });
+
+    await showStep(
+      { ...SETUP_AUTH_EXAMPLES.tailscaleRunning, httpsCertsEnabled: false },
+      (root) => {
+        expect(paragraphs(root)).toContain(
+          'HTTPS certificates are off for this tailnet. Turn them on in the Tailscale admin console.',
+        );
+        expect(linksOf(root)).toContainEqual({
+          text: 'Tailscale admin console',
+          href: 'https://login.tailscale.com/admin',
+        });
+        expect(paragraphs(root).some((text) => text.includes('MagicDNS'))).toBe(
+          false,
+        );
+      },
+    );
+
+    await showStep(
+      { ...SETUP_AUTH_EXAMPLES.tailscaleRunning, magicDNSEnabled: false },
+      (root) => {
+        expect(paragraphs(root)).toContain(
+          'MagicDNS is off. Turn it on in the Tailscale admin console.',
+        );
+        expect(linksOf(root)).toContainEqual({
+          text: 'Tailscale admin console',
+          href: 'https://login.tailscale.com/admin',
+        });
+        expect(paragraphs(root).some((text) => text.includes('HTTPS'))).toBe(
+          false,
+        );
+      },
+    );
+
+    await showStep(SETUP_AUTH_EXAMPLES.tailscaleUnavailable, (root) => {
+      expect(paragraphs(root)).toContain('Tailscale is unavailable.');
+      expect(linksOf(root)).toEqual([]);
+    });
+
+    doubles.api.respond('POST', TAILSCALE_STEP_PATH, afterSkip);
+    buttonNamed(rootOf(harness), 'Skip')?.click();
+    await settle(harness, (root) =>
+      expect(stepItems(root)[1]).toBe('Tailscale: skipped'),
+    );
+    expect(doubles.api.requests.filter((r) => r.method === 'POST')).toEqual([
+      { method: 'POST', path: TAILSCALE_STEP_PATH, body: { state: 'skipped' } },
+    ]);
   });
 
   it('W2 the compose warning shows the one-liner for mismatch and unknown, and not for ok', async () => {
