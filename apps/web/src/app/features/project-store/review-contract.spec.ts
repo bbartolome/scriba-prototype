@@ -65,9 +65,20 @@ const refusedChanges: unknown[] = [
   { ...CHANGE, origin: { kind: 'agent-run' } },
   { ...CHANGE, origin: { kind: 'other-run', runId: 'r1' } },
   { ...CHANGE, status: 'done' },
-  { ...CHANGE, conflict: { reason: 'other', detectedAt: '2026-11-14T09:00:00Z' } },
+  {
+    ...CHANGE,
+    conflict: { reason: 'other', detectedAt: '2026-11-14T09:00:00Z' },
+  },
   { ...CHANGE, capturedBase: { hash: 'sha256:ABC', content: 'Old' } },
-  { ...CHANGE, grounding: { supported: -1, weak: 0, unsupported: 0, checkedAt: '2026-11-14T09:00:00Z' } },
+  {
+    ...CHANGE,
+    grounding: {
+      supported: -1,
+      weak: 0,
+      unsupported: 0,
+      checkedAt: '2026-11-14T09:00:00Z',
+    },
+  },
   { ...CHANGE, createdAt: '2026-11-14T09:00:00' },
   { ...CHANGE, proposed: undefined },
 ];
@@ -77,22 +88,22 @@ describe('review-contract', () => {
     for (const fixture of acceptedChanges) {
       expect(pendingChangeSchema.safeParse(fixture).success).toBe(true);
       expect(pendingChangeCopy.safeParse(fixture).success).toBe(true);
-      expect(
-        pendingListSchema.safeParse({ changes: [fixture] }).success,
-      ).toBe(true);
-      expect(
-        pendingListCopy.safeParse({ changes: [fixture] }).success,
-      ).toBe(true);
+      expect(pendingListSchema.safeParse({ changes: [fixture] }).success).toBe(
+        true,
+      );
+      expect(pendingListCopy.safeParse({ changes: [fixture] }).success).toBe(
+        true,
+      );
     }
     for (const fixture of refusedChanges) {
       expect(pendingChangeSchema.safeParse(fixture).success).toBe(false);
       expect(pendingChangeCopy.safeParse(fixture).success).toBe(false);
-      expect(
-        pendingListSchema.safeParse({ changes: [fixture] }).success,
-      ).toBe(false);
-      expect(
-        pendingListCopy.safeParse({ changes: [fixture] }).success,
-      ).toBe(false);
+      expect(pendingListSchema.safeParse({ changes: [fixture] }).success).toBe(
+        false,
+      );
+      expect(pendingListCopy.safeParse({ changes: [fixture] }).success).toBe(
+        false,
+      );
     }
     expect(pendingListSchema.safeParse({}).success).toBe(false);
     expect(pendingListCopy.safeParse({}).success).toBe(false);

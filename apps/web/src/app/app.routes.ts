@@ -35,6 +35,19 @@ export const PROJECT_ROUTES: Routes = [
         (feature) => feature.filesRoutes,
       ),
   },
+  {
+    path: 'review',
+    pathMatch: 'full',
+    data: {
+      scope: 'project',
+      minDeviceClass: 'phone',
+      nav: { label: 'Review', icon: 'rate_review', order: 25 },
+    } satisfies ShellRouteData,
+    loadChildren: () =>
+      import('./features/project-store/project-store.routes').then(
+        (feature) => feature.reviewRoutes,
+      ),
+  },
 ];
 
 /**

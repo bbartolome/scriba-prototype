@@ -25,4 +25,16 @@ export const filesRoutes: Routes = [
   },
 ];
 
+// `reviewRoutes` is the project-scoped `review` route. Its page loads lazily, as the files page does.
+// Leaving the page with an unaccepted edit asks the author first.
+export const reviewRoutes: Routes = [
+  {
+    path: '',
+    pathMatch: 'full',
+    canDeactivate: [unsavedTextGuard],
+    loadComponent: () =>
+      import('./review-page').then((feature) => feature.ReviewPage),
+  },
+];
+
 export { ActiveProjectNav } from './active-project-nav';
