@@ -5633,3 +5633,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Phase closure:** `phase:tailnet` is recorded as pending criteria 5 and 6. Merging SAU-21 closes the phase as the unit file states (`units/SAU-21-tailnet-gate.md` line 14; `units/README.md` line 62). The real-tailnet verification (R2 to R6) and the Linux socket leg (S1 to S3 on Linux) are still outstanding. A person must complete them before those two criteria can be ticked.
 - **Owner blockers (cycle 45):** the login approval (R2) is a person's step; no Serve or login action runs in this environment. No Linux Docker Engine host is reachable here. The known fact stands: the ADR's tailnet evidence was recorded on commits 9f76fcc and 0dd5234, which have no setup-auth code, so no real-tailnet run has tested the guard on `main`.
 - **Stack state, for the record:** the stack `sau21-check`, `/tmp/sau21-install` and `/tmp/sau21-fresh` are still up for the login. Teardown (plan step 17) is pending. The test machine stays in the tailnet machine list until a person removes it.
+
+## 2026-11-17 — GRR-02 — Review result: APPROVED (part R1)
+
+- **Patch id:** 6beb4503556d17505e942a6ec6189b47944395e7 (`git diff main...unit/GRR-02 -- . ':!plans' ':!units' | git patch-id --stable`). The code is on branch `unit/GRR-02` at 840c57c.
+- **Result:** APPROVED by the one reviewer of part R1 (steps 1 to 17, tests K1 to K4, plan section 7). The reviewer ran `npm test -w @bbartolome/scriba-api -- graph-runner-graph-crud` in the worktree: both tsc builds passed, and 4 of 4 tests passed (K1 to K4). The diff has 7 files, all in the plan's section 2 list, and no other file changed.
+- **Gap:** the implementer's COMPLETE report text is not kept in the repository, so the reviewer ran the tests itself. The reviewer did not run step 13 (the three invariant files) or step 15 (the root gates). Step 3 runs lint, test and build on the rebased branch.
