@@ -5534,3 +5534,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Alternatives not chosen:** (a) a shared secret between Tailscale Serve and the API, sent with the header; (b) a whois check against the tailnet for each request; (c) an unpublished Serve listener that only Serve can reach. The design of `modules/setup-auth.md` (the peer-address check, with the dedicated Serve listener as the named fallback) stands unchanged.
 - **Reason:** the owner's decision. The owner gave no reason in the record. The trust boundary that the accepted design relies on is the scriba network namespace.
 - **Follow-up for the record:** `units/SAU-22-guard-dev-mode.md` and the `devAuth` skip do not change this rule (D17 in `plans/SAU-18.md`). SAU-21 keeps the Serve peer check as its criterion, and the fallback is not built.
+
+## 2026-11-17 — PST-20 — Review (Sonnet, medium), Part 1 (steps 1 to 5 and 7 to 9) and Part 2 (step 6, phone e2e): APPROVED
+
+- **Branch:** `unit/PST-20`, three commits on top of main's base a095a5d: a21166f (contract copies), aff0b91 (route, page, routes and spec), b5b5e89 (phone e2e). Worktree `scriba-prototype-wt/PST-20`.
+- **Patch id:** 6ba5b2f81630940a9ac046c96dc9f41941f38af8 (`git diff main...unit/PST-20 -- . ':!plans' ':!units' | git patch-id --stable`). Both reviewers computed the same patch id.
+- **Result:** APPROVED by both reviewers. Part 1: the seven paths of plan section 2 (six for part 1), the nav entry is exactly C1, the four Shell tests are unchanged. Part 2: the path-filtered e2e command of step 6 only; the fixture writes the drafts before the pending files.
+- **Accepted deviation (not a plan break, recorded by both reviewers):** plan step 9 asks for one commit; the implementer made three, following the rule to commit after each part. The code and the tests are the same. The orchestrator accepts the three commits.
+- **Checks reported by the reviewers:** part 1 ran K1 and K2 (3 pass), `review-page.spec.ts` (14 pass), the whole web suite (62 files, 438 tests pass), `npm run lint` (exit 0), and M1 and M8 (each fails the named test). Part 2 ran `npm run e2e -w @bbartolome/scriba-e2e -- review-phone.e2e.ts search-phone.e2e.ts`: 2 passed (E1 at `review-phone.e2e.ts:47`, the search-phone regression at `search-phone.e2e.ts:17`). The full e2e suite was not run and was not needed.
+- **Not checked by the reviewers:** the initial-bundle budget warning (575.35 kB, budget 500 kB) was not compared with main. The plan does not name a budget; the lazy chunk check passed.
