@@ -21,6 +21,6 @@ List, view and diff versions (33); restore reversibly (34).
 - `drafts/.versions/` is **not** git-ignored (history travels with the book). Only this module reads it; Compile & export assembles top-level drafts only.
 
 ## Acceptance criteria
-- [ ] Listing returns versions newest first with sizes; reading returns exact stored content.
-- [ ] Restore saves the current content as a version before writing.
-- [ ] Version paths remain unreachable through the general file API.
+- [x] Listing returns versions newest first with sizes; reading returns exact stored content.
+- [x] Restore saves the current content as a version before writing.
+- [x] Version paths remain unreachable through the general file API.

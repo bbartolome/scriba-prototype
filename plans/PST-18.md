@@ -1,6 +1,6 @@
 ---
 id: PST-18
-status: planned
+status: done
 ---
 
 # PST-18 plan - draft versions: list, read and restore
