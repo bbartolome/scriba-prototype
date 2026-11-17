@@ -5701,3 +5701,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
      - The implementer's difference 1 should be accepted as a plan correction, not as an implementation fault.
 - **Part 2 (steps 7 to 9; T3a, T3b, T3c, the record): APPROVED** for the empty patch id. The reviewer re-ran T3a (5 of 5), T3c (the two greps as the plan writes them) and T3b (`npm run lint`, exit 0), and found the worktree clean.
 - **Route taken (orchestrator):** the defect is in the plan, not in the code. There is no code to correct, so the REWORK goes back to an Opus reviser as a plan that does not work, as the prompt's rule for a PLAN DOES NOT WORK report says. The plan is set to `status: draft`. When it is `planned` again, a new implementer runs all steps again, and reviewers review all parts again.
+
+## 2026-11-17 — GRR-08 — Review result: APPROVED (parts 1 and 2, round 2)
+
+- **Patch id:** empty. `git diff main...unit/GRR-08 -- . ':!plans' ':!units' | git patch-id --stable` gives empty output: the unit changes no code, and the branch has no commits of its own. The code is on branch `unit/GRR-08` at 7f6859a (= main at that commit). Main has since moved to 001bace by plan commits only.
+- **Plan:** `plans/GRR-08.md` at status planned, commit 7f6859a. Round 1 (part 1) was REWORK for a plan defect (controls N2 and N3 of step 6); the plan was corrected by a reviser, and the round-1 entry above records it.
+- **Result:** APPROVED by both Sonnet reviewers for the same empty patch id, in round 2. Part 1 (steps 0 to 6; tests T1, T2, control N): the reviewer re-ran T1 and T2 unedited (9 files, 29 tests) and found the corrected expectations match the test file. Part 2 (steps 7 to 9; T3a, T3b, T3c, the record): the reviewer re-ran T3a (5 of 5), T3c (both greps) and T3b (`npm run lint`, exit 0).
+- **Implementer's report (round 2):** COMPLETE, no difference from the corrected plan. Control N: test 2, N2 and N3 failed (3 of 3) under the temporary `@Public()` edit, then the edit was reverted and both invariant files passed 6 of 6.
+- **Evidence for the ticks:** none of the three criteria names CI or a real model; the local runs are the evidence (the planner's open point 1, settled by the reviser).
+- **Next (orchestrator):** rebase `unit/GRR-08` onto main, run the checks (root `npm test` is not run, because it includes the full e2e suite, which fails on main at tools-preview.e2e.ts:167; the API workspace tests run instead, as for GRR-07), tick criteria 1 to 3, set the plan to done, fast-forward main.
