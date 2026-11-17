@@ -5,6 +5,7 @@ import {
   GRAPH_RENAME_ROUTE,
   GRAPH_ROUTE,
   GRAPH_SAVE_ROUTE,
+  GRAPH_VALIDATE_ROUTE,
   GRAPHS_ROUTE,
   graphCreateSchema,
   graphRenameSchema,
@@ -13,6 +14,7 @@ import {
   type GraphIdResult,
   type GraphList,
   type GraphRename,
+  type ValidationResult,
 } from '@bbartolome/scriba-contracts/graph-runner';
 import { ZodValidationPipe } from '../platform/platform.module';
 import {
@@ -48,6 +50,12 @@ export class GraphsController {
   @HttpCode(200)
   save(@Param('id') id: string, @Body() body: unknown): GraphSaveResult {
     return this.graphs.save(id, body);
+  }
+
+  @Post(GRAPH_VALIDATE_ROUTE)
+  @HttpCode(200)
+  validate(@Body() body: unknown): ValidationResult {
+    return this.graphs.validate(body);
   }
 
   @Post(GRAPH_RENAME_ROUTE)

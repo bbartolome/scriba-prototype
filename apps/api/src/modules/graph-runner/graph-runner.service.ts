@@ -14,6 +14,7 @@ import {
   type GraphRename,
   type GraphSummary,
   type ValidationIssue,
+  type ValidationResult,
 } from '@bbartolome/scriba-contracts/graph-runner';
 import {
   PROJECT_ERROR_CODES,
@@ -31,6 +32,8 @@ import {
   slugOf,
   suffixedId,
 } from './graph-files';
+import { GraphValidatorService } from './graph-validator.service';
+import { splitIllegalKinds } from './graph-validation';
 
 // The answer of a save: the validation issues of the saved graph.
 export interface GraphSaveResult {
@@ -91,6 +94,7 @@ export class GraphRunnerService {
   constructor(
     private readonly store: ProjectStoreService,
     private readonly files: FilesService,
+    private readonly validator: GraphValidatorService,
   ) {}
 
   // The graph list (P3). A file that cannot be read or fails the schema is listed as invalid.
@@ -179,10 +183,18 @@ export class GraphRunnerService {
     this.files.delete(projectId, { path: graphPath(id) });
   }
 
-  // The validation issues of a graph (P13). GRR-03 replaces this; until then it reports none.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- GRR-03 reads the graph here; the stub does not.
+  // The issues of an unsaved graph body (P3, P22). The body is checked in the active project; nothing is written.
+  validate(body: unknown): ValidationResult {
+    this.activeProjectId();
+    const { rest, issues } = splitIllegalKinds(body);
+    return {
+      issues: [...issues, ...this.issuesOf(this.checkValue(rest, true))],
+    };
+  }
+
+  // The validation issues of a graph (P13, GRR-03 P17): the validator's rules over the active project.
   issuesOf(graph: GraphDetail['graph']): ValidationIssue[] {
-    return [];
+    return this.validator.issues(this.activeProjectId(), graph);
   }
 
   // The active project's id (P2).
