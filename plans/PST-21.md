@@ -1,6 +1,6 @@
 ---
 id: PST-21
-status: planned
+status: done
 unit: units/PST-21-version-history-ui.md
 sources: units/PST-21-version-history-ui.md (20 lines, no change note; its only commit is 2fed3f4); units/README.md; modules/project-store.md; modules/shell.md; units/PST-22-review-gate.md; units/PST-10 to PST-20 and PST-23 front matter by grep; plans/PST-10.md, PST-14.md, PST-18.md, PST-19.md, PST-34.md, SHL-12.md, AGL-18.md (done, read for the files page, the API, the Shell and the phone seam); plans/PST-20.md (planned, overlap in section 6); plans/TRG-14.md and plans/SAU-22.md (planned and draft, file tables); plans/DECISIONS.md lines 941, 2557, 2872, 4086 to 4092, 4886 to 4895 (grep by PST-21 and PST-22); plans/PLT-02.md and plans/PST-20.md (structure); prompt.md lines 191 to 273 (unit changes; none made); packages/contracts/src/project-store/{routes,drafts,events,errors,index}.ts; apps/api/src/modules/project-store/{draft-versions,draft-versions.controller,draft-versions.service,pending.service,files.service}.ts; apps/web/src/app/features/project-store/{files-page,files-page.spec,files-contract,files-contract.spec,project-store.routes}.ts; apps/web/src/app/shell/{index,diff-view,diff-view.spec,device-class,api-client,project-store-copies,testing/test-doubles,testing/match-media}.ts; e2e/specs/search-phone.e2e.ts; e2e/harness/global-setup.ts
 ---

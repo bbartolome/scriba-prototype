@@ -16,5 +16,5 @@ unblocks: [PST-22]
 - Refreshes on `files-changed`.
 
 ## Acceptance criteria
-- [ ] Component tests: list renders, selecting a version shows the diff against current, restore calls the restore POST and refreshes.
-- [ ] Works at phone width (read-only list and diff).
+- [x] Component tests: list renders, selecting a version shows the diff against current, restore calls the restore POST and refreshes.
+- [x] Works at phone width (read-only list and diff).
