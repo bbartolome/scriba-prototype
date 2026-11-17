@@ -1,6 +1,6 @@
 ---
 unit: GRR-04
-status: planned
+status: done
 ---
 # GRR-04 plan — run engine core: scope, refusals, input values, run-start reads, topological run, executor calls, run state, SSE
 

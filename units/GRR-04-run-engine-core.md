@@ -27,8 +27,8 @@ Run the whole recipe (26) or "Run to here" (27), see status (28) and inline resu
 - Output nodes, stop/fail-fast, logs are GRR-06, GRR-05, GRR-07.
 
 ## Acceptance criteria (mock OpenAI server)
-- [ ] A three-tool recipe emits `node-status` events in topological order (`queued` → `running` → `done`) and ends with `run-ended: done`.
-- [ ] "Run to here" on a mid-recipe tool node runs only it and its upstream nodes; downstream nodes report `idle`; its result is in run state.
-- [ ] Starting a run on a story graph returns `GRAPH_VIEW_NOT_RUNNABLE`; a second run while one is active returns `GRAPH_RUN_ACTIVE`; a recipe with blocking errors returns `GRAPH_VALIDATION_FAILED`.
-- [ ] A file input is read once at start (a mid-run host edit doesn't change what downstream nodes see).
-- [ ] Current-run-state returns the active run, then the last finished one.
+- [x] A three-tool recipe emits `node-status` events in topological order (`queued` → `running` → `done`) and ends with `run-ended: done`.
+- [x] "Run to here" on a mid-recipe tool node runs only it and its upstream nodes; downstream nodes report `idle`; its result is in run state.
+- [x] Starting a run on a story graph returns `GRAPH_VIEW_NOT_RUNNABLE`; a second run while one is active returns `GRAPH_RUN_ACTIVE`; a recipe with blocking errors returns `GRAPH_VALIDATION_FAILED`.
+- [x] A file input is read once at start (a mid-run host edit doesn't change what downstream nodes see).
+- [x] Current-run-state returns the active run, then the last finished one.
