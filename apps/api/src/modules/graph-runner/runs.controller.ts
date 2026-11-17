@@ -1,11 +1,14 @@
 import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import {
   RUN_CURRENT_ROUTE,
+  RUN_STOP_ROUTE,
   RUNS_ROUTE,
   runStartRequestSchema,
+  runStopRequestSchema,
   type CurrentRun,
   type RunStartRequest,
   type RunStartResult,
+  type RunStopRequest,
 } from '@bbartolome/scriba-contracts/graph-runner';
 import { ZodValidationPipe } from '../platform/platform.module';
 import { RunsService } from './runs.service';
@@ -27,5 +30,15 @@ export class RunsController {
   @Get(RUN_CURRENT_ROUTE)
   current(): CurrentRun {
     return this.runs.current();
+  }
+
+  @Post(RUN_STOP_ROUTE)
+  @HttpCode(200)
+  stop(
+    @Body(new ZodValidationPipe(runStopRequestSchema))
+    body: RunStopRequest,
+  ): Record<string, never> {
+    this.runs.stop(body.runId);
+    return {};
   }
 }

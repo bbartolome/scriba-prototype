@@ -9,12 +9,16 @@ import {
   type RecipeGraph,
   type RecipeNode,
   type RunError,
+  type RunReason,
   type RunStartRequest,
   type RunStartResult,
   type RunState,
   type RunStatus,
 } from '@bbartolome/scriba-contracts/graph-runner';
-import { PROJECT_ERROR_CODES } from '@bbartolome/scriba-contracts/project-store';
+import {
+  PROJECT_ERROR_CODES,
+  type ProjectSwitchedData,
+} from '@bbartolome/scriba-contracts/project-store';
 import {
   TOOL_ERROR_CODES,
   TOOL_ERROR_STATUS,
@@ -26,6 +30,7 @@ import { EventsPublisher, ModuleError } from '../platform/platform.module';
 import {
   EntitiesService,
   FilesService,
+  ProjectStoreService,
 } from '../project-store/project-store.module';
 import {
   CatalogService,
@@ -45,6 +50,7 @@ const MESSAGES = {
   INPUT_INVALID:
     'An input value does not match its input node, or names a file that cannot be read.',
   RUN_ACTIVE: 'A run is already active in this project.',
+  RUN_NOT_FOUND: 'No run of the active project has that id.',
   ENTITY_UNRESOLVED:
     'An entity of a tool node is unknown or names more than one entity.',
   INTERNAL: 'The run failed inside Scriba.',
@@ -81,6 +87,8 @@ interface RunRecord {
   // The tool results, by node id, kept in memory only.
   results: Map<string, ToolCallResult>;
   controller: AbortController;
+  // The reason the run was asked to end, set once by requestEnd (GRR-05).
+  stopReason?: RunReason;
 }
 
 // The runs of one project: at most one active run, and the last finished one (P6).
@@ -128,7 +136,11 @@ export class RunsService {
     private readonly catalog: CatalogService,
     private readonly executor: ExecutorService,
     private readonly events: EventsPublisher,
-  ) {}
+    private readonly store: ProjectStoreService,
+  ) {
+    // Registered once. The handler never throws: a throw would fail the switch.
+    this.store.onProjectSwitched((event) => this.onProjectSwitched(event));
+  }
 
   // Starts a run (P2, P7). Every refusal is raised before any run is registered. The engine runs after the answer.
   start(body: RunStartRequest): RunStartResult {
@@ -237,6 +249,39 @@ export class RunsService {
     return { run: runs.active?.state ?? runs.last?.state ?? null };
   }
 
+  // Asks a run of the active project to stop (GRR-05). A run that is neither the active nor the last run is unknown.
+  stop(runId: string): void {
+    const runs = this.entryOf(this.graphs.activeProjectId());
+    const record = [runs.active, runs.last].find(
+      (candidate) => candidate?.state.runId === runId,
+    );
+    if (record === undefined) {
+      throw graphError('RUN_NOT_FOUND', MESSAGES.RUN_NOT_FOUND);
+    }
+    this.requestEnd(record, 'author');
+  }
+
+  // Asks a run to end with a reason: the first reason wins, and nothing happens once the run has ended. The model
+  // call in progress is aborted.
+  private requestEnd(record: RunRecord, reason: RunReason): void {
+    if (record.state.endedAt !== undefined || record.stopReason !== undefined) {
+      return;
+    }
+    record.stopReason = reason;
+    record.controller.abort();
+  }
+
+  // A switch stops the active run of the project being left. The handler never throws.
+  private onProjectSwitched(event: ProjectSwitchedData): void {
+    try {
+      if (event.from === null) return;
+      const active = this.registry.get(event.from)?.active;
+      if (active !== undefined) this.requestEnd(active, 'project-switched');
+    } catch {
+      // Nothing here may throw: a throw would fail the switch.
+    }
+  }
+
   // The initial node states: in-scope nodes queued, the rest idle (P8).
   private initialNodes(
     recipe: RecipeGraph,
@@ -286,6 +331,10 @@ export class RunsService {
       try {
         if (node.kind === 'tool') {
           const result = await this.toolStep(record, node);
+          if (record.stopReason !== undefined) {
+            this.endStopped(record);
+            return;
+          }
           record.results.set(id, result);
           this.setStatus(record, id, 'done', { result });
         } else {
@@ -293,6 +342,11 @@ export class RunsService {
           this.setStatus(record, id, 'done');
         }
       } catch (error) {
+        // An abort caused by a stop is not a node error (GRR-05).
+        if (record.stopReason !== undefined) {
+          this.endStopped(record);
+          return;
+        }
         this.setStatus(record, id, 'error', { error: failureOf(error) });
         for (const later of record.order) {
           if (record.state.nodes[later]?.status === 'queued') {
@@ -389,9 +443,26 @@ export class RunsService {
     });
   }
 
-  // Ends a run once (P12): the record moves from active to last before run-ended is published.
-  private finish(record: RunRecord, status: RunStatus): void {
+  // Ends a stopped run (GRR-05): every running or queued node becomes stopped, then the run ends with the stop reason.
+  private endStopped(record: RunRecord): void {
+    for (const id of record.order) {
+      const status = record.state.nodes[id]?.status;
+      if (status === 'queued' || status === 'running') {
+        this.setStatus(record, id, 'stopped');
+      }
+    }
+    this.finish(record, 'stopped', record.stopReason);
+  }
+
+  // Ends a run once (P12): the record moves from active to last before run-ended is published. The reason, when
+  // given, is set first, so that every later statement reads it.
+  private finish(
+    record: RunRecord,
+    status: RunStatus,
+    reason?: RunReason,
+  ): void {
     if (record.state.endedAt !== undefined) return;
+    if (reason !== undefined) record.state.reason = reason;
     record.state.status = status;
     record.state.endedAt = new Date().toISOString();
     const runs = this.entryOf(record.projectId);
@@ -400,7 +471,11 @@ export class RunsService {
     this.events.publish({
       module: 'graph-runner',
       type: 'run-ended',
-      data: { runId: record.state.runId, status },
+      data: {
+        runId: record.state.runId,
+        status,
+        ...(reason === undefined ? {} : { reason }),
+      },
     });
   }
 }
