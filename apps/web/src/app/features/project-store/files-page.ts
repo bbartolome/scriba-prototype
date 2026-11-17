@@ -35,6 +35,8 @@ import {
 import { projectFilePath, readCopy } from '../../shell/project-store-copies';
 import { fileListCopy, projectFilesPath } from './files-contract';
 import { SearchPanel } from './search-panel';
+import { VersionHistory } from './version-history';
+import { isTopLevelDraftPath } from './versions-contract';
 
 /** One row of the tree: a file or a directory. `depth` is the number of parent directories. */
 interface Row {
@@ -138,7 +140,13 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
  * its path or a tick arrives.
  */
 @Component({
-  imports: [EditorLayout, MarkdownPreview, RouterLink, SearchPanel],
+  imports: [
+    VersionHistory,
+    EditorLayout,
+    MarkdownPreview,
+    RouterLink,
+    SearchPanel,
+  ],
   selector: 'app-files-page',
   styles: `
     :host {
@@ -249,6 +257,12 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
           ></span>
         }
       </section>
+      @for (history of histories(); track history.key) {
+        <app-version-history
+          [projectId]="history.projectId"
+          [draftPath]="history.draftPath"
+        />
+      }
     </div>
   `,
 })
@@ -277,6 +291,15 @@ export class FilesPage {
     return id !== undefined && path !== undefined && path.startsWith('drafts/')
       ? id
       : undefined;
+  });
+
+  /** The version history of the open file: shown for a top-level draft (`drafts/<name>`) of a known project. */
+  protected readonly histories = computed(() => {
+    const path = this.selected();
+    const id = this.projectId();
+    return id !== undefined && path !== undefined && isTopLevelDraftPath(path)
+      ? [{ key: `${id}:${path}`, projectId: id, draftPath: path }]
+      : [];
   });
 
   private readonly devices = inject(DeviceClassService);
