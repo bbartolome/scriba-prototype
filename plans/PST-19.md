@@ -1,6 +1,6 @@
 ---
 id: PST-19
-status: planned
+status: done
 ---
 # PST-19 plan — optional file watcher: files-changed, conflict re-check and pending-updated
 

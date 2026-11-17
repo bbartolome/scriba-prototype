@@ -18,5 +18,5 @@ unblocks: [PST-22]
 - Re-targets on `project-switched`; stops on shutdown.
 
 ## Acceptance criteria
-- [ ] With the watcher on, a host edit produces one debounced `files-changed` and, for a pending target, a `pending-updated` with the conflict.
-- [ ] With `SCRIBA_WATCHER=false`, no watcher runs and all other suites still pass.
+- [x] With the watcher on, a host edit produces one debounced `files-changed` and, for a pending target, a `pending-updated` with the conflict.
+- [x] With `SCRIBA_WATCHER=false`, no watcher runs and all other suites still pass.
