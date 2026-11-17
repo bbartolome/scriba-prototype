@@ -23,14 +23,14 @@ const FRAME_POLICY = "frame-ancestors 'none'";
 // Registered with app.use before init(), so it runs before the body parser and the static files.
 // Every path but /healthz needs an allowed Host. A refused request gets Platform's base error shape.
 export function hostFrameMiddleware(policy: RequestPolicy) {
-  return (
+  return async (
     req: HookRequest,
     res: HookResponse,
     next: (error?: unknown) => void,
-  ): void => {
+  ): Promise<void> => {
     res.setHeader('Content-Security-Policy', FRAME_POLICY);
     const exempt = requestPath(req.originalUrl) === HEALTHZ_ROUTE;
-    if (!exempt && policy.originFor(req.headers.host) === undefined) {
+    if (!exempt && (await policy.admit(req.headers.host)) === undefined) {
       res.statusCode = SETUP_AUTH_ERROR_STATUS.AUTH_HOST_REJECTED;
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.end(

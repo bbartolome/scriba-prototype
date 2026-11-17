@@ -11,6 +11,7 @@ export interface TestAppOptions {
   env?: Record<string, string | undefined>; // merged over the base env
   staticRoot?: string; // absolute; default: the Angular output
   modules?: Type<unknown>[]; // replaces COMPOSED_MODULES when set
+  listenHost?: string; // default: 127.0.0.1. The base URL stays on 127.0.0.1.
 }
 
 // One method of one enumerated route. `ALL` is a route registered with `all`.
@@ -87,7 +88,7 @@ export async function createTestApp(
       staticRoot: options.staticRoot ?? DEFAULT_STATIC_ROOT,
       modules: options.modules,
     });
-    await app.listen(0, '127.0.0.1');
+    await app.listen(0, options.listenHost ?? '127.0.0.1');
     const { port } = app.getHttpServer().address() as AddressInfo;
     baseUrl = `http://127.0.0.1:${port}`;
   } catch (error) {

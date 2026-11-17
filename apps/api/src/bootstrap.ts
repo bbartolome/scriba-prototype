@@ -7,7 +7,11 @@ import { ensureAppState } from './modules/platform/boot/app-state';
 import { parseEnv } from './modules/platform/boot/env';
 import { StdoutLogger } from './modules/platform/boot/stdout-logger';
 import { hostFrameMiddleware } from './modules/setup-auth/host-frame.middleware';
-import { buildRequestPolicy } from './modules/setup-auth/request-policy';
+import {
+  REQUEST_POLICY,
+  checkDevOrigins,
+  type RequestPolicy,
+} from './modules/setup-auth/request-policy';
 import { SetupAuthModule } from './modules/setup-auth/setup-auth.module';
 
 export interface BootOptions {
@@ -33,7 +37,7 @@ export async function bootstrap(
   const env = parseEnv(options.env ?? process.env);
   ensureAppState(env);
   // Refuses a bad SCRIBA_DEV_ORIGINS with a BootError before any Nest code runs.
-  const policy = buildRequestPolicy(env);
+  checkDevOrigins(env.SCRIBA_DEV_ORIGINS);
   const modules = options.modules ?? COMPOSED_MODULES;
   const app = await NestFactory.create(
     buildRootModule({
@@ -48,7 +52,8 @@ export async function bootstrap(
   );
   // Registered before init(), which registers the body parser, so a refused request is never parsed.
   if (modules.includes(SetupAuthModule)) {
-    app.use(hostFrameMiddleware(policy));
+    // The same policy instance the guard reads, taken from the container.
+    app.use(hostFrameMiddleware(app.get<RequestPolicy>(REQUEST_POLICY)));
   }
   try {
     await app.init();

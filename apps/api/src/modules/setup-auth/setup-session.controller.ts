@@ -23,11 +23,11 @@ import {
 } from '@bbartolome/scriba-contracts/setup-auth';
 import { ModuleError, SettingsService } from '../platform/platform.module';
 import {
-  cookieValue,
   expiredSessionCookieHeader,
   isLoopbackHost,
   sessionCookieHeader,
 } from './setup-session.cookie';
+import { RequestIdentity } from './request-identity';
 import { Public } from './public-route.decorator';
 import { SetupCookieSigner } from './setup-cookie.signer';
 import { SetupTokenStore } from './setup-token.store';
@@ -98,23 +98,19 @@ export class SetupSessionController {
     res.end();
   }
 
-  // Loopback with a cookie that verifies gets {via: 'loopback'}. Anything else gets 401 AUTH_REQUIRED.
-  // The check is made here, so this route does not depend on the global guard.
+  // The identity the guard attached: {via: 'loopback'} or {via: 'tailnet', login}. Without one it is 401 AUTH_REQUIRED.
+  // The guard attaches it on public routes too, so this route reads it from the request.
   @Get(IDENTITY_ROUTE)
   @Public()
-  identity(
-    @Headers('host') host: string | undefined,
-    @Headers('cookie') cookie: string | undefined,
-  ): Identity {
-    const value = cookieValue(cookie, this.signer.cookieName());
-    if (!isLoopbackHost(host) || this.signer.verify(value) === undefined) {
+  identity(@RequestIdentity() identity: Identity | undefined): Identity {
+    if (identity === undefined) {
       throw new ModuleError(
         SETUP_AUTH_ERROR_CODES.REQUIRED,
         SETUP_AUTH_ERROR_STATUS.AUTH_REQUIRED,
         'Not signed in.',
       );
     }
-    return { via: 'loopback' };
+    return identity;
   }
 
   // Expires the cookie in this browser only. The cookie is stateless, so a copy elsewhere stays valid until the token changes.

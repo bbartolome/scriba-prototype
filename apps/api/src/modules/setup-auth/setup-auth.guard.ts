@@ -17,6 +17,7 @@ import { SetupCookieSigner } from './setup-cookie.signer';
 import {
   REQUEST_POLICY,
   requestPath,
+  type HostEntry,
   type RequestPolicy,
 } from './request-policy';
 import { cookieValue } from './setup-session.cookie';
@@ -25,15 +26,29 @@ import { cookieValue } from './setup-session.cookie';
 interface GuardRequest {
   method: string;
   originalUrl: string;
-  headers: { host?: string; origin?: string; cookie?: string };
+  headers: {
+    host?: string;
+    origin?: string;
+    cookie?: string;
+    'tailscale-user-login'?: string;
+  };
+  socket: { remoteAddress?: string };
   identity?: Identity;
 }
 
 // Methods that never change state. Every other method is a mutation.
 const SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS'];
 
+// The peers that Tailscale Serve proxies from. Only these may supply the login header.
+const SERVE_PEERS = ['127.0.0.1', '::1'];
+
+// Shown to a tailnet caller with no trusted identity. A tagged device has no user identity from Serve.
+const TAILNET_IDENTITY_MESSAGE =
+  'Sign this device in to Tailscale as a user (a tagged device has no user identity).';
+
 // The global default-deny guard (APP_GUARD). A route is public only with @Public() or on /healthz.
-// Every other route needs a valid setup cookie. Every mutation needs the Origin of its own Host, public or not.
+// On the tailnet Host the identity is the login header from a Serve peer, and a cookie is not read.
+// On every other admitted Host a valid setup cookie is the credential. Every mutation needs the Origin of its own Host.
 @Injectable()
 export class SetupAuthGuard implements CanActivate {
   constructor(
@@ -42,36 +57,74 @@ export class SetupAuthGuard implements CanActivate {
     @Inject(REQUEST_POLICY) private readonly policy: RequestPolicy,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<GuardRequest>();
+    const path = requestPath(req.originalUrl);
+    // /healthz answers GET without any read of the Host policy, as before.
+    if (path === HEALTHZ_ROUTE && SAFE_METHODS.includes(req.method)) {
+      return true;
+    }
     const isPublic =
-      requestPath(req.originalUrl) === HEALTHZ_ROUTE ||
+      path === HEALTHZ_ROUTE ||
       this.reflector.getAllAndOverride<boolean | undefined>(PUBLIC_ROUTE_KEY, [
         context.getHandler(),
         context.getClass(),
       ]) === true;
+    const entry = await this.policy.admit(req.headers.host);
+    const tailnet = entry?.tailnet === true;
+    const identity = tailnet
+      ? this.tailnetIdentity(req)
+      : this.cookieIdentity(req);
+    if (identity !== undefined) req.identity = identity;
+    if (identity === undefined) {
+      if (tailnet) {
+        throw new ModuleError(
+          SETUP_AUTH_ERROR_CODES.TAILNET_IDENTITY_MISSING,
+          SETUP_AUTH_ERROR_STATUS.AUTH_TAILNET_IDENTITY_MISSING,
+          TAILNET_IDENTITY_MESSAGE,
+        );
+      }
+      if (!isPublic) {
+        throw new ModuleError(
+          SETUP_AUTH_ERROR_CODES.REQUIRED,
+          SETUP_AUTH_ERROR_STATUS.AUTH_REQUIRED,
+          'Sign in to continue.',
+        );
+      }
+    }
+    if (!SAFE_METHODS.includes(req.method)) {
+      this.checkOrigin(req, entry);
+    }
+    return true;
+  }
+
+  // The login header is trusted only on the tailnet Host, from a Serve peer. A cookie is not a credential there.
+  private tailnetIdentity(req: GuardRequest): Identity | undefined {
+    const login = req.headers['tailscale-user-login'];
+    const peer = req.socket.remoteAddress;
+    if (typeof login !== 'string' || login === '') return undefined;
+    if (peer === undefined || !SERVE_PEERS.includes(peer)) return undefined;
+    return { via: 'tailnet', login };
+  }
+
+  // A valid setup cookie on any other admitted Host gives the loopback identity.
+  private cookieIdentity(req: GuardRequest): Identity | undefined {
     const verified =
       this.signer.verify(
         cookieValue(req.headers.cookie, this.signer.cookieName()),
       ) !== undefined;
-    if (verified) req.identity = { via: 'loopback' };
-    if (!isPublic && !verified) {
+    return verified ? { via: 'loopback' } : undefined;
+  }
+
+  // The Origin must equal the origin of the admitted Host. An unknown Host has no origin, so it is refused.
+  private checkOrigin(req: GuardRequest, entry: HostEntry | undefined): void {
+    const expected = entry?.origin;
+    if (expected === undefined || req.headers.origin !== expected) {
       throw new ModuleError(
-        SETUP_AUTH_ERROR_CODES.REQUIRED,
-        SETUP_AUTH_ERROR_STATUS.AUTH_REQUIRED,
-        'Sign in to continue.',
+        SETUP_AUTH_ERROR_CODES.ORIGIN_REJECTED,
+        SETUP_AUTH_ERROR_STATUS.AUTH_ORIGIN_REJECTED,
+        'Origin is not allowed for this request.',
       );
     }
-    if (!SAFE_METHODS.includes(req.method)) {
-      const expected = this.policy.originFor(req.headers.host);
-      if (expected === undefined || req.headers.origin !== expected) {
-        throw new ModuleError(
-          SETUP_AUTH_ERROR_CODES.ORIGIN_REJECTED,
-          SETUP_AUTH_ERROR_STATUS.AUTH_ORIGIN_REJECTED,
-          'Origin is not allowed for this request.',
-        );
-      }
-    }
-    return true;
   }
 }

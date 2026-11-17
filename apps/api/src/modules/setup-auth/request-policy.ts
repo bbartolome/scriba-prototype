@@ -1,16 +1,33 @@
+import type { TailscaleStatus } from '@bbartolome/scriba-contracts/setup-auth';
 import { BootError, type ScribaEnv } from '../platform/platform.module';
 
 // Injection token for the policy the guard reads. The provider is built by buildRequestPolicy.
 export const REQUEST_POLICY = Symbol('REQUEST_POLICY');
 
+// The Tailscale status the tailnet Host is read from. TailscaleStatusService satisfies it structurally.
+export interface TailnetSource {
+  status(): Promise<TailscaleStatus>;
+  refresh(): Promise<TailscaleStatus>;
+}
+
+// An admitted Host. The origin is what a mutation on it must send. tailnet is true for the tailnet Host.
+export interface HostEntry {
+  origin: string;
+  tailnet: boolean;
+}
+
 // The Host allowlist and the origin each Host must send on a mutation.
 export interface RequestPolicy {
-  // The origin that a mutation with this Host must send, or undefined when the Host is not allowed.
-  originFor(host: string | undefined): string | undefined;
+  // The entry for this Host, or undefined when the Host is not allowed.
+  admit(host: string | undefined): Promise<HostEntry | undefined>;
 }
 
 // The loopback Hosts and the dev origins, built from the boot env. A bad dev origin throws a BootError.
-export function buildRequestPolicy(env: ScribaEnv): RequestPolicy {
+// An unknown Host is read from Tailscale status: one cached read, then at most one rate-limited refresh.
+export function buildRequestPolicy(
+  env: ScribaEnv,
+  tailnet: TailnetSource,
+): RequestPolicy {
   const origins = new Map<string, string>();
   const port = env.SCRIBA_PORT;
   origins.set(`127.0.0.1:${port}`, `http://127.0.0.1:${port}`);
@@ -19,8 +36,39 @@ export function buildRequestPolicy(env: ScribaEnv): RequestPolicy {
     origins.set(new URL(origin).host, origin);
   }
   return {
-    originFor: (host) => (host === undefined ? undefined : origins.get(host)),
+    admit: async (host) => {
+      if (host === undefined) return undefined;
+      const fixed = origins.get(host);
+      if (fixed !== undefined) return { origin: fixed, tailnet: false };
+      return (
+        tailnetEntryFor(await tailnet.status(), host) ??
+        tailnetEntryFor(await tailnet.refresh(), host)
+      );
+    },
   };
+}
+
+// The tailnet Host is admitted only when Tailscale is Running with a DNS name, and the Host is that name, with or without :443.
+// Every other state gives no tailnet entry.
+export function tailnetEntryFor(
+  status: TailscaleStatus,
+  host: string,
+): HostEntry | undefined {
+  if (
+    !status.available ||
+    status.backendState !== 'Running' ||
+    status.dnsName === undefined
+  ) {
+    return undefined;
+  }
+  const name = status.dnsName;
+  if (host !== name && host !== `${name}:443`) return undefined;
+  return { origin: `https://${name}`, tailnet: true };
+}
+
+// Refuses a bad SCRIBA_DEV_ORIGINS with a BootError. Called before Nest code runs, so a bad value exits early.
+export function checkDevOrigins(raw: string): void {
+  parseDevOrigins(raw);
 }
 
 // The path of a request without its query. Express rewrites req.url inside a mounted handler, so originalUrl is read.

@@ -51,8 +51,9 @@ const SETUP_AUTH_SECTION_REGISTRATION = 'SETUP_AUTH_SECTION_REGISTRATION';
     PreferencesReader,
     {
       provide: REQUEST_POLICY,
-      inject: [SCRIBA_ENV],
-      useFactory: (env: ScribaEnv) => buildRequestPolicy(env),
+      inject: [SCRIBA_ENV, TailscaleStatusService],
+      useFactory: (env: ScribaEnv, tailnet: TailscaleStatusService) =>
+        buildRequestPolicy(env, tailnet),
     },
     // The default-deny guard for every route of the composed app.
     { provide: APP_GUARD, useClass: SetupAuthGuard },
