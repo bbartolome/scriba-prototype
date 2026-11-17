@@ -80,6 +80,8 @@ export async function createTestApp(
         SCRIBA_PACKS_DIR: join(library, 'packs'),
         SCRIBA_EXAMPLES_DIR: join(library, 'examples'),
         SCRIBA_LOG_LEVEL: 'error',
+        // Off so host writes in tests give no watcher events; watcher tests pass 'true' (PST-19 R1).
+        SCRIBA_WATCHER: 'false',
         ...options.env,
       },
       staticRoot: options.staticRoot ?? DEFAULT_STATIC_ROOT,

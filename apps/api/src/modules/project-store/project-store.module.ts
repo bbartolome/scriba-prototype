@@ -13,6 +13,7 @@ import { PendingController } from './pending.controller';
 import { PendingService } from './pending.service';
 import { PROJECTS_SECTION_DEF } from './project-store.section';
 import { ProjectStoreService } from './project-store.service';
+import { ProjectWatcherService } from './project-watcher.service';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { SamplesController } from './samples.controller';
@@ -65,6 +66,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     PendingService,
     DraftVersionsService,
     SearchService,
+    ProjectWatcherService,
   ],
   exports: [
     ProjectStoreService,
