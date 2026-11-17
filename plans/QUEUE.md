@@ -1,70 +1,92 @@
-# Unit queue (generated 2026-11-17 from main): plan-less units in sequence; first unfinished milestone M2; TRG-14 (planned)
-TRG-15 | milestone M2 | available: no | waits for TRG-14 (plan planned, in pipeline)
-TRG-17 | milestone M2 | available: no | waits for TRG-14 (plan planned, in pipeline), TRG-15 (no plan); M2 demo
-PST-19 | milestone M3 | available: yes | all blocked_by units done
-PST-20 | milestone M3 | available: yes | all blocked_by units done
-PST-21 | milestone M3 | available: yes | all blocked_by units done
-SAU-18 | milestone M3 | available: yes | all blocked_by units done
-SAU-19 | milestone M3 | available: no | waits for SAU-18 (no plan)
-SAU-20 | milestone M3 | available: yes | all blocked_by units done
-PST-22 | milestone M3 | available: no | waits for PST-19 (no plan), PST-20 (no plan), PST-21 (no plan); M3 demo
-AGL-15 | milestone M3 | available: no | waits for PST-22 (no plan)
-AGL-20 | milestone M3 | available: no | waits for AGL-15 (no plan); M3 demo
-SAU-21 | milestone M3 | available: no | waits for SAU-18 (no plan), SAU-19 (no plan), SAU-20 (no plan); M3 demo
-GRR-02 | milestone M4 | available: yes | all blocked_by units done
-GRR-03 | milestone M4 | available: yes | all blocked_by units done
-GRR-04 | milestone M4 | available: no | waits for GRR-02 (no plan), GRR-03 (no plan)
-GRR-05 | milestone M4 | available: no | waits for GRR-04 (no plan)
-GRR-06 | milestone M4 | available: no | waits for GRR-04 (no plan), PST-22 (no plan)
-GRR-07 | milestone M4 | available: no | waits for GRR-04 (no plan)
-GRR-08 | milestone M4 | available: no | waits for GRR-02 (no plan), GRR-03 (no plan), GRR-04 (no plan), GRR-05 (no plan), GRR-06 (no plan), GRR-07 (no plan), PST-22 (no plan)
-GRR-09 | milestone M4 | available: no | waits for GRR-02 (no plan)
-GRR-10 | milestone M4 | available: yes | all blocked_by units done
-GRR-11 | milestone M4 | available: no | waits for GRR-03 (no plan), GRR-10 (no plan)
-GRR-12 | milestone M4 | available: no | waits for GRR-11 (no plan)
-GRR-13 | milestone M4 | available: no | waits for GRR-04 (no plan), GRR-05 (no plan), GRR-06 (no plan), GRR-11 (no plan), PST-20 (no plan)
-GRR-14 | milestone M4 | available: no | waits for GRR-10 (no plan)
-GRR-15 | milestone M4 | available: no | waits for GRR-11 (no plan), GRR-12 (no plan), GRR-13 (no plan), GRR-14 (no plan)
-GRR-16 | milestone M4 | available: yes | all blocked_by units done
-GRR-17 | milestone M4 | available: no | waits for GRR-08 (no plan), GRR-09 (no plan), GRR-10 (no plan), GRR-11 (no plan), GRR-12 (no plan), GRR-13 (no plan), GRR-14 (no plan), GRR-15 (no plan), GRR-16 (no plan); M4 demo
-CEX-01 | milestone M5 | available: yes | all blocked_by units done
-CEX-02 | milestone M5 | available: no | waits for CEX-01 (no plan)
-CEX-04 | milestone M5 | available: no | waits for CEX-02 (no plan)
-CEX-03 | milestone M5 | available: no | waits for CEX-02 (no plan)
-CEX-05 | milestone M5 | available: no | waits for CEX-02 (no plan)
-CEX-06 | milestone M5 | available: no | waits for CEX-05 (no plan)
-CEX-07 | milestone M5 | available: no | waits for CEX-05 (no plan)
-CEX-08 | milestone M5 | available: no | waits for CEX-01 (no plan)
-CEX-09 | milestone M5 | available: no | waits for CEX-02 (no plan), CEX-03 (no plan), CEX-04 (no plan), CEX-05 (no plan), CEX-06 (no plan), CEX-07 (no plan), CEX-08 (no plan)
-CEX-10 | milestone M5 | available: no | waits for CEX-04 (no plan), CEX-05 (no plan), CEX-09 (no plan)
-CEX-11 | milestone M5 | available: no | waits for CEX-10 (no plan)
-CEX-12 | milestone M5 | available: no | waits for CEX-10 (no plan)
-CEX-13 | milestone M5 | available: no | waits for CEX-10 (no plan)
-CEX-14 | milestone M5 | available: no | waits for CEX-03 (no plan), CEX-10 (no plan)
-CEX-15 | milestone M5 | available: no | waits for CEX-10 (no plan), CEX-11 (no plan), CEX-12 (no plan), CEX-13 (no plan), CEX-14 (no plan)
-CEX-16 | milestone M5 | available: no | waits for CEX-03 (no plan)
-CEX-17 | milestone M5 | available: no | waits for CEX-01 (no plan)
-CEX-18 | milestone M5 | available: no | waits for CEX-05 (no plan), CEX-10 (no plan), CEX-14 (no plan), CEX-17 (no plan)
-CEX-19 | milestone M5 | available: no | waits for CEX-16 (no plan), CEX-17 (no plan)
-CEX-20 | milestone M5 | available: no | waits for CEX-08 (no plan), CEX-15 (no plan), CEX-16 (no plan), CEX-17 (no plan), CEX-18 (no plan), CEX-19 (no plan), PST-22 (no plan); M5 demo
-GNP-13 | milestone M6 | available: yes | all blocked_by units done
-GNP-14 | milestone M6 | available: no | waits for GNP-13 (no plan)
-GNP-15 | milestone M6 | available: no | waits for GNP-13 (no plan)
-GNP-16 | milestone M6 | available: no | waits for GNP-13 (no plan)
-GNP-17 | milestone M6 | available: no | waits for GNP-13 (no plan)
-GNP-18 | milestone M6 | available: no | waits for GNP-13 (no plan), GNP-16 (no plan)
-GNP-19 | milestone M6 | available: no | waits for CEX-09 (no plan), GNP-13 (no plan), GNP-14 (no plan), GNP-15 (no plan), GNP-16 (no plan), GNP-17 (no plan), GNP-18 (no plan), GRR-17 (no plan); M6 demo
-GNP-20 | milestone M7 | available: yes | all blocked_by units done
-GNP-21 | milestone M7 | available: yes | all blocked_by units done
-GNP-22 | milestone M7 | available: yes | all blocked_by units done
-GNP-23 | milestone M7 | available: no | waits for GNP-15 (no plan), GNP-16 (no plan), GNP-21 (no plan), GNP-22 (no plan)
-SHL-17 | milestone M7 | available: yes | all blocked_by units done
-SHL-18 | milestone M7 | available: yes | all blocked_by units done
-GNP-24 | milestone M7 | available: no | waits for GNP-19 (no plan), GNP-20 (no plan), GNP-21 (no plan), GNP-22 (no plan), GNP-23 (no plan); M7 demo
-SHL-19 | milestone M7 | available: no | waits for PST-22 (no plan), SHL-17 (no plan), SHL-18 (no plan); M7 demo
-AGL-21 | milestone M7 | available: yes | all blocked_by units done
-AGL-22 | milestone M7 | available: yes | all blocked_by units done
-AGL-23 | milestone M7 | available: no | waits for AGL-20 (no plan), AGL-21 (no plan), AGL-22 (no plan)
-AGL-24 | milestone M7 | available: no | waits for CEX-09 (no plan), CEX-15 (no plan)
-PST-23 | milestone M7 | available: yes | all blocked_by units done
-Free ids (next unused per prefix, from the highest id in units/ and plans/; reported only, not reserved): AGL-26, CEX-21, GNP-25, GRR-18, MPR-14, PLT-23, PST-35, SAU-23, SHL-23, TRG-18
+# Queue
+
+Generated by the scout from main at f94f0cd. A help for selection, not a record of progress.
+
+Format: <ID> | <milestone> | available: yes or no | <reason>. Lists only units with no plan file on main, in suggested order.
+
+## Blocked
+
+None. No plan on main has status `blocked`.
+
+## Queue
+
+TRG-15 | M2 | available: no | waits on TRG-14 (planned)
+TRG-17 | M2 | available: no | waits on TRG-14 (planned), TRG-15 (no plan)
+SAU-18 | M3 | available: yes | all blocked_by done
+PST-20 | M3 | available: yes | all blocked_by done
+PST-21 | M3 | available: yes | all blocked_by done
+SAU-19 | M3 | available: no | waits on SAU-18 (no plan)
+SAU-20 | M3 | available: yes | all blocked_by done
+PST-22 | M3 | available: no | waits on PST-20 (no plan), PST-21 (no plan)
+AGL-15 | M3 | available: no | waits on PST-22 (no plan)
+AGL-20 | M3 | available: no | waits on AGL-15 (no plan)
+SAU-21 | M3 | available: no | waits on SAU-18 (no plan), SAU-19 (no plan), SAU-20 (no plan)
+GRR-02 | M4 | available: yes | all blocked_by done
+GRR-03 | M4 | available: yes | all blocked_by done
+GRR-04 | M4 | available: no | waits on GRR-02 (no plan), GRR-03 (no plan)
+GRR-10 | M4 | available: yes | all blocked_by done
+GRR-05 | M4 | available: no | waits on GRR-04 (no plan)
+GRR-06 | M4 | available: no | waits on GRR-04 (no plan), PST-22 (no plan)
+GRR-11 | M4 | available: no | waits on GRR-03 (no plan), GRR-10 (no plan)
+GRR-07 | M4 | available: no | waits on GRR-04 (no plan)
+GRR-12 | M4 | available: no | waits on GRR-11 (no plan)
+GRR-13 | M4 | available: no | waits on GRR-04 (no plan), GRR-05 (no plan), GRR-06 (no plan), GRR-11 (no plan), PST-20 (no plan)
+GRR-14 | M4 | available: no | waits on GRR-10 (no plan)
+GRR-08 | M4 | available: no | waits on GRR-02 (no plan), GRR-03 (no plan), GRR-04 (no plan), GRR-05 (no plan), GRR-06 (no plan), GRR-07 (no plan), PST-22 (no plan)
+GRR-09 | M4 | available: no | waits on GRR-02 (no plan)
+GRR-15 | M4 | available: no | waits on GRR-11 (no plan), GRR-12 (no plan), GRR-13 (no plan), GRR-14 (no plan)
+GRR-16 | M4 | available: yes | all blocked_by done
+GRR-17 | M4 | available: no | waits on GRR-08 (no plan), GRR-09 (no plan), GRR-10 (no plan), GRR-11 (no plan), GRR-12 (no plan), GRR-13 (no plan), GRR-14 (no plan), GRR-15 (no plan), GRR-16 (no plan)
+CEX-01 | M5 | available: yes | all blocked_by done
+CEX-02 | M5 | available: no | waits on CEX-01 (no plan)
+CEX-05 | M5 | available: no | waits on CEX-02 (no plan)
+CEX-03 | M5 | available: no | waits on CEX-02 (no plan)
+CEX-04 | M5 | available: no | waits on CEX-02 (no plan)
+CEX-06 | M5 | available: no | waits on CEX-05 (no plan)
+CEX-07 | M5 | available: no | waits on CEX-05 (no plan)
+CEX-08 | M5 | available: no | waits on CEX-01 (no plan)
+CEX-09 | M5 | available: no | waits on CEX-02 (no plan), CEX-03 (no plan), CEX-04 (no plan), CEX-05 (no plan), CEX-06 (no plan), CEX-07 (no plan), CEX-08 (no plan)
+CEX-10 | M5 | available: no | waits on CEX-04 (no plan), CEX-05 (no plan), CEX-09 (no plan)
+CEX-11 | M5 | available: no | waits on CEX-10 (no plan)
+CEX-12 | M5 | available: no | waits on CEX-10 (no plan)
+CEX-13 | M5 | available: no | waits on CEX-10 (no plan)
+CEX-14 | M5 | available: no | waits on CEX-03 (no plan), CEX-10 (no plan)
+CEX-16 | M5 | available: no | waits on CEX-03 (no plan)
+CEX-17 | M5 | available: no | waits on CEX-01 (no plan)
+CEX-15 | M5 | available: no | waits on CEX-10 (no plan), CEX-11 (no plan), CEX-12 (no plan), CEX-13 (no plan), CEX-14 (no plan)
+CEX-18 | M5 | available: no | waits on CEX-05 (no plan), CEX-10 (no plan), CEX-14 (no plan), CEX-17 (no plan)
+CEX-19 | M5 | available: no | waits on CEX-16 (no plan), CEX-17 (no plan)
+CEX-20 | M5 | available: no | waits on CEX-08 (no plan), CEX-15 (no plan), CEX-16 (no plan), CEX-17 (no plan), CEX-18 (no plan), CEX-19 (no plan), PST-22 (no plan)
+GNP-13 | M6 | available: yes | all blocked_by done
+GNP-16 | M6 | available: no | waits on GNP-13 (no plan)
+GNP-14 | M6 | available: no | waits on GNP-13 (no plan)
+GNP-15 | M6 | available: no | waits on GNP-13 (no plan)
+GNP-17 | M6 | available: no | waits on GNP-13 (no plan)
+GNP-18 | M6 | available: no | waits on GNP-13 (no plan), GNP-16 (no plan)
+GNP-19 | M6 | available: no | waits on CEX-09 (no plan), GNP-13 (no plan), GNP-14 (no plan), GNP-15 (no plan), GNP-16 (no plan), GNP-17 (no plan), GNP-18 (no plan), GRR-17 (no plan)
+GNP-21 | M7 | available: yes | all blocked_by done
+GNP-22 | M7 | available: yes | all blocked_by done
+GNP-20 | M7 | available: yes | all blocked_by done
+GNP-23 | M7 | available: no | waits on GNP-15 (no plan), GNP-16 (no plan), GNP-21 (no plan), GNP-22 (no plan)
+SHL-17 | M7 | available: yes | all blocked_by done
+SHL-18 | M7 | available: yes | all blocked_by done
+GNP-24 | M7 | available: no | waits on GNP-19 (no plan), GNP-20 (no plan), GNP-21 (no plan), GNP-22 (no plan), GNP-23 (no plan)
+SHL-19 | M7 | available: no | waits on PST-22 (no plan), SHL-17 (no plan), SHL-18 (no plan)
+AGL-21 | M7 | available: yes | all blocked_by done
+AGL-22 | M7 | available: yes | all blocked_by done
+AGL-23 | M7 | available: no | waits on AGL-20 (no plan), AGL-21 (no plan), AGL-22 (no plan)
+AGL-24 | M7 | available: no | waits on CEX-09 (no plan), CEX-15 (no plan)
+PST-23 | M7 | available: yes | all blocked_by done
+
+## Notes
+
+- First incomplete milestone: M2. M1 is complete (72 units, all done). M2 has 50 units; not done: TRG-14 (plan status planned), TRG-15 and TRG-17 (no plan).
+- M2 demo units (units with a Demo section, milestone M2): AGL-11, GNP-12, SAU-16, TRG-17. Only TRG-17 is not done. Its not-done ancestors are TRG-15 and TRG-14.
+- Ordering rule (assumption applied by the scout): per milestone in order, units not done that are ancestors of the milestone's demo units come first, in topological order, longest dependency chain to the demo first, ties by id. Then the other not-done units of that milestone, topologically, by id. Later milestones follow the same rule. Demo units used for M3 to M7: M3 AGL-20, PST-22, SAU-21; M4 GRR-17; M5 CEX-20; M6 GNP-19; M7 GNP-24, SHL-19.
+- Every id in blocked_by was checked against the unit files on main; no blocked_by id names a missing unit.
+- Ignored blocked_by entries with no unit id: GRR-16 `Genre packs phase:nonfiction-workhorses (workhorse port names)` and SAU-12 `Model providers phase:settings-ui (to embed; link to /providers until then)`. Both gates (GNP-12, MPR-11) are done, so no effect on availability.
+- Ids counted as blockers even when the entry is a phase gate with extra prose (e.g. PLT-11 names PLT-02 as `strictly`); all such ids are done, so no effect.
+- Milestone label vs module file: PST-34 front matter reads `M1 (editing at M3 when Shell phase:editor lands)`, while modules/project-store.md (line 24) says it lands at M3. Label disagreement; PST-34 is done, so no effect on the queue. PST-10 has the same label and is done. Other module-line mentions were checked and are not label disagreements.
+- Plan statuses on main: 137 done, 1 planned (TRG-14), none blocked, none draft. TRG-14 is not listed because it has a plan; it is the only not-done dependency of TRG-15.
+- Demo units: all demo units of the milestones checked were identified; none unknown.
+- Assumption: a blocker with no plan file is treated as not done (not available) even though it is not in the queue ahead of its dependents except as listed.
