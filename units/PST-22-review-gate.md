@@ -18,11 +18,11 @@ Merging this **closes Project store `phase:pending-review`** (requires `phase:se
 - Verify the phase checklist on `main`.
 
 ## Acceptance criteria (the `phase:pending-review` checklist)
-- [ ] Propose never touches disk; same-origin fold; non-active `ok` project propose — pass.
-- [ ] Listing with a host edit is side-effect free.
-- [ ] Accept with edited content; apply with version; `base-changed` refusal; refresh clean/overlapping; accept-anyway backup; validator rejection; restore saves current first — pass.
-- [ ] Review queue works at phone width.
-- [ ] The e2e "accept change" step passes.
+- [x] Propose never touches disk; same-origin fold; non-active `ok` project propose — pass.
+- [x] Listing with a host edit is side-effect free.
+- [x] Accept with edited content; apply with version; `base-changed` refusal; refresh clean/overlapping; accept-anyway backup; validator rejection; restore saves current first — pass.
+- [x] Review queue works at phone width.
+- [x] The e2e "accept change" step passes.
 
 **M3 "done when"** (shared with the Agent loop's grounding check): *an invented statistic in a draft is flagged as unsupported.* The Project store's part is search over `sources/` and the reviewable, versioned draft the agent proposes; the grounding half is demonstrated by AGL-20, which closes after this gate.
 
