@@ -1,6 +1,6 @@
 ---
 id: SAU-21
-status: planned
+status: done
 unit: units/SAU-21-tailnet-gate.md
 sources: units/SAU-21-tailnet-gate.md (30 lines, no Decisions section, no change note); units/README.md; modules/setup-auth.md; the front matter of SAU-17, SAU-18, SAU-19, SAU-20, PLT-15 and PLT-16 (and units/PLT-15-compose-sidecar.md line 27); plans/SAU-03.md, SAU-18.md, PLT-15.md, PLT-16.md, SAU-22.md (draft), TRG-14.md (planned) and AGL-15.md (done); plans/DECISIONS.md (grep by unit id, lines named below); docs/adr/0001-tailscale-serve-mechanism.md; deploy/compose.yaml, deploy/RUNBOOK.md and deploy/compose-version; the apps/api, apps/web, packages/contracts, e2e and scripts files named below (read only); git history (read only)
 ---

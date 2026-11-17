@@ -19,10 +19,10 @@ Merging this **closes Setup & auth `phase:tailnet`**.
 - **Docs:** the app can control tailscaled through the shared socket (log out, change prefs, edit Serve config); it only reads status; a compromised app process could disconnect or re-point the node. Accepted for a single owner.
 
 ## Acceptance criteria (the `phase:tailnet` checklist)
-- [ ] Without tailscaled (dev), status reads "unavailable", loopback works, and the tailnet Host is not allowed.
-- [ ] LocalAPI fixture states render correctly (SAU-17, SAU-20).
-- [ ] Tailnet header path, loopback-ignores-header, and `http://` Origin 403 pass (SAU-18).
-- [ ] Allowlist refusal, lockout protection and loopback bypass pass (SAU-19).
+- [x] Without tailscaled (dev), status reads "unavailable", loopback works, and the tailnet Host is not allowed.
+- [x] LocalAPI fixture states render correctly (SAU-17, SAU-20).
+- [x] Tailnet header path, loopback-ignores-header, and `http://` Origin 403 pass (SAU-18).
+- [x] Allowlist refusal, lockout protection and loopback bypass pass (SAU-19).
 - [ ] **Late login:** starting logged out, logging in through the shown link makes `https://<tailnet name>` work without restarting the app.
 - [ ] The socket smoke test passes as the non-root UID on macOS and Linux, and the result is recorded.
 
