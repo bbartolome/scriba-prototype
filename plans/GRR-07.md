@@ -1,6 +1,6 @@
 ---
 id: GRR-07
-status: planned
+status: done
 title: Run logs in logs/recipe-runs and restart recovery
 ---
 # GRR-07 plan — run logs in `logs/recipe-runs` and restart recovery

@@ -20,5 +20,5 @@ Every run is auditable later (40); a device or an API restart never shows a stal
   Reworded by revision of GRR-07 on 2026-11-17. The old text was: "**Restart recovery:** on API start, the most recent run per project is rebuilt from its log; a run with no end entry is reported as `stopped` with reason `interrupted` (and an end entry is appended)." See plans/DECISIONS.md.
 
 ## Acceptance criteria
-- [ ] After a run, the log holds start, per-node, tool-call, pending-change and end entries that parse against the contract.
-- [ ] After an API restart mid-run, current-run-state reports that run as `stopped` with reason `interrupted`.
+- [x] After a run, the log holds start, per-node, tool-call, pending-change and end entries that parse against the contract.
+- [x] After an API restart mid-run, current-run-state reports that run as `stopped` with reason `interrupted`.
