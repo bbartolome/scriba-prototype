@@ -1,9 +1,10 @@
 /**
  * Loads the setup-auth values the setup page uses: the identity route and its schema, the status
  * and step routes, the preferences route and its schema, the Continue route, the landing path and the
- * error codes. The load is dynamic, so
- * zod's CommonJS build stays in its own chunk, out of the initial bundle. This is the only file of
- * the feature that refers to the contract at run time.
+ * error codes. loadTailscaleContract and loadAllowlistContract load the Tailscale status route and
+ * schema, and the allowlist route and schema, for the Tailscale and allowlist panels. The load is
+ * dynamic, so zod's CommonJS build stays in its own chunk, out of the initial bundle. This is the
+ * only file of the feature that refers to the contract at run time.
  *
  * The contract is CommonJS. In the production build its dynamic import has only `default`; under
  * Vitest it has the named exports. The values are read from `default` when there is one.
@@ -48,6 +49,38 @@ export async function loadSettingsContract(): Promise<
     | 'preferencesSchema'
     | 'SETUP_PAGE_PATH'
     | 'SETUP_AUTH_ERROR_CODES'
+  >
+> {
+  const mod: LoadedModule =
+    await import('@bbartolome/scriba-contracts/setup-auth');
+  return mod.default ?? mod;
+}
+
+/**
+ * Loads the Tailscale status route and its schema, and the error codes, for the Tailscale panel.
+ * It reads the module the same way as loadSetupAuthContract.
+ */
+export async function loadTailscaleContract(): Promise<
+  Pick<
+    SetupAuthModule,
+    | 'TAILSCALE_STATUS_ROUTE'
+    | 'tailscaleStatusSchema'
+    | 'SETUP_AUTH_ERROR_CODES'
+  >
+> {
+  const mod: LoadedModule =
+    await import('@bbartolome/scriba-contracts/setup-auth');
+  return mod.default ?? mod;
+}
+
+/**
+ * Loads the allowlist route and its schema, and the error codes, for the allowlist panel. It reads
+ * the module the same way as loadSetupAuthContract.
+ */
+export async function loadAllowlistContract(): Promise<
+  Pick<
+    SetupAuthModule,
+    'ALLOWLIST_ROUTE' | 'allowlistSchema' | 'SETUP_AUTH_ERROR_CODES'
   >
 > {
   const mod: LoadedModule =
