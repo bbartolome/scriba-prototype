@@ -59,3 +59,32 @@ export function saveVersion(
   writeText(join(folder, name), bytes);
   return name;
 }
+
+// The form of a version id, which is its file name: the stamp, a -n when the name was taken, and the extension
+// (PST-18 D14). Every name that saveVersion writes matches it.
+export const VERSION_ID_PATTERN = /^\d{8}T\d{9}Z(?:-\d+)?(?:\.[^./\\\0]+)?$/;
+
+// True when id has the form of a version file name. A value that does not match names no version.
+export function isVersionId(id: string): boolean {
+  return VERSION_ID_PATTERN.test(id);
+}
+
+// The time of a version, from the first 19 characters of its id, in ISO-8601 with milliseconds (PST-18 D4).
+export function createdAtOf(id: string): string {
+  const stamp = id.slice(0, 19);
+  return `${stamp.slice(0, 4)}-${stamp.slice(4, 6)}-${stamp.slice(6, 8)}T${stamp.slice(9, 11)}:${stamp.slice(11, 13)}:${stamp.slice(13, 15)}.${stamp.slice(15, 18)}Z`;
+}
+
+// The n of a version id, where no suffix counts as 1 (PST-18 D4).
+function sequenceOf(id: string): number {
+  const match = /^\d{8}T\d{9}Z-(\d+)/.exec(id);
+  return match === null ? 1 : Number(match[1]);
+}
+
+// Orders two version ids newest first: by stamp, then by n (PST-18 D4). Returns a negative number when a comes first.
+export function compareNewestFirst(a: string, b: string): number {
+  const stampA = a.slice(0, 19);
+  const stampB = b.slice(0, 19);
+  if (stampA !== stampB) return stampA < stampB ? 1 : -1;
+  return sequenceOf(b) - sequenceOf(a);
+}

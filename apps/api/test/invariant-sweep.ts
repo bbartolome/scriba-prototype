@@ -129,6 +129,15 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/project-store/projects/:projectId/pending/:id/accept-anyway': {
     path: '/api/project-store/projects/no-such-project/pending/no-such-change/accept-anyway',
   },
+  '/api/project-store/projects/:projectId/versions': {
+    path: '/api/project-store/projects/no-such-project/versions',
+  },
+  '/api/project-store/projects/:projectId/versions/read': {
+    path: '/api/project-store/projects/no-such-project/versions/read',
+  },
+  '/api/project-store/projects/:projectId/versions/restore': {
+    path: '/api/project-store/projects/no-such-project/versions/restore',
+  },
   '/api/tool-registry/tools/:name': {
     path: '/api/tool-registry/tools/no-such-tool',
   },

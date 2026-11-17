@@ -27,6 +27,8 @@ import {
   PROJECT_NEW_ROUTE,
   PROJECT_PENDING_ROUTE,
   PROJECT_START_FROM_SAMPLE_ROUTE,
+  PROJECT_VERSION_ROUTE,
+  PROJECT_VERSIONS_ROUTE,
   PROJECTS_ROUTE,
   SAMPLES_ROUTE,
 } from '@bbartolome/scriba-contracts/project-store';
@@ -468,6 +470,29 @@ const F3_ROWS: readonly GetRow[] = [
         path: fileUrl(PROJECT_PENDING_ROUTE, BOOK),
       }),
   },
+  {
+    template: PROJECT_VERSIONS_ROUTE,
+    request: (app, cookie) =>
+      send(app.baseUrl, {
+        host: LOOPBACK_HOST,
+        cookie,
+        path: fileUrl(PROJECT_VERSIONS_ROUTE, BOOK, {
+          draftPath: 'drafts/ch01.md',
+        }),
+      }),
+  },
+  {
+    template: PROJECT_VERSION_ROUTE,
+    request: (app, cookie) =>
+      send(app.baseUrl, {
+        host: LOOPBACK_HOST,
+        cookie,
+        path: fileUrl(PROJECT_VERSION_ROUTE, BOOK, {
+          draftPath: 'drafts/ch01.md',
+          id: '20261104T231500123Z.md',
+        }),
+      }),
+  },
 ];
 
 // The ids a 200 entity listing holds, or none when the reply is not one.
@@ -501,6 +526,12 @@ it(
         fixture.library,
         `${BOOK}/entities/ann.md`,
         '---\nid: ann\ntype: person\n---\nAnn.\n',
+      );
+      // A saved version of a draft, so the version GETs of F3 read a real file.
+      putFile(
+        fixture.library,
+        `${BOOK}/drafts/.versions/ch01.md/20261104T231500123Z.md`,
+        'Old\n',
       );
       await withProjectsApp(fixture, async (app, cookie) => {
         const getRoutes = [

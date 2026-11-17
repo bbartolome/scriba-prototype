@@ -4,6 +4,8 @@ import { ActiveProjectController } from './active-project.controller';
 import { ActiveProjectService } from './active-project.service';
 import { EntitiesController } from './entities.controller';
 import { EntitiesService } from './entities.service';
+import { DraftVersionsController } from './draft-versions.controller';
+import { DraftVersionsService } from './draft-versions.service';
 import { EntityManifest } from './entity-manifest';
 import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
@@ -42,6 +44,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     FilesController,
     EntitiesController,
     PendingController,
+    DraftVersionsController,
   ],
   providers: [
     {
@@ -60,6 +63,7 @@ const PROJECT_STORE_SECTION_REGISTRATION = 'PROJECT_STORE_SECTION_REGISTRATION';
     EntityManifest,
     EntitiesService,
     PendingService,
+    DraftVersionsService,
     SearchService,
   ],
   exports: [
