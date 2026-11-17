@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import {
   type CurrentRun,
+  graphFileSchema,
   type InputParams,
   type InputValue,
   type NodeRunState,
@@ -17,11 +18,13 @@ import {
 } from '@bbartolome/scriba-contracts/graph-runner';
 import {
   PROJECT_ERROR_CODES,
+  type PendingChange,
   type ProjectSwitchedData,
 } from '@bbartolome/scriba-contracts/project-store';
 import {
   TOOL_ERROR_CODES,
   TOOL_ERROR_STATUS,
+  type OutputKind,
   type ResolvedEntity,
   type ToolCallResult,
 } from '@bbartolome/scriba-contracts/tool-registry';
@@ -30,6 +33,7 @@ import { EventsPublisher, ModuleError } from '../platform/platform.module';
 import {
   EntitiesService,
   FilesService,
+  PendingService,
   ProjectStoreService,
 } from '../project-store/project-store.module';
 import {
@@ -37,6 +41,7 @@ import {
   ExecutorService,
 } from '../tool-registry/tool-registry.module';
 import { graphError, GraphRunnerService } from './graph-runner.service';
+import { generatedTarget, fitsKindFolder } from './output-targets';
 import { orderOf, nodeOfPort, scopeOf } from './run-scope';
 
 // Every message of the run routes. Fixed strings only; no input value is echoed.
@@ -53,6 +58,8 @@ const MESSAGES = {
   RUN_NOT_FOUND: 'No run of the active project has that id.',
   ENTITY_UNRESOLVED:
     'An entity of a tool node is unknown or names more than one entity.',
+  OUTPUT_PATH_INVALID:
+    "An output path must sit in the folder of its output kind, with that kind's extension.",
   INTERNAL: 'The run failed inside Scriba.',
 } as const;
 
@@ -89,6 +96,10 @@ interface RunRecord {
   controller: AbortController;
   // The reason the run was asked to end, set once by requestEnd (GRR-05).
   stopReason?: RunReason;
+  // The effective target of each in-scope output node, by node id (GRR-06 P4).
+  outputTargets: Map<string, string>;
+  // The entity ids each tool node resolved, by node id (GRR-06 P9).
+  entityIds: Map<string, string[]>;
 }
 
 // The runs of one project: at most one active run, and the last finished one (P6).
@@ -116,6 +127,17 @@ function nodesOf(recipe: RecipeGraph): Map<string, RecipeNode> {
   return new Map(recipe.nodes.map((node) => [node.id, node]));
 }
 
+// The tool node wired into the input port of an output node, if there is one (GRR-06 D2).
+function feedOf(
+  recipe: RecipeGraph,
+  outputId: string,
+): RecipeToolNode | undefined {
+  const wire = recipe.edges.find((edge) => nodeOfPort(edge.to) === outputId);
+  if (wire === undefined) return undefined;
+  const node = nodesOf(recipe).get(nodeOfPort(wire.from));
+  return node?.kind === 'tool' ? node : undefined;
+}
+
 // The error of a node: a module error with its own code and message, or the platform's internal error (P11).
 function failureOf(error: unknown): RunError {
   if (error instanceof ModuleError) {
@@ -137,9 +159,15 @@ export class RunsService {
     private readonly executor: ExecutorService,
     private readonly events: EventsPublisher,
     private readonly store: ProjectStoreService,
+    private readonly pending: PendingService,
   ) {
     // Registered once. The handler never throws: a throw would fail the switch.
     this.store.onProjectSwitched((event) => this.onProjectSwitched(event));
+    // The graph validator of the Project store (GRR-06 D6, P2). A parse error throws, which counts as a failure.
+    this.pending.registerValidator(
+      'graphs/*.json',
+      (content) => graphFileSchema.safeParse(JSON.parse(content)).success,
+    );
   }
 
   // Starts a run (P2, P7). Every refusal is raised before any run is registered. The engine runs after the answer.
@@ -167,8 +195,17 @@ export class RunsService {
       }
     }
 
+    const now = new Date();
     const scope = scopeOf(recipe, target);
     const order = orderOf(recipe, scope);
+    // The effective output targets are fixed here, before any input is read (GRR-06 P4).
+    const outputTargets = this.outputTargetsOf(
+      body.graphId,
+      recipe,
+      scope,
+      body.targets ?? {},
+      now,
+    );
 
     const inputs: Record<string, InputValue> = {};
     for (const id of order) {
@@ -212,7 +249,7 @@ export class RunsService {
       graphId: body.graphId,
       ...(target === undefined ? {} : { target: { nodeId: target } }),
       status: 'running',
-      startedAt: new Date().toISOString(),
+      startedAt: now.toISOString(),
       inputs,
       targets: body.targets ?? {},
       nodes: this.initialNodes(recipe, scope),
@@ -226,6 +263,8 @@ export class RunsService {
       files: captured,
       results: new Map(),
       controller: new AbortController(),
+      outputTargets,
+      entityIds: new Map(),
     };
     this.entryOf(projectId).active = record;
 
@@ -280,6 +319,44 @@ export class RunsService {
     } catch {
       // Nothing here may throw: a throw would fail the switch.
     }
+  }
+
+  // The effective target of each in-scope output node (GRR-06 P4): the request target, else params.path, else the
+  // generated name. A target outside its kind's folder, or a kind with no folder, is refused before any work (P3).
+  private outputTargetsOf(
+    graphId: string,
+    recipe: RecipeGraph,
+    scope: ReadonlySet<string>,
+    requested: Readonly<Partial<Record<string, string>>>,
+    now: Date,
+  ): Map<string, string> {
+    const targets = new Map<string, string>();
+    for (const node of recipe.nodes) {
+      if (node.kind !== 'output' || !scope.has(node.id)) continue;
+      const kind = this.kindOfOutput(recipe, node.id);
+      const generated =
+        kind === undefined ? undefined : generatedTarget(kind, graphId, now);
+      const target = requested[node.id] ?? node.params?.path ?? generated;
+      if (
+        kind === undefined ||
+        target === undefined ||
+        !fitsKindFolder(kind, target)
+      ) {
+        throw graphError('TARGET_INVALID', MESSAGES.OUTPUT_PATH_INVALID);
+      }
+      targets.set(node.id, target);
+    }
+    return targets;
+  }
+
+  // The output kind of an output node: the kind of the tool wired into its input port (GRR-06 D2).
+  private kindOfOutput(
+    recipe: RecipeGraph,
+    outputId: string,
+  ): OutputKind | undefined {
+    const feed = feedOf(recipe, outputId);
+    if (feed === undefined) return undefined;
+    return this.catalog.ports(feed.tool).output.kind;
   }
 
   // The initial node states: in-scope nodes queued, the rest idle (P8).
@@ -337,8 +414,19 @@ export class RunsService {
           }
           record.results.set(id, result);
           this.setStatus(record, id, 'done', { result });
+        } else if (node.kind === 'output') {
+          // No await between the stop check and the propose (GRR-05 D2, GRR-06 D7).
+          if (record.stopReason !== undefined) {
+            this.endStopped(record);
+            return;
+          }
+          const change = this.proposeOutput(record, id);
+          record.state.pendingChangeIds.push(change.id);
+          this.setStatus(record, id, 'done', {
+            result: { pendingChangeId: change.id, path: change.targetPath },
+          });
         } else {
-          // Input nodes carry their value in the state; an output node creates no change yet (P21).
+          // Input nodes carry their value in the state.
           this.setStatus(record, id, 'done');
         }
       } catch (error) {
@@ -389,6 +477,7 @@ export class RunsService {
         MESSAGES.ENTITY_UNRESOLVED,
       );
     }
+    record.entityIds.set(node.id, ids);
     const entities: ResolvedEntity[] = resolution.resolved.map((entity) => ({
       ref: entity.id,
       type: entity.type,
@@ -426,6 +515,63 @@ export class RunsService {
       case 'style':
         return value.ref;
     }
+  }
+
+  // Proposes the text of the feeding tool as the change of an output node (GRR-06 P5 to P11). The base is the
+  // run-start content of a captured file at the same path (D4); with no captured file, propose reads the disk.
+  private proposeOutput(record: RunRecord, outputId: string): PendingChange {
+    const path = record.outputTargets.get(outputId);
+    const feed = feedOf(record.recipe, outputId);
+    const content =
+      feed === undefined
+        ? undefined
+        : record.results.get(feed.id)?.output.content;
+    if (path === undefined || content === undefined) {
+      throw new Error('An output node has no target or no feeding result.');
+    }
+    const captured = [...record.files.values()].find(
+      (file) => file.path === path,
+    );
+    return this.pending.propose({
+      projectId: record.projectId,
+      path,
+      content,
+      ...(captured === undefined
+        ? {}
+        : { base: { content: captured.content } }),
+      origin: {
+        kind: 'recipe-run',
+        runId: record.state.runId,
+        graphId: record.state.graphId,
+        nodeId: outputId,
+      },
+      provenance: this.provenanceOf(record, outputId),
+    });
+  }
+
+  // The provenance of an output's change (GRR-06 P9): the entity ids and the sources of every tool node upstream of
+  // the output, as unions without duplicates.
+  private provenanceOf(
+    record: RunRecord,
+    outputId: string,
+  ): Record<string, unknown> {
+    const upstream = scopeOf(record.recipe, outputId);
+    const nodes = nodesOf(record.recipe);
+    const entityIds = new Set<string>();
+    const sourcesUsed = new Set<string>();
+    for (const id of record.order) {
+      if (!upstream.has(id) || nodes.get(id)?.kind !== 'tool') continue;
+      for (const ref of record.entityIds.get(id) ?? []) entityIds.add(ref);
+      for (const ref of record.results.get(id)?.sourcesUsed ?? []) {
+        sourcesUsed.add(ref);
+      }
+    }
+    return {
+      graphId: record.state.graphId,
+      nodeId: outputId,
+      entityIds: [...entityIds],
+      sourcesUsed: [...sourcesUsed],
+    };
   }
 
   // The one place a node status changes (P12). Publishes one node-status event.
