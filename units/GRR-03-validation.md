@@ -24,7 +24,7 @@ List problems and highlight what's concerned (18), save anyway (19), disable Run
 - Ajv checks of actual argument shapes happen when each tool node runs (inside the executor); a failure there is a node `error`, not a validation issue.
 
 ## Acceptance criteria
-- [ ] Each error and warning rule has a fixture that produces exactly that issue with the right ids.
-- [ ] Saving a schema-valid recipe with a type-mismatched wire succeeds and the response lists an `error` issue for that wire.
-- [ ] Disabling a tool in the registry makes its nodes report "disabled tool".
-- [ ] The validate endpoint accepts an unsaved graph and writes nothing.
+- [x] Each error and warning rule has a fixture that produces exactly that issue with the right ids.
+- [x] Saving a schema-valid recipe with a type-mismatched wire succeeds and the response lists an `error` issue for that wire.
+- [x] Disabling a tool in the registry makes its nodes report "disabled tool".
+- [x] The validate endpoint accepts an unsaved graph and writes nothing.

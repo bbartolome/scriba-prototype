@@ -1,6 +1,6 @@
 ---
 id: GRR-03
-status: planned
+status: done
 ---
 # GRR-03 plan — recipe and story validation against the tool registry, and the validate endpoint
 
