@@ -1,6 +1,6 @@
 ---
 id: SAU-18
-status: planned
+status: done
 unit: units/SAU-18-tailnet-guard-path.md
 sources: units/SAU-18-tailnet-guard-path.md (committed, unchanged); modules/setup-auth.md (main at a870668); units/README.md (main at a870668); units/SAU-22-guard-dev-mode.md (committed at fb19867); units/SAU-19-owner-allowlist.md; units/SAU-20-tailscale-ui.md; units/SAU-21-tailnet-gate.md; units/SAU-16-setup-flow-gate.md; plans/SAU-03.md, SAU-04.md, SAU-05.md, SAU-06.md, SAU-07.md, SAU-16.md, SAU-17.md, PLT-02.md (structure), PLT-08.md, PLT-16.md; plans/DECISIONS.md (searched for SAU-18, SAU-22, SAU-17, SAU-04 and setup-auth; lines 929, 1050, 1524-1527, 1529, 2083, 2870, 5508-5513, 5515-5518); units/SAU-04-global-guard.md; docs/adr/0001-tailscale-serve-mechanism.md; the apps/api code and tests named in section 2
 ---

@@ -23,8 +23,8 @@ iPad and phone get in through their Tailscale identity with no pairing (20); cle
 - Identity accessor/endpoint return `{via: 'tailnet', login}`.
 
 ## Acceptance criteria
-- [ ] On the tailnet Host with an injected login from a loopback peer, API calls succeed with no cookie.
-- [ ] The same header on a loopback Host is ignored (401); on the tailnet Host from a non-loopback peer it isn't trusted.
-- [ ] A tailnet POST with an `http://` Origin gets 403.
-- [ ] A tailnet request with no header gets `AUTH_TAILNET_IDENTITY_MISSING`.
-- [ ] With the fake LocalAPI switching from logged-out to `Running`, a request on the new tailnet Host succeeds after one refresh, without restart; repeated unknown Hosts don't cause repeated refreshes within the rate limit.
+- [x] On the tailnet Host with an injected login from a loopback peer, API calls succeed with no cookie.
+- [x] The same header on a loopback Host is ignored (401); on the tailnet Host from a non-loopback peer it isn't trusted.
+- [x] A tailnet POST with an `http://` Origin gets 403.
+- [x] A tailnet request with no header gets `AUTH_TAILNET_IDENTITY_MISSING`.
+- [x] With the fake LocalAPI switching from logged-out to `Running`, a request on the new tailnet Host succeeds after one refresh, without restart; repeated unknown Hosts don't cause repeated refreshes within the rate limit.
