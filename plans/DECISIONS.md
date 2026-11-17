@@ -5504,3 +5504,15 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Deviations accepted by the reviewer (not plan breaks):** a dist build on the fresh worktree (setup only); W5 creates `drafts/.versions/a.md` and `.scriba` before boot; `prettier --write` on the new test file (formatting only).
 - **Test output:** the orchestrator re-ran the three checks on 8b5d05c in the worktree. `npm run lint` exit 0. `npm test` exit 0: 102 node tests pass, and the API workspace 453 tests pass with 0 fail. `npm run build` exit 0. Node v26.13.0.
 - **Known failure, not caused by this unit:** the implementer's e2e run (plan step 7, one run) had 12 passed and 1 failed: `TRG-05 C2` at `e2e/specs/tools-preview.e2e.ts:167`. It also fails with `SCRIBA_WATCHER=false`. The orchestrator records that main already fails at this test. This unit does not change it.
+
+## 2026-11-17 — SAU-18 — Navigator decision: open point 7, option (i) (the plan stops as blocked until SAU-22 is on main) (session `32ce19697df140a8afee3c838cd5fbaa`)
+
+- **Decision (Navigator, option (i)):** the plan of SAU-18 stays `status: blocked` until the owner's SAU-22 draft (`units/SAU-22-guard-dev-mode.md`) is on main. No revision is authored while blocked. On unblock, the plan goes back to `draft`, and a revision builds on the committed `devAuth` text and adds D17: the tailnet branch of the guard precedes the `devAuth` skip, so `devAuth` has no effect on a tailnet Host. No change to SAU-22 is prescribed.
+- **Reason:** SAU-22 changes the same guard (`SetupAuthGuard.canActivate`), the policy builder (`devAuth` on `REQUEST_POLICY`) and `env.ts` that SAU-18 rewrites. The two changes conflict textually in either order. SAU-22 as drafted would let a tailnet request without the header pass in dev mode, against SAU-18 D8.
+- **Status at this entry:** SAU-22 is committed on local `main` at `fb19867` (`docs(SAU-22): add guard dev mode unit`). It is not pushed. The unblock condition is met on local `main`.
+- **Effect:** the cause text of `plans/SAU-18.md` (open point 7, `status: blocked`) is out of date. The unblock path above replaces it.
+
+## 2026-11-17 — SAU-18 — Navigator decision: open point 3, gap recorded, no criterion added (session `32ce19697df140a8afee3c838cd5fbaa`)
+
+- **Decision (Navigator, option (a)):** the tailnet handshake has no test. The gap is recorded in `plans/SAU-18.md` section 9. No criterion is added to SAU-18 or to any other unit, and no extra test is added to the plan.
+- **Reason:** the handshake code already redirects without a cookie on the tailnet Host (`plans/SAU-18.md` C8). SAU-03 open point 3 (`plans/SAU-03.md:149`) records the same gap. A new criterion would change a unit, and the Navigator does not see a need for it here.
