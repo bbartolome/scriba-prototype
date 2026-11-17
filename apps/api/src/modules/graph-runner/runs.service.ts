@@ -1,5 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  type OnApplicationBootstrap,
+} from '@nestjs/common';
 import {
   type CurrentRun,
   graphFileSchema,
@@ -7,9 +11,12 @@ import {
   type InputValue,
   type NodeRunState,
   type NodeRunStatus,
+  RUN_LOG_FOLDER,
   type RecipeGraph,
   type RecipeNode,
   type RunError,
+  type RunLogEntry,
+  type RunLogInput,
   type RunReason,
   type RunStartRequest,
   type RunStartResult,
@@ -18,6 +25,7 @@ import {
 } from '@bbartolome/scriba-contracts/graph-runner';
 import {
   PROJECT_ERROR_CODES,
+  type FileEntry,
   type PendingChange,
   type ProjectSwitchedData,
 } from '@bbartolome/scriba-contracts/project-store';
@@ -43,6 +51,10 @@ import {
 import { graphError, GraphRunnerService } from './graph-runner.service';
 import { generatedTarget, fitsKindFolder } from './output-targets';
 import { orderOf, nodeOfPort, scopeOf } from './run-scope';
+import { parseRunLog, runLogLineOf, runLogPathOf } from './run-log';
+import { latestRunOf, recoveredRunOf } from './run-recovery';
+
+const logger = new Logger('GraphRunner');
 
 // Every message of the run routes. Fixed strings only; no input value is echoed.
 const MESSAGES = {
@@ -100,12 +112,16 @@ interface RunRecord {
   outputTargets: Map<string, string>;
   // The entity ids each tool node resolved, by node id (GRR-06 P9).
   entityIds: Map<string, string[]>;
+  // Set once a log line could not be written: the later lines of the run are not attempted (GRR-07 D11).
+  logFailed: boolean;
 }
 
-// The runs of one project: at most one active run, and the last finished one (P6).
+// The runs of one project: at most one active run, the last finished one (P6), and the run rebuilt from its log at
+// the API start (GRR-07 S16).
 interface ProjectRuns {
   active?: RunRecord;
   last?: RunRecord;
+  recovered?: RunState;
 }
 
 // Whether an input value fits the port type of its input node (P4).
@@ -146,9 +162,14 @@ function failureOf(error: unknown): RunError {
   return { code: PLATFORM_ERROR_CODES.INTERNAL, message: MESSAGES.INTERNAL };
 }
 
+// The text of an error for a log warning. It is never shown to a client.
+function errorTextOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 // The run engine's service: the start, the current run, the sequential topological run and its events (S1 to S11).
 @Injectable()
-export class RunsService {
+export class RunsService implements OnApplicationBootstrap {
   private readonly registry = new Map<string, ProjectRuns>();
 
   constructor(
@@ -265,9 +286,18 @@ export class RunsService {
       controller: new AbortController(),
       outputTargets,
       entityIds: new Map(),
+      logFailed: false,
     };
     this.entryOf(projectId).active = record;
 
+    this.log(record, {
+      type: 'run-started',
+      at: new Date().toISOString(),
+      runId: state.runId,
+      graphId: state.graphId,
+      ...(target === undefined ? {} : { target: { nodeId: target } }),
+      inputs: this.logInputsOf(inputs, captured),
+    });
     this.events.publish({
       module: 'graph-runner',
       type: 'run-started',
@@ -276,28 +306,83 @@ export class RunsService {
     for (const id of order) {
       this.setStatus(record, id, 'queued');
     }
-    this.engine(record).catch(() => {
+    this.engine(record).catch((error: unknown) => {
+      const failure = failureOf(error);
+      this.log(record, {
+        type: 'error',
+        at: new Date().toISOString(),
+        runId: state.runId,
+        code: failure.code,
+        message: failure.message,
+      });
       this.finish(record, 'error');
     });
     return { runId: state.runId };
   }
 
-  // The active run of the active project, else its last finished run, else null (P13).
+  // The active run of the active project, else its last finished run, else the run rebuilt at the start, else null
+  // (P13, GRR-07 S16).
   current(): CurrentRun {
     const runs = this.entryOf(this.graphs.activeProjectId());
-    return { run: runs.active?.state ?? runs.last?.state ?? null };
+    return {
+      run: runs.active?.state ?? runs.last?.state ?? runs.recovered ?? null,
+    };
   }
 
   // Asks a run of the active project to stop (GRR-05). A run that is neither the active nor the last run is unknown.
+  // The run rebuilt at the start has ended, so asking it to stop does nothing (GRR-07 S16).
   stop(runId: string): void {
     const runs = this.entryOf(this.graphs.activeProjectId());
     const record = [runs.active, runs.last].find(
       (candidate) => candidate?.state.runId === runId,
     );
     if (record === undefined) {
+      if (runs.recovered?.runId === runId) return;
       throw graphError('RUN_NOT_FOUND', MESSAGES.RUN_NOT_FOUND);
     }
     this.requestEnd(record, 'author');
+  }
+
+  // The restart recovery (GRR-07 S10 to S15): the most recent run of the active project is rebuilt from its log.
+  // A run with no end line is reported as stopped with reason interrupted, and its end is written. Never throws.
+  onApplicationBootstrap(): void {
+    try {
+      const projectId = this.store.activeId();
+      if (projectId === null) return;
+      const runs: { path: string; entries: RunLogEntry[] }[] = [];
+      let listing: FileEntry[];
+      try {
+        listing = this.files.list(projectId, { path: RUN_LOG_FOLDER }).entries;
+      } catch (error) {
+        // No logs folder yet: no run has been logged.
+        if (
+          error instanceof ModuleError &&
+          error.code === PROJECT_ERROR_CODES.NOT_FOUND
+        ) {
+          return;
+        }
+        throw error;
+      }
+      for (const entry of listing) {
+        if (entry.kind !== 'file' || !entry.path.endsWith('.jsonl')) continue;
+        const read = this.files.read(projectId, entry.path);
+        runs.push({ path: entry.path, entries: parseRunLog(read.content) });
+      }
+      const latest = latestRunOf(runs);
+      if (latest === undefined) return;
+      const recovered = recoveredRunOf(latest, new Date().toISOString());
+      if (recovered === undefined) return;
+      const { state, repairs } = recovered;
+      this.entryOf(projectId).recovered = state;
+      const path = runLogPathOf(state.runId);
+      for (const repair of repairs) {
+        this.files.appendLog(projectId, path, runLogLineOf(repair));
+      }
+    } catch (error) {
+      logger.warn(
+        `The run log of the active project could not be recovered: ${errorTextOf(error)}`,
+      );
+    }
   }
 
   // Asks a run to end with a reason: the first reason wins, and nothing happens once the run has ended. The model
@@ -422,6 +507,14 @@ export class RunsService {
           }
           const change = this.proposeOutput(record, id);
           record.state.pendingChangeIds.push(change.id);
+          this.log(record, {
+            type: 'pending-change',
+            at: new Date().toISOString(),
+            runId: record.state.runId,
+            nodeId: id,
+            pendingChangeId: change.id,
+            path: change.targetPath,
+          });
           this.setStatus(record, id, 'done', {
             result: { pendingChangeId: change.id, path: change.targetPath },
           });
@@ -435,7 +528,16 @@ export class RunsService {
           this.endStopped(record);
           return;
         }
-        this.setStatus(record, id, 'error', { error: failureOf(error) });
+        const failure = failureOf(error);
+        this.log(record, {
+          type: 'error',
+          at: new Date().toISOString(),
+          runId: record.state.runId,
+          nodeId: id,
+          code: failure.code,
+          message: failure.message,
+        });
+        this.setStatus(record, id, 'error', { error: failure });
         for (const later of record.order) {
           if (record.state.nodes[later]?.status === 'queued') {
             this.setStatus(record, later, 'stopped');
@@ -484,11 +586,21 @@ export class RunsService {
       path: entity.path,
       content: entity.content,
     }));
-    return this.executor.execute(
+    const result = await this.executor.execute(
       node.tool,
       { arguments: checked.arguments, entities },
       record.controller.signal,
     );
+    this.log(record, {
+      type: 'tool-call',
+      at: new Date().toISOString(),
+      runId: record.state.runId,
+      nodeId: node.id,
+      arguments: checked.arguments,
+      output: result.output,
+      sourcesUsed: result.sourcesUsed,
+    });
+    return result;
   }
 
   // The value a wire carries from its upstream port (P9): an input's value, or a tool's output text.
@@ -574,7 +686,44 @@ export class RunsService {
     };
   }
 
-  // The one place a node status changes (P12). Publishes one node-status event.
+  // Writes one line of the run log (GRR-07 S2, D11). Every call is synchronous. A failed write is logged once, and the
+  // later lines of the run are not attempted. Never throws.
+  private log(record: RunRecord, entry: RunLogEntry): void {
+    if (record.logFailed) return;
+    try {
+      this.files.appendLog(
+        record.projectId,
+        runLogPathOf(record.state.runId),
+        runLogLineOf(entry),
+      );
+    } catch (error) {
+      record.logFailed = true;
+      logger.warn(
+        `Run ${record.state.runId}: a run log line could not be written: ${errorTextOf(error)}`,
+      );
+    }
+  }
+
+  // The inputs of the run log: a file input carries the hash of its run-start read (GRR-07 S4).
+  private logInputsOf(
+    inputs: Record<string, InputValue>,
+    captured: ReadonlyMap<string, CapturedFile>,
+  ): Record<string, RunLogInput> {
+    const logged: Record<string, RunLogInput> = {};
+    for (const [id, value] of Object.entries(inputs)) {
+      if (value.kind !== 'file') {
+        logged[id] = value;
+        continue;
+      }
+      const file = captured.get(id);
+      if (file !== undefined) {
+        logged[id] = { kind: 'file', ref: value.ref, hash: file.hash };
+      }
+    }
+    return logged;
+  }
+
+  // The one place a node status changes (P12). Writes one node-status line, then publishes one node-status event.
   private setStatus(
     record: RunRecord,
     nodeId: string,
@@ -582,6 +731,14 @@ export class RunsService {
     extra: Pick<NodeRunState, 'result' | 'error'> = {},
   ): void {
     record.state.nodes[nodeId] = { status, ...extra };
+    this.log(record, {
+      type: 'node-status',
+      at: new Date().toISOString(),
+      runId: record.state.runId,
+      nodeId,
+      status,
+      ...(extra.error === undefined ? {} : { error: extra.error }),
+    });
     this.events.publish({
       module: 'graph-runner',
       type: 'node-status',
@@ -614,6 +771,13 @@ export class RunsService {
     const runs = this.entryOf(record.projectId);
     delete runs.active;
     runs.last = record;
+    this.log(record, {
+      type: 'run-ended',
+      at: new Date().toISOString(),
+      runId: record.state.runId,
+      status,
+      ...(reason === undefined ? {} : { reason }),
+    });
     this.events.publish({
       module: 'graph-runner',
       type: 'run-ended',
