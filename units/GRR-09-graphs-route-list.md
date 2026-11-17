@@ -17,5 +17,5 @@ unblocks: [GRR-17]
 - Create (name, view), rename and delete actions on tablet/desktop.
 
 ## Acceptance criteria
-- [ ] Component tests (fakes): list renders, create/rename/delete call the API, latest run status follows fake events.
-- [ ] A phone-sized viewport shows the list and run status, and the canvas route shows the gate message.
+- [x] Component tests (fakes): list renders, create/rename/delete call the API, latest run status follows fake events.
+- [x] A phone-sized viewport shows the list and run status, and the canvas route shows the gate message.
