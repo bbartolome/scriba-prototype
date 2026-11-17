@@ -63,6 +63,25 @@ Cookies are issued only on loopback, and they are issued without the `Secure` at
 
 The no-`Secure` fallback is applied (module line 47). A Chromium probe, if run, is optional evidence, not a pass. No Chromium probe was run.
 
+### Real-tailnet and socket checks (SAU-21)
+
+The steps and commands are in `deploy/RUNBOOK.md`, section `## SAU-21: socket and real-tailnet checks`. Every result below is `not run` until the record is filled in.
+
+| Check | Host and date | Result |
+|---|---|---|
+| S1 `id -u` (Mac) | not run | not run |
+| S2 status (Mac) | not run | not run |
+| S3 write probe (Mac) | not run | not run |
+| S1 to S3 (Linux) | not run | not run |
+| R1 before login | not run | not run |
+| R4(a) Host forwarding | not run | not run |
+| R4(b) identity injection and stripping, with the reader | not run | not run |
+| R5 published-path peer | not run | not run |
+| R5 Serve-path peer | not run | not run |
+| R6 `t1 - t0` and `StartedAt` | not run | not run |
+| Image revision (T0) | not run | not run |
+| Socket fallback applied | not run | not run |
+
 ### Testing principles
 - External behaviour only: HTTP status codes, headers, cookies, redirects, files on disk, rendered UI — never internal services, the token store or the signing helper.
 - Primary seam: the composed NestJS app (Platform's `create-test-app`) against a temp library folder.
