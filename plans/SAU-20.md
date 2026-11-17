@@ -1,6 +1,6 @@
 ---
 id: SAU-20
-status: planned
+status: done
 unit: units/SAU-20-tailscale-ui.md
 sources: units/SAU-20-tailscale-ui.md (23 lines, no change note); units/README.md; modules/setup-auth.md; units/SAU-11, SAU-15, SAU-17 and SAU-21 (lines named below); plans/SAU-11.md, SAU-15.md, SAU-17.md, SAU-18.md, SAU-19.md (done); plans/PLT-16.md (done, line 230); plans/PST-22.md, SAU-22.md, TRG-14.md (planned or draft; file lists); plans/DECISIONS.md (grep by unit id, matching lines read); plans/PLT-02.md (structure); deploy/compose.yaml (the serve step); the web, API and contract files named in sections 2 and 7.
 ---

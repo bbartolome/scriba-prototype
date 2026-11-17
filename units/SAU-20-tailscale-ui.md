@@ -17,6 +17,6 @@ unblocks: [SAU-21]
 - Both poll the status endpoint every few seconds while visible.
 
 ## Acceptance criteria
-- [ ] Component tests (fake API) for each state: link shown for `NeedsLogin`, URL for `Running`, HTTPS hint for certs off, MagicDNS hint, "unavailable" in dev, skip.
-- [ ] Allowlist toggle and lockout error rendering.
-- [ ] Polling stops when the view is hidden.
+- [x] Component tests (fake API) for each state: link shown for `NeedsLogin`, URL for `Running`, HTTPS hint for certs off, MagicDNS hint, "unavailable" in dev, skip.
+- [x] Allowlist toggle and lockout error rendering.
+- [x] Polling stops when the view is hidden.
