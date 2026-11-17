@@ -5488,3 +5488,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Patch id:** ac87ebfa389bd132c56a367bae0c1e0914d4a8c4 (`git diff main...unit/PST-17 -- . ':!plans' ':!units' | git patch-id --stable`). Both reviewers computed the same patch id.
 - **Result:** APPROVED by both reviewers. Part 1 (steps 0 to 5; T1, T2, X1a, X2a, X3 to X6, X9, X10). Part 2 (steps 6 to 10; T3, X1b, X2b, X7, X8). Each reviewer ran its tests read-only in the worktree: `npx vitest run test/project-store-pending-refresh.test.ts` in `apps/api` (15 of 15 pass), and the step 1 regression set (6 files, 33 tests, pass). The part 1 reviewer found no file changed outside the plan's list; `backups.ts` belongs to part 2 (step 6).
 - **Test output:** the orchestrator had only the implementer's summary (every gate command exit 0; T1 to T3 pass). The reviewers ran the tests themselves; the full implementer report is not in the repository.
+
+## 2026-11-17 — PST-18 — Review (Sonnet, medium), Part 1 (list, read and restore): APPROVED
+
+- **Branch:** `unit/PST-18`, one commit on top of main's base 2465d5c: 0e02642. Worktree `scriba-prototype-wt/PST-18`.
+- **Patch id:** 6aa6efa9e1c856437afde1df965b725d481cf3a9 (`git diff main...unit/PST-18 -- . ':!plans' ':!units' | git patch-id --stable`).
+- **Result:** APPROVED by one reviewer, part 1 of 1 (steps 0 to 9; tests V1, V2, V3, X1 to X4; the seven files of the plan's list). The reviewer's reply is APPROVED only.
+- **Test output:** from the implementer's COMPLETE report, not re-run by the orchestrator. `npm test -w @bbartolome/scriba-api` exit 0: 119 files and 448 tests pass. `npm run lint` and `npm run build` exit 0. Node v26.13.0.
