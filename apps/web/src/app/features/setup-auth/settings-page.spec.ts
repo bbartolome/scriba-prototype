@@ -12,6 +12,7 @@ import {
   SETUP_AUTH_EXAMPLES,
   SETUP_STATUS_ROUTE,
   SIGN_OUT_ROUTE,
+  TAILSCALE_STATUS_ROUTE,
   type SetupStatus,
 } from '@bbartolome/scriba-contracts/setup-auth';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -168,6 +169,11 @@ describe('S1 settings page with the fake API', () => {
       statusWith(SETUP_AUTH_EXAMPLES.composeOk),
     );
     doubles.api.respond('GET', VERSION_ROUTE, version);
+    doubles.api.respond(
+      'GET',
+      TAILSCALE_STATUS_ROUTE,
+      SETUP_AUTH_EXAMPLES.tailscaleUnavailable,
+    );
     doubles.api.respond(
       'GET',
       PREFERENCES_ROUTE,

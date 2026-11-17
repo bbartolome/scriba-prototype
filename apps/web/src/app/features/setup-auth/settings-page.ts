@@ -20,6 +20,7 @@ import {
   SIGN_IN_COMMAND,
   tailnetExplanation,
 } from './sign-in-notice';
+import { TailscalePanel } from './tailscale-panel';
 
 type SettingsContract = Awaited<ReturnType<typeof loadSettingsContract>>;
 
@@ -36,13 +37,19 @@ const signOutCopy: ResponseSchema<null> = {
 };
 
 /**
- * The settings page at `/settings`. It shows this device's connection, the preferences, the model
- * providers, the versions with the compose warning, the recovery steps, a way to run setup again,
- * and sign-out for this browser. Each read is independent; a tailnet code shows its explanation and
- * any other error shows its message.
+ * The settings page at `/settings`. It shows this device's connection, the Tailscale status and its
+ * login link, the preferences, the model providers, the versions with the compose warning, the
+ * recovery steps, a way to run setup again, and sign-out for this browser. Each read is independent; a
+ * tailnet code shows its explanation and any other error shows its message.
  */
 @Component({
-  imports: [ComposeWarning, MatButton, PreferencesForm, ProvidersPanel],
+  imports: [
+    ComposeWarning,
+    MatButton,
+    PreferencesForm,
+    ProvidersPanel,
+    TailscalePanel,
+  ],
   selector: 'app-settings-page',
   styles: `
     :host {
@@ -77,6 +84,11 @@ const signOutCopy: ResponseSchema<null> = {
         Signs out this browser only. A copy of the cookie elsewhere stays valid
         until the setup token changes.
       </p>
+    </section>
+
+    <section>
+      <h3>Tailscale</h3>
+      <app-tailscale-panel />
     </section>
 
     <section>
