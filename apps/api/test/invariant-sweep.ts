@@ -138,6 +138,18 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/project-store/projects/:projectId/versions/restore': {
     path: '/api/project-store/projects/no-such-project/versions/restore',
   },
+  '/api/graph-runner/graphs/:id': {
+    path: '/api/graph-runner/graphs/no-such-graph',
+  },
+  '/api/graph-runner/graphs/:id/save': {
+    path: '/api/graph-runner/graphs/no-such-graph/save',
+  },
+  '/api/graph-runner/graphs/:id/rename': {
+    path: '/api/graph-runner/graphs/no-such-graph/rename',
+  },
+  '/api/graph-runner/graphs/:id/delete': {
+    path: '/api/graph-runner/graphs/no-such-graph/delete',
+  },
   '/api/tool-registry/tools/:name': {
     path: '/api/tool-registry/tools/no-such-tool',
   },

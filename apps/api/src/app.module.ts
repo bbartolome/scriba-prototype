@@ -14,6 +14,7 @@ import { ProvidersModule } from './modules/providers/providers.module';
 import { ProjectStoreModule } from './modules/project-store/project-store.module';
 import { AgentLoopModule } from './modules/agent-loop/agent-loop.module';
 import { ToolRegistryModule } from './modules/tool-registry/tool-registry.module';
+import { GraphRunnerModule } from './modules/graph-runner/graph-runner.module';
 
 // The composition root. Each feature module adds one import here.
 export const COMPOSED_MODULES: Type<unknown>[] = [
@@ -23,6 +24,7 @@ export const COMPOSED_MODULES: Type<unknown>[] = [
   ProjectStoreModule,
   AgentLoopModule,
   ToolRegistryModule,
+  GraphRunnerModule,
 ];
 
 export interface RootModuleOptions {
