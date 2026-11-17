@@ -27,6 +27,7 @@ import {
 } from '../../shell/testing/test-doubles';
 import { ProvidersPanel } from '../providers/providers.routes';
 import { SettingsPage } from './settings-page';
+import { TAILSCALE_POLL_MS } from './tailscale-panel';
 
 /** Stands in for the Model providers panel, which makes its own reads. */
 @Component({ selector: 'app-providers-panel', template: '' })
@@ -288,5 +289,147 @@ describe('S1 settings page with the fake API', () => {
     expect(
       doubles.api.requests.filter((r) => r.method === 'POST'),
     ).toHaveLength(postsBefore);
+  });
+});
+
+/** The number of status reads that reached the fake client. */
+function statusReads(doubles: ShellTestDoubles): number {
+  return doubles.api.requests.filter(
+    (r) => r.method === 'GET' && r.path === TAILSCALE_STATUS_ROUTE,
+  ).length;
+}
+
+/** The links of a section: the text and the href of each `<a>`. */
+function linksIn(
+  section: HTMLElement,
+): { text: string; href: string | null }[] {
+  return [...section.querySelectorAll('a')].map((a) => ({
+    text: (a.textContent ?? '').trim(),
+    href: a.getAttribute('href'),
+  }));
+}
+
+function setVisibility(state: DocumentVisibilityState): void {
+  Object.defineProperty(document, 'visibilityState', {
+    configurable: true,
+    value: state,
+  });
+}
+
+/**
+ * Lets the pending promises run on real timers, with change detection after each turn, for at most
+ * 100 turns, until the check passes. Fake timers do not advance here: `vi.waitFor` would advance
+ * them, so the S3 test does not use it.
+ */
+async function waitForTurns(
+  harness: RouterTestingHarness,
+  check: (root: HTMLElement) => void,
+): Promise<void> {
+  let lastError: unknown;
+  for (let turn = 0; turn < 100; turn++) {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    harness.detectChanges();
+    try {
+      check(rootOf(harness));
+      return;
+    } catch (error: unknown) {
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
+/** Lets the pending promises run on real timers, then runs change detection. */
+async function flushTurns(harness: RouterTestingHarness): Promise<void> {
+  for (let turn = 0; turn < 3; turn++) {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  }
+  harness.detectChanges();
+}
+
+describe('S3 settings page polling', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    Reflect.deleteProperty(document, 'visibilityState');
+  });
+
+  it('S3 the Tailscale status is read every 5 s while the page is visible, and not while it is hidden or after the page is left; the settings section shows the login link and then the tailnet URL', async () => {
+    // Only the poll's interval is fake. Angular, the dynamic import and setTimeout stay real.
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    setVisibility('visible');
+    const doubles = createShellTestDoubles();
+    // Canned answers as S1 step 1, with the status read answering NeedsLogin with a login link.
+    doubles.api.respond(
+      'GET',
+      IDENTITY_ROUTE,
+      SETUP_AUTH_EXAMPLES.identityLoopback,
+    );
+    doubles.api.respond(
+      'GET',
+      SETUP_STATUS_ROUTE,
+      statusWith(SETUP_AUTH_EXAMPLES.composeOk),
+    );
+    doubles.api.respond('GET', VERSION_ROUTE, version);
+    doubles.api.respond(
+      'GET',
+      PREFERENCES_ROUTE,
+      SETUP_AUTH_EXAMPLES.preferences,
+    );
+    doubles.api.respond(
+      'GET',
+      TAILSCALE_STATUS_ROUTE,
+      SETUP_AUTH_EXAMPLES.tailscaleNeedsLogin,
+    );
+    const harness = await renderSettings(doubles);
+
+    // (a) The Tailscale section shows the login link to its authURL.
+    await waitForTurns(harness, (root) =>
+      expect(linksIn(sectionNamed(root, 'Tailscale'))).toEqual([
+        {
+          text: 'Log in to Tailscale',
+          href: SETUP_AUTH_EXAMPLES.tailscaleNeedsLogin.authURL,
+        },
+      ]),
+    );
+    const readsAtStart = statusReads(doubles);
+
+    // (b) The next poll reads Running: the section shows the tailnet URL and no login link.
+    doubles.api.respond(
+      'GET',
+      TAILSCALE_STATUS_ROUTE,
+      SETUP_AUTH_EXAMPLES.tailscaleRunning,
+    );
+    vi.advanceTimersByTime(TAILSCALE_POLL_MS);
+    await flushTurns(harness);
+    expect(statusReads(doubles)).toBe(readsAtStart + 1);
+    expect(linksIn(sectionNamed(rootOf(harness), 'Tailscale'))).toEqual([
+      {
+        text: 'Open Scriba over the tailnet',
+        href: SETUP_AUTH_EXAMPLES.tailscaleRunning.tailnetURL,
+      },
+    ]);
+
+    // (c) Hidden: no read while the document is hidden, however long the wait.
+    setVisibility('hidden');
+    document.dispatchEvent(new Event('visibilitychange'));
+    vi.advanceTimersByTime(3 * TAILSCALE_POLL_MS);
+    await flushTurns(harness);
+    expect(statusReads(doubles)).toBe(readsAtStart + 1);
+
+    // (d) Visible again: one read at once, then one per poll interval.
+    setVisibility('visible');
+    document.dispatchEvent(new Event('visibilitychange'));
+    await flushTurns(harness);
+    expect(statusReads(doubles)).toBe(readsAtStart + 2);
+    vi.advanceTimersByTime(TAILSCALE_POLL_MS);
+    await flushTurns(harness);
+    expect(statusReads(doubles)).toBe(readsAtStart + 3);
+
+    // (e) Left: the page is destroyed, so no read follows however long the wait.
+    await harness.navigateByUrl('/no-such-page');
+    const readsWhenLeft = statusReads(doubles);
+    vi.advanceTimersByTime(3 * TAILSCALE_POLL_MS);
+    await flushTurns(harness);
+    expect(statusReads(doubles)).toBe(readsWhenLeft);
   });
 });

@@ -11,10 +11,17 @@ type TailscaleContract = Awaited<ReturnType<typeof loadTailscaleContract>>;
 const ADMIN_CONSOLE_URL = 'https://login.tailscale.com/admin';
 
 /**
+ * The poll interval, in ms, while the document is visible. It is above the server's 2000 ms cache
+ * of the socket read, so each poll reads the socket.
+ */
+export const TAILSCALE_POLL_MS = 5000;
+
+/**
  * The Tailscale status: the state, the login link, the tailnet URL and the two prerequisite hints.
- * It is shown in the wizard's Tailscale step and in the settings page. It reads the status route
- * once, and it sends no read after it is destroyed. Tailscale stays optional, so the panel adds no
- * button; the wizard's own Skip is the skip.
+ * It is shown in the wizard's Tailscale step and in the settings page. While the document is
+ * visible it reads the status route at once and then every TAILSCALE_POLL_MS; while it is hidden
+ * it does not read. It sends no read after it is destroyed. Tailscale stays optional, so the panel
+ * adds no button; the wizard's own Skip is the skip.
  */
 @Component({
   selector: 'app-tailscale-panel',
@@ -91,6 +98,7 @@ export class TailscalePanel {
   private readonly loaded = loadTailscaleContract();
   private contract: TailscaleContract | undefined;
   private destroyed = false;
+  private timer: ReturnType<typeof setInterval> | undefined;
 
   protected readonly adminConsoleURL = ADMIN_CONSOLE_URL;
   protected readonly status = signal<TailscaleStatus | undefined>(undefined);
@@ -98,11 +106,18 @@ export class TailscalePanel {
   protected readonly failure = signal<string | undefined>(undefined);
 
   constructor() {
-    this.destroyRef.onDestroy(() => {
-      this.destroyed = true;
-    });
+    this.destroyRef.onDestroy(() => this.dispose());
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
     void this.load();
   }
+
+  private readonly onVisibilityChange = (): void => {
+    if (document.visibilityState === 'visible') {
+      this.resume();
+    } else {
+      this.pause();
+    }
+  };
 
   private async load(): Promise<void> {
     let contract: TailscaleContract;
@@ -114,6 +129,35 @@ export class TailscalePanel {
     }
     if (this.destroyed) return;
     this.contract = contract;
+    if (document.visibilityState === 'visible') {
+      this.resume();
+    }
+  }
+
+  /** Reads now, and then every TAILSCALE_POLL_MS, until the document is hidden or the panel is gone. */
+  private resume(): void {
+    const contract = this.contract;
+    if (contract === undefined || this.destroyed) return;
+    this.pause();
+    this.read(contract);
+    this.timer = setInterval(() => this.read(contract), TAILSCALE_POLL_MS);
+  }
+
+  private pause(): void {
+    if (this.timer !== undefined) {
+      clearInterval(this.timer);
+      this.timer = undefined;
+    }
+  }
+
+  private dispose(): void {
+    this.destroyed = true;
+    this.pause();
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
+  }
+
+  private read(contract: TailscaleContract): void {
+    if (this.destroyed) return;
     this.api
       .get(contract.TAILSCALE_STATUS_ROUTE, contract.tailscaleStatusSchema)
       .pipe(takeUntilDestroyed(this.destroyRef))
