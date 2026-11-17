@@ -1,6 +1,6 @@
 ---
 unit: GRR-05
-status: planned
+status: done
 ---
 # GRR-05 plan — stop, fail-fast on error, and stop on project switch
 

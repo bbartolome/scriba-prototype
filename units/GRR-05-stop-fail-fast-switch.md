@@ -20,6 +20,6 @@ Remaining steps stop when one fails (31); Stop ends the run promptly and cancels
 - **Project switch:** register with the Project store's in-process `onProjectSwitched` hook; a switch stops the old project's active run exactly like Stop, with reason `project-switched`.
 
 ## Acceptance criteria
-- [ ] A mock tool failure marks that node `error`, queued nodes `stopped`, and ends the run `error`.
-- [ ] Stop during a slow mock call ends the run `stopped` within 2 seconds, the mock sees the request aborted, and no pending change is created afterwards.
-- [ ] Switching the active project mid-run ends the run `stopped` with reason `project-switched`.
+- [x] A mock tool failure marks that node `error`, queued nodes `stopped`, and ends the run `error`.
+- [x] Stop during a slow mock call ends the run `stopped` within 2 seconds, the mock sees the request aborted, and no pending change is created afterwards.
+- [x] Switching the active project mid-run ends the run `stopped` with reason `project-switched`.
