@@ -5516,3 +5516,13 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 
 - **Decision (Navigator, option (a)):** the tailnet handshake has no test. The gap is recorded in `plans/SAU-18.md` section 9. No criterion is added to SAU-18 or to any other unit, and no extra test is added to the plan.
 - **Reason:** the handshake code already redirects without a cookie on the tailnet Host (`plans/SAU-18.md` C8). SAU-03 open point 3 (`plans/SAU-03.md:149`) records the same gap. A new criterion would change a unit, and the Navigator does not see a need for it here.
+
+## 2026-11-17 — SAU-18 — Review (Sonnet, medium), Part 1 (the whole plan): APPROVED
+
+- **Branch:** `unit/SAU-18`, one commit on top of main's base 6be7616: 5d5f8ac (`feat(SAU-18): tailnet guard path`). Worktree `scriba-prototype-wt/SAU-18`.
+- **Patch id:** 5d6bf0ced0b6280e34e9ee218538f6223f8eb336 (`git diff main...unit/SAU-18 -- . ':!plans' ':!units' | git patch-id --stable`). The reviewer computed the same patch id.
+- **Result:** APPROVED by one reviewer, part 1 of 1. The nine files of the diff are the nine rows of plan section 4.
+- **Criteria (apps/api/test/setup-auth-tailnet.test.ts, 5 of 5 pass in the reviewer's run):** criterion 1 to criterion 5, one test each.
+- **Existing tests, run by the reviewer, all pass without edit:** setup-auth-guard 8, token-guard-gate 6, invariant-get-head 3, invariant-mutation-guard 3, setup-auth-status 4, setup-auth-handshake 7, setup-auth-localapi 4, setup-auth-token 3, setup-auth-section 1, setup-auth-logs 2, setup-auth-compose-status 5. Full apps/api suite: 121 files, 458 tests.
+- **Implementer differences, judged by the reviewer as a correct reading of the plan (not plan breaks):** (1) the /healthz early return applies to safe methods only, as on main; (2) the identity route returns the guard's identity with no `isLoopbackHost` check, per plan D7 and section 4 row 6; a valid cookie on an admitted non-loopback dev-origin Host now gets `{via:'loopback'}` (no test covers it; SAU-22 is the unit that makes such Hosts relevant); (3) prettier on two files, formatting only; (4) `listenHost` in `create-test-app.ts` and the local non-tailnet address helper, per plan D16.
+- **Test output:** the reviewer ran the criterion tests and the existing tests in the worktree. The orchestrator re-runs the three checks before the fast-forward (step 3 of the prompt).
