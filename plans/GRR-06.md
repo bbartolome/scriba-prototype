@@ -1,6 +1,6 @@
 ---
 id: GRR-06
-status: planned
+status: done
 ---
 # GRR-06 plan — output nodes: pending changes with target precedence, captured base, origin, provenance and the graphs/ validator
 

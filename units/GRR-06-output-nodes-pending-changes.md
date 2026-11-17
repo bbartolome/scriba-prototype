@@ -26,8 +26,8 @@ Each finished output node creates a pending change with a link (33); a text-inpu
 - **Validator registration:** register the graph schema as the Project store's per-path validator for `graphs/*.json`, so an invalid proposed graph (e.g. from propose-graph) is refused at propose time.
 
 ## Acceptance criteria
-- [ ] A run creates exactly one pending change per in-scope output node, with origin `recipe-run`, the output node id, and provenance `entityIds`/`sourcesUsed`.
-- [ ] With a text input fed a file and an output targeting that same file, the pending change's captured base equals the run-start content even if the file changes mid-run; accepting it through the Project store reports a conflict.
-- [ ] Target precedence (request, params, generated name) is honoured; a target outside the kind's folder is refused before work.
-- [ ] A `graph` output whose content fails the schema errors the output node.
-- [ ] A propose of an invalid graph file to `graphs/` through the Project store is refused by the registered validator.
+- [x] A run creates exactly one pending change per in-scope output node, with origin `recipe-run`, the output node id, and provenance `entityIds`/`sourcesUsed`.
+- [x] With a text input fed a file and an output targeting that same file, the pending change's captured base equals the run-start content even if the file changes mid-run; accepting it through the Project store reports a conflict.
+- [x] Target precedence (request, params, generated name) is honoured; a target outside the kind's folder is refused before work.
+- [x] A `graph` output whose content fails the schema errors the output node.
+- [x] A propose of an invalid graph file to `graphs/` through the Project store is refused by the registered validator.
