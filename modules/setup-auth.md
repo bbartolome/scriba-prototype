@@ -69,18 +69,18 @@ The steps and commands are in `deploy/RUNBOOK.md`, section `## SAU-21: socket an
 
 | Check | Host and date | Result |
 |---|---|---|
-| S1 `id -u` (Mac) | not run | not run |
-| S2 status (Mac) | not run | not run |
-| S3 write probe (Mac) | not run | not run |
-| S1 to S3 (Linux) | not run | not run |
-| R1 before login | not run | not run |
+| S1 `id -u` (Mac) | Mac, Docker Desktop daemon, 2026-11-17 | `1001` |
+| S2 status (Mac) | Mac, Docker Desktop daemon, 2026-11-17 | `200 NeedsLogin` (repeated after S3: unchanged) |
+| S3 write probe (Mac) | Mac, Docker Desktop daemon, 2026-11-17 | `403 prefs write access denied` (writes refused for UID 1001) |
+| S1 to S3 (Linux) | not run | not run: no Linux Docker Engine host reachable |
+| R1 before login | Mac, `sau21-check` stack, 2026-11-17 | `200 NeedsLogin authURL=true`; `StartedAt0` 2026-11-17T11:52:54.50840918Z |
 | R4(a) Host forwarding | not run | not run |
 | R4(b) identity injection and stripping, with the reader | not run | not run |
 | R5 published-path peer | not run | not run |
 | R5 Serve-path peer | not run | not run |
 | R6 `t1 - t0` and `StartedAt` | not run | not run |
-| Image revision (T0) | not run | not run |
-| Socket fallback applied | not run | not run |
+| Image revision (T0) | Mac, 2026-11-17 | `20f6eac` (built as `bbartolome/scriba:sau21-check`) |
+| Socket fallback applied | 2026-11-17 | no: S2 passed on variant B, so step 13 did not run |
 
 ### Testing principles
 - External behaviour only: HTTP status codes, headers, cookies, redirects, files on disk, rendered UI — never internal services, the token store or the signing helper.
