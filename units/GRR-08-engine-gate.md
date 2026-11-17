@@ -14,6 +14,6 @@ unblocks: [GRR-17]
 Merging this **closes Graph runner `phase:engine`**.
 
 ## Acceptance criteria (the `phase:engine` checklist)
-- [ ] GRR-02…GRR-07 criteria pass on `main`.
-- [ ] Every `/api/graph-runner` route is behind the guard; Setup & auth's invariant tests pass for them.
-- [ ] Platform's boundaries lint confirms no import between `graph-runner` and `agent-loop`.
+- [x] GRR-02…GRR-07 criteria pass on `main`.
+- [x] Every `/api/graph-runner` route is behind the guard; Setup & auth's invariant tests pass for them.
+- [x] Platform's boundaries lint confirms no import between `graph-runner` and `agent-loop`.
