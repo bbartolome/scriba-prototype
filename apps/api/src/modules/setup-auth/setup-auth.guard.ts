@@ -20,6 +20,7 @@ import {
   type HostEntry,
   type RequestPolicy,
 } from './request-policy';
+import { SetupStatusService } from './setup-status.service';
 import { cookieValue } from './setup-session.cookie';
 
 // The parts of the request that the guard reads and the identity it attaches.
@@ -46,8 +47,13 @@ const SERVE_PEERS = ['127.0.0.1', '::1'];
 const TAILNET_IDENTITY_MESSAGE =
   'Sign this device in to Tailscale as a user (a tagged device has no user identity).';
 
+// Shown to a tailnet login that is not on the owner's allowlist.
+const NOT_ALLOWED_MESSAGE =
+  "This Tailscale login is not on the owner's allowlist.";
+
 // The global default-deny guard (APP_GUARD). A route is public only with @Public() or on /healthz.
 // On the tailnet Host the identity is the login header from a Serve peer, and a cookie is not read.
+// On the tailnet Host, when the owner allowlist is on, a login not in it is refused. Loopback never reads the list.
 // On every other admitted Host a valid setup cookie is the credential. Every mutation needs the Origin of its own Host.
 @Injectable()
 export class SetupAuthGuard implements CanActivate {
@@ -55,6 +61,7 @@ export class SetupAuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly signer: SetupCookieSigner,
     @Inject(REQUEST_POLICY) private readonly policy: RequestPolicy,
+    private readonly status: SetupStatusService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -92,10 +99,25 @@ export class SetupAuthGuard implements CanActivate {
         );
       }
     }
+    if (tailnet && identity !== undefined) this.checkAllowlist(identity);
     if (!SAFE_METHODS.includes(req.method)) {
       this.checkOrigin(req, entry);
     }
     return true;
+  }
+
+  // When the allowlist is on, a tailnet login that is not in it is refused. Loopback has no login, so it is never listed.
+  private checkAllowlist(identity: Identity): void {
+    const list = this.status.allowlist();
+    if (!list.enabled) return;
+    const login = identity.via === 'tailnet' ? identity.login : undefined;
+    if (login === undefined || !list.logins.includes(login)) {
+      throw new ModuleError(
+        SETUP_AUTH_ERROR_CODES.TAILNET_NOT_ALLOWED,
+        SETUP_AUTH_ERROR_STATUS.AUTH_TAILNET_NOT_ALLOWED,
+        NOT_ALLOWED_MESSAGE,
+      );
+    }
   }
 
   // The login header is trusted only on the tailnet Host, from a Serve peer. A cookie is not a credential there.

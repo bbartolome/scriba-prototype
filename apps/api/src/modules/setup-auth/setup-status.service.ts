@@ -1,7 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
+  SETUP_AUTH_ERROR_CODES,
+  SETUP_AUTH_ERROR_STATUS,
   SETUP_STEP_KEYS,
   setupAuthSectionSchema,
+  type Allowlist,
+  type Identity,
   type Preferences,
   type SetupAuthSection,
   type SetupStatus,
@@ -10,6 +14,7 @@ import {
 } from '@bbartolome/scriba-contracts/setup-auth';
 import {
   EXPECTED_COMPOSE_VERSION,
+  ModuleError,
   SCRIBA_ENV,
   SettingsService,
   type ScribaEnv,
@@ -17,8 +22,13 @@ import {
 } from '../platform/platform.module';
 import { SETUP_AUTH_SECTION_DEF } from './setup-auth.section';
 import { composeVersionStatus } from './compose-status';
+import { TailscaleStatusService } from './tailscale-status.service';
 
 type Steps = SetupAuthSection['steps'];
+
+// Shown to a tailnet caller whose change would exclude its own login (plan C5).
+const LOCKOUT_MESSAGE =
+  'This change would exclude the Tailscale login that made it. Add that login to the list first, or make the change from the computer that runs Scriba.';
 
 // The body of the status route. A pending access is shown as done, because only an authenticated caller gets this
 // body. A stored access that is done or skipped is shown as stored, so a skipped access is visible.
@@ -51,6 +61,7 @@ export class SetupStatusService {
   constructor(
     private readonly settings: SettingsService,
     @Inject(SCRIBA_ENV) private readonly env: ScribaEnv,
+    private readonly tailnet: TailscaleStatusService,
   ) {}
 
   // Reads only: nothing is written and no cookie is set.
@@ -117,6 +128,49 @@ export class SetupStatusService {
     const saved = this.parsed(next).preferences;
     this.settings.write('setupAuth', next);
     return saved;
+  }
+
+  // Reads only. The stored allowlist: {enabled, logins}, off with an empty list by default.
+  allowlist(): Allowlist {
+    return this.parsed(this.stored()).allowlist;
+  }
+
+  // Merges the patch into the stored allowlist, field by field. Turning it on while the list is empty seeds it with the
+  // tailnet owner's login, when that login is known. A tailnet caller whose change would leave the allowlist on without
+  // its own login is refused (SETUP_ALLOWLIST_LOCKOUT), and nothing is written. Writes the setupAuth section only.
+  async saveAllowlist(
+    patch: Partial<Allowlist>,
+    caller: Identity | undefined,
+  ): Promise<Allowlist> {
+    const stored = this.stored();
+    const current = this.parsed(stored).allowlist;
+    const next: Allowlist = {
+      enabled: patch.enabled ?? current.enabled,
+      logins: patch.logins ?? current.logins,
+    };
+    if (!current.enabled && next.enabled && next.logins.length === 0) {
+      const owner = (await this.tailnet.status()).ownerLogin;
+      if (owner !== undefined) next.logins = [owner];
+    }
+    if (
+      caller?.via === 'tailnet' &&
+      next.enabled &&
+      !next.logins.includes(caller.login)
+    ) {
+      throw new ModuleError(
+        SETUP_AUTH_ERROR_CODES.ALLOWLIST_LOCKOUT,
+        SETUP_AUTH_ERROR_STATUS.SETUP_ALLOWLIST_LOCKOUT,
+        LOCKOUT_MESSAGE,
+      );
+    }
+    this.settings.write('setupAuth', {
+      ...stored,
+      allowlist: {
+        ...(stored.allowlist as Record<string, unknown>),
+        ...next,
+      },
+    });
+    return next;
   }
 
   // The stored section, or the module default when the section is missing from the file.
