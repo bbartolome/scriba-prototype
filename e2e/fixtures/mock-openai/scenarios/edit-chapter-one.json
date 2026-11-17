@@ -1,0 +1,42 @@
+{
+  "steps": [
+    {
+      "match": {
+        "endpoint": "chat",
+        "lastMessageContent": "Task: extract claims."
+      },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["{\"claims\":[]}"]
+      }
+    },
+    {
+      "match": {
+        "endpoint": "chat",
+        "lastMessageContent": "tighten chapter 1"
+      },
+      "reply": {
+        "kind": "toolCalls",
+        "calls": [
+          {
+            "name": "edit_file",
+            "argumentChunks": [
+              "{\"path\":\"drafts/born-to-it.md\",\"old\":\"The rest of this chapter sets up the harder question.\",\"new\":\"This chapter sets up the harder question.\"}"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "match": {
+        "endpoint": "chat",
+        "lastMessageRole": "tool"
+      },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["I tightened the last sentence of chapter 1."],
+        "chunkDelayMs": 150
+      }
+    }
+  ]
+}

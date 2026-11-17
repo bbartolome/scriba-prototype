@@ -279,7 +279,135 @@ test('journey: setup, project from sample, agent run, accept change, manuscript'
   });
 
   // Owner: Project store review, M3 (PST-22; AGL-15).
-  await test.step('accept change', () => pending(testInfo, 'accept change'));
+  await test.step('accept change', async () => {
+    testInfo.setTimeout(testInfo.timeout + 30_000);
+    const errors: Error[] = [];
+    page.on('pageerror', (error) => errors.push(error));
+    const mock = process.env.SCRIBA_E2E_MOCK_URL!;
+    const origin = 'http://127.0.0.1:8080';
+    const library = process.env.SCRIBA_E2E_LIBRARY!;
+    const draft = join(library, 'demo-book', 'drafts', 'born-to-it.md');
+    const versions = join(
+      library,
+      'demo-book',
+      'drafts',
+      '.versions',
+      'born-to-it.md',
+    );
+    const pendingUrl = '/api/project-store/projects/demo-book/pending';
+
+    // The chapter as it is before the agent's edit.
+    const before = await readFile(draft, 'utf8');
+
+    // A second provider, at the edit-chapter-one scenario, made the app default.
+    const created = await page.request.post('/api/providers', {
+      headers: { origin },
+      data: {
+        label: 'Mock edit',
+        kind: 'openai-compatible',
+        baseURL: `${mock}/scenario/edit-chapter-one/v1`,
+        model: 'mock-model',
+        temperature: 0.7,
+        contextSize: 64000,
+        maxTokens: 4096,
+        timeout: 120000,
+        retries: 2,
+      },
+    });
+    expect(created.status()).toBe(201);
+    const { id } = (await created.json()) as { id: string };
+    const defaulted = await page.request.post('/api/providers/app-default', {
+      headers: { origin },
+      data: { providerId: id, model: 'mock-model' },
+    });
+    expect(defaulted.status()).toBe(200);
+
+    // The second run continues the chat's conversation (the agent-run step's run is replayed before it).
+    await page
+      .getByRole('textbox', { name: 'Intent', exact: true })
+      .fill('tighten chapter 1');
+    await page.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect(
+      page.getByRole('region', { name: 'Messages', exact: true }),
+    ).toContainText('I tightened the last sentence of chapter 1.', {
+      timeout: 15_000,
+    });
+    // The run ends after its grounding extract, so no Stop button means the change is filed.
+    await expect(
+      page.getByRole('button', { name: 'Stop', exact: true }),
+    ).toHaveCount(0, { timeout: 15_000 });
+
+    // One open change, for the chapter, from the agent run. Nothing is written yet.
+    await expect
+      .poll(
+        async () => {
+          const reply = await page.request.get(pendingUrl);
+          const body = (await reply.json()) as { changes: unknown[] };
+          return body.changes.length;
+        },
+        { timeout: 15_000 },
+      )
+      .toBe(1);
+    const listed = await page.request.get(pendingUrl);
+    const { changes } = (await listed.json()) as {
+      changes: {
+        proposed: string;
+        targetPath: string;
+        status: string;
+        conflict: unknown;
+        origin: { kind: string };
+      }[];
+    };
+    const [change] = changes;
+    expect(change?.targetPath).toBe('drafts/born-to-it.md');
+    expect(change?.status).toBe('pending');
+    expect(change?.conflict).toBeNull();
+    expect(change?.origin.kind).toBe('agent-run');
+    expect(await readFile(draft, 'utf8')).toBe(before);
+
+    // The intent, the tool result and the grounding extract, in that order (the requests of this run).
+    const requests = await fetch(
+      `${mock}/__mock/scenarios/edit-chapter-one/requests`,
+    );
+    const records = (await requests.json()) as {
+      endpoint: string;
+      step: number | null;
+    }[];
+    expect(
+      records
+        .filter((record) => record.endpoint === 'chat')
+        .map((record) => record.step),
+    ).toEqual([1, 2, 0]);
+
+    // Accept in the review queue, on the desktop layout.
+    await page.goto('/projects/demo-book/review');
+    await expect(
+      page.getByRole('heading', { name: 'Review', exact: true }),
+    ).toBeVisible();
+    const row = page.locator('li').filter({
+      has: page.locator('code', { hasText: /^drafts\/born-to-it\.md$/ }),
+    });
+    await row.getByRole('button', { name: 'Open', exact: true }).click();
+    await row.getByRole('button', { name: 'Accept', exact: true }).click();
+    await expect(
+      page.getByText('No open changes.', { exact: true }),
+    ).toBeVisible();
+
+    // The file is the proposed text, and the version holds the text before the edit.
+    const after = await readFile(draft, 'utf8');
+    expect(after).toBe(change?.proposed);
+    expect(after).toContain('This chapter sets up the harder question.');
+    expect(after).not.toContain(
+      'The rest of this chapter sets up the harder question.',
+    );
+    const versionFiles = await readdir(versions);
+    expect(versionFiles).toHaveLength(1);
+    expect(versionFiles[0]).toMatch(/^\d{8}T\d{9}Z\.md$/);
+    expect(await readFile(join(versions, versionFiles[0]!), 'utf8')).toBe(
+      before,
+    );
+    expect(errors).toEqual([]);
+  });
 
   // Owner: Compile & export, M5 (CEX-20). No export step in the e2e.
   await test.step('manuscript', () => pending(testInfo, 'manuscript'));
