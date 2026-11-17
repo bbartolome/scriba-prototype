@@ -21,7 +21,6 @@ const READ: ApiPath = '/api/project-store/projects/p1/file';
 const VERSIONS: ApiPath = '/api/project-store/projects/p1/versions';
 const VERSION_READ: ApiPath = '/api/project-store/projects/p1/versions/read';
 const RESTORE: ApiPath = '/api/project-store/projects/p1/versions/restore';
-const LIST_PARAMS = { path: '.', recursive: 'true' };
 const MTIME = '2026-11-14T09:00:00Z';
 
 const v2 = {
