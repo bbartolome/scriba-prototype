@@ -5639,3 +5639,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Patch id:** 6beb4503556d17505e942a6ec6189b47944395e7 (`git diff main...unit/GRR-02 -- . ':!plans' ':!units' | git patch-id --stable`). The code is on branch `unit/GRR-02` at 840c57c.
 - **Result:** APPROVED by the one reviewer of part R1 (steps 1 to 17, tests K1 to K4, plan section 7). The reviewer ran `npm test -w @bbartolome/scriba-api -- graph-runner-graph-crud` in the worktree: both tsc builds passed, and 4 of 4 tests passed (K1 to K4). The diff has 7 files, all in the plan's section 2 list, and no other file changed.
 - **Gap:** the implementer's COMPLETE report text is not kept in the repository, so the reviewer ran the tests itself. The reviewer did not run step 13 (the three invariant files) or step 15 (the root gates). Step 3 runs lint, test and build on the rebased branch.
+
+## 2026-11-17 — GRR-03 — Review result: APPROVED (part R1)
+
+- **Patch id:** df7ce6bb2c0e47a3e20c0ff9c5d965aeb90bcc25 (`git diff main...unit/GRR-03 -- . ':!plans' ':!units' | git patch-id --stable`). The code is on branch `unit/GRR-03` at 23efbbf.
+- **Result:** APPROVED by the one reviewer of part R1 (plan section 7, criteria C1 to C4). The reviewer re-ran `npm test -w @bbartolome/scriba-api -- graph-runner-validation` in the worktree: 4 of 4 tests passed. The diff has 6 files, all in the plan's section 2 list, and no file under plans/ or units/ changed.
+- **Implementer's differences, accepted by the reviewer:** the branch was not re-created (the worktree was already on `unit/GRR-03`); `pinned-entity-missing` gives one issue per port, not per unknown id; the M3 mutation fails C3 and C4 as well as C1 and C2; the tool YAML files are named `<tool>.yaml`; the signatures take one facts object.
+- **Comment remark:** the reference "(P13, GRR-03 P17)" in `graph-runner.service.ts` is accepted as correct (P17 is "Issues of get").
+- **Gap:** none recorded. The implementer's COMPLETE report gives the regression runs, the mutation runs and the root gates. Step 3 runs lint, test and build again on the rebased branch.
