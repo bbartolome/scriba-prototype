@@ -5619,3 +5619,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Result:** APPROVED by the one reviewer of Part 1. The diff touches only the new gate file. The reviewer re-ran the gate file (2 passed), the C2 wiring test with `-t` (1 passed, 6 skipped) and `chat-page.spec.ts` (21 passed). The reviewer did not re-run the e2e test, the mutations or the root gates; those rest on the implementer's report, which the plan's step 3 checks cover.
 - **Checks reported by the implementer (not re-run by the reviewer):** T2 e2e path filter `specs/verdicts-sample.e2e.ts` passed (`--trace off`); mutation M1 (grounding-engine.ts:234) fails C1 and M2 (grounding-engine.ts:247) fails C3, both reverted; API suite 125 files, 468 tests passed; prettier and lint exit 0.
 - **Differences from the plan (not plan breaks):** the fixture writers are inline (`prepareC1`, `prepareC3`) and the unused helpers are not copied.
+
+## 2026-11-17 — AGL-20 — Step 3, check failure recorded: npm test, first run on eb177f0
+
+- **Failed check:** the first full `npm test` on `unit/AGL-20` (eb177f0, rebased on main 74c9054) exited 1. Two web specs timed out at 5000 ms, not on an assertion: `apps/web/src/app/features/project-store/version-history.spec.ts` H1 and `apps/web/src/app/features/setup-auth/settings-page.spec.ts` S1. Web result of that run: 64 files, 449 passed, 2 failed (451 tests).
+- **Re-run:** the two spec files alone (`npm test -w @bbartolome/scriba-web -- --include ...`) gave 11 of 11 passed. A second full `npm test` on the same code exited 0: API 125 files and 468 tests, web 64 files and 451 tests, and the other workspaces passed.
+- **Reading:** the timeouts happened while other work ran on the same machine. The change under test is one API test file; the two web specs are not touched by it. No code was changed for this record. The check is passed on the second run.
