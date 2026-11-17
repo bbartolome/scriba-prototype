@@ -1,6 +1,6 @@
 ---
 id: AGL-20
-status: planned
+status: done
 ---
 # AGL-20 plan — grounding gate: the phase checklist on main
 

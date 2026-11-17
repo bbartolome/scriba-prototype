@@ -14,11 +14,11 @@ unblocks: [AGL-23, "Compile & export unsupported-claims preflight"]
 Merging this **closes Agent loop `phase:grounding`**.
 
 ## Acceptance criteria (the phase checklist)
-- [ ] **Done when** an invented statistic in a draft is flagged as unsupported.
-- [ ] A check of the sample grounding-claims draft yields at least one claim of each verdict, and every supported or weak verdict cites a retrieved `sources/` passage.
-- [ ] A verdict citing a passage that wasn't retrieved is downgraded to `unsupported`.
-- [ ] The claims artefact matches the contract and carries the draft's content hash.
-- [ ] Badges render with text labels at phone width.
+- [x] **Done when** an invented statistic in a draft is flagged as unsupported.
+- [x] A check of the sample grounding-claims draft yields at least one claim of each verdict, and every supported or weak verdict cites a retrieved `sources/` passage.
+- [x] A verdict citing a passage that wasn't retrieved is downgraded to `unsupported`.
+- [x] The claims artefact matches the contract and carries the draft's content hash.
+- [x] Badges render with text labels at phone width.
 
 ## Demo (under 5 min)
 Start from the sample and open the grounding-claims draft. Tap "Check grounding" and watch claims get their badges, the invented statistic marked unsupported. Expand a supported claim and open its cited source. Ask the agent to draft a paragraph and see the check run on its own.
