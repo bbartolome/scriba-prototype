@@ -1,6 +1,6 @@
 ---
 id: GRR-02
-status: planned
+status: done
 ---
 # GRR-02 plan — module skeleton and graph CRUD through the Project store file API
 

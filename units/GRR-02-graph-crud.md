@@ -23,7 +23,7 @@ List graphs (story 1), create recipes and story graphs (2–3), direct saves (4)
 - The list may badge a graph id that has an open pending change (from the Project store's queue listing). The Graph runner never creates graph pending changes from the agent's side; an author save racing a pending change is handled by the Project store's three-way check on accept.
 
 ## Acceptance criteria
-- [ ] Create, save, rename (name and id), list and delete over HTTP change files in `graphs/` as expected.
-- [ ] A schema-invalid save returns `GRAPH_SCHEMA_INVALID` and leaves the file unchanged.
-- [ ] A file with `schemaVersion: 2` is refused with `GRAPH_SCHEMA_VERSION_UNSUPPORTED` and listed as invalid.
-- [ ] Renaming the id to an existing slug fails; GETs are side-effect free.
+- [x] Create, save, rename (name and id), list and delete over HTTP change files in `graphs/` as expected.
+- [x] A schema-invalid save returns `GRAPH_SCHEMA_INVALID` and leaves the file unchanged.
+- [x] A file with `schemaVersion: 2` is refused with `GRAPH_SCHEMA_VERSION_UNSUPPORTED` and listed as invalid.
+- [x] Renaming the id to an existing slug fails; GETs are side-effect free.
