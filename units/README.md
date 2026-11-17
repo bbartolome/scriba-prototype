@@ -88,6 +88,7 @@ A phase **closes when its gate unit is merged** (the gate is the phase's last un
 | Setup & auth | `phase:token-guard` | M1 | SAU-02 … SAU-08 | SAU-08 | "Setup & auth minimal token" |
 | Setup & auth | `phase:setup-flow` | M2 | SAU-09 … SAU-16 | SAU-16 | |
 | Setup & auth | `phase:tailnet` | M3 | SAU-17 … SAU-21 | SAU-21 | Phone review over the tailnet |
+| Setup & auth | none (ungated) | M1 | SAU-22 | — | Dev mode (`SCRIBA_DEV_AUTH`) skips the guard's cookie and Origin checks for local runs; nothing waits for it |
 | Model providers | `phase:contract` | M1 | MPR-01 | MPR-01 | |
 | Model providers | `phase:client` | M1 | MPR-02 … MPR-08 | MPR-08 | Ollama default works |
 | Model providers | `phase:settings-ui` | M2 | MPR-09 … MPR-11 | MPR-11 | |
