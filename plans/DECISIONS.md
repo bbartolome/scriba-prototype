@@ -5495,3 +5495,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Patch id:** 6aa6efa9e1c856437afde1df965b725d481cf3a9 (`git diff main...unit/PST-18 -- . ':!plans' ':!units' | git patch-id --stable`).
 - **Result:** APPROVED by one reviewer, part 1 of 1 (steps 0 to 9; tests V1, V2, V3, X1 to X4; the seven files of the plan's list). The reviewer's reply is APPROVED only.
 - **Test output:** from the implementer's COMPLETE report, not re-run by the orchestrator. `npm test -w @bbartolome/scriba-api` exit 0: 119 files and 448 tests pass. `npm run lint` and `npm run build` exit 0. Node v26.13.0.
+
+## 2026-11-17 — PST-19 — Review (Sonnet, medium), Part 1 (steps 1 to 8; tests W1 to W5): APPROVED
+
+- **Branch:** `unit/PST-19`, one commit on top of main's base b889239: 8b5d05c (code), then 50c4493 (ticked criteria and plan status done). Worktree `scriba-prototype-wt/PST-19`, removed after the fast-forward.
+- **Patch id:** d5c3aaedfeede96e1346f11b123229fec31cc57d (`git diff main...unit/PST-19 -- . ':!plans' ':!units' | git patch-id --stable`). The reviewer computed the same patch id.
+- **Result:** APPROVED by one reviewer, part 1 of 1. The reviewer's reply is APPROVED only. The four paths of the diff match the plan's list of files to change.
+- **Deviations accepted by the reviewer (not plan breaks):** a dist build on the fresh worktree (setup only); W5 creates `drafts/.versions/a.md` and `.scriba` before boot; `prettier --write` on the new test file (formatting only).
+- **Test output:** the orchestrator re-ran the three checks on 8b5d05c in the worktree. `npm run lint` exit 0. `npm test` exit 0: 102 node tests pass, and the API workspace 453 tests pass with 0 fail. `npm run build` exit 0. Node v26.13.0.
+- **Known failure, not caused by this unit:** the implementer's e2e run (plan step 7, one run) had 12 passed and 1 failed: `TRG-05 C2` at `e2e/specs/tools-preview.e2e.ts:167`. It also fails with `SCRIBA_WATCHER=false`. The orchestrator records that main already fails at this test. This unit does not change it.
