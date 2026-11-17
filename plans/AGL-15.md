@@ -1,6 +1,6 @@
 ---
 id: AGL-15
-status: planned
+status: done
 unit: units/AGL-15-pending-writes-gate.md
 sources: units/AGL-15-pending-writes-gate.md (21 lines, no change note, read in full); units/README.md (lines 64, 69, 113, 139 and the unit format); modules/agent-loop.md (read in full; lines 31, 54, 60 to 66, 82); units/AGL-12-write-overlay.md, AGL-13-output-routing.md, AGL-14-diff-previews-review-link.md, AGL-20-grounding-gate.md, PST-22-review-gate.md (read in full); units/AGL-16 to AGL-19 (front matter); plans/PLT-02.md (structure); plans/PST-22.md (sections 1b, 3, 4, 5, 7); plans/AGL-12.md, AGL-13.md, AGL-14.md, PST-22.md (status lines); plans/SAU-20.md, SAU-22.md, TRG-14.md (status lines and file tables); plans/DECISIONS.md (grep by AGL-15, AGL-13, PST-22 and PST-19 lines named in section 8 only); the code, tests, scenario and e2e files named in section 8, read at main 4e9c17c
 ---

@@ -17,5 +17,5 @@ Merging this **closes Agent loop `phase:pending-writes`**.
 - With the Project store, the e2e **"accept change"** step: the agent edits a draft, the pending change appears, it's accepted, and the draft (and its version) is on disk. Coordinate with PST-22, which owns the accept assertion.
 
 ## Acceptance criteria (the phase checklist)
-- [ ] No agent write touches disk before acceptance; two edits → one pending change against the first base; a stopped agent run still creates its changes; propose-graph valid/invalid handling (AGL-12, AGL-13).
-- [ ] The e2e accepts an agent-made change and sees it in the draft.
+- [x] No agent write touches disk before acceptance; two edits → one pending change against the first base; a stopped agent run still creates its changes; propose-graph valid/invalid handling (AGL-12, AGL-13).
+- [x] The e2e accepts an agent-made change and sees it in the draft.
