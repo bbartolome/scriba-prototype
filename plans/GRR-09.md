@@ -1,12 +1,12 @@
 ---
 id: GRR-09
-status: draft
+status: planned
 unit: units/GRR-09-graphs-route-list.md
 module: graph-runner
 ---
 # GRR-09 plan — graphs route, graph list with latest run status, create/rename/delete UI, phone gate
 
-Draft revision 1, planned against main `7c58d9b` by the planner. Nothing is implemented. "CHECKED" means read or grepped on main, with the file and line. "ASSUMED" means not checked here (section 3b). Open points are in section 8; no answer to them is assumed in the steps.
+Draft revision 2: planned against main `7c58d9b` by the planner, revised against main `312ccd4` by the reviser (the commits between them change only `plans/`). Nothing is implemented. "CHECKED" means read or grepped on main, with the file and line. "ASSUMED" means not checked here (section 3b). The open points of section 8 are settled by the reviser, and the steps and tests use those answers.
 
 ## 2. Decisions this plan obeys
 
@@ -40,7 +40,7 @@ Draft revision 1, planned against main `7c58d9b` by the planner. Nothing is impl
 
 ### 3a. CHECKED
 
-- **Base.** `git rev-parse --short HEAD` is `7c58d9b` (main). `git status --short` was empty at planning time. The worktrees (`scriba-prototype-wt/GRR-08`, `PST-15`, `PST-17`, `SAU-13`, `TRG-07`, `TRG-14`) have no diff to any path in section 4: `git diff --stat main...<branch> -- apps/web/src/app/app.routes.ts apps/web/src/app/shell/index.ts apps/web/src/app/features/graph-runner apps/api/src/modules/graph-runner packages/contracts/src/graph-runner` is empty for each branch.
+- **Base.** `git rev-parse --short HEAD` is `312ccd4` (main; `git log 7c58d9b..312ccd4` shows only `docs(GRR-08)` and `docs(GRR-09)` commits). `git status --short` was empty at revision time. No `unit/GRR-09` or `unit/GRR-10` branch exists, and `apps/web/src/app/features/graph-runner/` does not exist on main. The worktrees (`scriba-prototype-wt/GRR-08`, `PST-15`, `PST-17`, `SAU-13`, `TRG-07`, `TRG-14`) have no diff to any path in section 4: `git diff --stat main...<branch> -- apps/web/src/app/app.routes.ts apps/web/src/app/shell/index.ts apps/web/src/app/features/graph-runner apps/api/src/modules/graph-runner packages/contracts/src/graph-runner` is empty for each branch.
 - **GRR-02 is on main** (`git merge-base --is-ancestor` of `0eaedd0` and `48ddaaf` against main: both true). The module exists: `apps/api/src/modules/graph-runner/graphs.controller.ts` (`@Get(GRAPHS_ROUTE)` line 31, `@Post(GRAPH_CREATE_ROUTE)` line 41, `@Post(GRAPH_RENAME_ROUTE)` line 61, `@Post(GRAPH_DELETE_ROUTE)` line 70 with `delete(): void` at line 72). `graph-runner.service.ts` `list()` at line 101, `summaryOf()` at line 279.
 - **GRR-04 is done** (`plans/GRR-04.md` status `done`). `apps/api/src/modules/graph-runner/runs.controller.ts` line 30: `@Get(RUN_CURRENT_ROUTE)`.
 - **Routes.** `packages/contracts/src/graph-runner/routes.ts`: `GRAPHS_ROUTE` line 5, `GRAPH_CREATE_ROUTE` line 7, `GRAPH_RENAME_ROUTE` lines 11 and 12, `GRAPH_DELETE_ROUTE` lines 13 and 14, `RUN_CURRENT_ROUTE` line 19. Path params are `:id` (lines 6, 10, 12, 14).
@@ -78,7 +78,7 @@ Draft revision 1, planned against main `7c58d9b` by the planner. Nothing is impl
 - **A2.** Angular's `HttpClient` returns `null` for an empty JSON reply body. The delete reply is therefore read with a schema that accepts `null`. Not run here.
 - **A3.** The icon name `account_tree` exists in the bundled `@fontsource/material-icons` font. Not checked.
 - **A4.** Rendering `App` at `APP_ROUTES` needs no reply beyond `GET /api/project-store/active` and the page's own reads. The same is true for `core-gate.spec.ts`, which uses the same pattern for its C2 test. Not run.
-- **A5.** On the graphs route, `ActiveProjectSignal.projectId()` equals the URL's project id, because `activeProjectGuard` has run first. Not run.
+- **A5.** On the graphs route, `ActiveProjectSignal.projectId()` is the URL's project id (CHECKED: `project-scope.ts` lines 70 to 72 and 78 to 85, with an initial value from the router snapshot), and the URL's project is the active one because `activeProjectGuard` has run first (CHECKED, section 3a). That the signal is already set when the page is created is not run; the page follows `apps/web/src/app/features/project-store/review-page.ts` lines 406 to 412 (a read with an `undefined` project id is skipped).
 - **A6.** The Angular version in use is 22 (`apps/web/package.json` line 15 pins `@angular/core` `22.2.5`; `modules/shell.md` line 3 says Angular 22).
 
 ## 4. Files to change
@@ -87,7 +87,7 @@ Draft revision 1, planned against main `7c58d9b` by the planner. Nothing is impl
 |---|---|---|
 | `apps/web/src/app/features/graph-runner/graph-runner.routes.ts` | New. Exports `graphsRoutes: Routes`: `''` (`pathMatch: 'full'`, lazy `GraphListPage`) and `':graphId'` (`canMatch: [deviceClassGuard('tablet')]`, lazy `CanvasPlaceholderPage`). | Entry file. Imports `deviceClassGuard` from `'../../shell'`. |
 | `apps/web/src/app/features/graph-runner/graph-list-page.ts` | New. `GraphListPage`, selector `app-graph-list-page`. | Section 5, step 5. |
-| `apps/web/src/app/features/graph-runner/canvas-placeholder-page.ts` | New. `CanvasPlaceholderPage`, selector `app-canvas-placeholder-page`. | Content depends on OP-1. GRR-10 replaces it. |
+| `apps/web/src/app/features/graph-runner/canvas-placeholder-page.ts` | New. `CanvasPlaceholderPage`, selector `app-canvas-placeholder-page`. | Template `<p>The canvas is not built yet.</p>` (OP-1). GRR-10 replaces it. |
 | `apps/web/src/app/features/graph-runner/graph-runner-contract.ts` | New. Literal paths and hand-written response schemas. | Step 1. |
 | `apps/web/src/app/features/graph-runner/graph-runner-contract.spec.ts` | New. Checks each copy against the contract. Not a criterion (convention, C6). | Step 2. |
 | `apps/web/src/app/features/graph-runner/graph-list-page.spec.ts` | New. The criterion tests and the extra tests of section 6. | Step 7. |
@@ -99,17 +99,17 @@ Not changed: `packages/contracts/**`, `apps/api/**`, `apps/web/src/app/shell/**`
 
 Each step lists the check that ends it. Steps 0 to 10 are the implementer's, and step 11 is the hand-off. The orchestrator ticks the criteria after review (the precedent is the MPR-08 case named in `plans/GRR-08.md` line 9); the implementer does not tick.
 
-0. **Base check and branch.** Run `git rev-parse --short HEAD` (must be `7c58d9b` or a descendant). Run `git diff --quiet 7c58d9b HEAD -- apps/web/src/app/app.routes.ts apps/web/src/app/features/graph-runner packages/contracts/src/graph-runner apps/api/src/modules/graph-runner`; it must exit 0. Create branch `unit/GRR-09` from main in its own worktree. If `node_modules` is missing, run `npm ci` once at the repo root. Check: the branch exists and the diff check exits 0.
+0. **Base check and branch.** Run `git rev-parse --short HEAD` (must be `312ccd4` or a descendant). Run `git diff --quiet 312ccd4 HEAD -- apps/web/src/app/app.routes.ts apps/web/src/app/features/graph-runner packages/contracts/src/graph-runner apps/api/src/modules/graph-runner`; it must exit 0. If it does not exit 0 only because GRR-10 has merged `features/graph-runner/`, follow section 7b, second case, in steps 3 and 4; for any other difference, stop and report it. Create branch `unit/GRR-09` from main in its own worktree. If `node_modules` is missing, run `npm ci` once at the repo root. Check: the branch exists and the diff check exits 0.
 
 1. **Contract copy (`graph-runner-contract.ts`).** Export: `GRAPHS_PATH` (`/api/graph-runner/graphs`), `RUN_CURRENT_PATH` (`/api/graph-runner/runs/current`), `GRAPH_CREATE_PATH` (`/api/graph-runner/graphs/create`), functions `graphRenamePath(id)` and `graphDeletePath(id)` (the `:id` segment with `encodeURIComponent`), and `pendingPath(projectId)` (`/api/project-store/projects/<encoded>/pending`). Export one `ResponseSchema` copy each for: the graph list (`graphListCopy`, the row fields of `graphSummarySchema`), the current run (`currentRunCopy`, `null` or a run with the fields of `runStateSchema`), the pending list (`pendingListCopy`, `changes` with the fields of `pendingChangeSchema`), the create result (`graphIdCopy`, `{id}`), and the empty reply (`noBodyCopy`, accepts `null`, see A2). Import only types from `@bbartolome/scriba-contracts/*`. Check: `npx tsc -p apps/web/tsconfig.app.json --noEmit` passes for this file (or the Angular build in step 10 does).
 
 2. **Contract spec (`graph-runner-contract.spec.ts`), extra test X3.** For each copy, a list of contract-accepted samples and a list of contract-refused samples: each sample gets the same verdict from the copy as from the contract's own schema (`graphListSchema`, `currentRunSchema`, `pendingListSchema`, `graphIdResultSchema`). Check: `npm test -w @bbartolome/scriba-web -- --include src/app/features/graph-runner/graph-runner-contract.spec.ts` passes.
 
-3. **Placeholder page (`canvas-placeholder-page.ts`).** Standalone component `CanvasPlaceholderPage` with the text decided by OP-1. Check: the file compiles in step 10. Do not start this step until OP-1 is settled.
+3. **Placeholder page (`canvas-placeholder-page.ts`).** Standalone component `CanvasPlaceholderPage` with the template `<p>The canvas is not built yet.</p>` (OP-1). Check: the file compiles in step 10.
 
 4. **Entry file (`graph-runner.routes.ts`).** Export `graphsRoutes`: `[{path: '', pathMatch: 'full', loadComponent: () => import('./graph-list-page').then((f) => f.GraphListPage)}, {path: ':graphId', canMatch: [deviceClassGuard('tablet')], loadComponent: () => import('./canvas-placeholder-page').then((f) => f.CanvasPlaceholderPage)}]`. The page imports stay lazy (no static import), as in `project-store.routes.ts` lines 16 to 26. The `:graphId` child carries no `data`, so `withDeviceGate` adds its fallback (section 3a, `fallbackFor`). Check: step 7's spec finds the route.
 
-5. **List page (`graph-list-page.ts`).** Standalone component `GraphListPage`. Inject `API_CLIENT`, `SSE_CLIENT`, `ActiveProjectSignal` (for `projectId`) and `DeviceClassService` (for `deviceClass()`). On creation: read the three sources (C3), subscribe to `events.stream('graph-runner')` (re-read the current run on each envelope) and to `events.reconcile$` (re-read all three on each tick). Rows: name (a `routerLink` to `./<id>`), view label (`Story` or `Recipe`), node count (`Nodes: <n>`, shown when not null), `Invalid` when `valid` is false, `Pending change` when the pending list has a change with `targetPath` `graphs/<id>.json`, and the run status (the status word) only on the row whose id equals the current run's `graphId` (OP-2). Controls on tablet and desktop only (C4), with the reply handling of C5 and C7. The rename request body is the one OP-4 settles, and the delete step follows OP-3. Check: step 7's spec.
+5. **List page (`graph-list-page.ts`).** Standalone component `GraphListPage`. Inject `API_CLIENT`, `SSE_CLIENT`, `ActiveProjectSignal` (for `projectId`) and `DeviceClassService` (for `deviceClass()`). On creation: read the three sources (C3), subscribe to `events.stream('graph-runner')` (re-read the current run on each envelope) and to `events.reconcile$` (re-read all three on each tick). Rows: name (a `routerLink` to `./<id>`), view label (`Story` or `Recipe`), node count (`Nodes: <n>`, shown when not null), `Invalid` when `valid` is false, `Pending change` when the pending list has a change with `targetPath` `graphs/<id>.json`, and the run status (the status word) only on the row whose id equals the current run's `graphId` (OP-2). Controls on tablet and desktop only (C4), with the reply handling of C5 and C7. Rename sends `{name: <New name>}` to `graphRenamePath(id)` (OP-4). Delete sends its request on the click of `Delete`, with no confirmation step (OP-3). After each of the three commands, the page re-reads the three sources (C3). The pending list is read on load, after each command and on each reconcile tick only (OP-5). Check: step 7's spec.
 
 6. **Route entry (`app.routes.ts`).** Append inside `PROJECT_ROUTES`, after the `review` entry (anchored on text, not line numbers, per `plans/AGL-07.md` line 79). The entry has no `pathMatch` because it has child routes (`app.routes.ts` lines 55 and 56). It is:
    ```
@@ -128,7 +128,7 @@ Each step lists the check that ends it. Steps 0 to 10 are the implementer's, and
    ```
    Check: `git diff -- apps/web/src/app/app.routes.ts` shows one added block and no other change.
 
-7. **Page spec (`graph-list-page.spec.ts`).** Covers criteria AC1 and AC2 (section 6), plus extra tests X1 and X2. Every test renders the real `App` at `APP_ROUTES` (`provideRouter(APP_ROUTES)` and `...doubles.providers`), calls `stubMatchMedia` before TestBed is configured, and calls `restoreMatchMedia` in `afterEach`. Every test answers `GET /api/project-store/active` with `{active: 'p1'}` (D10). The fixtures are: graphs `chapter-opening` (recipe, valid, 3 nodes), `story-one` (story, valid, 2 nodes) and `broken` (`valid` false, view and node count null); a pending list with one change to `graphs/chapter-opening.json`; a current run with `runId` `run-1`, `graphId` `chapter-opening`, status `running`. Check: `npm test -w @bbartolome/scriba-web -- --include src/app/features/graph-runner/graph-list-page.spec.ts` passes.
+7. **Page spec (`graph-list-page.spec.ts`).** Covers criteria AC1 and AC2 (section 6), plus extra tests X1 and X2. Every test renders the real `App` at `APP_ROUTES` (`provideRouter(APP_ROUTES)` and `...doubles.providers`), calls `stubMatchMedia` before TestBed is configured, and calls `restoreMatchMedia` in `afterEach`. Every test answers `GET /api/project-store/active` with `{active: 'p1'}` (D10). The fixtures are: graphs `chapter-opening` (name `Chapter opening`, recipe, valid, 3 nodes), `story-one` (name `Story one`, story, valid, 2 nodes) and `broken` (name `broken`, `valid` false, view and node count null), each with an ISO `mtime`; a pending list with one change to `graphs/chapter-opening.json` (every required field of `pendingChangeSchema`); a current run with `runId` `run-1`, `graphId` `chapter-opening`, status `running` (every required field of `runStateSchema`, with empty `inputs`, `targets`, `nodes` and `pendingChangeIds`). The fixtures must pass the copies of step 1. Check: `npm test -w @bbartolome/scriba-web -- --include src/app/features/graph-runner/graph-list-page.spec.ts` passes.
 
 8. **Whole web suite.** Run `npm test -w @bbartolome/scriba-web`. Existing specs that render `APP_ROUTES` (`app.routes.spec.ts`, `core-gate.spec.ts`, `device-gate.spec.ts`, `app-nav.spec.ts`) must still pass. Check: zero failures.
 
@@ -150,9 +150,9 @@ Test file: `apps/web/src/app/features/graph-runner/graph-list-page.spec.ts` (ste
 
 - **C1.1 list renders.** Render `/projects/p1/graphs`. Assert: the `chapter-opening` row shows `Chapter opening`, `Recipe`, `Nodes: 3` and a `Pending change` badge; the `story-one` row shows `Story` and no badge; the `broken` row shows `Invalid`. The rows are found by their link to `/projects/p1/graphs/<id>`.
 - **C1.2 create calls the API.** Type `Chapter two` into `Graph name`, choose `Recipe`, click `Create`. Assert: `doubles.api.requests` contains `{method: 'POST', path: '/api/graph-runner/graphs/create', body: {name: 'Chapter two', view: 'recipe'}}`, and a `GET /api/graph-runner/graphs` follows it (the list is re-read). The create reply is answered with `{id: 'chapter-two'}`.
-- **C1.3 rename calls the API.** Click `Rename` on `chapter-opening`, type a new name into `New name`, click `Save name`. Assert: `requests` contains `{method: 'POST', path: '/api/graph-runner/graphs/chapter-opening/rename', body}`, where `body` is the one OP-4 settles (under the name-only option, `{name: '<new name>'}`).
-- **C1.4 delete calls the API.** Click `Delete` on `story-one`. If OP-3 settles a confirmation step, click its confirm control too. Assert: `requests` contains `{method: 'POST', path: '/api/graph-runner/graphs/story-one/delete', body: {}}`.
-- **C1.5 latest run status follows fake events.** The current run is answered as `running` for `chapter-opening`. Assert: the row shows `running`. Then the current-run answer is replaced with `status: 'done'`, and `doubles.events.push({module: 'graph-runner', type: 'run-ended', data: {runId: 'run-1', status: 'done'}})` is called. Assert: after `whenStable`, the row shows `done`, `running` is gone from that row, and `requests` has a second `GET /api/graph-runner/runs/current` after the push. The row is the matching one, so this holds under every option of OP-2.
+- **C1.3 rename calls the API.** The rename reply is answered with `{id: 'chapter-opening'}`. Click `Rename` on `chapter-opening`, type `Opening scene` into `New name`, click `Save name`. Assert: `requests` contains `{method: 'POST', path: '/api/graph-runner/graphs/chapter-opening/rename', body: {name: 'Opening scene'}}` (OP-4), and a `GET /api/graph-runner/graphs` follows it.
+- **C1.4 delete calls the API.** The delete reply is answered with `null` (the empty body, A2). Click `Delete` on `story-one` (no confirmation step, OP-3). Assert: `requests` contains `{method: 'POST', path: '/api/graph-runner/graphs/story-one/delete', body: {}}`, and a `GET /api/graph-runner/graphs` follows it.
+- **C1.5 latest run status follows fake events.** The current run is answered as `running` for `chapter-opening`. Assert: the row shows `running`. Then the current-run answer is replaced with `status: 'done'`, and `doubles.events.push({module: 'graph-runner', type: 'run-ended', data: {runId: 'run-1', status: 'done'}})` is called. Assert: after `whenStable`, the row shows `done`, `running` is gone from that row, and `requests` has a second `GET /api/graph-runner/runs/current` after the push. The row is the matching one (OP-2).
 
 ### AC2
 
@@ -165,8 +165,8 @@ Test file: the same spec (step 7). Viewport 390x844 (phone).
 
 ### Extra tests (not criteria; derived from the decisions)
 
-- **X1 reconcile tick re-reads the run (D4).** At 1280x800, render the list, answer the current run as `done`, call `doubles.events.tick('visible')`, and assert the matching row shows `done` after `whenStable`.
-- **X2 tablet canvas is not gated (D2, D3).** At 820x1180, render `/projects/p1/graphs/chapter-opening`. Assert: the gate text of C2.2 is absent, and `router.url` is unchanged. The page's own content depends on OP-1, so this test checks only the gate and the URL.
+- **X1 reconcile tick re-reads the run (D4).** At 1280x800, render the list with the current run answered as `running`, then replace the answer with `status: 'done'`, call `doubles.events.tick('visible')`, and assert the matching row shows `done` after `whenStable`.
+- **X2 tablet canvas is not gated (D2, D3).** At 820x1180, render `/projects/p1/graphs/chapter-opening`. Assert: the gate text of C2.2 is absent, the text `The canvas is not built yet.` is shown (OP-1), and `router.url` is unchanged.
 - **X3 contract copies (C6).** Step 2's spec, in `graph-runner-contract.spec.ts`.
 
 ## 7. Agreement with downstream units and other plans
@@ -179,9 +179,9 @@ Test file: the same spec (step 7). Viewport 390x844 (phone).
 
 ### 7b. Parallel: GRR-10 (ngx-vflow adapter, `parallel_with` GRR-09)
 
-- GRR-10 puts the canvas component under `:graphId` (`units/GRR-10-vflow-adapter.md` line 22). GRR-10 has no plan (section 3a), so this section gives the rule for both merge orders, anchored on text.
+- GRR-10 puts the canvas component under `:graphId` (`units/GRR-10-vflow-adapter.md` line 22). GRR-09 owns the `graphs` entry, the entry file `graph-runner.routes.ts` and the tablet-gated `:graphId` child route (GRR-09 unit lines 15 and 16; `plans/DECISIONS.md` line 2723: the route is GRR-09's, the component is GRR-10's; `modules/graph-runner.md` line 37: one lazy `Routes` array). GRR-10 owns only the component and the `loadComponent` of that child (OP-6). GRR-10 has no plan (section 3a), and its `blocked_by` does not name GRR-09, so this section gives the rule for both merge orders, anchored on text.
 - **If GRR-09 merges first (the case this plan builds):** GRR-10 changes only the `loadComponent` of the `:graphId` child in `graph-runner.routes.ts`, replacing `CanvasPlaceholderPage`. It keeps the `canMatch: [deviceClassGuard('tablet')]` line, which is GRR-09's gate (D2), and it does not touch `app.routes.ts`.
-- **If GRR-10 merges first (its own file creation):** GRR-09 rebases onto GRR-10's `graph-runner.routes.ts`. It keeps GRR-10's `:graphId` loader, adds the `''` list child and the `canMatch` tablet gate, and does not create `canvas-placeholder-page.ts`. GRR-09 then appends its `graphs` entry to `app.routes.ts` anchored on the `review` entry. Whether GRR-10 creates the file, and whether it also adds the `graphs` entry, is OP-6.
+- **If GRR-10 merges first (GRR-10 then had to create the entry file to host its component):** GRR-09 rebases onto GRR-10's `graph-runner.routes.ts`. It keeps GRR-10's `:graphId` loader, adds the `''` list child and the `canMatch` tablet gate where they are missing, and does not create `canvas-placeholder-page.ts`; X2 then asserts the gate text absent and the URL unchanged, and not the placeholder text. If GRR-10 already added a `graphs` entry to `app.routes.ts`, GRR-09 brings it to the form of step 6 instead of adding a second one; otherwise GRR-09 appends it after the `review` entry. Note for GRR-10's planner: the export name is `graphsRoutes`, and the `canMatch` line is GRR-09's.
 - Either order leaves one `graphsRoutes` with a `''` list child and a tablet-gated `:graphId` child, and one `graphs` entry.
 
 ### 7c. Other plans and units that touch the same files
@@ -194,16 +194,16 @@ Test file: the same spec (step 7). Viewport 390x844 (phone).
 - **Shell barrel.** SHL-14 and SHL-15/16 add lines to `shell/index.ts`. GRR-09 adds none, so no overlap.
 - **Done plans relied on.** `plans/GRR-02.md` (graph CRUD and list), `plans/GRR-04.md` (current run), the Project store's pending list (served on main; `plans/GRR-02.md` section 6, O1, names the PST-22 gate as done), `plans/SHL-09.md` (the Shell core gate, status `done`). Each is on main and unchanged by this plan.
 
-## 8. Open points
+## 8. Open points (all settled by the reviser; none is left for the Navigator)
 
-The planner could not settle these. The steps that depend on each one say so. The Navigator settles them; the planner does not.
+Each point is settled with the simplest option that the unit, the module file and the code allow. No unit file, module file or criterion changes.
 
-- **OP-1 What the tablet `:graphId` child shows before GRR-10.** The unit names no content. Options: (a) a page that names the graph and says the canvas is not built yet; (b) the not-found page for the tablet child. Affects step 3 (content) and X2 (its page content is not asserted).
-- **OP-2 Run status for a recipe other than the latest run's.** `current-run-state` returns one run per project (`runs.ts` lines 110 to 113; GRR-04 line 25), so the page knows the latest run of one recipe only. Options: (a) show the status only on the row whose id is the run's `graphId`; other recipe rows show none; (b) add a read of the latest run per graph, which changes the module and its contract and is outside this unit. C1.5 and C2.1 use the matching row, so they hold under both options.
-- **OP-3 Delete.** Options: (a) delete on click; (b) a confirmation step first. The unit is silent. Affects C1.4.
-- **OP-4 Rename.** The API takes `{name}` or `{newId}` (`catalog.ts` lines 42 to 45). Options: (a) rename the display name only, sending `{name}` (the file id stays); (b) rename the file id, sending `{newId}` (links to the old id break); (c) both controls. Affects step 5 and C1.3.
-- **OP-5 Pending-badge refresh.** The unit names two refresh triggers: `graph-runner` events and reconcile ticks. Options: (a) reload the pending list on load, after each action and on each tick; (b) also on the Project store's `pending-created`, `pending-updated` and `pending-resolved` events (`packages/contracts/src/project-store/events.ts` lines 25 to 38), which the unit does not name. Affects step 5.
-- **OP-6 Who creates `graph-runner.routes.ts` (GRR-09 or GRR-10).** GRR-10 has no plan and is `parallel_with` GRR-09. Options: (a) GRR-09 owns the file, as this plan assumes, and GRR-10 changes only the loader (section 7b, first case); (b) GRR-10 owns it, and this plan must be revised (section 7b, second case). The Navigator must pass the answer to GRR-10's planner.
+- **OP-1 What the tablet `:graphId` child shows before GRR-10. Decided: (a), a placeholder page** `CanvasPlaceholderPage` with `<p>The canvas is not built yet.</p>`. Reason: the Shell's `NotFoundPage` is not exported by `shell/index.ts` (lines 1 to 22), so (b) would need a Shell barrel change or a lint exception; (a) stays inside the feature folder, and GRR-10 replaces one `loadComponent`. Steps 3 and 4, X2.
+- **OP-2 Run status for a recipe other than the latest run's. Decided: (a), the matching row only.** Reason: the unit names current-run-state as the source (unit line 15), which returns one run per project (`runs.ts` lines 110 to 113; GRR-04 unit line 25); (b) would add a read to the module and its contract, which no unit owns. Other recipe rows show no status. Step 5, C1.5, C2.1.
+- **OP-3 Delete. Decided: (a), delete on click, no confirmation step.** Reason: the unit asks only for a delete action (line 17), and no criterion or module decision asks for a confirmation; it is the smallest UI. Step 5, C1.4.
+- **OP-4 Rename. Decided: (a), the display name only, body `{name}`.** Reason: one input; the id (the file stem, module line 45) stays, so links to `/projects/:projectId/graphs/<id>` and the pending badge's `targetPath` keep working; `graphRenameSchema` accepts it (`catalog.ts` lines 42 to 45). Step 5, C1.3.
+- **OP-5 Pending-badge refresh. Decided: (a), on load, after each command and on each reconcile tick.** Reason: the unit names only `graph-runner` events and reconcile ticks as refresh triggers (line 15); a pending change made while the page is open shows at the next tick or visit. Step 5 (C3).
+- **OP-6 Who creates `graph-runner.routes.ts`. Decided: GRR-09.** Reason: the units settle the boundary: GRR-09 owns the route entry and the gated `:graphId` child (unit lines 15 and 16), GRR-10 owns only the canvas component under that child (GRR-10 line 22), as `plans/DECISIONS.md` line 2723 records. Section 7b gives the rule for both merge orders. Not a Navigator point: no unit text has to change.
 
 ## 9. Review parts
 
