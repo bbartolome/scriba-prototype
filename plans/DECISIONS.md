@@ -5815,3 +5815,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Finding (automated security review, MEDIUM):** in dev mode the guard skips the cookie and the Origin check on every mutation for any admitted non-tailnet Host, with no check that the socket peer is loopback. Any device that reaches port 8080 can call the API without the cookie, and any open web page can send POST requests to it. The reviewer's fixes: keep the Origin check on mutations in dev mode; grant the dev identity only when the socket peer is loopback.
 - **Already in the plan:** refusing dev mode when `NODE_ENV` is `production` (D5; implemented in a5d5402).
 - **Status:** the user's decision of this session let SAU-22 proceed without a Navigator decision on points 1 and 2, which were the security points. The user has not yet seen this finding. SAU-22 is not on main, and it does not go to main until the user decides between (a) the unit as written, and (b) the reviewer's fixes. Option (b) changes the behaviour the unit specifies, so it needs a unit change, not only code.
+
+## 2026-11-18 — GNP-13 — Review result: APPROVED (part 1, round 1)
+
+- **Branch:** `unit/GNP-13`, commit 0335771 (one commit). Based on an older main; the rebase follows at step 3.
+- **Patch id:** a54bb1105e75d9fc341a69335c06b69d68da6e24 (`git diff main...unit/GNP-13 -- . ':!plans' ':!units' | git patch-id --stable`, computed at main eff2d46).
+- **Result:** APPROVED by the reviewer of part 1, the only part. The reviewer checked that the diff changes only the five paths of plan section 2, that each step of the part is in the diff, and that the tests of AC1 (i) to (v) and AC2 would pass. The reviewer did not run the tests; the three checks run at step 3.
