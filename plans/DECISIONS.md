@@ -5902,3 +5902,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Decision (the user, relayed by the parent session):** option (a) of the finding in this file under "Security review finding on unit/SAU-22" (2026-11-18). SAU-22 is built as written in `units/SAU-22-guard-dev-mode.md` and `plans/SAU-22.md`. The reviewer's fixes (keep the Origin check on mutations in dev mode; grant the dev identity only when the socket peer is loopback) are not applied. They need a unit change and are not made.
 - **Effect:** SAU-22 goes through review against its plan and then to step 3. Its criterion 5 (P5, port 8080) needs port 8080 free. Port 8080 is held by a live process that is not stopped. If P5 cannot run, SAU-22 stays off `main` and the state report says so.
 - **Record:** the finding stays on record as the reviewer's finding. This entry is the user's choice, not a review approval.
+
+## 2026-11-18 — SAU-22 — Review result: APPROVED (part 1 of 1, round 1)
+
+- **Branch:** `unit/SAU-22`, head ca7a751 (eight code commits 9c1ba99 to 09288ab, plus the docs commit). Based on main a6f752d. The branch changes exactly the ten paths of plan section 3.
+- **Patch id:** 86f5d25c3727c04fb89dbbb6da6091405429c156 (`git diff main...unit/SAU-22 -- . ':!plans' ':!units' | git patch-id --stable`, computed at main 94ddf3d).
+- **Scope of the review:** the unit as written, option (a) of the user's decision (entry "User decision: option (a)" above). The reviewer did not list the security finding's fixes as rework.
+- **Reviewer:** one Sonnet reviewer for Part 1, the only part. APPROVED. It checked steps 2 to 9 in the diff, the ten paths, the README paragraph, and ran `apps/api/test/setup-auth-dev-mode.test.ts` (8 of 8) and `scripts/dev-auth-docs.test.mjs` (2 of 2). It did not re-run P5.
+- **Action:** step 3 (rebase onto main, the three checks, the criteria checkboxes and `status: done`). Criterion 5 (P5) is to be run again by the orchestrator before its checkbox is ticked: the P5 log that the implementer cited has the dev server output only, not the curl results.
