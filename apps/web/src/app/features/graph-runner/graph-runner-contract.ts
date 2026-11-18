@@ -1,9 +1,11 @@
 import type {
   CurrentRun,
+  GraphDetail,
   GraphIdResult,
   GraphList,
   GraphSummary,
   RunState,
+  ValidationResult,
 } from '@bbartolome/scriba-contracts/graph-runner';
 import type {
   PendingChange,
@@ -23,6 +25,16 @@ export const RUN_CURRENT_PATH = '/api/graph-runner/runs/current' as ApiPath;
 
 /** The create command (`GRAPH_CREATE_ROUTE`). */
 export const GRAPH_CREATE_PATH = '/api/graph-runner/graphs/create' as ApiPath;
+
+/** The read of one graph (`GRAPH_ROUTE`), with its id encoded as one segment. */
+export function graphPath(id: string): ApiPath {
+  return `/api/graph-runner/graphs/${encodeURIComponent(id)}` as ApiPath;
+}
+
+/** The whole-file save of one graph (`GRAPH_SAVE_ROUTE`), with its id encoded as one segment. */
+export function graphSavePath(id: string): ApiPath {
+  return `/api/graph-runner/graphs/${encodeURIComponent(id)}/save` as ApiPath;
+}
 
 /** The rename command of one graph (`GRAPH_RENAME_ROUTE`), with its id encoded as one segment. */
 export function graphRenamePath(id: string): ApiPath {
@@ -196,5 +208,99 @@ export const noBodyCopy: ResponseSchema<null> = {
     return data === null
       ? { success: true, data: null }
       : { success: false, error: 'the reply is not empty' };
+  },
+};
+
+/** One validation issue, checked for the fields the canvas reads and the others `validationIssueSchema` requires. */
+function issueOf(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value['code'] === 'string' &&
+    typeof value['message'] === 'string' &&
+    (value['severity'] === 'error' || value['severity'] === 'warning') &&
+    ['nodeId', 'edgeId', 'portId'].every(
+      (key) =>
+        value[key] === undefined ||
+        (typeof value[key] === 'string' && value[key] !== ''),
+    )
+  );
+}
+
+/** Response of a save (`validationResultSchema`): `{issues}`. Keys the schema does not name are refused. */
+export const validationResultCopy: ResponseSchema<ValidationResult> = {
+  safeParse(data) {
+    if (!isRecord(data) || Object.keys(data).some((key) => key !== 'issues')) {
+      return { success: false, error: 'the reply is not {issues}' };
+    }
+    const issues = data['issues'];
+    if (!Array.isArray(issues) || !issues.every(issueOf)) {
+      return { success: false, error: 'an issue is not valid' };
+    }
+    return {
+      success: true,
+      data: { issues: issues as ValidationResult['issues'] },
+    };
+  },
+};
+
+// The fields of a graph file that the canvas reads: the envelope, and for each node and edge its id,
+// kind and position (nodes) or its ends (edges). The server's parse is the authority for the rest.
+function graphFieldsOk(graph: unknown): boolean {
+  if (!isRecord(graph)) return false;
+  if (
+    graph['schemaVersion'] !== 1 ||
+    (graph['view'] !== 'story' && graph['view'] !== 'recipe') ||
+    typeof graph['name'] !== 'string' ||
+    graph['name'] === '' ||
+    !Array.isArray(graph['nodes']) ||
+    !Array.isArray(graph['edges'])
+  ) {
+    return false;
+  }
+  const nodesOk = graph['nodes'].every(
+    (node) =>
+      isRecord(node) &&
+      typeof node['id'] === 'string' &&
+      typeof node['kind'] === 'string' &&
+      isRecord(node['position']) &&
+      typeof node['position']['x'] === 'number' &&
+      typeof node['position']['y'] === 'number',
+  );
+  const edgesOk = graph['edges'].every(
+    (edge) =>
+      isRecord(edge) &&
+      typeof edge['id'] === 'string' &&
+      typeof edge['from'] === 'string' &&
+      typeof edge['to'] === 'string',
+  );
+  return nodesOk && edgesOk;
+}
+
+/**
+ * Response of a read (`graphDetailSchema`): `{graph, issues}`. Keys the schema does not name are refused.
+ * On success the graph object is returned as received, not rebuilt, so the save sends its keys and values.
+ */
+export const graphDetailCopy: ResponseSchema<GraphDetail> = {
+  safeParse(data) {
+    if (
+      !isRecord(data) ||
+      Object.keys(data).some((key) => key !== 'graph' && key !== 'issues')
+    ) {
+      return { success: false, error: 'the reply is not {graph, issues}' };
+    }
+    if (!graphFieldsOk(data['graph'])) {
+      return { success: false, error: 'the graph is not valid' };
+    }
+    const checked = validationResultCopy.safeParse({ issues: data['issues'] });
+    if (!checked.success) {
+      return { success: false, error: 'the issues are not valid' };
+    }
+    return {
+      success: true,
+      data: {
+        graph: data['graph'] as GraphDetail['graph'],
+        issues: checked.data.issues,
+      },
+    };
   },
 };

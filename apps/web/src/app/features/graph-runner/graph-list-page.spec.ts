@@ -310,14 +310,14 @@ describe('graph list page', () => {
     });
   });
 
-  it('X2 on a tablet the canvas route is not gated and shows its placeholder', async () => {
+  it('X2 on a tablet the canvas route is not gated and shows the canvas page', async () => {
     const { fixture, router, root } = await render(
       '/projects/p1/graphs/chapter-opening',
       820,
       1180,
     );
     await until(fixture, () => {
-      expect(root.textContent).toContain('The canvas is not built yet.');
+      expect(root.textContent).toContain('The graph could not be loaded.');
     });
     expect(root.textContent).not.toContain('This page needs a larger screen');
     expect(router.url).toBe('/projects/p1/graphs/chapter-opening');

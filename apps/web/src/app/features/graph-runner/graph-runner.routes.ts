@@ -16,8 +16,6 @@ export const graphsRoutes: Routes = [
     path: ':graphId',
     canMatch: [deviceClassGuard('tablet')],
     loadComponent: () =>
-      import('./canvas-placeholder-page').then(
-        (feature) => feature.CanvasPlaceholderPage,
-      ),
+      import('./canvas-page').then((feature) => feature.CanvasPage),
   },
 ];

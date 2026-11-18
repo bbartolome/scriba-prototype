@@ -1,22 +1,29 @@
 import {
   currentRunSchema,
+  GRAPH_RUNNER_EXAMPLES,
+  graphDetailSchema,
   graphIdResultSchema,
   graphListSchema,
+  validationResultSchema,
 } from '@bbartolome/scriba-contracts/graph-runner';
 import { pendingListSchema } from '@bbartolome/scriba-contracts/project-store';
 import { describe, expect, it } from 'vitest';
 import {
   currentRunCopy,
+  graphDetailCopy,
   graphIdCopy,
   graphListCopy,
   graphDeletePath,
+  graphPath,
   graphRenamePath,
+  graphSavePath,
   GRAPHS_PATH,
   GRAPH_CREATE_PATH,
   noBodyCopy,
   pendingListCopy,
   pendingPath,
   RUN_CURRENT_PATH,
+  validationResultCopy,
 } from './graph-runner-contract';
 
 const HASH = `sha256:${'a'.repeat(64)}`;
@@ -140,5 +147,71 @@ describe('graph-runner-contract', () => {
     expect(pendingPath('my book')).toBe(
       '/api/project-store/projects/my%20book/pending',
     );
+  });
+
+  it('K1 graphDetailCopy agrees with graphDetailSchema on each sample', () => {
+    const { story, recipe } = GRAPH_RUNNER_EXAMPLES;
+    const warning = {
+      code: 'dead-step',
+      severity: 'warning',
+      nodeId: 'draft',
+      message: 'Unused.',
+    };
+    const acceptedDetails: unknown[] = [
+      { graph: story, issues: [] },
+      { graph: recipe, issues: [] },
+      { graph: recipe, issues: [warning] },
+    ];
+    const refusedDetails: unknown[] = [
+      { issues: [] },
+      { graph: { ...story, schemaVersion: 2 }, issues: [] },
+      { graph: { ...story, view: 'other' }, issues: [] },
+      {
+        graph: { ...story, nodes: [{ ...story.nodes[0], id: undefined }] },
+        issues: [],
+      },
+      { graph: { ...story, edges: [{ id: 'e1', from: 'a' }] }, issues: [] },
+      { graph: story, issues: [], extra: 1 },
+    ];
+    for (const sample of [...acceptedDetails, ...refusedDetails]) {
+      expect(graphDetailCopy.safeParse(sample).success).toBe(
+        graphDetailSchema.safeParse(sample).success,
+      );
+    }
+    for (const sample of acceptedDetails) {
+      expect(graphDetailCopy.safeParse(sample).success).toBe(true);
+    }
+  });
+
+  it('K2 validationResultCopy agrees with validationResultSchema on each sample', () => {
+    const acceptedResults: unknown[] = [
+      { issues: [] },
+      {
+        issues: [{ code: 'cycle', severity: 'error', message: 'A cycle.' }],
+      },
+    ];
+    const refusedResults: unknown[] = [
+      { issues: [{ code: 'cycle', severity: 'fatal', message: 'A cycle.' }] },
+      { issues: [], extra: 1 },
+      {},
+    ];
+    for (const sample of [...acceptedResults, ...refusedResults]) {
+      expect(validationResultCopy.safeParse(sample).success).toBe(
+        validationResultSchema.safeParse(sample).success,
+      );
+    }
+    for (const sample of acceptedResults) {
+      expect(validationResultCopy.safeParse(sample).success).toBe(true);
+    }
+  });
+
+  it('K3 graphPath and graphSavePath equal the contract routes with the id encoded', () => {
+    expect(graphPath('chapter-opening')).toBe(
+      '/api/graph-runner/graphs/chapter-opening',
+    );
+    expect(graphSavePath('chapter-opening')).toBe(
+      '/api/graph-runner/graphs/chapter-opening/save',
+    );
+    expect(graphPath('a/b')).toBe('/api/graph-runner/graphs/a%2Fb');
   });
 });
