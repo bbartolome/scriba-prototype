@@ -5832,3 +5832,14 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
   2. There is no evidence for step 15 (fresh clone). No clone folder or log was found, and nothing under /tmp matches GRR-10. Correction: clone `unit/GRR-10` into an empty folder outside the repository, run `npm ci && npm run lint && npm test && npm run build`, record the exit codes, then remove the folder.
   3. The e2e evidence is only the JSON summary, and it is dated 18:31 UTC. It predates the commit `beb5052`, so it is the pass record for the spec but not a run of that exact commit. If the reviewer wants certainty, re-run `npm run e2e -w @bbartolome/scriba-e2e -- graph-canvas` on `beb5052` and keep the output. I could not run it under my constraints.
 - **Action:** a new Haiku implementer runs items 1 and 2 on `unit/GRR-10`, and item 3 only if port 8080 is free. It must not change the plan. If item 3 cannot run because port 8080 is held, it says so in its report. Then Sonnet reviewers re-review part B.
+
+## 2026-11-18 — GRR-10 — Review result: APPROVED (parts A and B, round 2)
+
+- **Branch:** `unit/GRR-10` at beb5052 (commits 93da43e, 8de3b21, 805272c, beb5052). The worktree `scriba-prototype-wt/GRR-10` is clean. The rework made no code change and no commit.
+- **Patch id:** 4a145c21f17bb3802c58f01d56b0168ed3069a8c (unchanged since round 1).
+- **Part A (steps 0 to 11b, tests 1, K1, K2, X2):** APPROVED (Sonnet reviewer). It checked the code against the steps, S1 to S22, C1 to C16 and section 5, and found only the files the plan lists changed. The production build was not re-run by the reviewer.
+- **Part B (steps 12 to 16, tests 2 and 3):** APPROVED (Sonnet reviewer). The round-1 items are met:
+  1. Root gates on the worktree: `npm run lint`, `npm test` (102 pass, 0 fail) and `npm run build` completed. Logs: `/tmp/grr10-lint.log`, `/tmp/grr10-test.log`, `/tmp/grr10-build.log`. The logs show no explicit exit-code line; the implementer reports exit 0 for each.
+  2. Fresh clone of `unit/GRR-10` in an empty folder under /tmp: `npm ci`, lint, test (102 pass) and build all completed. Logs: `/tmp/grr10-fresh-*.log`. The folder was removed.
+  3. E2E: not re-run on beb5052, because port 8080 is held by another process, which was not stopped. Tests 2 and 3 pass on the earlier run in `/tmp/grr10-e2e-step13.txt` ("2 passed", 18:32). The reviewer found that the spec file is unchanged since that run and the worktree is clean, so that run used the spec committed at beb5052.
+- **Caveat, not blocking:** no e2e run exists for commit beb5052 itself. The criterion 2 and 3 pass rests on the 18:32 run of the same spec text, on the same app code.
