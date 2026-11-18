@@ -5850,3 +5850,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Correction:** the four commits were replayed on main with `git cherry-pick`, in order: 93da43e, 8de3b21, 805272c, beb5052, as d006352, 2bf5586, c9d875f, 0cd15fb. The patch id is unchanged: 4a145c21f17bb3802c58f01d56b0168ed3069a8c.
 - **Checks on 0cd15fb (Node v26.13.0):** `npm run lint` exit 0; `npm test` exit 0, 102 pass, 0 fail; `npm run build` exit 0. Logs: `/tmp/grr10-s3-lint.log`, `/tmp/grr10-s3-test.log`, `/tmp/grr10-s3-build.log`.
 - **Done:** the three criteria are ticked (criteria 2 and 3 rest on the e2e run recorded in the Part B review). Plan status `done`, commit c96cadd. Main fast-forwarded to c96cadd. The branch `unit/GRR-10` and its worktree are removed.
+
+## 2026-11-18 — GNP-20 — Review result: APPROVED (part 1 of 1, round 1)
+
+- **Branch:** `unit/GNP-20`, commits ee47db1, e5fc404 and 7b5f3dd, based on main 5d144d6. The branch changes only the eight paths of plan section 2 (`git diff --stat 5d144d6 unit/GNP-20`: 187 insertions, 1 deletion).
+- **Patch id:** c8a7087c5cc7f2df0c52cda8c1e01221fe5e9c01 (`git diff main...unit/GNP-20 -- . ':!plans' ':!units' | git patch-id --stable`).
+- **Reviewer:** one reviewer for Part 1 (the whole plan). APPROVED. It checked the steps, the files changed, and each test: T1 and T2 (criterion 1), T3 (criterion 2), and the extra tests X1 and X2. It re-ran the packs tests, the API test/packs suite, the data eval test, lint:packs and prettier in the worktree.
+- **Not run:** the real-model eval (optional in plan section 7) and the Playwright e2e suite, which `npm test` does not cover. Neither is a criterion of GNP-20.
+- **Action:** step 3 (rebase onto main, then the three checks, then the criteria checkboxes and `status: done`).
