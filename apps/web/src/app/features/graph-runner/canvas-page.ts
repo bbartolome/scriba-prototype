@@ -388,6 +388,8 @@ function failureOf(error: unknown): 'not-found' | 'failed' {
     }
     .port-row {
       display: block;
+      /* Two rows closer than the library's magnet radius (20 px) overlap: a drop lands on the later row. */
+      min-height: 40px;
     }
     circle.issue {
       stroke: crimson;
