@@ -4,6 +4,7 @@ import {
   PROJECT_FOLDER_NAME_PATTERN,
 } from './constants.js';
 import { entityRefSchema } from './entities.js';
+import { exportSettingsSchema, orderEntrySchema } from './order-export.js';
 
 // A project id is the folder name under the library. It is not a slug: discovery lists every
 // subfolder, including importable folders with no project.yaml.
@@ -16,15 +17,15 @@ export const projectModelSchema = z.object({
 });
 
 // project.yaml. Unknown keys pass through, so newer optional fields survive an older app.
-// `export` and the entries of `order` stay passthrough until Compile & export narrows them.
+// `export` and `order` are narrowed to Compile & export's shapes (order-export.ts, CEX-01); the other keys are passthrough.
 export const projectYamlSchema = z.looseObject({
   schemaVersion: z.number().int().min(1),
   title: z.string().min(1),
   genrePack: z.string().min(1),
   styleProfile: entityRefSchema.optional(),
-  export: z.looseObject({}).optional(),
+  export: exportSettingsSchema.optional(),
   model: projectModelSchema.optional(),
-  order: z.array(z.looseObject({})).optional(),
+  order: z.array(orderEntrySchema).optional(),
 });
 
 export const projectStatusSchema = z.enum([
