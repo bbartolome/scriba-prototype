@@ -5754,3 +5754,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Conflicts:** a read-only `git merge-tree --write-tree main unit/TRG-14` reports content conflicts in three files: `apps/web/src/app/features/tool-registry/tool-copy.spec.ts`, `apps/web/src/app/features/tool-registry/tool-copy.ts` and `apps/web/src/app/features/tool-registry/tools-list.ts`. `package-lock.json` and `apps/web/package.json` do not conflict, so no `npm install` is needed for the lock.
 - **Expected by the plan:** section 6 of plans/TRG-14.md names the TRG-16 shared file. The conflict resolution must keep the plan's TRG-14 behaviour and TRG-16's change.
 - **Action:** a new Haiku implementer rebases `unit/TRG-14` onto main and resolves the three conflicts, without changing the plan. Then the three checks run on the rebased branch. If the resolution changes the patch id, new reviewers review all parts.
+
+## 2026-11-18 — GRR-10 — PLAN DOES NOT WORK (implementer, step 13, second report)
+
+- **Branch:** `unit/GRR-10`, commits 93da43e (part A, steps 0 to 11) and 8de3b21 (step 11a, `fix(GRR-10): draw the port handle as a bare SVG circle at the handle point`), in worktree `scriba-prototype-wt/GRR-10`. Part B is not committed. `e2e/specs/graph-canvas.e2e.ts` is untracked; at step 12 it gained the helper `hitsAtCentre` and two checks before the drag in test 3.
+- **Step:** 13. Test 2 passes (757 ms). Test 3 fails at its pre-drag hit check, before any gesture: the circle of `[data-port="draft.in"]` is not the element that `document.elementFromPoint` returns at its box centre. The circle of `[data-port="chapter-notes.out"]` passes the same check.
+- **Result:** criterion 1 passes (test 1, and K1 and K2 in the unit suite; 470 web tests pass on 8de3b21). Criterion 2 passes. Criterion 3 is not satisfied: the run stopped before the drag.
+- **Cause:** not established. Not verified: whether the `draft.in` circle is in the DOM, which element covers it, and whether the library's connection gesture works.
+- **Build:** `npm run build -w @bbartolome/scriba-web` exits 0. The initial total is 589.47 kB, above the 500 kB warning budget and below the 1 MB error budget.
+- **Plan change needed:** the reviser probes the `draft.in` handle (its box and the `elementFromPoint` result) to establish the cause, then corrects step 13, C12 or test 3 as the cause requires. The text of the criteria does not change, and the assertions of test 3 are not weakened.
