@@ -23,6 +23,6 @@ A tool node for every enabled tool with no setup (7), a palette with description
 - Ports are re-derived when a graph loads (live update while open is not required in v1).
 
 ## Acceptance criteria
-- [ ] Adding a tool from the palette renders its ports and settings form; editing settings updates `params`.
-- [ ] Drawing a text→entity wire is refused, and so is a second wire into the same input; neither changes the saved file (Playwright gesture spec).
-- [ ] Issues from validate highlight the concerned element and disable Run with the reasons listed.
+- [x] Adding a tool from the palette renders its ports and settings form; editing settings updates `params`.
+- [x] Drawing a text→entity wire is refused, and so is a second wire into the same input; neither changes the saved file (Playwright gesture spec).
+- [x] Issues from validate highlight the concerned element and disable Run with the reasons listed.

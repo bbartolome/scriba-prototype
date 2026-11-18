@@ -1,6 +1,6 @@
 ---
 id: GRR-11
-status: planned
+status: done
 ---
 # GRR-11 plan — tool nodes from the registry, palette, input and output nodes, typed wires, live validation
 
