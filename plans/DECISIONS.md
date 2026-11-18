@@ -5949,3 +5949,14 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **TRG-05 C2 is not weakened.** The only change against main in `e2e/specs/tools-preview.e2e.ts` is the `test.use` viewport height, 1600 to 2100 (line 21), which step 9 allows. Every assertion matches main.
 - **Basis:** the reviewers judged from the logs and the code. None ran tests.
 - **Status:** approval holds at 417e96c4. Next: step 3 for TRG-14 (rebase onto main, then lint, test and build on the rebased branch). If the rebase changes the patch id, new reviewers are needed.
+
+## 2026-11-18 — GRR-11 — Failed check: root npm test on the rebased branch (step 3, item 4); lint and build pass
+
+- **Branch:** `unit/GRR-11` replayed on main 9589e14 (commits 2208f8d, c23c6d9, 1d8d7ea, bfcecd4 as 056c171, f284fbb, ddd9c82, c336348; the branch was rebuilt by cherry-pick because `git rebase` stopped in an odd state, and the aborted rebase left the branch at bfcecd4). Patch id on the replay: ccfd8d70ac665e4c7234a6da6a4a9ab73d8596b3, the approved patch id. The approval holds.
+- **Check results (Node v26.13.0):** `npm ci` exit 0 (`/tmp/orch-c6/grr11-ci.log`); `npm run lint` exit 0; `npm run build` exit 0; `npm test` exit 1 (`/tmp/orch-c6/grr11-test.log`).
+- **The failure:** the root `npm test` run failed two web tests, both with `Error: Test timed out in 5000ms`, not with an assertion message:
+  1. `apps/web/src/app/features/graph-runner/canvas-page.spec.ts:314`, "Loading the contract's example story graph and recipe and saving without edits produces byte-equivalent JSON (no library fields leak)". It runs a loop over the example cases inside one test, and took 7011 ms.
+  2. `apps/web/src/app/features/project-store/search-panel.spec.ts:125`, "T1 typing a query shows ranked results; selecting a result opens that path" (not a GRR-11 file; 5322 ms).
+  The rest: web 480 passed, 2 failed (482); api 511 passed; contracts 252 passed; the script suites 14 and 12 passed.
+- **Context:** the earlier root run on 1d8d7ea had the same class of timeout (8 tests at 5 s, including GRR-10 test 1 and the preferences tests), and two later runs passed. The implementer reported this as load. The machine has other agents' sessions running.
+- **Action:** the orchestrator re-runs the root `npm test` once, on the same branch, with no other run in progress. If the same tests fail again, the timeout is not load: a new Haiku implementer gets this output, the unit file and the plan, and the plan goes back through review. The approval holds only at the same patch id.
