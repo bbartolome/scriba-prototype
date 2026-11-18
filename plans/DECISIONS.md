@@ -5896,3 +5896,9 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Checks by the orchestrator:** the carry-forward lines were checked against `units/GRR-11`, `units/GRR-13`, `units/GRR-10-vflow-adapter.md`, `apps/web/src/app/features/tool-registry/tool-form.ts` lines 560 to 575, and the GNP-04 entry at lines 5144 to 5162. All kept. Two citation slips, no change of substance: the run-in-progress condition is in GRR-13 line 22 (not lines 18 and 19); GRR-10 criterion 1 is at line 25.
 - **Note on the review reads:** one read of the plan sent to the Navigator (call-0003) paraphrased plan lines 7 to 10, 102 to 105 and 130 to 137. The orchestrator checked the verbatim text. The decisions above rest on the verbatim lines 51, 52 and 105 and on the plan's section 6, which records both settlements.
 - **Status:** plan `planned`, commit ffd84d0 (no change to the plan). The Navigator has reviewed C-16 and C-17. The GRR-11 implementer may start.
+
+## 2026-11-18 — SAU-22 — User decision: option (a), the unit as written; the reviewer's fixes are not applied
+
+- **Decision (the user, relayed by the parent session):** option (a) of the finding in this file under "Security review finding on unit/SAU-22" (2026-11-18). SAU-22 is built as written in `units/SAU-22-guard-dev-mode.md` and `plans/SAU-22.md`. The reviewer's fixes (keep the Origin check on mutations in dev mode; grant the dev identity only when the socket peer is loopback) are not applied. They need a unit change and are not made.
+- **Effect:** SAU-22 goes through review against its plan and then to step 3. Its criterion 5 (P5, port 8080) needs port 8080 free. Port 8080 is held by a live process that is not stopped. If P5 cannot run, SAU-22 stays off `main` and the state report says so.
+- **Record:** the finding stays on record as the reviewer's finding. This entry is the user's choice, not a review approval.
