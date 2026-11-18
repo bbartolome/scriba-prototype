@@ -1,0 +1,8 @@
+{
+  "sample": "nonfiction",
+  "intent": "Check my draft the-ten-thousand-hour-idea against this core idea: expertise grows from planned practice, not from the hours alone. Flag any paragraph that drifts from it.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["throughline_check"]
+  }
+}
