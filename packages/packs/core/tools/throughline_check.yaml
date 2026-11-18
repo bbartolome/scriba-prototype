@@ -1,0 +1,38 @@
+schemaVersion: 1
+name: throughline_check
+description: Flag any section of a chapter that drifts from its core idea.
+inputs:
+  type: object
+  properties:
+    chapterText:
+      type: string
+      title: Chapter text
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+  required: [chapterText, coreIdea]
+output: check
+enabled: true
+prompt: |
+  You check a chapter for drift: sections that no longer serve its core idea.
+
+  Core idea: {{coreIdea}}
+
+  Chapter:
+  {{chapterText}}
+
+  Steps:
+  1. Split the chapter into sections, one for each paragraph.
+  2. Decide for each section whether it serves the core idea above. A section drifts when it makes a point the core idea does not carry, or argues against it.
+  3. For each section that drifts, write one finding: a short reason, then the opening words of the section in double quotes.
+
+  Constraints:
+  - Use only the chapter above. Quote the opening words exactly as they appear in it, and never invent a section.
+  - Do not rewrite any section and do not suggest new wording.
+  - Return only the findings, one per line. If no section drifts, return the single line: No findings.

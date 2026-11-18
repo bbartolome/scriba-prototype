@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Return only the findings, one per line, each naming the problem and where it occurs. If there are none, return the single line: No findings."
+    },
+    {
+      "role": "user",
+      "content": "You check a chapter for drift: sections that no longer serve its core idea.\n\nCore idea: Expertise grows from planned practice, not from the hours alone.\n\nChapter:\nPractice hours get quoted as if they were the whole story. In the study, though, the hours alone did not separate the strongest students from the rest. The difference lay in how each session was planned.\n\nSourdough starters need feeding every twelve hours, or they sour and lose their rise. A baker who skips a feeding loses a whole day of work.\n\nTeachers who set each task in advance gave their students a clear target for every session. The students who worked toward those targets improved fastest.\n\nSteps:\n1. Split the chapter into sections, one for each paragraph.\n2. Decide for each section whether it serves the core idea above. A section drifts when it makes a point the core idea does not carry, or argues against it.\n3. For each section that drifts, write one finding: a short reason, then the opening words of the section in double quotes.\n\nConstraints:\n- Use only the chapter above. Quote the opening words exactly as they appear in it, and never invent a section.\n- Do not rewrite any section and do not suggest new wording.\n- Return only the findings, one per line. If no section drifts, return the single line: No findings.\n"
+    }
+  ]
+}

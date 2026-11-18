@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Drifts into baking, not planned practice: \"Sourdough starters need feeding every twelve hours\""
+        ]
+      }
+    }
+  ]
+}
