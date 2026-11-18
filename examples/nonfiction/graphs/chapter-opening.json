@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "view": "recipe",
+  "name": "Chapter opening",
+  "nodes": [
+    {
+      "id": "chapter-notes",
+      "kind": "input",
+      "params": { "type": "text", "label": "Chapter notes" },
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "id": "people",
+      "kind": "input",
+      "params": { "type": "entity", "label": "Key people and claims" },
+      "position": { "x": 0, "y": 160 }
+    },
+    {
+      "id": "house-style",
+      "kind": "input",
+      "params": { "type": "style", "label": "House style" },
+      "position": { "x": 0, "y": 320 }
+    },
+    {
+      "id": "mystery",
+      "kind": "tool",
+      "tool": "mystery_question",
+      "params": {
+        "puzzle": "Why does one figure about practice hours get quoted as a rule?"
+      },
+      "position": { "x": 320, "y": 0 }
+    },
+    {
+      "id": "cold-open",
+      "kind": "tool",
+      "tool": "cold_open",
+      "params": { "person": "k-anders-ericsson" },
+      "position": { "x": 640, "y": 0 }
+    },
+    {
+      "id": "myth-buster",
+      "kind": "tool",
+      "tool": "myth_buster",
+      "params": { "claimIds": ["hours-figure-is-average"] },
+      "position": { "x": 960, "y": 0 }
+    },
+    {
+      "id": "numbers-to-people",
+      "kind": "tool",
+      "tool": "numbers_to_people",
+      "params": { "person": "k-anders-ericsson" },
+      "position": { "x": 1280, "y": 0 }
+    },
+    {
+      "id": "draft",
+      "kind": "output",
+      "params": {
+        "label": "Chapter draft",
+        "path": "drafts/chapter-opening.md"
+      },
+      "position": { "x": 1600, "y": 0 }
+    }
+  ],
+  "edges": [
+    { "id": "w1", "from": "chapter-notes.out", "to": "mystery.coreIdea" },
+    { "id": "w2", "from": "chapter-notes.out", "to": "cold-open.coreIdea" },
+    { "id": "w3", "from": "chapter-notes.out", "to": "myth-buster.coreIdea" },
+    {
+      "id": "w4",
+      "from": "chapter-notes.out",
+      "to": "numbers-to-people.coreIdea"
+    },
+    { "id": "w5", "from": "mystery.output", "to": "cold-open.moment" },
+    { "id": "w6", "from": "cold-open.output", "to": "myth-buster.belief" },
+    {
+      "id": "w7",
+      "from": "myth-buster.output",
+      "to": "numbers-to-people.statistic"
+    },
+    { "id": "w8", "from": "people.out", "to": "cold-open.entityIds" },
+    { "id": "w9", "from": "house-style.out", "to": "mystery.styleProfile" },
+    { "id": "w10", "from": "house-style.out", "to": "cold-open.styleProfile" },
+    {
+      "id": "w11",
+      "from": "house-style.out",
+      "to": "myth-buster.styleProfile"
+    },
+    {
+      "id": "w12",
+      "from": "house-style.out",
+      "to": "numbers-to-people.styleProfile"
+    },
+    { "id": "w13", "from": "numbers-to-people.output", "to": "draft.in" }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat", "attempt": 1 },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["A practice-hours puzzle opens the chapter. mystery-reply"]
+      }
+    },
+    {
+      "match": { "endpoint": "chat", "attempt": 2 },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["The cold open puts a reader at the desk. cold-open-reply"]
+      }
+    },
+    {
+      "match": { "endpoint": "chat", "attempt": 3 },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["The myth about the number is busted here. myth-reply"]
+      }
+    },
+    {
+      "match": { "endpoint": "chat", "attempt": 4 },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["The statistic becomes a person in the room. numbers-reply"]
+      }
+    }
+  ]
+}
