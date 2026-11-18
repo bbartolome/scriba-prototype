@@ -20,6 +20,8 @@ export interface HostEntry {
 export interface RequestPolicy {
   // The entry for this Host, or undefined when the Host is not allowed.
   admit(host: string | undefined): Promise<HostEntry | undefined>;
+  // SCRIBA_DEV_AUTH: the guard skips the cookie and Origin checks on an admitted non-tailnet Host.
+  readonly devAuth: boolean;
 }
 
 // The loopback Hosts and the dev origins, built from the boot env. A bad dev origin throws a BootError.
@@ -45,6 +47,7 @@ export function buildRequestPolicy(
         tailnetEntryFor(await tailnet.refresh(), host)
       );
     },
+    devAuth: env.SCRIBA_DEV_AUTH,
   };
 }
 
