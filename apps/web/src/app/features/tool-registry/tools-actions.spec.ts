@@ -153,10 +153,9 @@ const LIST_WITH_BROKEN = { tools: [CORE_COLD, BROKEN] };
 const LINT_ANSWER = { lint: [], views: null };
 
 let doubles: ShellTestDoubles;
-let resize: (width: number, height: number) => void;
 
 beforeEach(() => {
-  resize = stubMatchMedia(1280, 800);
+  stubMatchMedia(1280, 800);
   doubles = createShellTestDoubles();
   TestBed.configureTestingModule({ providers: [...doubles.providers] });
   doubles.api.respond('POST', LINT_PATH, LINT_ANSWER);
@@ -594,7 +593,7 @@ describe('ToolsListPage actions', () => {
   });
 
   it('T5 on a phone there is no detail, no editor and no action button', async () => {
-    resize = stubMatchMedia(390, 844);
+    stubMatchMedia(390, 844);
     doubles.api.respond('GET', LIST_PATH, LIST_OVERRIDE);
     const fixture = await render();
 

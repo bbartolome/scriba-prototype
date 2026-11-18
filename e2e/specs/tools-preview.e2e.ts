@@ -18,7 +18,7 @@ const ACTIVE_PATH = '/api/project-store/active';
 const PROJECT = 'tools-spike';
 
 // The person picker sits below the chips, so a tall viewport keeps the chip and the picker on screen for the drag.
-test.use({ viewport: { width: 1280, height: 1600 } });
+test.use({ viewport: { width: 1280, height: 2100 } });
 
 /** Signs in, puts the fixture into the user pack, and activates a project of three entities. */
 async function setUp(page: Page): Promise<void> {
