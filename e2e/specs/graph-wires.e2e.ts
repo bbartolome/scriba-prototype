@@ -129,7 +129,7 @@ async function saveAndStatus(page: Page): Promise<number> {
   return (await saved).status();
 }
 
-test('criterion 2: a text output drawn to an entity list port, and a second wire into a wired input, are refused and the saved file keeps its text', async ({
+test('Drawing a text→entity wire is refused, and so is a second wire into the same input; neither changes the saved file (Playwright gesture spec).', async ({
   page,
 }) => {
   const path = await openCanvas(page, 'canvas-wires-refused');
