@@ -4,6 +4,7 @@ import { MatSlideToggle } from '@angular/material/slide-toggle';
 import type {
   ToolOrigin,
   ToolSummary,
+  ToolViews,
 } from '@bbartolome/scriba-contracts/tool-registry';
 import {
   catchError,
@@ -38,6 +39,7 @@ import {
 } from './tool-copy';
 import { blankToolSource, duplicateToolSource } from './tool-template';
 import { ToolEditor } from './tool-editor';
+import { ToolLivePreview } from './tool-live-preview';
 import { ToolsPreviewPage } from './tools-preview';
 import { ToolsTryPanel } from './tools-try';
 
@@ -65,6 +67,15 @@ type DetailTab = 'preview' | 'source' | 'compare' | 'try';
 interface Draft {
   readonly name: string;
   readonly source: string;
+}
+
+/**
+ * The views the live panel shows, when they differ from the loaded text: the text the editor linted or saved, and
+ * its views (TRG-15 D3, D3a). Undefined means the loaded text and its own views.
+ */
+interface LiveState {
+  readonly source: string;
+  readonly views: ToolViews | null;
 }
 
 /** The name form: a new tool, or a copy of one row. */
@@ -150,7 +161,20 @@ function ownPath(row: ToolRow): ApiPath {
     ToolEditor,
     DiffView,
     ToolsTryPanel,
+    ToolLivePreview,
   ],
+  styles: `
+    .split {
+      display: grid;
+      gap: 16px;
+    }
+
+    @media (min-width: 900px) {
+      .split {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
+    }
+  `,
   template: `
     <h1>Tools</h1>
 
@@ -295,13 +319,21 @@ function ownPath(row: ToolRow): ApiPath {
 
         <div role="tabpanel">
           @if (draft(); as current) {
-            <app-tool-editor
-              [source]="current.source"
-              [label]="current.name + '.yaml'"
-              [saveName]="current.name"
-              [draft]="true"
-              (saved)="draftSaved(current.name)"
-            />
+            <div class="split">
+              <app-tool-editor
+                [source]="current.source"
+                [label]="current.name + '.yaml'"
+                [saveName]="current.name"
+                [draft]="true"
+                (saved)="draftSaved(current.name)"
+                (linted)="onLinted(undefined, $event)"
+              />
+              <app-tool-live-preview
+                [tool]="current.name"
+                [source]="liveSource(current.source)"
+                [views]="liveViews(null)"
+              />
+            </div>
           } @else if (selectedRow(); as row) {
             @if (tab() === 'preview') {
               @if (row.valid) {
@@ -318,14 +350,22 @@ function ownPath(row: ToolRow): ApiPath {
             }
             @if (tab() === 'source') {
               @if (sourceOf(row); as view) {
-                <app-tool-editor
-                  [source]="view.source"
-                  [diagnostics]="view.lint"
-                  [label]="row.name + '.yaml'"
-                  [readOnly]="!editable(row)"
-                  [saveName]="editable(row) ? row.name : undefined"
-                  (saved)="rowSaved(row, $event)"
-                />
+                <div class="split">
+                  <app-tool-editor
+                    [source]="view.source"
+                    [diagnostics]="view.lint"
+                    [label]="row.name + '.yaml'"
+                    [readOnly]="!editable(row)"
+                    [saveName]="editable(row) ? row.name : undefined"
+                    (saved)="rowSaved(row, $event)"
+                    (linted)="onLinted(view.source, $event)"
+                  />
+                  <app-tool-live-preview
+                    [tool]="row.name"
+                    [source]="liveSource(view.source)"
+                    [views]="liveViews(view.views)"
+                  />
+                </div>
               }
             }
             @if (tab() === 'compare') {
@@ -386,6 +426,8 @@ export class ToolsListPage {
   protected readonly formMessage = signal('');
   /** True while the Source tab of a built-in row is editable, after Customize. */
   protected readonly customizing = signal(false);
+  /** The live panel's views when they differ from the loaded text, or undefined (TRG-15 D3a). */
+  private readonly live = signal<LiveState | undefined>(undefined);
   /** The source of each path read so far, by path: the built-in or the user copy of a tool. */
   private readonly sources = signal<Readonly<Record<string, ToolSourceView>>>(
     {},
@@ -482,6 +524,7 @@ export class ToolsListPage {
     if (next === this.tab()) return;
     if (this.tab() === 'source' && !this.mayDiscard()) return;
     this.customizing.set(false);
+    this.live.set(undefined);
     this.tab.set(next);
     this.ensureTab();
   }
@@ -540,8 +583,35 @@ export class ToolsListPage {
   /** Customize: the built-in's Source tab becomes editable, and saving it writes a user copy (C3). */
   protected customize(): void {
     this.customizing.set(true);
+    this.live.set(undefined);
     this.tab.set('source');
     this.ensureTab();
+  }
+
+  /**
+   * The editor's lint or save answer. An answer whose text is the baseline (the loaded or saved text) resets the
+   * panel to the baseline views; any other answer sets them (TRG-15 D3a). A draft has no baseline.
+   */
+  protected onLinted(
+    baseline: string | undefined,
+    answer: { readonly source: string; readonly views: ToolViews | null },
+  ): void {
+    if (answer.source === baseline) {
+      this.live.set(undefined);
+      return;
+    }
+    this.live.set({ source: answer.source, views: answer.views });
+  }
+
+  /** The text the live panel shows: the editor's last text, else the fallback (the loaded text). */
+  protected liveSource(fallback: string): string {
+    return this.live()?.source ?? fallback;
+  }
+
+  /** The views the live panel shows: the editor's last views, else the fallback (the loaded views). */
+  protected liveViews(fallback: ToolViews | null): ToolViews | null {
+    const live = this.live();
+    return live === undefined ? fallback : live.views;
   }
 
   /** Opens the name form for a new tool (D9: not on a phone, where the list has no form). */
@@ -648,6 +718,7 @@ export class ToolsListPage {
     this.form.set(undefined);
     this.formMessage.set('');
     this.customizing.set(false);
+    this.live.set(undefined);
     this.tab.set(tab);
     this.selectedKey.set(key);
     this.ensureTab();
@@ -660,6 +731,7 @@ export class ToolsListPage {
     this.form.set(undefined);
     this.formMessage.set('');
     this.customizing.set(false);
+    this.live.set(undefined);
     this.tab.set('source');
   }
 

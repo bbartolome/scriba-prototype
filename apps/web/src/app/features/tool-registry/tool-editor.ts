@@ -113,9 +113,11 @@ export class ToolEditor implements AfterViewInit {
   readonly label = input.required<string>();
 
   readonly saved = output<ToolSourceView>();
+  // The text that was linted, saved or loaded, with its views (TRG-15 D3, D3a). `source` is the text the views are of.
   readonly linted = output<{
     lint: LintDiagnostic[];
     views: ToolViews | null;
+    source: string;
   }>();
 
   private readonly api = inject(API_CLIENT);
@@ -189,6 +191,8 @@ export class ToolEditor implements AfterViewInit {
   ): Promise<readonly Diagnostic[]> => {
     const text = view.state.doc.toString();
     if (!this.draft() && text === this.loadedText) {
+      // The loaded text keeps its diagnostics, and its views come back with them (TRG-15 D3a).
+      this.linted.emit({ lint: this.lastLint, views: null, source: text });
       return this.marks(this.lastLint, view.state.doc);
     }
     try {
@@ -201,7 +205,7 @@ export class ToolEditor implements AfterViewInit {
       );
       this.lastLint = answer.lint;
       this.shown.set(answer.lint);
-      this.linted.emit(answer);
+      this.linted.emit({ ...answer, source: text });
       return this.marks(answer.lint, view.state.doc);
     } catch {
       // A failed lint keeps the last diagnostics.
@@ -221,22 +225,26 @@ export class ToolEditor implements AfterViewInit {
         next: (result) => {
           this.loadedText = text;
           this.applyLint(result.lint);
-          this.linted.emit({ lint: result.lint, views: result.views });
+          this.linted.emit({
+            lint: result.lint,
+            views: result.views,
+            source: text,
+          });
           this.saved.emit(result);
           const warnings = countOf(result.lint, 'warning');
           this.message.set(
             warnings === 0 ? 'Saved.' : `Saved. Warnings: ${warnings}.`,
           );
         },
-        error: (error: unknown) => this.saveFailed(error),
+        error: (error: unknown) => this.saveFailed(error, text),
       });
   }
 
-  private saveFailed(error: unknown): void {
+  private saveFailed(error: unknown, text: string): void {
     if (error instanceof ApiError && error.code === SPEC_LINT_FAILED) {
       const lint = lintDetailsCopy(error.details) ?? [];
       this.applyLint(lint);
-      this.linted.emit({ lint, views: null });
+      this.linted.emit({ lint, views: null, source: text });
       this.message.set(
         `The tool was not saved. Lint errors: ${countOf(lint, 'error')}.`,
       );

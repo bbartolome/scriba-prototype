@@ -211,6 +211,53 @@ describe('ToolEditor', () => {
     expect(linted).toHaveLength(1);
   });
 
+  it('T7 linted carries the text it is of: the linted text, the saved text, and the loaded text with no lint request', async () => {
+    doubles.api.respond('POST', LINT_PATH, { lint: [], views: null });
+    const { fixture, component } = create();
+    const answers: { source: string; lint: LintDiagnostic[] }[] = [];
+    component.linted.subscribe((answer) => answers.push(answer));
+    const lintRequests = () =>
+      doubles.api.requests.filter((request) => request.path === LINT_PATH);
+
+    // (a) a debounced lint answer carries the text that was linted.
+    insertAtLineEnd(fixture, 3, 'x');
+    const edited = viewOf(fixture).state.doc.toString();
+    vi.advanceTimersByTime(500);
+    await settle();
+    expect(lintRequests()).toHaveLength(1);
+    expect(answers.at(-1)?.source).toBe(edited);
+
+    // (b) a save answer carries the saved text.
+    doubles.api.respond('POST', SAVE_PATH, {
+      source: edited,
+      origin: 'user',
+      spec: null,
+      views: null,
+      lint: [],
+    });
+    saveButton(fixture).click();
+    await settle();
+    expect(answers.at(-1)?.source).toBe(edited);
+
+    // (c) after the save the loaded text is the saved text. Typed back to it, the next run emits that text and sends
+    // no lint request.
+    const before = lintRequests().length;
+    const answersBefore = answers.length;
+    viewOf(fixture).dispatch({
+      changes: {
+        from: 0,
+        to: viewOf(fixture).state.doc.length,
+        insert: edited,
+      },
+    });
+    fixture.detectChanges();
+    vi.advanceTimersByTime(500);
+    await settle();
+    expect(lintRequests()).toHaveLength(before);
+    expect(answers).toHaveLength(answersBefore + 1);
+    expect(answers.at(-1)).toMatchObject({ source: edited, lint: [] });
+  });
+
   it('T6 an unsaved edit is reported to the unsaved-text registry, and flush answers false, so leaving asks', () => {
     const registry = TestBed.inject(UnsavedTextRegistry);
     const { fixture } = create();

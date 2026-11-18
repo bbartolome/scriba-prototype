@@ -46,16 +46,19 @@ interface Source {
   readonly path: string;
 }
 
-function isEntityField(field: FormField): boolean {
+export function isEntityField(field: FormField): boolean {
   return ENTITY_CONTROLS.includes(field.control);
 }
 
-function isStyleField(field: FormField): boolean {
+export function isStyleField(field: FormField): boolean {
   return field.control === 'style-picker';
 }
 
 /** The IDs of the entity fields, in form order, each once. An empty value adds nothing. */
-function idsOf(fields: readonly FormField[], args: ToolArguments): string[] {
+export function idsOf(
+  fields: readonly FormField[],
+  args: ToolArguments,
+): string[] {
   const ids: string[] = [];
   for (const field of fields.filter(isEntityField)) {
     const value: unknown = args[field.key];
@@ -70,7 +73,7 @@ function idsOf(fields: readonly FormField[], args: ToolArguments): string[] {
 }
 
 /** Whether a style field's argument is empty, so that the project's style profile fills it. */
-function isEmpty(value: unknown): boolean {
+export function isEmpty(value: unknown): boolean {
   return value === undefined || value === null || value === '';
 }
 
