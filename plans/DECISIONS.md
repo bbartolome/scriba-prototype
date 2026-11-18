@@ -5960,3 +5960,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
   The rest: web 480 passed, 2 failed (482); api 511 passed; contracts 252 passed; the script suites 14 and 12 passed.
 - **Context:** the earlier root run on 1d8d7ea had the same class of timeout (8 tests at 5 s, including GRR-10 test 1 and the preferences tests), and two later runs passed. The implementer reported this as load. The machine has other agents' sessions running.
 - **Action:** the orchestrator re-runs the root `npm test` once, on the same branch, with no other run in progress. If the same tests fail again, the timeout is not load: a new Haiku implementer gets this output, the unit file and the plan, and the plan goes back through review. The approval holds only at the same patch id.
+
+## 2026-11-18 — GRR-11 — Check result: root npm test passes on a quiet machine; the timeouts were load
+
+- **Re-runs of the root `npm test` on `unit/GRR-11` (same commit as the failed run):** the first re-run, made while the machine's load average was 24, failed 16 web tests in 10 files, all `Test timed out in 5000ms`, in different files each time (the earlier run failed 2). The third run, made after the load fell to 4 and the orchestrator waited for it to drop, passed: contracts 252, api 511 (138 files), web 482 (68 files), script suites 14 and 12; `npm test` exit 0 (`/tmp/orch-c6/grr11-test-3.log`).
+- **Reading:** the failures are timeouts that move between files, which is load, not a defect of GRR-11 code. No test was changed or weakened to get the pass. The one check that counts is the passing run on the last commit of the branch.
+- **Gates on the branch:** `npm ci` exit 0; lint exit 0; build exit 0; test exit 0 on the quiet run.
+- **Status:** continuing step 3 for GRR-11 (rebase onto the current main, which has only plans commits since the tested head, then the status commit, then fast-forward).
