@@ -23,5 +23,5 @@ unblocks: [GRR-17]
 - Its path is a contract with `e2e/fixtures/mock-openai/`: add the mock scenario for running it; renaming the file updates the scenario in the same PR.
 
 ## Acceptance criteria
-- [ ] The recipe passes Platform's CI sample check (graph schema, tool references and `params`).
-- [ ] It runs end to end from "start from sample" against the mock OpenAI server (API-level test using a temp copy of the sample, not reading `examples/` in unit tests).
+- [x] The recipe passes Platform's CI sample check (graph schema, tool references and `params`).
+- [x] It runs end to end from "start from sample" against the mock OpenAI server (API-level test using a temp copy of the sample, not reading `examples/` in unit tests).
