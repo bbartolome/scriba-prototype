@@ -190,6 +190,7 @@ function selectionAfter(
         <button type="button" (click)="save()">Save</button>
       </div>
       <vflow
+        [view]="'auto'"
         [nodes]="nodes()"
         [edges]="edges()"
         [connection]="connection"
