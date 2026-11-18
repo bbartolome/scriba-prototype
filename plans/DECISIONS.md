@@ -5746,3 +5746,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Notes from the reviewers, not rework items:**
   1. `e2e/specs/tools-preview.e2e.ts` is edited (line 21, `test.use` viewport height 1600 to 2100) although plan section 3 lists it as unchanged. Step 9 allows the edit for the TRG-05 picker that falls off screen. The TRG-05 criterion is not weakened; the drag and the assertions are unchanged.
   2. Fragility: if `tools-editor.e2e.ts` and `tools-preview.e2e.ts` run in one Playwright invocation, TRG-05 C2 can fail (`toHaveValue('ada')` gets ""). The plan runs the two specs separately. A later gate that runs the whole e2e suite could hit this.
+
+## 2026-11-18 — TRG-14 — Failed check: rebase onto main conflicts (step 3, item 2)
+
+- **Branch:** `unit/TRG-14` at 8b712ff, based on main a862e0a. Main is at 93b804d and has moved: 40fc08c (`feat(TRG-16): Try panel in the tool detail`) and others changed files that TRG-14 also changes.
+- **First attempt:** `git rebase main` in the worktree stopped at the first pick (96b7314) with the error "Your local changes to the following files would be overwritten by merge: apps/web/src/app/features/tool-registry/tool-copy.spec.ts". The rebase was aborted. The branch and the worktree are unchanged (8b712ff, clean).
+- **Conflicts:** a read-only `git merge-tree --write-tree main unit/TRG-14` reports content conflicts in three files: `apps/web/src/app/features/tool-registry/tool-copy.spec.ts`, `apps/web/src/app/features/tool-registry/tool-copy.ts` and `apps/web/src/app/features/tool-registry/tools-list.ts`. `package-lock.json` and `apps/web/package.json` do not conflict, so no `npm install` is needed for the lock.
+- **Expected by the plan:** section 6 of plans/TRG-14.md names the TRG-16 shared file. The conflict resolution must keep the plan's TRG-14 behaviour and TRG-16's change.
+- **Action:** a new Haiku implementer rebases `unit/TRG-14` onto main and resolves the three conflicts, without changing the plan. Then the three checks run on the rebased branch. If the resolution changes the patch id, new reviewers review all parts.
