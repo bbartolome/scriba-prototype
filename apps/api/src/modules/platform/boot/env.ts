@@ -22,6 +22,7 @@ export interface ScribaEnv {
   SCRIBA_TS_SOCKET: string;
   SCRIBA_WATCHER: boolean;
   SCRIBA_DEV_ORIGINS: string;
+  SCRIBA_DEV_AUTH: boolean;
   SCRIBA_SETUP_URL_BASE: string;
   SCRIBA_LOG_LEVEL: LogLevelName;
   SCRIBA_COMPOSE_VERSION: number | undefined;
@@ -51,6 +52,9 @@ const rules = {
   watcher: z
     .enum(['true', 'false'], { error: 'expected true or false' })
     .transform((value) => value === 'true'),
+  devAuth: z
+    .enum(['0', '1'], { error: 'expected 0 or 1' })
+    .transform((value) => value === '1'),
   composeVersion: z
     .string()
     .refine(isNonNegativeInteger, 'expected a non-negative integer')
@@ -88,6 +92,17 @@ export function parseEnv(source: EnvSource): ScribaEnv {
     rules.port,
     defaultOf('SCRIBA_PORT'),
   );
+  const devAuth = read(
+    source,
+    'SCRIBA_DEV_AUTH',
+    rules.devAuth,
+    defaultOf('SCRIBA_DEV_AUTH'),
+  );
+  if (devAuth && source.NODE_ENV === 'production') {
+    throw new BootError(
+      'Invalid SCRIBA_DEV_AUTH "1": dev mode is refused when NODE_ENV is production.',
+    );
+  }
   return {
     SCRIBA_PORT: port,
     SCRIBA_LIBRARY: read(
@@ -132,6 +147,7 @@ export function parseEnv(source: EnvSource): ScribaEnv {
       rules.text,
       defaultOf('SCRIBA_DEV_ORIGINS'),
     ),
+    SCRIBA_DEV_AUTH: devAuth,
     SCRIBA_SETUP_URL_BASE: read(
       source,
       'SCRIBA_SETUP_URL_BASE',
