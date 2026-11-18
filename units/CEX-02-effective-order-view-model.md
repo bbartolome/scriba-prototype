@@ -33,9 +33,9 @@ Every top-level draft is included (1) and nothing else (2–3); predictable alph
 - Module skeleton registered in the composition root.
 
 ## Acceptance criteria (fixture projects via GET)
-- [ ] No order field and no graph → alphabetical; `drafts/.versions/x/…`, other subfolders and non-`.md` files absent.
-- [ ] With an order field, listed files first in that order; an unlisted file appended alphabetically; a stale entry ignored and reported as a warning.
-- [ ] With a story graph, `order` relations give topological order with alphabetical ties; an edge between two scene nodes in one file is ignored; files outside the graph follow in `project.yaml` order; a cycle falls back to `project.yaml` order and sets `graphCycle`.
-- [ ] Two story graphs are unioned; an invalid graph file is skipped with a warning.
-- [ ] Word totals equal the sum of per-file counts; front matter and code don't count.
-- [ ] The GET is side-effect free.
+- [x] No order field and no graph → alphabetical; `drafts/.versions/x/…`, other subfolders and non-`.md` files absent.
+- [x] With an order field, listed files first in that order; an unlisted file appended alphabetically; a stale entry ignored and reported as a warning.
+- [x] With a story graph, `order` relations give topological order with alphabetical ties; an edge between two scene nodes in one file is ignored; files outside the graph follow in `project.yaml` order; a cycle falls back to `project.yaml` order and sets `graphCycle`.
+- [x] Two story graphs are unioned; an invalid graph file is skipped with a warning.
+- [x] Word totals equal the sum of per-file counts; front matter and code don't count.
+- [x] The GET is side-effect free.

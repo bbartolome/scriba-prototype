@@ -1,6 +1,6 @@
 ---
 id: CEX-02
-status: planned
+status: done
 unit: units/CEX-02-effective-order-view-model.md
 module: compile-export
 ---
