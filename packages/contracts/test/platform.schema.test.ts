@@ -261,9 +261,9 @@ describe('stream, route and method constants', () => {
 });
 
 describe('SCRIBA_ENV_DEFAULTS', () => {
-  it('lists the 14 SCRIBA_* names and no TS_* names', () => {
+  it('lists the 15 SCRIBA_* names and no TS_* names', () => {
     const names = Object.keys(SCRIBA_ENV_DEFAULTS);
-    expect(names).toHaveLength(14);
+    expect(names).toHaveLength(15);
     expect(names.every((name) => name.startsWith('SCRIBA_'))).toBe(true);
   });
 

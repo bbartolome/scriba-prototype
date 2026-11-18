@@ -15,6 +15,7 @@ export const SCRIBA_ENV_DEFAULTS = {
   SCRIBA_TS_SOCKET: '/var/run/tailscale/tailscaled.sock',
   SCRIBA_WATCHER: 'true',
   SCRIBA_DEV_ORIGINS: '', // app (dev only); never set in the image
+  SCRIBA_DEV_AUTH: '0', // app (dev only); never set in the image or compose
   SCRIBA_SETUP_URL_BASE: 'http://127.0.0.1:${SCRIBA_PORT}', // template kept as text
   SCRIBA_LOG_LEVEL: 'info',
 } as const;
