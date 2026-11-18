@@ -22,6 +22,6 @@ unblocks: [GRR-11, GRR-14, GRR-17]
 - The canvas route component under the `:graphId` child route.
 
 ## Acceptance criteria
-- [ ] Loading the contract's example story graph and recipe and saving without edits produces byte-equivalent JSON (no library fields leak).
-- [ ] Moving a node updates only its `position` in the saved file.
-- [ ] A canvas-gesture Playwright spec (desktop) connects two handles and the saved wire uses `<nodeId>.<key>` port ids.
+- [x] Loading the contract's example story graph and recipe and saving without edits produces byte-equivalent JSON (no library fields leak).
+- [x] Moving a node updates only its `position` in the saved file.
+- [x] A canvas-gesture Playwright spec (desktop) connects two handles and the saved wire uses `<nodeId>.<key>` port ids.

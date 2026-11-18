@@ -1,6 +1,6 @@
 ---
 id: GRR-10
-status: planned
+status: done
 unit: units/GRR-10-vflow-adapter.md
 ---
 # GRR-10 plan — ngx-vflow adapter layer, both views from graph JSON, move, add, remove, connect and save
