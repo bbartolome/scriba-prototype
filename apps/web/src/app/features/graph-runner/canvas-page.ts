@@ -213,14 +213,12 @@ function selectionAfter(
                   [template]="svgHandle"
                 ></handle>
                 <ng-template #svgHandle let-handle>
-                  <svg width="12" height="12" viewBox="0 0 12 12">
-                    <circle
-                      [attr.data-port]="portIdOf(ctx.node.id, row.key)"
-                      [attr.cx]="handle.$implicit.point().x"
-                      [attr.cy]="handle.$implicit.point().y"
-                      r="5"
-                    ></circle>
-                  </svg>
+                  <svg:circle
+                    r="5"
+                    [attr.data-port]="portIdOf(ctx.node.id, row.key)"
+                    [attr.cx]="handle.point().x"
+                    [attr.cy]="handle.point().y"
+                  />
                 </ng-template>
               </div>
             </ng-template>
