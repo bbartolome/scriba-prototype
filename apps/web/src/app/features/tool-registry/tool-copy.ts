@@ -4,6 +4,7 @@ import type {
   ToolDetail,
   ToolList,
   ToolOrigin,
+  ToolRenderResult,
   ToolSummary,
   ToolValidateResult,
   ToolViews,
@@ -31,6 +32,10 @@ export const TOOL_ENABLED_PATH_TEMPLATE =
 /** `POST` the execute command of one tool (`TOOL_EXECUTE_ROUTE`), with `:name` in place. */
 export const TOOL_EXECUTE_PATH_TEMPLATE =
   '/api/tool-registry/tools/:name/execute';
+
+/** `POST` the render command of one tool (`TOOL_RENDER_ROUTE`), with `:name` in place. */
+export const TOOL_RENDER_PATH_TEMPLATE =
+  '/api/tool-registry/tools/:name/render';
 
 /** The origins in the order the list shows its groups (a copy of `TOOL_ORIGINS`). */
 export const TOOL_ORIGIN_ORDER: readonly ToolOrigin[] = [
@@ -66,6 +71,14 @@ export function toolPath(name: string): ApiPath {
 /** The execute path of one tool, with its name encoded as one path segment. */
 export function toolExecutePath(name: string): ApiPath {
   return TOOL_EXECUTE_PATH_TEMPLATE.replace(
+    ':name',
+    encodeURIComponent(name),
+  ) as ApiPath;
+}
+
+/** The render path of one tool, with its name encoded as one path segment. */
+export function toolRenderPath(name: string): ApiPath {
+  return TOOL_RENDER_PATH_TEMPLATE.replace(
     ':name',
     encodeURIComponent(name),
   ) as ApiPath;
@@ -143,6 +156,16 @@ export const toolCallResultCopy: ResponseSchema<ToolCallResult> = {
       } as { success: true; data: ToolCallResult };
     }
     return { success: false, error: 'not a call result' };
+  },
+};
+
+/** Response of POST render (`toolRenderResultSchema`): the prompt the model would receive. */
+export const toolRenderCopy: ResponseSchema<ToolRenderResult> = {
+  safeParse(data) {
+    if (isRecord(data) && typeof data['prompt'] === 'string') {
+      return { success: true, data: { prompt: data['prompt'] } };
+    }
+    return { success: false, error: 'not a render result' };
   },
 };
 

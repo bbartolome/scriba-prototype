@@ -1,5 +1,6 @@
 import {
   toolCallResultSchema,
+  toolRenderResultSchema,
   LINT_ROUTE,
   lintResponseSchema,
   toolDetailSchema,
@@ -9,6 +10,7 @@ import {
   TOOL_EXECUTE_ROUTE,
   TOOL_NAME_PATTERN as CONTRACT_TOOL_NAME_PATTERN,
   TOOL_ORIGINS,
+  TOOL_RENDER_ROUTE,
   TOOL_ROUTE,
   TOOL_SAVE_ROUTE,
   TOOL_USER_ROUTE,
@@ -21,6 +23,9 @@ import {
 import { describe, expect, it } from 'vitest';
 import {
   toolCallResultCopy,
+  toolRenderCopy,
+  toolRenderPath,
+  TOOL_RENDER_PATH_TEMPLATE,
   LINT_PATH,
   lintDetailsCopy,
   lintResponseCopy,
@@ -278,6 +283,22 @@ describe('tool-registry execute copies', () => {
     expect(toolCallResultCopy.safeParse(accepted).success).toBe(true);
     expect(toolCallResultSchema.safeParse(refused).success).toBe(false);
     expect(toolCallResultCopy.safeParse(refused).success).toBe(false);
+  });
+});
+
+describe('tool-registry render copies', () => {
+  // S4a: the render path and the render result agree with the contract.
+  it('S4a toolRenderPath and toolRenderCopy agree with the contract', () => {
+    expect(TOOL_RENDER_PATH_TEMPLATE).toBe(TOOL_RENDER_ROUTE);
+    expect(toolRenderPath('cold open')).toBe(
+      '/api/tool-registry/tools/cold%20open/render',
+    );
+    const accepted = { prompt: 'Core idea: Engines.' };
+    const refused = { text: 'Core idea: Engines.' };
+    expect(toolRenderResultSchema.safeParse(accepted).success).toBe(true);
+    expect(toolRenderCopy.safeParse(accepted).success).toBe(true);
+    expect(toolRenderResultSchema.safeParse(refused).success).toBe(false);
+    expect(toolRenderCopy.safeParse(refused).success).toBe(false);
   });
 });
 

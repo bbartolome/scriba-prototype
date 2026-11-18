@@ -1105,3 +1105,26 @@ describe('E3: errors, routes, the catalog-changed member and the tools section',
     ).toBe(false);
   });
 });
+
+describe('R0: render request with an optional inline source', () => {
+  it('R0: a render request parses with and without source, refuses a non-string source, and execute keeps its shape', () => {
+    const base = { arguments: {}, entities: [] };
+    expect(registry.toolRenderRequestSchema.safeParse(base).success).toBe(true);
+    expect(
+      registry.toolRenderRequestSchema.safeParse({
+        ...base,
+        source: 'name: x\n',
+      }).success,
+    ).toBe(true);
+    expect(
+      registry.toolRenderRequestSchema.safeParse({ ...base, source: 42 })
+        .success,
+    ).toBe(false);
+    // Execute's schema has no source key: it is stripped, not refused.
+    const executed = registry.toolCallRequestSchema.parse({
+      ...base,
+      source: 'name: x\n',
+    });
+    expect(executed).not.toHaveProperty('source');
+  });
+});

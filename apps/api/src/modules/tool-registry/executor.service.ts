@@ -19,6 +19,7 @@ import {
 } from '../providers/providers.module';
 import { CatalogService } from './catalog.service';
 import type { LoadedTool } from './packs';
+import { validateArguments } from './validate';
 import {
   parseTemplate,
   renderTemplate,
@@ -64,7 +65,7 @@ export class ExecutorService {
 
   // The prompt a call would send, with no model call.
   render(name: string, request: ToolRenderRequest): ToolRenderResult {
-    return { prompt: this.prepare(name, request).prompt };
+    return { prompt: this.prepare(name, request, request.source).prompt };
   }
 
   // Renders the prompt, calls the model of the active project, and returns the output and its sources. A signal that
@@ -74,7 +75,8 @@ export class ExecutorService {
     request: ToolCallRequest,
     signal?: AbortSignal,
   ): Promise<ToolCallResult> {
-    const { tool, prompt, sources } = this.prepare(name, request);
+    // Execute never reads an inline source: its schema strips it, and it does not save (TRG-15 D8).
+    const { tool, prompt, sources } = this.prepare(name, request, undefined);
     const kind = tool.spec.output;
     let target: ResolvedModel;
     try {
@@ -103,10 +105,18 @@ export class ExecutorService {
   }
 
   // Steps 1 to 4 of a call, then the render. Every refusal here is thrown before the model is called.
-  private prepare(name: string, request: ToolRenderRequest): Prepared {
-    // 1. The tool exists, is valid and is enabled.
-    const tool = this.catalog.entry(name);
-    if (!this.catalog.enabledOf(tool)) {
+  private prepare(
+    name: string,
+    request: ToolCallRequest,
+    source: string | undefined,
+  ): Prepared {
+    // 1. The tool exists, is valid and is enabled. An inline source (render only) is compiled as it is: it is not
+    // saved, so it has no switch and its name is not looked up (TRG-15 D8).
+    const tool =
+      source === undefined
+        ? this.catalog.entry(name)
+        : this.catalog.compileSource(source);
+    if (source === undefined && !this.catalog.enabledOf(tool)) {
       throw new ModuleError(
         TOOL_ERROR_CODES.DISABLED,
         TOOL_ERROR_STATUS.TOOL_DISABLED,
@@ -115,7 +125,7 @@ export class ExecutorService {
     }
 
     // 2. The arguments pass Ajv in full mode, and every entity ID is well formed.
-    const checked = this.catalog.validate(name, {
+    const checked = validateArguments(tool, {
       arguments: request.arguments,
       mode: 'full',
     });

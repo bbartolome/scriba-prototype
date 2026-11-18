@@ -44,7 +44,7 @@ import {
   type ToolSwitches,
 } from './tool-switches.service';
 import { removeUserTool, writeUserTool } from './user-pack';
-import { validateArguments } from './validate';
+import { compileTool, createAjv, validateArguments } from './validate';
 
 // Called with the names that a refresh or a toggle changed, once per change.
 export type CatalogListener = (names: string[]) => void;
@@ -253,6 +253,37 @@ export class CatalogService {
       entityKinds: this.kinds,
     });
     return { lint, views };
+  }
+
+  // Compiles an unsaved tool source for a render, writing nothing (TRG-15 D8). An error, or a source without a spec or
+  // views, is TOOL_INVALID (422) with the first error's line and message. Warnings do not block. The file-name rule
+  // does not run: the source is not saved under a name.
+  compileSource(source: string): LoadedTool {
+    const { lint, spec, views } = lintToolSource(source, {
+      entityKinds: this.kinds,
+    });
+    const first = lint.find((diagnostic) => diagnostic.severity === 'error');
+    if (first !== undefined) {
+      throw new ModuleError(
+        TOOL_ERROR_CODES.INVALID,
+        TOOL_ERROR_STATUS.TOOL_INVALID,
+        `The source has a lint error at line ${first.line}: ${first.message}`,
+      );
+    }
+    if (spec === null || views === null) {
+      throw new ModuleError(
+        TOOL_ERROR_CODES.INVALID,
+        TOOL_ERROR_STATUS.TOOL_INVALID,
+        'The source has no valid tool spec.',
+      );
+    }
+    return {
+      spec,
+      source,
+      origin: 'user',
+      views,
+      compiled: compileTool(spec, createAjv()),
+    };
   }
 
   // Saves a user copy of a tool under its name, copy-on-write for a built-in. A source with an error is refused with

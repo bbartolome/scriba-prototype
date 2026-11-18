@@ -50,8 +50,11 @@ export const toolCallRequestSchema = z.object({
 });
 export type ToolCallRequest = z.infer<typeof toolCallRequestSchema>;
 
-// Render and execute share one request shape, so the render path is the call path (TRG-12 line 20).
-export const toolRenderRequestSchema = toolCallRequestSchema;
+// Render is the call request plus an optional inline source (TRG-15 D7): an unsaved text renders
+// without a save. Execute keeps the plain call request, which strips `source`.
+export const toolRenderRequestSchema = toolCallRequestSchema.extend({
+  source: z.string().optional(),
+});
 export type ToolRenderRequest = z.infer<typeof toolRenderRequestSchema>;
 
 // The render result: the prompt the model would receive.

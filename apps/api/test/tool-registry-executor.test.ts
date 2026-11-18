@@ -1,4 +1,4 @@
-import { rmSync } from 'node:fs';
+import { readFileSync, rmSync } from 'node:fs';
 import { request as httpRequest } from 'node:http';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
@@ -454,6 +454,72 @@ it('X1 a provider failure answers TOOL_MODEL_ERROR with the provider message', a
     const error = errorBodySchema.parse(json(reply)).error;
     expect(error.code).toBe('TOOL_MODEL_ERROR');
     expect(error.message).toBe('The model provider does not know the model.');
+  } finally {
+    await close();
+  }
+});
+
+// The text of the render probe, read from its fixture file: an inline source is the same tool, unsaved.
+function renderProbeText(): string {
+  return readFileSync(
+    join(EXECUTOR_PACKS, 'core', 'tools', 'render_probe.yaml'),
+    'utf8',
+  );
+}
+
+const RENDER_PROBE_ARGUMENTS = {
+  arguments: {
+    coreIdea: 'Engines reward patience',
+    entityIds: ['ada-lovelace'],
+  },
+  entities: [
+    {
+      ref: 'ada-lovelace',
+      type: 'person',
+      path: 'entities/ada-lovelace.md',
+      content: 'Ada wrote the first program.',
+    },
+  ],
+};
+
+it('R1 render with an inline source renders an unsaved name, and the model is never called', async () => {
+  const { app, cookie, mock, close } = await openApp(
+    EXECUTOR_PACKS,
+    'tool-execute-draft',
+  );
+  try {
+    const reply = await post(
+      app,
+      cookie,
+      toolPath(TOOL_RENDER_ROUTE, 'unsaved_probe'),
+      { ...RENDER_PROBE_ARGUMENTS, source: renderProbeText() },
+    );
+    expect(reply.status).toBe(200);
+    expect(toolRenderResultSchema.parse(json(reply)).prompt).toBe(
+      'Core idea: Engines reward patience. Tone: . [person ada-lovelace (entities/ada-lovelace.md)\nAda wrote the first program.]',
+    );
+    expect(await recordsOf(mock, 'tool-execute-draft')).toHaveLength(0);
+  } finally {
+    await close();
+  }
+});
+
+it('R2 render with an inline source that has a lint error answers TOOL_INVALID (422), and the model is never called', async () => {
+  const { app, cookie, mock, close } = await openApp(
+    EXECUTOR_PACKS,
+    'tool-execute-draft',
+  );
+  try {
+    const source = renderProbeText().replace('{{coreIdea}}', '{{momnet}}');
+    const reply = await post(
+      app,
+      cookie,
+      toolPath(TOOL_RENDER_ROUTE, 'unsaved_probe'),
+      { ...RENDER_PROBE_ARGUMENTS, source },
+    );
+    expect(reply.status).toBe(422);
+    expect(errorBodySchema.parse(json(reply)).error.code).toBe('TOOL_INVALID');
+    expect(await recordsOf(mock, 'tool-execute-draft')).toHaveLength(0);
   } finally {
     await close();
   }
