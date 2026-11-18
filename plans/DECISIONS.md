@@ -5843,3 +5843,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
   2. Fresh clone of `unit/GRR-10` in an empty folder under /tmp: `npm ci`, lint, test (102 pass) and build all completed. Logs: `/tmp/grr10-fresh-*.log`. The folder was removed.
   3. E2E: not re-run on beb5052, because port 8080 is held by another process, which was not stopped. Tests 2 and 3 pass on the earlier run in `/tmp/grr10-e2e-step13.txt` ("2 passed", 18:32). The reviewer found that the spec file is unchanged since that run and the worktree is clean, so that run used the spec committed at beb5052.
 - **Caveat, not blocking:** no e2e run exists for commit beb5052 itself. The criterion 2 and 3 pass rests on the 18:32 run of the same spec text, on the same app code.
+
+## 2026-11-18 — GRR-10 — Step 3: on main (failed check: rebase; replayed by cherry-pick)
+
+- **Failed check:** `git rebase main` on `unit/GRR-10` at beb5052 stopped at the first pick (93da43e) with "Your local changes to the following files would be overwritten by merge" (`apps/web/package.json` and three graph-runner files). The worktree was clean, and main had not changed those files since the base 526c134. The rebase was aborted, twice, with the same result.
+- **Correction:** the four commits were replayed on main with `git cherry-pick`, in order: 93da43e, 8de3b21, 805272c, beb5052, as d006352, 2bf5586, c9d875f, 0cd15fb. The patch id is unchanged: 4a145c21f17bb3802c58f01d56b0168ed3069a8c.
+- **Checks on 0cd15fb (Node v26.13.0):** `npm run lint` exit 0; `npm test` exit 0, 102 pass, 0 fail; `npm run build` exit 0. Logs: `/tmp/grr10-s3-lint.log`, `/tmp/grr10-s3-test.log`, `/tmp/grr10-s3-build.log`.
+- **Done:** the three criteria are ticked (criteria 2 and 3 rest on the e2e run recorded in the Part B review). Plan status `done`, commit c96cadd. Main fast-forwarded to c96cadd. The branch `unit/GRR-10` and its worktree are removed.
