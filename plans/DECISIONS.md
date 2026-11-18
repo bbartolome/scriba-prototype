@@ -5770,3 +5770,13 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Patch id:** 4b11844479d992e99dd516fe81faac23e1e90c9f (`git diff main...unit/GRR-16 -- . ':!plans' ':!units' | git patch-id --stable`).
 - **Result:** APPROVED by one reviewer, part 1 of 1. The reviewer checked that the 20 changed files are the files of plan section 5, and that `diff -r` of the fixture against `examples/` is empty (17 files).
 - **Implementer's differences, judged by the reviewer as not changing plan behaviour:** the recipe's wire key is `edges` and the node kinds are `tool`, `input` and `output` (the contract's JSON keys; the plan did not name them); the test's pending-list GET uses the `getRun` wrapper; the poll helper returns `RunState | null`.
+
+## 2026-11-18 — TRG-14 — Review result: part C REWORK; parts A and B APPROVED (round 2)
+
+- **Branch:** `unit/TRG-14` at 6cd0c7b, three commits on main 2bfc2bf: 04c645b (part A), b15883f (part B), 6cd0c7b (part C). Patch id: 417e96c4187414855b4103cca08dc200f9f507ea. The round-1 approvals (patch id fa3af038...) do not hold any more.
+- **Checks at 6cd0c7b, before the review:** lint exit 0 (`/tmp/trg14-r2-lint.log`); root `npm test` exit 0 (`/tmp/trg14-r2-test.log`: web 69 files and 485 tests; api 14; root 12); build exit 0 (`/tmp/trg14-r2-build.log`).
+- **Part A:** APPROVED. The reviewer checked the file list against plan section 3: 13 paths, all listed, plus the accepted viewport change in `e2e/specs/tools-preview.e2e.ts`. The isolated `ng test --include` compile issue for `tool-template.spec.ts` is not in the plan and is not a rework item.
+- **Part B:** APPROVED. The merged `tools-list.ts` keeps TRG-16's Try tab (after Compare, not offered on a draft or an invalid row) and TRG-14's single `tab` signal.
+- **Part C:** REWORK.
+  1. No e2e run on the rebased code. The E1, E2 and TRG-05 results come from logs written before the rebase, and none of those logs records a commit or a base. The rebase changed `tools-list.ts` and `tool-copy.ts`, which E1 and E2 drive. Correction: on `unit/TRG-14` at 6cd0c7b, run `npm run e2e -w @bbartolome/scriba-e2e -- tools-editor.e2e.ts` and then, separately, `-- tools-preview.e2e.ts`. Save the logs and report E1, E2, TRG-05 C1 and C2. If one fails, report it.
+- **Known fragility, not a rework item:** if both specs run in one Playwright invocation, TRG-05 C2 can fail (`toHaveValue('ada')` gets ""). The plan runs them separately.
