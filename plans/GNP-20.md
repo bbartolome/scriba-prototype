@@ -1,6 +1,6 @@
 ---
 id: GNP-20
-status: planned
+status: done
 ---
 # GNP-20 plan — core/throughline_check tool
 

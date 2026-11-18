@@ -17,5 +17,5 @@ unblocks: [GNP-24]
 - Prompt: split the chapter into sections/paragraphs, flag each one that drifts from the core idea with a short reason and a quote of its opening words; no rewriting.
 
 ## Acceptance criteria
-- [ ] Passes the validation suite; golden test passes with a fixture chapter containing one drifting paragraph.
-- [ ] Manual eval case added.
+- [x] Passes the validation suite; golden test passes with a fixture chapter containing one drifting paragraph.
+- [x] Manual eval case added.
