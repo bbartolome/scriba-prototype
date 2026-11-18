@@ -5737,3 +5737,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Other differences, reported by the implementer:** C13 and step 4 name `vflowNodeHtml`, but the library's selector is `nodeHtml` (`ngx-vflow` fesm2022/ngx-vflow.mjs line 1004). The page imports `[Vflow, NgTemplateOutlet]`. The initial bundle total rose from 577.44 kB to 589.47 kB, not explained. Test 1 is one `it` with two loops. X2 in `graph-list-page.spec.ts` is renamed and its assertion changed, as C14 says.
 - **Plan change needed:** the reviser corrects the plan so that step 13, C12, C13 and test 3 describe what the library does, and corrects the selector name in C13. The text of the criteria does not change, and test 3 is not weakened.
 - **Not run:** step 14 (root lint, test, build), step 15 (fresh clone), step 16 (Part B commit).
+
+## 2026-11-18 — TRG-14 — Review result: APPROVED (parts A, B and C, round 1)
+
+- **Branch:** `unit/TRG-14`, commits 96b7314 (part A), 938ef1e (part B), 8b712ff (part C). The branch is based on main a862e0a; main has moved since (its code changes are not in the branch yet; the rebase follows).
+- **Patch id:** fa3af03891d6c41e6ee1706f6fb430e640e84579 (`git diff main...unit/TRG-14 -- . ':!plans' ':!units' | git patch-id --stable`, computed at main 526c134).
+- **Result:** APPROVED by three reviewers, one for each part. Part A also checked that the code changes only the files the plan lists.
+- **Notes from the reviewers, not rework items:**
+  1. `e2e/specs/tools-preview.e2e.ts` is edited (line 21, `test.use` viewport height 1600 to 2100) although plan section 3 lists it as unchanged. Step 9 allows the edit for the TRG-05 picker that falls off screen. The TRG-05 criterion is not weakened; the drag and the assertions are unchanged.
+  2. Fragility: if `tools-editor.e2e.ts` and `tools-preview.e2e.ts` run in one Playwright invocation, TRG-05 C2 can fail (`toHaveValue('ada')` gets ""). The plan runs the two specs separately. A later gate that runs the whole e2e suite could hit this.
