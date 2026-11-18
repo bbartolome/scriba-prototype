@@ -5821,3 +5821,14 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Branch:** `unit/GNP-13`, commit 0335771 (one commit). Based on an older main; the rebase follows at step 3.
 - **Patch id:** a54bb1105e75d9fc341a69335c06b69d68da6e24 (`git diff main...unit/GNP-13 -- . ':!plans' ':!units' | git patch-id --stable`, computed at main eff2d46).
 - **Result:** APPROVED by the reviewer of part 1, the only part. The reviewer checked that the diff changes only the five paths of plan section 2, that each step of the part is in the diff, and that the tests of AC1 (i) to (v) and AC2 would pass. The reviewer did not run the tests; the three checks run at step 3.
+
+## 2026-11-18 — GRR-10 — Review result: REWORK (parts A and B, round 1)
+
+- **Branch:** `unit/GRR-10`, commits 93da43e, 8de3b21, 805272c and beb5052 (the head). The worktree `scriba-prototype-wt/GRR-10` is clean.
+- **Patch id:** 4a145c21f17bb3802c58f01d56b0168ed3069a8c (`git diff main...unit/GRR-10 -- . ':!plans' ':!units' | git patch-id --stable`, computed at main eff2d46).
+- **Part A (steps 0 to 11b, tests 1, K1, K2, K3, X2):** APPROVED. The reviewer ran `npm test -w @bbartolome/scriba-web` in the worktree: 67 files and 470 tests passed. The reviewer did not run e2e, lint or the build.
+- **Part B (steps 12 to 16, tests 2 and 3):** REWORK. The reviewer's list, copied without change:
+  1. There is no evidence for step 14 (root gates). I found no log or output showing `npm run lint`, `npm test` and `npm run build` exited 0 on this code. `apps/web/dist` was rebuilt at 19:52, but that is not an exit record. Correction: run the three commands from the root and record their exit codes and output, or point to existing logs. If a check fails only in a file the plan does not list, run it on main in a scratch clone and record both outputs.
+  2. There is no evidence for step 15 (fresh clone). No clone folder or log was found, and nothing under /tmp matches GRR-10. Correction: clone `unit/GRR-10` into an empty folder outside the repository, run `npm ci && npm run lint && npm test && npm run build`, record the exit codes, then remove the folder.
+  3. The e2e evidence is only the JSON summary, and it is dated 18:31 UTC. It predates the commit `beb5052`, so it is the pass record for the spec but not a run of that exact commit. If the reviewer wants certainty, re-run `npm run e2e -w @bbartolome/scriba-e2e -- graph-canvas` on `beb5052` and keep the output. I could not run it under my constraints.
+- **Action:** a new Haiku implementer runs items 1 and 2 on `unit/GRR-10`, and item 3 only if port 8080 is free. It must not change the plan. If item 3 cannot run because port 8080 is held, it says so in its report. Then Sonnet reviewers re-review part B.
