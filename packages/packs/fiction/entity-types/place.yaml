@@ -1,0 +1,20 @@
+schemaVersion: 1
+kind: place
+title: Place
+description: A setting of the story, with the world rules that hold there; the body holds the description.
+folder: entities
+fields:
+  type: object
+  properties:
+    name:
+      type: string
+      title: Name
+    rules:
+      type: array
+      title: Rules
+      description: The world rules that hold in this place.
+      x-scriba-type: entity
+      x-scriba-entity-kinds: [world-rule]
+      items:
+        type: string
+  required: [name, rules]

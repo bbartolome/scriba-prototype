@@ -1,0 +1,45 @@
+schemaVersion: 1
+kind: character
+title: Character
+description: A character of the story, with the want, need, flaw, voice and relationships; the body holds the backstory.
+folder: entities
+fields:
+  type: object
+  properties:
+    name:
+      type: string
+      title: Name
+    want:
+      type: string
+      title: Want
+      description: What the character is trying to get.
+    need:
+      type: string
+      title: Need
+      description: What the character has to learn or gain.
+    flaw:
+      type: string
+      title: Flaw
+      description: The fault that works against the character.
+    voice:
+      type: string
+      title: Voice
+      description: Notes on how the character speaks.
+    relationships:
+      type: array
+      title: Relationships
+      description: The other characters this one has a relationship with, each with a note.
+      items:
+        type: object
+        properties:
+          character:
+            type: string
+            title: Character
+            x-scriba-type: entity
+            x-scriba-entity-kinds: [character]
+          note:
+            type: string
+            title: Note
+        required: [character, note]
+        additionalProperties: false
+  required: [name, want, need, flaw, voice, relationships]

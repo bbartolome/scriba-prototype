@@ -1,0 +1,21 @@
+schemaVersion: 1
+kind: world-rule
+title: World rule
+description: A rule that holds in the story world, in the places it applies to; the body holds its consequences and exceptions.
+folder: entities
+fields:
+  type: object
+  properties:
+    statement:
+      type: string
+      title: Statement
+      description: The rule in one sentence.
+    appliesTo:
+      type: array
+      title: Applies to
+      description: The places where this rule holds.
+      x-scriba-type: entity
+      x-scriba-entity-kinds: [place]
+      items:
+        type: string
+  required: [statement, appliesTo]
