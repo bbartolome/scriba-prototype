@@ -1,7 +1,7 @@
 ---
 id: GNP-13
 title: Fiction entity types — character, place, world-rule
-status: planned
+status: done
 ---
 # GNP-13 plan — fiction entity types: character, place and world-rule
 

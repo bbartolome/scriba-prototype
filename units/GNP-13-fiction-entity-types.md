@@ -18,5 +18,5 @@ unblocks: [GNP-14, GNP-15, GNP-16, GNP-17, GNP-18, GNP-19]
 - No "linked scenes" fields: links to scenes are story-graph relations.
 
 ## Acceptance criteria
-- [ ] All three lint clean (the registry accepts `relationships` as the one-level extension).
-- [ ] Per-kind validators accept valid fixtures and reject a relationship missing `note`.
+- [x] All three lint clean (the registry accepts `relationships` as the one-level extension).
+- [x] Per-kind validators accept valid fixtures and reject a relationship missing `note`.
