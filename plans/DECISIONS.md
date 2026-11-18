@@ -5866,3 +5866,23 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Reviewer:** one reviewer for Part 1 (the only part). APPROVED. It checked steps 2 to 9 and tests C1 to C6 against the plan, the eight changed files against plan section 3, and re-ran `compile-export-manuscript.test.ts` (6 of 6 pass).
 - **Note:** the kit exports `STATIC_ROOT`, which the plan does not name. It is inside the kit file the plan lists, so the reviewer accepted it.
 - **Action:** step 3 (rebase onto main, then the three checks, then the criteria checkboxes and `status: done`).
+
+## 2026-11-18 — GNP-20 — Step 3: rebase by replay, checks re-run, on main at a59f3fa
+
+- **Rebase:** `git rebase main` in the GNP-20 worktree stopped at the second pick (e5fc404) with "Your local changes to the following files would be overwritten by merge: packages/packs/test/golden/propose_graph/recipe.golden.json", on two different bases. The worktree was clean and the same replay in a fresh worktree had no error. The branch was moved to the replayed tip with `git reset --keep` (worktree clean, index refreshed). Patch id unchanged: c8a7087c5cc7f2df0c52cda8c1e01221fe5e9c01. The cause in the old worktree was not found.
+- **Checks:** `npm run lint`, `npm test` and `npm run build` on Node 26 passed on the tip before the last plans-only rebase (exit 0; 103 tests pass). The branch was then moved to the last tip, whose non-plan tree is identical. The lint scope excludes `plans/` (`.prettierignore`).
+- **Done:** criteria 1 and 2 ticked, `status: done`, commit a59f3fa on the branch. Main fast-forwarded from ffd84d0. The branch and worktree are removed.
+
+## 2026-11-18 — CEX-02 — Step 3: rebased cleanly, checks passed, on main at fe95074
+
+- **Rebase:** onto main a59f3fa, clean. Patch id unchanged: bde0c610fd9b276a1a645cd17c8e02ad34fea648.
+- **Checks:** lint, test and build on Node 26 passed on 05c582f (exit 0; 103 tests pass).
+- **Done:** criteria C1 to C6 ticked, `status: done`, commit fe95074 on the branch. Main fast-forwarded from a59f3fa. The branch and worktree are removed.
+
+## 2026-11-18 — GRR-11 — Plan revised by the reviser; two points settled from sources, not by the Navigator
+
+- **Planner's open points:** (1) Run control, criterion 28; (2) tool-form writes its defaults into `params` on render, which would break GRR-10 test 1.
+- **Settled by the reviser, from the sources:** (1) option A, a disabled-while-errors Run button in GRR-11 that GRR-13 wires (new choice C-16 in the plan); (2) the page stores the emitted value and writes `paramsAfterEdit`, so untouched defaults are not saved (new choice C-17 in the plan). Sources: GRR-11 unit lines 22 and criteria 27 and 28, GRR-13 unit lines 18 and 19, GRR-10 criterion 1, validate.ts line 37 (Ajv `useDefaults`), and the GNP-04 point 5 decision (kept).
+- **Not settled by the reviser:** the contract example's recipe does not match the shipped `cold_open` and `mystery_question` specs. It belongs to GRR-01 (done), not to GRR-11.
+- **Status:** plan `planned`, commit ffd84d0. No unit changes. The Navigator has not reviewed C-16 and C-17. The next session should check them before the GRR-11 implementer starts, or send them to the Navigator.
+- **Environment note from the planner:** the main checkout's `node_modules` has no `ngx-vflow` (npm ci needed). Port 8080 is held, so the e2e step may stop.
