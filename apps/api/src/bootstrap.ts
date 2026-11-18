@@ -38,6 +38,11 @@ export async function bootstrap(
   ensureAppState(env);
   // Refuses a bad SCRIBA_DEV_ORIGINS with a BootError before any Nest code runs.
   checkDevOrigins(env.SCRIBA_DEV_ORIGINS);
+  if (env.SCRIBA_DEV_AUTH) {
+    process.stderr.write(
+      'SCRIBA_DEV_AUTH=1: dev mode is on. The setup cookie and the Origin check are skipped for this process. Use it for local work only.\n',
+    );
+  }
   const modules = options.modules ?? COMPOSED_MODULES;
   const app = await NestFactory.create(
     buildRootModule({
