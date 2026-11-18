@@ -5780,3 +5780,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Part C:** REWORK.
   1. No e2e run on the rebased code. The E1, E2 and TRG-05 results come from logs written before the rebase, and none of those logs records a commit or a base. The rebase changed `tools-list.ts` and `tool-copy.ts`, which E1 and E2 drive. Correction: on `unit/TRG-14` at 6cd0c7b, run `npm run e2e -w @bbartolome/scriba-e2e -- tools-editor.e2e.ts` and then, separately, `-- tools-preview.e2e.ts`. Save the logs and report E1, E2, TRG-05 C1 and C2. If one fails, report it.
 - **Known fragility, not a rework item:** if both specs run in one Playwright invocation, TRG-05 C2 can fail (`toHaveValue('ada')` gets ""). The plan runs them separately.
+
+## 2026-11-18 — TRG-14 — Failed check: e2e at 6cd0c7b (rework of part C, round 2)
+
+- **Branch:** `unit/TRG-14` at 6cd0c7b. Each spec in its own invocation, with `--trace off`.
+- **tools-editor.e2e.ts:** E1 passed, E2 passed (2 passed; `/tmp/trg14-r3-editor.log`, exit 0).
+- **tools-preview.e2e.ts:** TRG-05 C1 passed. TRG-05 C2 FAILED (`/tmp/trg14-r3-preview.log`, exit 1): `locator.click: Test timeout of 30000ms exceeded` at `e2e/specs/tools-preview.e2e.ts:177`. The locator `li[data-tool="cold_open"][data-origin="user"] [data-open]` resolved to the `cold_open` button, and the click waited for the element to be "visible, enabled and stable". The error context is in the worktree at `e2e/test-results/tools-preview.e2e.ts-TRG-0-bf095-takes-a-dropped-person-chip/error-context.md`.
+- **History:** before the rebase onto main (round 1), the same spec passed in three runs with the viewport height 2100 (step 9 fallback). The rebase merged TRG-16's changes to `tools-list.ts`. That is the likely change, not yet established.
+- **Action:** a new Haiku implementer diagnoses the failure. It may apply the step 9 fallback (the `test.use` viewport) if the picker is off screen. It must not weaken TRG-05 C2 or any of its assertions. If the cause is in TRG-14's code, it reports PLAN DOES NOT WORK with the evidence.
