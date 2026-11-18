@@ -5763,3 +5763,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Cause:** not established. Not verified: whether the `draft.in` circle is in the DOM, which element covers it, and whether the library's connection gesture works.
 - **Build:** `npm run build -w @bbartolome/scriba-web` exits 0. The initial total is 589.47 kB, above the 500 kB warning budget and below the 1 MB error budget.
 - **Plan change needed:** the reviser probes the `draft.in` handle (its box and the `elementFromPoint` result) to establish the cause, then corrects step 13, C12 or test 3 as the cause requires. The text of the criteria does not change, and the assertions of test 3 are not weakened.
+
+## 2026-11-18 — GRR-16 — Review result: APPROVED (part 1 of 1)
+
+- **Branch:** `unit/GRR-16`, commits 251eded (recipe, mock scenario and fixture) and ca536e4 (the API test), on main 2bfc2bf.
+- **Patch id:** 4b11844479d992e99dd516fe81faac23e1e90c9f (`git diff main...unit/GRR-16 -- . ':!plans' ':!units' | git patch-id --stable`).
+- **Result:** APPROVED by one reviewer, part 1 of 1. The reviewer checked that the 20 changed files are the files of plan section 5, and that `diff -r` of the fixture against `examples/` is empty (17 files).
+- **Implementer's differences, judged by the reviewer as not changing plan behaviour:** the recipe's wire key is `edges` and the node kinds are `tool`, `input` and `output` (the contract's JSON keys; the plan did not name them); the test's pending-list GET uses the `getRun` wrapper; the poll helper returns `RunState | null`.
