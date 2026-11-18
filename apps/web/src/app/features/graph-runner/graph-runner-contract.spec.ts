@@ -7,6 +7,10 @@ import {
   validationResultSchema,
 } from '@bbartolome/scriba-contracts/graph-runner';
 import { pendingListSchema } from '@bbartolome/scriba-contracts/project-store';
+import {
+  toolDetailSchema,
+  toolListSchema,
+} from '@bbartolome/scriba-contracts/tool-registry';
 import { describe, expect, it } from 'vitest';
 import {
   currentRunCopy,
@@ -17,12 +21,17 @@ import {
   graphPath,
   graphRenamePath,
   graphSavePath,
+  graphValidatePath,
   GRAPHS_PATH,
   GRAPH_CREATE_PATH,
   noBodyCopy,
   pendingListCopy,
   pendingPath,
   RUN_CURRENT_PATH,
+  toolListCopy,
+  toolPath,
+  toolViewsCopy,
+  TOOLS_PATH,
   validationResultCopy,
 } from './graph-runner-contract';
 
@@ -213,5 +222,126 @@ describe('graph-runner-contract', () => {
       '/api/graph-runner/graphs/chapter-opening/save',
     );
     expect(graphPath('a/b')).toBe('/api/graph-runner/graphs/a%2Fb');
+  });
+
+  it('K3 toolListCopy and toolViewsCopy agree with toolListSchema and toolDetailSchema on each sample', () => {
+    const ROW_OK = {
+      name: 'cold_open',
+      description: 'Opens a chapter.',
+      output: 'draft',
+      enabled: true,
+      origin: 'nonfiction',
+      valid: true,
+      lintCounts: { errors: 0, warnings: 0 },
+    };
+    const VIEWS_OK = {
+      functionSchema: {
+        type: 'function',
+        function: { name: 'cold_open', description: 'd', parameters: {} },
+      },
+      form: {
+        fields: [
+          {
+            key: 'length',
+            title: 'Length',
+            description: '',
+            control: 'number',
+            required: false,
+            default: 800,
+            list: false,
+            port: false,
+          },
+        ],
+      },
+      ports: {
+        inputs: [
+          {
+            key: 'coreIdea',
+            type: 'text',
+            list: false,
+            required: true,
+            title: 'Core idea',
+          },
+        ],
+        output: { key: 'output', type: 'text', kind: 'draft' },
+        params: ['length'],
+      },
+    };
+    const DETAIL = {
+      spec: null,
+      source: 'name: cold_open',
+      origin: 'nonfiction',
+      lint: [],
+      views: VIEWS_OK,
+    };
+    const acceptedLists: unknown[] = [
+      { tools: [] },
+      { tools: [ROW_OK] },
+      {
+        tools: [
+          {
+            ...ROW_OK,
+            output: null,
+            error: { code: 'TOOL_NOT_FOUND', message: 'm' },
+          },
+        ],
+      },
+    ];
+    const refusedLists: unknown[] = [
+      {},
+      { tools: [{ ...ROW_OK, origin: 'other' }] },
+      { tools: [{ ...ROW_OK, output: 'poem' }] },
+      { tools: [{ ...ROW_OK, enabled: 'yes' }] },
+      { tools: [{ ...ROW_OK, lintCounts: { errors: 0 } }] },
+    ];
+    for (const sample of [...acceptedLists, ...refusedLists]) {
+      expect(toolListCopy.safeParse(sample).success).toBe(
+        toolListSchema.safeParse(sample).success,
+      );
+    }
+    for (const sample of acceptedLists) {
+      expect(toolListCopy.safeParse(sample).success).toBe(true);
+    }
+
+    const acceptedViews: unknown[] = [
+      DETAIL,
+      { ...DETAIL, views: null, spec: null },
+    ];
+    const refusedViews: unknown[] = [
+      {},
+      {
+        ...DETAIL,
+        views: {
+          ...VIEWS_OK,
+          ports: {
+            ...VIEWS_OK.ports,
+            output: { key: 'output', type: 'entity', kind: 'draft' },
+          },
+        },
+      },
+      { ...DETAIL, views: { ...VIEWS_OK, form: { fields: 'none' } } },
+      {
+        ...DETAIL,
+        views: {
+          ...VIEWS_OK,
+          form: { fields: [{ key: 'length', port: false, control: 'number' }] },
+        },
+      },
+    ];
+    for (const sample of [...acceptedViews, ...refusedViews]) {
+      expect(toolViewsCopy.safeParse(sample).success).toBe(
+        toolDetailSchema.safeParse(sample).success,
+      );
+    }
+    for (const sample of acceptedViews) {
+      expect(toolViewsCopy.safeParse(sample).success).toBe(true);
+    }
+  });
+
+  it('K4 toolPath and graphValidatePath equal the contract routes', () => {
+    expect(TOOLS_PATH).toBe('/api/tool-registry/tools');
+    expect(toolPath('cold_open')).toBe('/api/tool-registry/tools/cold_open');
+    expect(toolPath('a/b')).toBe('/api/tool-registry/tools/a%2Fb');
+    expect(graphValidatePath()).toBe('/api/graph-runner/graphs/validate');
   });
 });

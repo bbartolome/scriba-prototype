@@ -11,6 +11,10 @@ import type {
   PendingChange,
   PendingList,
 } from '@bbartolome/scriba-contracts/project-store';
+import type {
+  ToolList,
+  ToolViews,
+} from '@bbartolome/scriba-contracts/tool-registry';
 import type { ApiPath, ResponseSchema } from '../../shell';
 
 // Hand-written copies of the graph-runner routes and the response schemas the graphs list reads.
@@ -44,6 +48,19 @@ export function graphRenamePath(id: string): ApiPath {
 /** The delete command of one graph (`GRAPH_DELETE_ROUTE`), with its id encoded as one segment. */
 export function graphDeletePath(id: string): ApiPath {
   return `/api/graph-runner/graphs/${encodeURIComponent(id)}/delete` as ApiPath;
+}
+
+/** The graph validate command (`GRAPH_VALIDATE_ROUTE`): the unsaved file, answered with its issues. */
+export function graphValidatePath(): ApiPath {
+  return '/api/graph-runner/graphs/validate' as ApiPath;
+}
+
+/** The tool list (`TOOLS_ROUTE`). */
+export const TOOLS_PATH = '/api/tool-registry/tools' as ApiPath;
+
+/** The detail of one tool (`TOOL_ROUTE`), with its name encoded as one segment. */
+export function toolPath(name: string): ApiPath {
+  return `/api/tool-registry/tools/${encodeURIComponent(name)}` as ApiPath;
 }
 
 /** The open-change list of one project (`PROJECT_PENDING_ROUTE`), with its id encoded as one segment. */
@@ -301,6 +318,102 @@ export const graphDetailCopy: ResponseSchema<GraphDetail> = {
         graph: data['graph'] as GraphDetail['graph'],
         issues: checked.data.issues,
       },
+    };
+  },
+};
+
+// The tool origins and output kinds and the port types of the tool registry (its constants.ts).
+const TOOL_ORIGINS = ['core', 'nonfiction', 'fiction', 'user'];
+const BUILTIN_ORIGINS = ['core', 'nonfiction', 'fiction'];
+const OUTPUT_KINDS = ['draft', 'entity', 'claims', 'graph', 'check', null];
+const PORT_TYPES = ['text', 'entity', 'style'];
+
+/** One row of the tool list, checked for the fields the canvas reads and the others `toolSummarySchema` requires. */
+function toolRowOf(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  const counts = value['lintCounts'];
+  return (
+    typeof value['name'] === 'string' &&
+    value['name'] !== '' &&
+    typeof value['description'] === 'string' &&
+    OUTPUT_KINDS.includes(value['output'] as string | null) &&
+    typeof value['enabled'] === 'boolean' &&
+    typeof value['valid'] === 'boolean' &&
+    TOOL_ORIGINS.includes(value['origin'] as string) &&
+    (value['overrides'] === undefined ||
+      BUILTIN_ORIGINS.includes(value['overrides'] as string)) &&
+    isRecord(counts) &&
+    typeof counts['errors'] === 'number' &&
+    typeof counts['warnings'] === 'number' &&
+    (value['error'] === undefined || isRecord(value['error']))
+  );
+}
+
+/** Response of GET /api/tool-registry/tools (`toolListSchema`): `{tools}`. Keys the schema does not name are kept. */
+export const toolListCopy: ResponseSchema<ToolList> = {
+  safeParse(data) {
+    const tools = isRecord(data) ? data['tools'] : undefined;
+    if (!Array.isArray(tools) || !tools.every(toolRowOf)) {
+      return { success: false, error: 'a tool row is not valid' };
+    }
+    return { success: true, data: { tools: tools as ToolList['tools'] } };
+  },
+};
+
+/** The ports and form of one tool's views: the fields the canvas reads (`toolViewsSchema`). */
+function viewsOk(value: unknown): boolean {
+  if (value === null) return true;
+  if (!isRecord(value) || !isRecord(value['functionSchema'])) return false;
+  const form = value['form'];
+  const ports = value['ports'];
+  if (!isRecord(form) || !Array.isArray(form['fields'])) return false;
+  if (
+    !isRecord(ports) ||
+    !Array.isArray(ports['inputs']) ||
+    !Array.isArray(ports['params'])
+  ) {
+    return false;
+  }
+  const output = ports['output'];
+  if (
+    !isRecord(output) ||
+    output['key'] !== 'output' ||
+    output['type'] !== 'text' ||
+    !OUTPUT_KINDS.includes(output['kind'] as string | null)
+  ) {
+    return false;
+  }
+  const inputsOk = ports['inputs'].every(
+    (port) =>
+      isRecord(port) &&
+      typeof port['key'] === 'string' &&
+      port['key'] !== '' &&
+      PORT_TYPES.includes(port['type'] as string) &&
+      typeof port['list'] === 'boolean' &&
+      typeof port['required'] === 'boolean' &&
+      typeof port['title'] === 'string',
+  );
+  const fieldsOk = form['fields'].every(
+    (field) =>
+      isRecord(field) &&
+      typeof field['key'] === 'string' &&
+      field['key'] !== '' &&
+      typeof field['control'] === 'string' &&
+      typeof field['port'] === 'boolean' &&
+      'default' in field,
+  );
+  return inputsOk && fieldsOk;
+}
+
+/** Response of GET /api/tool-registry/tools/:name (`toolDetailSchema`), read for its views: `{views}` (null for an invalid tool). */
+export const toolViewsCopy: ResponseSchema<{ views: ToolViews | null }> = {
+  safeParse(data) {
+    if (!isRecord(data) || !('views' in data) || !viewsOk(data['views'])) {
+      return { success: false, error: 'the views are not valid' };
+    }
+    return {
+      success: true,
+      data: { views: data['views'] as ToolViews | null },
     };
   },
 };

@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import type {
   GraphFile,
   Position,
+  ValidationIssue,
 } from '@bbartolome/scriba-contracts/graph-runner';
 import type { Connection, Edge, HtmlTemplateNode } from 'ngx-vflow';
 
@@ -26,14 +27,19 @@ export function nodeIdOfPort(portId: string): string {
   return dot < 0 ? portId : portId.slice(0, dot);
 }
 
-/** The vflow nodes of a file, one per file node, each with its position and its file node as data. */
-export function vflowNodesOf(file: GraphFile): VflowNode[] {
-  return file.nodes.map((node) => ({
+/** The vflow node of one file node, with its position and the file node as its data. */
+export function vflowNodeOf(node: FileNode): VflowNode {
+  return {
     type: 'html-template',
     id: node.id,
     point: signal({ x: node.position.x, y: node.position.y }),
     data: signal<FileNode>(node),
-  }));
+  };
+}
+
+/** The vflow nodes of a file, one per file node. */
+export function vflowNodesOf(file: GraphFile): VflowNode[] {
+  return file.nodes.map(vflowNodeOf);
 }
 
 /** The vflow edges of a file: one per wire (recipe) or story edge, with its port handles for a recipe. */
@@ -45,6 +51,7 @@ export function vflowEdgesOf(file: GraphFile): Edge[] {
       target: nodeIdOfPort(wire.to),
       sourceHandle: wire.from,
       targetHandle: wire.to,
+      edgeLabels: signal({}),
     }));
   }
   return file.edges.map((edge) => ({
@@ -59,6 +66,35 @@ export function vflowEdgesOf(file: GraphFile): Edge[] {
           }),
         }),
   }));
+}
+
+/** The file with one node replaced by the node with the same id. Nothing else of the file changes. */
+export function replaceNode(file: GraphFile, node: FileNode): GraphFile {
+  return {
+    ...file,
+    nodes: file.nodes.map((candidate) =>
+      candidate.id === node.id ? node : candidate,
+    ),
+  } as GraphFile;
+}
+
+/**
+ * Shows each recipe wire's first issue by its code, on the wire's label, or clears the label. Story edges are
+ * not changed: their labels are their relations.
+ */
+export function labelWires(
+  edges: readonly Edge[],
+  issues: readonly ValidationIssue[],
+): void {
+  for (const edge of edges) {
+    if (edge.sourceHandle === undefined) continue;
+    const issue = issues.find((candidate) => candidate.edgeId === edge.id);
+    edge.edgeLabels?.set(
+      issue === undefined
+        ? {}
+        : { center: { type: 'default', text: issue.code } },
+    );
+  }
 }
 
 /**
