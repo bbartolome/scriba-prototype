@@ -1,6 +1,6 @@
 ---
 id: CEX-01
-status: planned
+status: done
 unit: units/CEX-01-contract-slice.md
 module: compile-export
 ---

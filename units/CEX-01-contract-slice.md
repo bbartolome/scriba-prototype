@@ -27,6 +27,6 @@ Merging this **closes Compile & export `phase:contract`**. Zod schemas + TS type
 - **Expand-only change in `/project-store`** (coordinated with the Project store): narrow the reserved `order` and `export` fields of the `project.yaml` schema to `OrderEntry[]` and `ExportSettings` (both still optional).
 
 ## Acceptance criteria
-- [ ] The subpath builds, exports only shapes and constants, and is importable from `apps/api` and `apps/web`.
-- [ ] Zod rejects an unknown status or part, an order entry with a path outside `drafts/`, a reorder that isn't lists of paths, and an unknown export format.
-- [ ] The `project.yaml` schema accepts files with and without `order` and `export`; the nonfiction sample still passes Platform's CI sample check.
+- [x] The subpath builds, exports only shapes and constants, and is importable from `apps/api` and `apps/web`.
+- [x] Zod rejects an unknown status or part, an order entry with a path outside `drafts/`, a reorder that isn't lists of paths, and an unknown export format.
+- [x] The `project.yaml` schema accepts files with and without `order` and `export`; the nonfiction sample still passes Platform's CI sample check.
