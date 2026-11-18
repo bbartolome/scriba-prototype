@@ -5858,3 +5858,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Reviewer:** one reviewer for Part 1 (the whole plan). APPROVED. It checked the steps, the files changed, and each test: T1 and T2 (criterion 1), T3 (criterion 2), and the extra tests X1 and X2. It re-ran the packs tests, the API test/packs suite, the data eval test, lint:packs and prettier in the worktree.
 - **Not run:** the real-model eval (optional in plan section 7) and the Playwright e2e suite, which `npm test` does not cover. Neither is a criterion of GNP-20.
 - **Action:** step 3 (rebase onto main, then the three checks, then the criteria checkboxes and `status: done`).
+
+## 2026-11-18 — CEX-02 — Review result: APPROVED (part 1 of 1, round 1)
+
+- **Branch:** `unit/CEX-02`, commit 79909d5, based on main 9181313 (the planned plan). The branch changes the eight paths of plan section 3 (943 insertions).
+- **Patch id:** bde0c610fd9b276a1a645cd17c8e02ad34fea648 (`git diff main...unit/CEX-02 -- . ':!plans' ':!units' | git patch-id --stable`, computed at main 89219dd).
+- **Reviewer:** one reviewer for Part 1 (the only part). APPROVED. It checked steps 2 to 9 and tests C1 to C6 against the plan, the eight changed files against plan section 3, and re-ran `compile-export-manuscript.test.ts` (6 of 6 pass).
+- **Note:** the kit exports `STATIC_ROOT`, which the plan does not name. It is inside the kit file the plan lists, so the reviewer accepted it.
+- **Action:** step 3 (rebase onto main, then the three checks, then the criteria checkboxes and `status: done`).
