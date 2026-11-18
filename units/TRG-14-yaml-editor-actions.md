@@ -18,7 +18,7 @@ unblocks: [TRG-15, TRG-17]
 - A failed save keeps the previous version active; a save with warnings succeeds and shows them.
 
 ## Acceptance criteria
-- [ ] Saving an invalid spec shows the diagnostics on their lines and keeps the previous version active; a spec with warnings saves and shows them.
-- [ ] Customize on a built-in opens an editable copy; after save the list shows it user-owned, overriding the built-in; Revert returns to the built-in.
-- [ ] Compare shows the diff between the user copy and the built-in.
-- [ ] New and Duplicate produce valid starting YAML; Delete removes a user-only tool.
+- [x] Saving an invalid spec shows the diagnostics on their lines and keeps the previous version active; a spec with warnings saves and shows them.
+- [x] Customize on a built-in opens an editable copy; after save the list shows it user-owned, overriding the built-in; Revert returns to the built-in.
+- [x] Compare shows the diff between the user copy and the built-in.
+- [x] New and Duplicate produce valid starting YAML; Delete removes a user-only tool.
