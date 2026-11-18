@@ -1,6 +1,6 @@
 ---
 id: SAU-22
-status: planned
+status: done
 unit: units/SAU-22-guard-dev-mode.md
 sources: units/SAU-22-guard-dev-mode.md (on main, unchanged since fb19867); modules/setup-auth.md (lines 3, 32, 39, 49, 86-91, 96); units/README.md (lines 91, 136, 139); units/SAU-19-owner-allowlist.md, units/SAU-21-tailnet-gate.md (decisions and criteria); plans/SAU-18.md (done at 60a665f; D7, D16, D17, sections 6, 7 and 8); plans/SAU-19.md (done; section 7); plans/SAU-20.md and plans/SAU-21.md (done; their notes on SAU-22); plans/DECISIONS.md (lines 1524-1527, 5508-5513, 5515-5518, 5520-5528, 5792-5796, and a grep for SAU-22, devAuth and SCRIBA_DEV_AUTH); plans/SAU-04.md (decisions 7, 14, 18); plans/CEX-01.md, plans/GRR-10.md, plans/GRR-16.md, plans/TRG-14.md (planned) and plans/GNP-13.md (draft) (file overlap); prompt.md (Revise, "When a plan does not work", "Changes of units that the reviser can make", "Criteria that you cannot test"); the code, tests and docs named in section 2, read on main at 8b7c214
 ---

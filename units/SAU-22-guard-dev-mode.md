@@ -25,9 +25,9 @@ Running the app locally with `npm run dev` requires the signed setup cookie (a h
 - Existing guard tests (`setup-auth-guard`, `token-guard-gate`, `invariant-*`) run with the flag unset and stay unchanged, so they keep proving production behaviour.
 
 ## Acceptance criteria
-- [ ] With `SCRIBA_DEV_AUTH` unset, a request without the cookie gets 401 and a mutation with a bad Origin gets 403, as before.
-- [ ] With it set, a cookie-less GET to a guarded route succeeds, and a POST with no Origin succeeds.
-- [ ] With it set, a Host outside the allowlist still gets 403, no response carries `Access-Control-*`, and every response carries `frame-ancestors 'none'`.
-- [ ] With it set and `NODE_ENV=production`, `main.js` exits with status 1.
-- [ ] `npm run dev` serves the app locally with no setup URL step.
-- [ ] The README documents the flag as local-only.
+- [x] With `SCRIBA_DEV_AUTH` unset, a request without the cookie gets 401 and a mutation with a bad Origin gets 403, as before.
+- [x] With it set, a cookie-less GET to a guarded route succeeds, and a POST with no Origin succeeds.
+- [x] With it set, a Host outside the allowlist still gets 403, no response carries `Access-Control-*`, and every response carries `frame-ancestors 'none'`.
+- [x] With it set and `NODE_ENV=production`, `main.js` exits with status 1.
+- [x] `npm run dev` serves the app locally with no setup URL step.
+- [x] The README documents the flag as local-only.
