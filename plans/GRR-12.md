@@ -1,6 +1,6 @@
 ---
 id: GRR-12
-status: planned
+status: draft
 ---
 # GRR-12 plan — entity side list and chip drop onto entity and style ports
 
