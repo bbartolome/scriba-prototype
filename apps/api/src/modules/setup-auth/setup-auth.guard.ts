@@ -55,6 +55,7 @@ const NOT_ALLOWED_MESSAGE =
 // On the tailnet Host the identity is the login header from a Serve peer, and a cookie is not read.
 // On the tailnet Host, when the owner allowlist is on, a login not in it is refused. Loopback never reads the list.
 // On every other admitted Host a valid setup cookie is the credential. Every mutation needs the Origin of its own Host.
+// With SCRIBA_DEV_AUTH=1 (SAU-22, local runs only) an admitted non-tailnet Host skips the cookie and the Origin check.
 @Injectable()
 export class SetupAuthGuard implements CanActivate {
   constructor(
@@ -79,9 +80,13 @@ export class SetupAuthGuard implements CanActivate {
       ]) === true;
     const entry = await this.policy.admit(req.headers.host);
     const tailnet = entry?.tailnet === true;
-    const identity = tailnet
+    // Dev mode (SAU-22): only on an admitted Host that is not the tailnet Host (SAU-18 D17).
+    const devMode = this.policy.devAuth && entry?.tailnet === false;
+    const identity: Identity | undefined = tailnet
       ? this.tailnetIdentity(req)
-      : this.cookieIdentity(req);
+      : devMode
+        ? { via: 'loopback' } // the cookie is not read
+        : this.cookieIdentity(req);
     if (identity !== undefined) req.identity = identity;
     if (identity === undefined) {
       if (tailnet) {
@@ -100,7 +105,7 @@ export class SetupAuthGuard implements CanActivate {
       }
     }
     if (tailnet && identity !== undefined) this.checkAllowlist(identity);
-    if (!SAFE_METHODS.includes(req.method)) {
+    if (!devMode && !SAFE_METHODS.includes(req.method)) {
       this.checkOrigin(req, entry);
     }
     return true;
