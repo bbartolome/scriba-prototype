@@ -1,51 +1,50 @@
-# Candidate queue (scout, 2026-11-17)
-TRG-15 | milestone M2 | available: no | waiting on TRG-14 not done
-TRG-17 | milestone M2 | available: no | waiting on TRG-14, TRG-15 not done
-GRR-10 | milestone M4 | available: yes | all blocked_by done
-GRR-11 | milestone M4 | available: no | waiting on GRR-10 not done
-GRR-12 | milestone M4 | available: no | waiting on GRR-11 not done
-GRR-13 | milestone M4 | available: no | waiting on GRR-11 not done
-GRR-14 | milestone M4 | available: no | waiting on GRR-10 not done
-GRR-15 | milestone M4 | available: no | waiting on GRR-11, GRR-12, GRR-13, GRR-14 not done
-GRR-16 | milestone M4 | available: yes | all blocked_by done
-GRR-17 | milestone M4 | available: no | waiting on GRR-10, GRR-11, GRR-12, GRR-13, GRR-14, GRR-15, GRR-16 not done
-CEX-01 | milestone M5 | available: yes | all blocked_by done
-CEX-02 | milestone M5 | available: no | waiting on CEX-01 not done
-CEX-03 | milestone M5 | available: no | waiting on CEX-02 not done
-CEX-04 | milestone M5 | available: no | waiting on CEX-02 not done
-CEX-05 | milestone M5 | available: no | waiting on CEX-02 not done
-CEX-06 | milestone M5 | available: no | waiting on CEX-05 not done
-CEX-07 | milestone M5 | available: no | waiting on CEX-05 not done
-CEX-08 | milestone M5 | available: no | waiting on CEX-01 not done
-CEX-09 | milestone M5 | available: no | waiting on CEX-02, CEX-03, CEX-04, CEX-05, CEX-06, CEX-07, CEX-08 not done
-CEX-10 | milestone M5 | available: no | waiting on CEX-04, CEX-05, CEX-09 not done
-CEX-11 | milestone M5 | available: no | waiting on CEX-10 not done
-CEX-12 | milestone M5 | available: no | waiting on CEX-10 not done
-CEX-13 | milestone M5 | available: no | waiting on CEX-10 not done
-CEX-14 | milestone M5 | available: no | waiting on CEX-03, CEX-10 not done
-CEX-15 | milestone M5 | available: no | waiting on CEX-10, CEX-11, CEX-12, CEX-13, CEX-14 not done
-CEX-16 | milestone M5 | available: no | waiting on CEX-03 not done
-CEX-17 | milestone M5 | available: no | waiting on CEX-01 not done
-CEX-18 | milestone M5 | available: no | waiting on CEX-17, CEX-05, CEX-10, CEX-14 not done
-CEX-19 | milestone M5 | available: no | waiting on CEX-16, CEX-17 not done
-CEX-20 | milestone M5 | available: no | waiting on CEX-08, CEX-15, CEX-16, CEX-17, CEX-18, CEX-19 not done
-GNP-13 | milestone M6 | available: yes | all blocked_by done
-GNP-14 | milestone M6 | available: no | waiting on GNP-13 not done
-GNP-15 | milestone M6 | available: no | waiting on GNP-13 not done
-GNP-16 | milestone M6 | available: no | waiting on GNP-13 not done
-GNP-17 | milestone M6 | available: no | waiting on GNP-13 not done
-GNP-18 | milestone M6 | available: no | waiting on GNP-13, GNP-16 not done
-GNP-19 | milestone M6 | available: no | waiting on GNP-13, GNP-14, GNP-15, GNP-16, GNP-17, GNP-18, CEX-09, GRR-17 not done
-GNP-20 | milestone M7 | available: yes | all blocked_by done
-GNP-21 | milestone M7 | available: yes | all blocked_by done
-GNP-22 | milestone M7 | available: yes | all blocked_by done
-GNP-23 | milestone M7 | available: no | waiting on GNP-15, GNP-16, GNP-21, GNP-22 not done
-GNP-24 | milestone M7 | available: no | waiting on GNP-19, GNP-20, GNP-21, GNP-22, GNP-23 not done
-SHL-17 | milestone M7 | available: yes | all blocked_by done
-SHL-18 | milestone M7 | available: yes | all blocked_by done
-SHL-19 | milestone M7 | available: no | waiting on SHL-17, SHL-18 not done
-AGL-21 | milestone M7 | available: yes | all blocked_by done
-AGL-22 | milestone M7 | available: yes | all blocked_by done
-AGL-23 | milestone M7 | available: no | waiting on AGL-21, AGL-22 not done
-AGL-24 | milestone M7 | available: no | waiting on CEX-09, CEX-15 not done
-PST-23 | milestone M7 | available: yes | all blocked_by done
+# Candidate queue (scout, 2026-11-18)
+TRG-15 | milestone M2 | available: no | on demo path; waits on TRG-14 (planned)
+TRG-17 | milestone M2 | available: no | on demo path; waits on TRG-14 (planned), TRG-15 (no plan)
+GRR-11 | milestone M4 | available: no | on demo path; waits on GRR-10 (draft)
+GRR-12 | milestone M4 | available: no | on demo path; waits on GRR-11 (no plan)
+GRR-13 | milestone M4 | available: no | on demo path; waits on GRR-11 (no plan)
+GRR-14 | milestone M4 | available: no | on demo path; waits on GRR-10 (draft)
+GRR-15 | milestone M4 | available: no | on demo path; waits on GRR-11 (no plan), GRR-12 (no plan), GRR-13 (no plan), GRR-14 (no plan)
+GRR-16 | milestone M4 | available: yes | on demo path; all blocked_by done
+GRR-17 | milestone M4 | available: no | on demo path; waits on GRR-10 (draft), GRR-11 (no plan), GRR-12 (no plan), GRR-13 (no plan), GRR-14 (no plan), GRR-15 (no plan), GRR-16 (no plan)
+CEX-01 | milestone M5 | available: yes | on demo path; all blocked_by done
+CEX-02 | milestone M5 | available: no | on demo path; waits on CEX-01 (no plan)
+CEX-03 | milestone M5 | available: no | on demo path; waits on CEX-02 (no plan)
+CEX-04 | milestone M5 | available: no | on demo path; waits on CEX-02 (no plan)
+CEX-05 | milestone M5 | available: no | on demo path; waits on CEX-02 (no plan)
+CEX-06 | milestone M5 | available: no | on demo path; waits on CEX-05 (no plan)
+CEX-07 | milestone M5 | available: no | on demo path; waits on CEX-05 (no plan)
+CEX-08 | milestone M5 | available: no | on demo path; waits on CEX-01 (no plan)
+CEX-09 | milestone M5 | available: no | on demo path; waits on CEX-02 (no plan), CEX-03 (no plan), CEX-04 (no plan), CEX-05 (no plan), CEX-06 (no plan), CEX-07 (no plan), CEX-08 (no plan)
+CEX-10 | milestone M5 | available: no | on demo path; waits on CEX-04 (no plan), CEX-05 (no plan), CEX-09 (no plan)
+CEX-11 | milestone M5 | available: no | on demo path; waits on CEX-10 (no plan)
+CEX-12 | milestone M5 | available: no | on demo path; waits on CEX-10 (no plan)
+CEX-13 | milestone M5 | available: no | on demo path; waits on CEX-10 (no plan)
+CEX-14 | milestone M5 | available: no | on demo path; waits on CEX-03 (no plan), CEX-10 (no plan)
+CEX-15 | milestone M5 | available: no | on demo path; waits on CEX-10 (no plan), CEX-11 (no plan), CEX-12 (no plan), CEX-13 (no plan), CEX-14 (no plan)
+CEX-16 | milestone M5 | available: no | on demo path; waits on CEX-03 (no plan)
+CEX-17 | milestone M5 | available: no | on demo path; waits on CEX-01 (no plan)
+CEX-18 | milestone M5 | available: no | on demo path; waits on CEX-05 (no plan), CEX-10 (no plan), CEX-14 (no plan), CEX-17 (no plan)
+CEX-19 | milestone M5 | available: no | on demo path; waits on CEX-16 (no plan), CEX-17 (no plan)
+CEX-20 | milestone M5 | available: no | on demo path; waits on CEX-08 (no plan), CEX-15 (no plan), CEX-16 (no plan), CEX-17 (no plan), CEX-18 (no plan), CEX-19 (no plan)
+GNP-13 | milestone M6 | available: yes | on demo path; all blocked_by done
+GNP-14 | milestone M6 | available: no | on demo path; waits on GNP-13 (no plan)
+GNP-15 | milestone M6 | available: no | on demo path; waits on GNP-13 (no plan)
+GNP-16 | milestone M6 | available: no | on demo path; waits on GNP-13 (no plan)
+GNP-17 | milestone M6 | available: no | on demo path; waits on GNP-13 (no plan)
+GNP-18 | milestone M6 | available: no | on demo path; waits on GNP-13 (no plan), GNP-16 (no plan)
+GNP-19 | milestone M6 | available: no | on demo path; waits on CEX-09 (no plan), GNP-13 (no plan), GNP-14 (no plan), GNP-15 (no plan), GNP-16 (no plan), GNP-17 (no plan), GNP-18 (no plan), GRR-17 (no plan)
+GNP-20 | milestone M7 | available: yes | on demo path; all blocked_by done
+GNP-21 | milestone M7 | available: yes | on demo path; all blocked_by done
+GNP-22 | milestone M7 | available: yes | on demo path; all blocked_by done
+GNP-23 | milestone M7 | available: no | on demo path; waits on GNP-15 (no plan), GNP-16 (no plan), GNP-21 (no plan), GNP-22 (no plan)
+GNP-24 | milestone M7 | available: no | on demo path; waits on GNP-19 (no plan), GNP-20 (no plan), GNP-21 (no plan), GNP-22 (no plan), GNP-23 (no plan)
+SHL-17 | milestone M7 | available: yes | on demo path; all blocked_by done
+SHL-18 | milestone M7 | available: yes | on demo path; all blocked_by done
+SHL-19 | milestone M7 | available: no | on demo path; waits on SHL-17 (no plan), SHL-18 (no plan)
+AGL-21 | milestone M7 | available: yes | other unit of milestone; all blocked_by done
+AGL-22 | milestone M7 | available: yes | other unit of milestone; all blocked_by done
+AGL-23 | milestone M7 | available: no | other unit of milestone; waits on AGL-21 (no plan), AGL-22 (no plan)
+AGL-24 | milestone M7 | available: no | other unit of milestone; waits on CEX-09 (no plan), CEX-15 (no plan)
+PST-23 | milestone M7 | available: yes | other unit of milestone; all blocked_by done
