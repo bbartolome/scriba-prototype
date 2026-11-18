@@ -16,6 +16,8 @@ npm run lint    # every workspace, then prettier --check .
 
 `npm run dev` serves the Angular dev server at `http://localhost:4200`. It proxies `/api`, `/healthz` and `/events` to the API. The dev API listens on `0.0.0.0:8080`, and it keeps its library in `.scriba-dev/` (git-ignored).
 
+`SCRIBA_DEV_AUTH=1` is a dev mode that `npm run dev` sets. It skips the setup cookie and the Origin check on the API, so a local run needs no setup URL step. The flag is local only: the boot refuses it when `NODE_ENV=production` (exit 1), and no image or compose file sets it. With the flag on, any device that can reach port 8080 can call the API without the setup cookie, and any web page open in the browser can send POST requests to the local API.
+
 ## Install, update and roll back
 
 The installer is one command. It writes a `.env` and a compose file into the folder you run it in, and it starts the stack.
