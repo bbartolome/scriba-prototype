@@ -1,0 +1,90 @@
+schemaVersion: 1
+name: dialogue
+description: Write an exchange between characters, each in their own voice.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    characterIds:
+      type: array
+      title: Characters
+      items:
+        type: string
+      minItems: 2
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [character]
+    sceneText:
+      type: string
+      title: Scene
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    subtext:
+      type: string
+      title: Subtext
+    goal:
+      type: string
+      title: Goal
+  required: [coreIdea, characterIds]
+output: draft
+enabled: true
+prompt: |
+  You write one exchange of dialogue in a fiction story: a short scene in which two or more characters speak, each in their own voice.
+
+  Core idea: {{coreIdea}}
+  {{#if goal}}Goal: {{goal}}
+  {{/if}}{{#if sceneText}}Scene: {{sceneText}}
+  {{/if}}{{#if subtext}}Subtext: {{subtext}}
+  {{/if}}Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}
+  Characters:
+  {{#each characterIds}}
+  {{entity this}}
+  {{/each}}
+  Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. Give each character lines in the exchange, in the order the scene needs.
+  2. Give each speaker distinct diction: their own word choice, sentence length and forms of address, as their voice notes say.
+  3. Keep each speaker to the relationship notes: how they speak to each other character.
+  4. Carry the subtext under the lines, so that what the characters do not say shows.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (the year the light was built). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

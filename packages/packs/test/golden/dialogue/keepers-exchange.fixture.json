@@ -1,0 +1,39 @@
+{
+  "arguments": {
+    "coreIdea": "Two keepers can disagree and still share the same light.",
+    "entityIds": ["skerry-light"],
+    "styleProfile": "plain-spoken",
+    "length": 600,
+    "tone": "spare",
+    "characterIds": ["nell-carrow", "pim-dorey"],
+    "sceneText": "Night. The supply boat is three weeks late. The two keepers sit at the table with the logbook open between them.",
+    "subtext": "Each of them is afraid of being the first to say the boat will not come.",
+    "goal": "Agree whether to send a signal to the mainland."
+  },
+  "entities": [
+    {
+      "ref": "nell-carrow",
+      "type": "character",
+      "path": "entities/nell-carrow.md",
+      "content": "---\ntype: character\nname: Nell Carrow\nwant: To keep the light lit without help.\nneed: To accept that the light is shared.\nflaw: Pride in doing everything alone.\nvoice: Terse. Short sentences, no greetings, numbers before names.\nrelationships:\n  - character: pim-dorey\n    note: Her relief keeper. She tolerates his talk and does not answer it.\n---\n\nNell Carrow has kept the light for nineteen winters."
+    },
+    {
+      "ref": "pim-dorey",
+      "type": "character",
+      "path": "entities/pim-dorey.md",
+      "content": "---\ntype: character\nname: Pim Dorey\nwant: To be trusted with the light.\nneed: To stop filling silences.\nflaw: Talks when afraid.\nvoice: Talkative. Long run-on sentences, questions, first names for everyone.\nrelationships:\n  - character: nell-carrow\n    note: His senior keeper. He wants her approval and fills the silence she leaves.\n---\n\nPim Dorey arrived on the last supply boat and has not stopped talking since."
+    },
+    {
+      "ref": "skerry-light",
+      "type": "place",
+      "path": "entities/skerry-light.md",
+      "content": "Skerry Light is a lamp on a bare rock, reached only on a spring tide."
+    },
+    {
+      "ref": "plain-spoken",
+      "type": "style-profile",
+      "path": "entities/plain-spoken.md",
+      "content": "---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the scene shows, and let the silences do the rest."
+    }
+  ]
+}

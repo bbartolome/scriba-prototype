@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Nell Carrow closed the logbook. Send the signal, she said. Pim Dorey began to answer, then stopped."
+        ]
+      }
+    }
+  ]
+}
