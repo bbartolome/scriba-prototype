@@ -18,7 +18,7 @@ Merging this **closes Compile & export `phase:assembly-preflight`**.
 - Guard coverage confirmed; Setup & auth's invariant tests pass for these routes.
 
 ## Acceptance criteria (the phase checklist)
-- [ ] CEX-02…CEX-07 criteria pass on `main`.
-- [ ] Each of the five checks has a fixture project that triggers it with the right check id, severity, path and line; a clean fixture passes all five.
-- [ ] Preflight makes no outbound HTTP call (the mock OpenAI server received no request).
-- [ ] The nonfiction sample started via "start from sample" returns its authored, non-alphabetical order with its statuses.
+- [x] CEX-02…CEX-07 criteria pass on `main`.
+- [x] Each of the five checks has a fixture project that triggers it with the right check id, severity, path and line; a clean fixture passes all five.
+- [x] Preflight makes no outbound HTTP call (the mock OpenAI server received no request).
+- [x] The nonfiction sample started via "start from sample" returns its authored, non-alphabetical order with its statuses.

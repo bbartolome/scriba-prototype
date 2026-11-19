@@ -1,6 +1,6 @@
 ---
 id: CEX-09
-status: planned
+status: done
 ---
 # CEX-09 plan — assembly-preflight gate: module re-exports and the gate tests
 
