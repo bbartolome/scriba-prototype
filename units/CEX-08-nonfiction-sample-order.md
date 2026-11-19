@@ -18,5 +18,5 @@ unblocks: [CEX-09, CEX-20]
 - Keep any file paths used by the mock OpenAI scenarios unchanged.
 
 ## Acceptance criteria
-- [ ] Platform's examples check passes with the order field and export settings.
-- [ ] The sample, started from "start from sample", returns its authored non-alphabetical order with its statuses (tested in CEX-09 on a temp copy).
+- [x] Platform's examples check passes with the order field and export settings.
+- [x] The sample, started from "start from sample", returns its authored non-alphabetical order with its statuses (tested in CEX-09 on a temp copy).

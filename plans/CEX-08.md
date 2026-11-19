@@ -1,6 +1,6 @@
 ---
 id: CEX-08
-status: planned
+status: done
 unit: units/CEX-08-nonfiction-sample-order.md
 module: compile-export
 ---
