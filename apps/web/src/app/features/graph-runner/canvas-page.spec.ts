@@ -1941,3 +1941,62 @@ it('R3: Arrange is disabled while a run is active and enabled after `run-ended`.
   restoreMatchMedia();
   TestBed.resetTestingModule();
 });
+
+// GRR-15 step 11a (guard V1, not a criterion test): a graph of more than 25 nodes renders in chunks. Every node
+// and the wire must still reach the canvas and the saved file.
+it('V1: a recipe of more than 25 nodes renders every node and saves every node and its wire.', async () => {
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  const inputs = Array.from({ length: 59 }, (_, index) => {
+    const number = String(index + 1).padStart(2, '0');
+    return {
+      id: `in${number}`,
+      kind: 'input',
+      position: { x: 0, y: 120 * index },
+      params: { type: 'text', label: `In ${number}` },
+    };
+  });
+  const graph = {
+    schemaVersion: 1,
+    view: 'recipe',
+    name: 'Large recipe',
+    nodes: [
+      ...inputs,
+      { id: 'draft', kind: 'output', position: { x: 480, y: 0 } },
+    ],
+    edges: [{ id: 'w1', from: 'in01.out', to: 'draft.in' }],
+  };
+  const ids = graph.nodes.map((node) => node.id);
+  doubles.api.respond('GET', graphPath('large-recipe'), { graph, issues: [] });
+  doubles.api.respond('POST', graphSavePath('large-recipe'), { issues: [] });
+  doubles.api.respond('POST', graphValidatePath(), { issues: [] });
+  respondTools();
+
+  const { fixture, root } = await render('/projects/p1/graphs/large-recipe');
+  await until(fixture, () => {
+    expect(root.querySelectorAll('[data-node]')).toHaveLength(60);
+  });
+  expect(
+    Array.from(root.querySelectorAll('[data-node]')).map((node) =>
+      node.getAttribute('data-node'),
+    ),
+  ).toEqual(ids);
+
+  buttonNamed(root, 'Save').click();
+  await until(fixture, () => {
+    expect(postsTo(graphSavePath('large-recipe'))).toHaveLength(1);
+  });
+  const body = postsTo(graphSavePath('large-recipe'))[0]?.body as {
+    nodes: Array<{ id: string }>;
+    edges: unknown;
+  };
+  expect(body.nodes.map((node) => node.id)).toEqual(ids);
+  expect(body.edges).toEqual([{ id: 'w1', from: 'in01.out', to: 'draft.in' }]);
+
+  // The library measures the last chunk in an animation frame; let those frames run before the stubs are removed.
+  for (let frame = 0; frame < 3; frame += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});

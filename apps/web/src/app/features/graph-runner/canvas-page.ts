@@ -1,9 +1,11 @@
 import {
+  afterNextRender,
   Component,
   computed,
   DestroyRef,
   effect,
   inject,
+  Injector,
   signal,
   untracked,
 } from '@angular/core';
@@ -153,6 +155,9 @@ const PORT_TYPES: readonly PortType[] = ['text', 'entity', 'style'];
 
 /** The quiet time after the last change before the file is validated (C-10). */
 const VALIDATE_DELAY_MS = 300;
+
+/** The nodes a change detection adds to the vflow at most, so that no task creates more node views than this (GRR-15 criterion 3). */
+const RENDER_CHUNK = 25;
 
 /** The line shown when the graph file cannot be read. */
 const LOAD_FAILURE = 'The graph could not be loaded.';
@@ -554,8 +559,8 @@ interface DialogState {
         }
         <vflow
           [view]="'auto'"
-          [nodes]="nodes()"
-          [edges]="edges()"
+          [nodes]="renderedNodes()"
+          [edges]="renderedEdges()"
           [connection]="connection()"
           (connect)="onConnect($event)"
           (nodesChanges.position)="onMove($event)"
@@ -823,6 +828,7 @@ export class CanvasPage {
   private readonly events = inject(SSE_CLIENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly injector = inject(Injector);
 
   protected readonly loadFailure = LOAD_FAILURE;
   protected readonly saveFailure = SAVE_FAILURE;
@@ -846,6 +852,21 @@ export class CanvasPage {
   /** The vflow state, derived from the file. */
   protected readonly nodes = signal<VflowNode[]>([]);
   protected readonly edges = signal<Edge[]>([]);
+
+  // The chunked render (GRR-15 criterion 3): only what reaches the vflow is chunked. The canvas state above
+  // always holds every node. A graph of RENDER_CHUNK nodes or fewer renders in one pass (the limit is infinite).
+  private readonly renderLimit = signal(Number.POSITIVE_INFINITY);
+  private renderGeneration = 0;
+  private chunkTimer: ReturnType<typeof setTimeout> | undefined;
+  protected readonly renderedNodes = computed(() => {
+    const all = this.nodes();
+    const limit = this.renderLimit();
+    return all.length <= limit ? all : all.slice(0, limit);
+  });
+  // Wires reach the vflow only when every node does, so no wire points at a node that is not rendered yet.
+  protected readonly renderedEdges = computed(() =>
+    this.nodes().length <= this.renderLimit() ? this.edges() : [],
+  );
 
   protected readonly selectedNodes = signal<readonly string[]>([]);
   protected readonly selectedEdges = signal<readonly string[]>([]);
@@ -1015,6 +1036,11 @@ export class CanvasPage {
   private readonly changes = new Subject<void>();
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      this.renderGeneration += 1;
+      clearTimeout(this.chunkTimer);
+    });
+
     // No node moves while a run is active (C-11): the vnodes are rebuilt locked or unlocked from the file
     // when the lock differs from their shape. The rebuilt set passes the check, so the effect stops.
     effect(() => {
@@ -1523,6 +1549,37 @@ export class CanvasPage {
     labelWires(this.edges(), issues);
   }
 
+  /** Starts the chunked render of a new load. A graph of RENDER_CHUNK nodes or fewer is rendered at once. */
+  private startChunks(count: number): void {
+    this.renderGeneration += 1;
+    clearTimeout(this.chunkTimer);
+    if (count <= RENDER_CHUNK) {
+      this.renderLimit.set(Number.POSITIVE_INFINITY);
+      return;
+    }
+    this.renderLimit.set(RENDER_CHUNK);
+    this.nextChunk(this.renderGeneration);
+  }
+
+  /** After the current chunk is rendered, adds the next one in a new task (one change detection per task). */
+  private nextChunk(generation: number): void {
+    afterNextRender(
+      () => {
+        this.chunkTimer = setTimeout(() => {
+          if (generation !== this.renderGeneration) return;
+          const next = this.renderLimit() + RENDER_CHUNK;
+          if (next >= this.nodes().length) {
+            this.renderLimit.set(Number.POSITIVE_INFINITY);
+          } else {
+            this.renderLimit.set(next);
+            this.nextChunk(generation);
+          }
+        }, 0);
+      },
+      { injector: this.injector },
+    );
+  }
+
   private rebuildEdges(file: GraphFile): void {
     this.edges.set(vflowEdgesOf(file));
     labelWires(this.edges(), this.issues());
@@ -1559,6 +1616,7 @@ export class CanvasPage {
         }
         this.formValues.set(values);
         this.nodes.set(vflowNodesOf(detail.graph));
+        this.startChunks(detail.graph.nodes.length);
         this.rebuildEdges(detail.graph);
         this.setIssues(detail.issues);
         this.newKind.set(
