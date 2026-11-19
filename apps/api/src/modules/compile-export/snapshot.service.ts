@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { parse, stringify } from 'yaml';
 import {
+  COMPILE_ERROR_CODES,
+  COMPILE_ERROR_STATUS,
   snapshotManifestSchema,
+  type ManuscriptView,
   type SnapshotManifest,
   type SnapshotSummary,
 } from '@bbartolome/scriba-contracts/compile-export';
@@ -20,10 +23,19 @@ import {
 } from '../project-store/project-store.module';
 import { ManuscriptService } from './manuscript.service';
 import { extrasOf, materialise, rowsOf } from './order-write';
-import { freeName, labelOfFolder, slugOf, stampOf } from './snapshot-names';
+import {
+  PRE_RESTORE_LABEL,
+  freeName,
+  labelOfFolder,
+  slugOf,
+  stampOf,
+} from './snapshot-names';
 
 // Fixed messages of the snapshots. No input value is echoed (P14).
 const NO_ACTIVE_MESSAGE = 'No project is active. Activate a project first.';
+const NOT_FOUND_MESSAGE = 'The snapshot does not exist.';
+const UNREADABLE_MESSAGE =
+  'The snapshot cannot be restored: its manifest is missing or invalid.';
 
 // The folder of the snapshots and the manifest file of each one (P1).
 const SNAPSHOTS = 'snapshots';
@@ -107,6 +119,66 @@ export class SnapshotService {
       data: { projectId, snapshot },
     });
     return snapshot;
+  }
+
+  // POST restore (P9, P10, P12, P13). The two refusals come before any write; then a pre-restore snapshot, the
+  // drafts written back, the members absent from the snapshot deleted, the order restored, and the events.
+  // Nothing under drafts/.versions/ is written, and no draft version is saved (P10).
+  restore(id: string): ManuscriptView {
+    const projectId = this.activeProjectId();
+    if (!this.folders(projectId).some((folder) => folder.id === id)) {
+      throw new ModuleError(
+        COMPILE_ERROR_CODES.SNAPSHOT_NOT_FOUND,
+        COMPILE_ERROR_STATUS.COMPILE_SNAPSHOT_NOT_FOUND,
+        NOT_FOUND_MESSAGE,
+      );
+    }
+    const manifest = this.manifestOf(projectId, id);
+    if (manifest === undefined) {
+      throw new ModuleError(
+        COMPILE_ERROR_CODES.SNAPSHOT_UNREADABLE,
+        COMPILE_ERROR_STATUS.COMPILE_SNAPSHOT_UNREADABLE,
+        UNREADABLE_MESSAGE,
+      );
+    }
+
+    // P10 step 1: the safety net of the restore.
+    this.create(PRE_RESTORE_LABEL);
+
+    // Step 2: every snapshot file is written back to drafts/ under its name, with no baseHash.
+    const names = this.memberNames(projectId, id);
+    for (const name of names) {
+      const { content } = this.files.read(
+        projectId,
+        `${SNAPSHOTS}/${id}/${name}`,
+      );
+      this.files.write(projectId, { path: `${DRAFTS}/${name}`, content });
+    }
+
+    // Step 3: the current top-level files that the snapshot does not hold are deleted.
+    const kept = new Set(names);
+    for (const entry of this.manuscript.view().entries) {
+      if (!kept.has(entry.path.slice(`${DRAFTS}/`.length))) {
+        this.files.delete(projectId, { path: entry.path });
+      }
+    }
+
+    // Step 4: the manifest's order becomes project.yaml's order.
+    this.files.updateProjectYaml(projectId, { order: manifest.order });
+
+    // Step 5: the events, then the fresh view, which is the response (P11).
+    const view = this.manuscript.view();
+    this.events.publish({
+      module: 'compile-export',
+      type: 'snapshot-restored',
+      data: { projectId, snapshotId: id },
+    });
+    this.events.publish({
+      module: 'compile-export',
+      type: 'manuscript-updated',
+      data: { projectId, revision: view.revision },
+    });
+    return view;
   }
 
   // The snapshot folders directly under snapshots/ (P8). The root is listed first, because a missing folder is

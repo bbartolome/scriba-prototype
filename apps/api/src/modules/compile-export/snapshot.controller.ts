@@ -1,9 +1,13 @@
 import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import {
   SNAPSHOTS_ROUTE,
+  SNAPSHOT_RESTORE_ROUTE,
   snapshotCreateRequestSchema,
+  snapshotRestoreRequestSchema,
+  type ManuscriptView,
   type SnapshotCreateRequest,
   type SnapshotList,
+  type SnapshotRestoreRequest,
   type SnapshotSummary,
 } from '@bbartolome/scriba-contracts/compile-export';
 import { ZodValidationPipe } from '../platform/platform.module';
@@ -27,5 +31,14 @@ export class SnapshotController {
     body: SnapshotCreateRequest,
   ): SnapshotSummary {
     return this.snapshots.create(body.label);
+  }
+
+  @Post(SNAPSHOT_RESTORE_ROUTE)
+  @HttpCode(200)
+  restore(
+    @Body(new ZodValidationPipe(snapshotRestoreRequestSchema))
+    body: SnapshotRestoreRequest,
+  ): ManuscriptView {
+    return this.snapshots.restore(body.id);
   }
 }
