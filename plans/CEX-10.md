@@ -1,6 +1,6 @@
 ---
 id: CEX-10
-status: planned
+status: done
 ---
 # CEX-10 plan — Pandoc runner, md export, download endpoint, busy/timeout/error mapping, CI Pandoc and Typst
 

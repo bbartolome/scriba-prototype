@@ -21,7 +21,7 @@ unblocks: [CEX-11, CEX-12, CEX-13, CEX-14, CEX-15, CEX-18]
 - **CI:** add Pandoc 3.13 and Typst installation to Platform's `ci.yml` (additive step). Export tests skip locally with a clear message when a binary is missing; CI sets a flag that turns the skip into a failure.
 
 ## Acceptance criteria
-- [ ] `md` export returns the assembled document (golden) and the download GET returns the same bytes with no side effects.
-- [ ] A second concurrent export returns busy; a forced Pandoc failure returns `COMPILE_PANDOC_FAILED` with the stderr tail; a stalled Pandoc returns the timeout error.
-- [ ] Export attaches the preflight summary and succeeds when preflight has errors.
+- [x] `md` export returns the assembled document (golden) and the download GET returns the same bytes with no side effects.
+- [x] A second concurrent export returns busy; a forced Pandoc failure returns `COMPILE_PANDOC_FAILED` with the stderr tail; a stalled Pandoc returns the timeout error.
+- [x] Export attaches the preflight summary and succeeds when preflight has errors.
 - [ ] CI runs the Pandoc-dependent tests with real binaries.
