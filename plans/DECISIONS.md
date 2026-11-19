@@ -6297,3 +6297,30 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Merge:** GRR-15 is not merged while step 13 is unmet. If the failures are present on main, the merge with a known failure is the user's decision.
 - **Worktrees kept:** GRR-11, GRR-13, CEX-03, CEX-04, GRR-15, TRG-14 and live are kept, not removed (carried-over rule of this session).
 - **Status:** `plans/GRR-15.md` stays `status: planned`.
+
+## 2026-11-19 — GRR-15 — Sonnet review of Parts A to E on patch id 6b829738d21d346b7be31b3ad518e167e8db7dfe: REWORK (A, B, D); APPROVED (C, E)
+
+- **Patch id checked by each reviewer:** 6b829738d21d346b7be31b3ad518e167e8db7dfe (the same for all five).
+- **Replies:** Part A REWORK (3 items). Part B REWORK (1 item). Part C APPROVED. Part D REWORK (7 items). Part E APPROVED.
+- **Combined REWORK list** (items as the reviewers wrote them, not changed):
+
+Part A (criterion 2, theme tokens):
+1. Step 5 is not evidenced. The plan requires T5, T6 and T9 to be written before any style change, run on the baseline, and the failure recorded. The "Implementer COMPLETE" entry and the earlier entries (lines 6233, 6242) only say theme 3 passed. They have no baseline failure record. Correction: record the baseline failure of graph-theme (T5, T6, T9 against the old `Canvas`/`crimson` code), or add a note that it was not done.
+2. Step 9's rerun of step 3 is only partly evidenced. The report says "feature suite 81 of 81" and V1 passes. It does not say that `canvas-page.spec.ts` lines 539, 544 and 1399 to 1417 passed after the style change, so that cannot be confirmed from the output. Correction: state that those tests passed in the run, or name the run.
+3. Step 10 is not met yet. The six screenshots (T5, T6, T9, each light and dark, 1280x800) were written to `e2e/test-results/` and not committed, as the plan says. Attaching them to the PR (step 17) is not done, and the reviewer's contrast check of the library's edge and wrapper colours (A9) is not recorded. Correction: attach the screenshots to the PR and record the contrast check.
+
+Part B (criterion 1, touch):
+1. Step 6 order is not followed for T1, T2, T4 and T8. `touchDrag` (T1, T2, T4) and the T8 zoom block in `e2e/specs/graph-touch.e2e.ts` go from the last `touchMove` straight to `touchEnd`. The plan orders ten `touchMove` events, then two animation frames, then `touchEnd`. Only `touchChipDrag` (T3) has `twoFrames` before `touchEnd`. Correction: call `twoFrames(page)` after `touchMoves` and before `touchEnd` in `touchDrag` and in the T8 gesture, then rerun graph-touch twice.
+
+Part D (gates and commit):
+1. Step 13 is NOT MET. The plan requires the full `npm run e2e` run, without SCRIBA_E2E_MEASURE, to have all tests pass, with T7 skipped. The COMPLETE report (plans/DECISIONS.md line 6280 entry, "Step 13 is not met" bullet) shows two runs, each "2 failed, 1 skipped, 30 passed". The failures are `journey.e2e.ts` "project from sample" and `tools-preview.e2e.ts` TRG-05 C2. The report says both predate the unit, but "Not verified by the orchestrator". The reviewer did not judge whether they are acceptable. Correction: get a full e2e run with 0 failures, or have the plan's owner change step 13.
+2. The baseline runs of steps 2, 3 and 4 (build, feature tests and graph e2e `graph-canvas graph-wires graph-chips`, all on unchanged code) are not recorded. The COMPLETE report has final results only. The step 7 entry records only a touch baseline and a T7 baseline. Correction: record the baseline results of steps 2, 3 and 4.
+3. Step 1 is only partly recorded. Node v26.13.0 appears in the step 12 entry, but no `npm ci` exit 0 and no npm version are recorded for this unit. The plan asks for node -v and npm -v beside each result. Correction: record node -v, npm -v and the `npm ci` exit.
+4. Step 13 requires steps 3 and 4 to be repeated on the final code. The report gives the feature suite (81 of 81). It does not record a final-code run of `graph-canvas graph-wires graph-chips`. It records only graph-touch (5 passed, twice) and graph-theme (3 of 3). Correction: record that run, or the step 11b result for those specs.
+5. The step 14 gates are recorded: lint 0 (after ec6293d, "All matched files use Prettier code style!" not quoted), root test 0 and build 0 (the bundle warning is the known one). Step 15 fresh clone: `npm ci`, lint and build are 0. The test exited 1 on the first run (seven `preferences-step.spec.ts` timeouts) and 0 on the rerun. The plan expects exit 0 on a quiet machine. Correction: record the quiet-machine run, and the Node and npm versions of the clone.
+6. Step 16 is empty per the report. The plan's single commit message (`feat(GRR-15): touch checks, theme tokens on the canvas, large-graph measurement`) was not used. The work is in five commits. All five name GRR-15, so the naming rule is met. Correction: record the decision to keep the five commits.
+7. Step 17 (PR body) is not done, per the report. Correction: write it, or record it as deferred to the merge.
+
+- **Orchestrator notes (outside the reviewer lists):** (a) This session does not create pull requests (prompt.md). Items A3 and D7 name the PR; they are for the merge decision, not a PR. (b) Item D1 depends on the main verification run started in the entry above; its result will be recorded when it replies. (c) The Haiku implementer for this REWORK list is not started yet, because it runs the same e2e ports as the verification run.
+- **Approved parts:** Part C and Part E approve the code of the patch id above. The unit is not approved until Parts A, B and D approve it.
+- **Status:** `plans/GRR-15.md` stays `status: planned`. Branch `unit/GRR-15` (ec6293d) and worktree `scriba-prototype-wt/GRR-15` are kept.
