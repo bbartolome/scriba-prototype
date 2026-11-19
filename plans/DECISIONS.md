@@ -6653,3 +6653,9 @@ Part D (gates and commit):
 - **Status:** `plans/CEX-10.md` is `status: done` on main (18210ba). The fast-forward moved the code, the checkboxes and the status together.
 - **Downstream:** CEX-11, CEX-12, CEX-13, CEX-14 and CEX-18 are unblocked by this merge (their blocked_by names CEX-10); CEX-15 keeps the same criterion-4 point when it is reached.
 - **Kept (carried rule):** branch `unit/CEX-10` (at 18210ba) and worktree `scriba-prototype-wt/CEX-10` are not deleted; the user decides. Backup `backup/CEX-10-pre-rebase` is kept. The scratch worktree `CEX-10-replay` was removed (clean, not forced).
+
+## 2026-11-19 — CEX-11 — acceptance criterion 1 (override clause via CEX-14): the built-in clause ticks criterion 1 (Navigator decision, option a, session `890addc43cf34963b6605875a25df260`)
+
+- **Decision (Navigator, option a):** criterion 1 of `units/CEX-11-docx-export.md` line 19 may be ticked when C1 (the built-in clause) passes. The override clause is verified by CEX-14's criterion 2 (`units/CEX-14-template-overrides-settings.md` line 21). No unit change. The criterion text is unchanged.
+- **Reason:** the criterion text attributes the override clause to CEX-14 ("via CEX-14"). CEX-11 owns the built-in reference and the `--reference-doc` invocation. CEX-14 owns the override setting, its path safety and `COMPILE_TEMPLATE_INVALID` (CEX-14 decisions, lines 15 and 16). The reviser's recommendation (a) was agreed.
+- **Status:** `plans/CEX-11.md` stays `status: draft` until the reviser applies the decision and the plan is READY. The box is ticked only after C1 passes (see the decision on the local procedure for criteria 1 to 3, recorded separately).
