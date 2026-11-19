@@ -6028,3 +6028,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **tools-preview.e2e.ts, run 2:** exit 0, 2 passed. TRG-05 C1 (4.9 s), TRG-05 C2 (1.5 s). Log: /tmp/trg14-r4-preview-2.log.
 - **Result:** the earlier unrun re-run item (TRG-14 section 9, 6cd0c7b, "the e2e re-run on the rebased branch was NOT made") is now done. TRG-14 stays on main at df6d474. Nothing was reverted.
 - **Note, not a failure:** the main checkout's `node_modules` lacks `ngx-vflow` and `@codemirror/lang-yaml`, so an e2e run from the main working tree fails in the global-setup build. It needs `npm ci` there. The runs above used the TRG-14 worktree instead.
+
+## 2026-11-19 — TRG-15 — Failed check: e2e tools-live-preview.e2e.ts at 1b2b726 (step 3, before merge)
+
+- **Branch:** `unit/TRG-15` at 1b2b726 (the approved patch id ba691a9d, rebased by replay onto main 8597382). Run in its worktree `scriba-prototype-wt/TRG-15`, port 8080 free.
+- **Command:** `npm run e2e -w @bbartolome/scriba-e2e -- tools-live-preview.e2e.ts --trace off`. Log: /tmp/trg15-e2e-r1.log.
+- **Result:** exit 1. E1 FAILED. E2 passed (12.8 s).
+- **E1 failure:** "TRG-15 E1: editing a port and an entity kind in the source changes the node preview and the picker, after the lint answer and with no save" (2.3 s). `e2e/specs/tools-live-preview.e2e.ts:124`, in the state BEFORE the edit: `expect(await pickerIds(page, 'entityIds')).toEqual(['ada'])`. Expected `["ada"]`, received `[]`. The picker offers no entity option before any edit. The `li[data-port="coreIdea"]` check at line 122 passed.
+- **Open cause:** either the picker's options are read before the entity list loads (a timing problem in the test or in the picker), or the fixture does not seed the entity `ada` that the picker should offer. Not diagnosed.
+- **Action:** a new Haiku implementer diagnoses and corrects the cause, in the code or in the test setup, without weakening any assertion. It commits to `unit/TRG-15`, then re-runs E1 and E2 serially, then the gates. TRG-15 does not go to main until E1 and E2 pass.
