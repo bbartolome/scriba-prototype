@@ -9,7 +9,7 @@ import type { PandocTuning } from './export-tuning';
 // The formats that Pandoc renders. md is assembled without Pandoc.
 export type PandocFormat = 'docx' | 'epub' | 'pdf';
 
-// The target arguments of each format. CEX-13 adds its own flags to its entry.
+// The target arguments of each format.
 // PDF is rendered by Typst, and Pandoc writes a PDF only when the output name ends in .pdf.
 // Target flags are in PANDOC_TARGET_ARGS; a flag that takes a file per run is in PANDOC_FILE_FLAGS.
 export const PANDOC_TARGET_ARGS: Record<PandocFormat, string[]> = {
@@ -20,10 +20,10 @@ export const PANDOC_TARGET_ARGS: Record<PandocFormat, string[]> = {
 
 // The flag that takes a file for each format, per run (the reference DOCX, a stylesheet, a template). The file is
 // the built-in one or a project override, so it cannot be a constant. A format with no entry takes no file.
-// CEX-13 adds its own line here.
 export const PANDOC_FILE_FLAGS: Partial<Record<PandocFormat, string>> = {
   docx: '--reference-doc',
   epub: '--css',
+  pdf: '--template',
 };
 
 // Why a Pandoc run failed. Each reason has its fixed message.

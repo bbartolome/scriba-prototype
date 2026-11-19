@@ -27,7 +27,11 @@ import {
   ProjectsService,
 } from '../project-store/project-store.module';
 import { AssemblyService } from './assembly.service';
-import { BUILTIN_EPUB_CSS, BUILTIN_REFERENCE_DOCX } from './builtin-assets';
+import {
+  BUILTIN_EPUB_CSS,
+  BUILTIN_REFERENCE_DOCX,
+  BUILTIN_TYPST_TEMPLATE,
+} from './builtin-assets';
 import {
   DEFAULT_PANDOC_TUNING,
   PANDOC_TUNING,
@@ -203,14 +207,16 @@ export class ExportService {
     };
   }
 
-  // The reference or template file that a Pandoc format takes for this run. CEX-13 adds its case, and
-  // CEX-14 puts the project override first, before the built-in path.
+  // The reference or template file that a Pandoc format takes for this run. CEX-14 puts the project override first,
+  // before the built-in path.
   private templateOf(format: PandocFormat): string | undefined {
     switch (format) {
       case 'docx':
         return BUILTIN_REFERENCE_DOCX;
       case 'epub':
         return BUILTIN_EPUB_CSS;
+      case 'pdf':
+        return BUILTIN_TYPST_TEMPLATE;
       default:
         return undefined;
     }

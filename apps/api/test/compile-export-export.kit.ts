@@ -34,6 +34,11 @@ const requireTools = process.env.SCRIBA_REQUIRE_EXPORT_TOOLS === '1';
 
 export const PANDOC_STATUS: ToolStatus = toolStatus(hasPandoc, requireTools);
 
+// Whether Typst answers on this host (the PDF tests). The kit checks presence only; CI checks the version (ci.yml line 39).
+const hasTypst = spawnSync('typst', ['--version']).status === 0;
+
+export const TYPST_STATUS: ToolStatus = toolStatus(hasTypst, requireTools);
+
 // A missing required tool fails the file at load, so CI cannot pass with the tests skipped.
 if (PANDOC_STATUS === 'fail') {
   throw new Error(
@@ -45,9 +50,23 @@ if (PANDOC_STATUS === 'skip') {
     'pandoc not found: the Pandoc tests are skipped (set SCRIBA_REQUIRE_EXPORT_TOOLS=1 to make this a failure)',
   );
 }
+if (TYPST_STATUS === 'fail') {
+  throw new Error(
+    'typst not found, and SCRIBA_REQUIRE_EXPORT_TOOLS=1 requires it: install Typst 0.15.1 or unset the flag.',
+  );
+}
+if (TYPST_STATUS === 'skip') {
+  console.warn(
+    'typst not found: the PDF tests are skipped (set SCRIBA_REQUIRE_EXPORT_TOOLS=1 to make this a failure)',
+  );
+}
 
 // A Pandoc test: it runs when Pandoc is present and is skipped with the message above otherwise.
 export const itPandoc = PANDOC_STATUS === 'run' ? it : it.skip;
+
+// A PDF test: it needs Pandoc and Typst, and is skipped with the message above when either is missing.
+export const itPdf =
+  PANDOC_STATUS === 'run' && TYPST_STATUS === 'run' ? it : it.skip;
 
 // A module that provides the Pandoc tuning, merged over the defaults. It is global, so the export service sees it.
 export function tuningModule(values: Partial<PandocTuning>): Type<unknown> {
