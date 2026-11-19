@@ -4,6 +4,7 @@ Base f5a952b, 2026-11-19. First incomplete milestone: M4, demo GRR-17 (canvas ga
 
 | Unit | Milestone | Available now | Reason |
 |---|---|---|---|
+| PLT-23 | M4 | yes | Fixes the two full-suite e2e failures on main; blocks GRR-15 step 13 |
 | GRR-17 | M4 | no | M4 demo (canvas gate). Held: blocked by GRR-15, which the user holds. |
 | CEX-15 | M5 | no | Export gate. Waits on CEX-14 (plan status draft, not done). |
 | CEX-18 | M5 | no | Preflight and export panels. Waits on CEX-14 (plan status draft, not done). |
