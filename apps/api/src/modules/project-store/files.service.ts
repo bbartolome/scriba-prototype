@@ -150,11 +150,11 @@ export function readFileAt(target: ResolvedProjectPath): {
 }
 
 // The atomic write (P14). A folder in the way, or a file above the target, is a path error; any other errno is an
-// unexpected error that carries the errno code only.
-export function writeText(target: string, text: string | Buffer): void {
+// unexpected error that carries the errno code only. The bytes path (PST-24) uses it too.
+function writeFileOrRefuse(target: string, data: string | Buffer): void {
   let failure: string | undefined;
   try {
-    writeFileAtomic(target, text);
+    writeFileAtomic(target, data);
   } catch (error) {
     failure = errnoOf(error) ?? 'unknown';
   }
@@ -163,6 +163,11 @@ export function writeText(target: string, text: string | Buffer): void {
     throw notAFile();
   }
   throw new Error(`The project file could not be written (${failure}).`);
+}
+
+// The text writer of the callers that existed before PST-24: the same atomic write, through writeFileOrRefuse.
+export function writeText(target: string, text: string | Buffer): void {
+  writeFileOrRefuse(target, text);
 }
 
 // True when path is the folder itself or lies inside it, at a separator boundary (P11 step 5).
@@ -286,7 +291,11 @@ export class FilesService {
     ) {
       throw refuse(PROJECT_ERROR_CODES.WRITE_CONFLICT, FILE_MESSAGES.CONFLICT);
     }
-    return this.commit(project, target, request.content);
+    const payload =
+      request.contentBase64 === undefined
+        ? request.content
+        : Buffer.from(request.contentBase64, 'base64');
+    return this.commit(project, target, payload);
   }
 
   // The replacement of one exact match of `old` (P8). Zero or several matches are refused.
@@ -519,18 +528,24 @@ export class FilesService {
   }
 
   // The last steps of a write (P7, steps 6 to 10): the size cap, the project.yaml schema, the atomic write, the
-  // files-changed event, then the answer. The hash covers the bytes that are stored.
+  // files-changed event, then the answer. The hash covers the bytes that are stored. A string is text (UTF-8 encoded
+  // here); a Buffer is the exact bytes of the bytes field (PST-24), which bypass the encode.
   private commit(
     project: DiscoveredProject,
     target: ResolvedProjectPath,
-    content: string,
+    content: string | Buffer,
   ): FileWriteResult {
-    const bytes = Buffer.from(content, 'utf8');
+    const bytes =
+      typeof content === 'string' ? Buffer.from(content, 'utf8') : content;
     if (bytes.length > FILE_SIZE_CAP_BYTES) {
       throw refuse(PROJECT_ERROR_CODES.FILE_TOO_LARGE, FILE_MESSAGES.TOO_LARGE);
     }
     if (isRootProjectYaml(target.relativePath)) {
-      const state = readYamlState(content);
+      const text = typeof content === 'string' ? content : decodeText(content);
+      if (text === undefined) {
+        throw refuse(PROJECT_ERROR_CODES.INVALID, PROJECT_MESSAGES.INVALID);
+      }
+      const state = readYamlState(text);
       if (state.status === 'too-new') throw tooNew();
       if (state.status === 'invalid') {
         throw refuse(
@@ -540,7 +555,11 @@ export class FilesService {
         );
       }
     }
-    writeText(target.realPath, content);
+    if (typeof content === 'string') {
+      writeText(target.realPath, content);
+    } else {
+      writeFileOrRefuse(target.realPath, content);
+    }
     const mtime = statSync(target.realPath).mtime.toISOString();
     this.events.publish({
       module: 'project-store',

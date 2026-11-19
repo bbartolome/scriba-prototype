@@ -38,11 +38,19 @@ export const fileReadSchema = z.object({
   upgraded: z.boolean().optional(),
 });
 
+// Canonical padded base64: a length that is a multiple of 4, with padding only at the end. Node's base64 decoder
+// skips unknown characters, so the pattern keeps the stored bytes equal to the bytes the caller sent.
+const BASE64_PATTERN =
+  /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
 // Request of POST .../file/write. `baseHash` is the hash the author last read; the store checks it.
+// `contentBase64`, when present, is the exact bytes to store and `content` is ignored (PST-24); it is for other
+// modules' author actions, such as copying a binary template.
 export const fileWriteSchema = z.object({
   path: projectPathSchema,
   content: z.string(),
   baseHash: contentHashSchema.optional(),
+  contentBase64: z.string().regex(BASE64_PATTERN).optional(),
 });
 
 // Response of a write or an edit: the new hash, for the next save's `baseHash`.
