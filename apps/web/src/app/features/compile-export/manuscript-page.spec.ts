@@ -56,6 +56,16 @@ const VIEW_2 = {
   revision: REV2,
 };
 
+/** Revision 1 with the three kinds of warning. */
+const VIEW_WARNED = {
+  ...VIEW_1,
+  warnings: [
+    { kind: 'graphCycle', files: ['drafts/ch02.md', 'drafts/ch03.md'] },
+    { kind: 'invalidGraph', path: 'graphs/broken.json' },
+    { kind: 'staleEntry', path: 'drafts/gone.md' },
+  ],
+};
+
 const ACTIVE = ACTIVE_PROJECT_ROUTE as ApiPath;
 
 let doubles: ShellTestDoubles;
@@ -125,6 +135,37 @@ function push(
   doubles.events.push(event);
 }
 
+/** Lets pending reads and the change detection they cause finish. */
+async function settle(harness: RouterTestingHarness): Promise<void> {
+  harness.detectChanges();
+  await harness.fixture.whenStable();
+  harness.detectChanges();
+}
+
+/** How many requests of one method and path reached the fake API client. */
+function countOf(path: ApiPath, method: 'GET' | 'POST' = 'GET'): number {
+  return doubles.api.requests.filter(
+    (request) => request.method === method && request.path === path,
+  ).length;
+}
+
+/** The leaf element whose text is `text`, found anywhere under `root`. */
+function leafWith(root: HTMLElement, text: string): HTMLElement {
+  const found = [...root.querySelectorAll<HTMLElement>('*')].find(
+    (element) =>
+      element.childElementCount === 0 && element.textContent?.trim() === text,
+  );
+  if (!found) throw new Error(`No element reads "${text}".`);
+  return found;
+}
+
+/** The outline row of one file, by its path. */
+function rowOf(root: HTMLElement, path: string): HTMLElement {
+  const row = root.querySelector(`li[data-path="${path}"]`);
+  if (!(row instanceof HTMLElement)) throw new Error(`No row for ${path}.`);
+  return row;
+}
+
 describe('ManuscriptPage', () => {
   it('T1 the Manuscript item is in the phone nav with a project open', async () => {
     doubles.api.respond('GET', ACTIVE, { active: 'p1' });
@@ -143,5 +184,86 @@ describe('ManuscriptPage', () => {
       );
       expect(link?.getAttribute('href')).toBe('/projects/p1/manuscript');
     });
+  });
+
+  it('T2 the totals, order source, warnings, badge, links and headings show in the order of the layout', async () => {
+    doubles.api.respond('GET', MANUSCRIPT_PATH, VIEW_WARNED);
+    const harness = await renderPage('/projects/p1/manuscript');
+    const root = harness.routeNativeElement as HTMLElement;
+
+    await until(harness.fixture, () => {
+      leafWith(root, 'Body: 2800 words. Manuscript: 3000 words.');
+    });
+
+    const shown = [
+      leafWith(root, 'Manuscript'),
+      leafWith(root, 'Body: 2800 words. Manuscript: 3000 words.'),
+      leafWith(root, 'Order: story graph, then project.yaml'),
+      leafWith(
+        root,
+        'Story graph cycle among drafts/ch02.md, drafts/ch03.md. The graph is ignored.',
+      ),
+      leafWith(root, 'Story graph skipped as invalid: graphs/broken.json.'),
+      leafWith(
+        root,
+        'Order entry for a missing file ignored: drafts/gone.md.',
+      ),
+      leafWith(root, 'Front matter'),
+      leafWith(root, 'Body'),
+      leafWith(root, 'Back matter'),
+    ];
+    for (let i = 1; i < shown.length; i++) {
+      const before = shown[i - 1] as HTMLElement;
+      const after = shown[i] as HTMLElement;
+      expect(
+        before.compareDocumentPosition(after) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+
+    expect(root.textContent?.split('Graph order').length).toBe(2);
+    expect(rowOf(root, 'drafts/ch01.md').textContent).toContain('Graph order');
+
+    for (const row of root.querySelectorAll<HTMLElement>('li[data-path]')) {
+      const path = row.getAttribute('data-path') ?? '';
+      const link = row.querySelector('a');
+      const url = new URL(link?.getAttribute('href') ?? '', 'http://x');
+      expect(url.pathname).toBe('/projects/p1/files');
+      expect(url.searchParams.get('path')).toBe(path);
+    }
+  });
+
+  it('T3 files-changed refetches only for drafts/, project.yaml and this project', async () => {
+    doubles.api.respond('GET', MANUSCRIPT_PATH, VIEW_1);
+    const harness = await renderPage('/projects/p1/manuscript');
+    await settle(harness);
+    expect(countOf(MANUSCRIPT_PATH)).toBe(1);
+
+    push('project-store', {
+      type: 'files-changed',
+      data: { projectId: 'p1', paths: ['drafts/ch02.md'] },
+    });
+    await settle(harness);
+    expect(countOf(MANUSCRIPT_PATH)).toBe(2);
+
+    push('project-store', {
+      type: 'files-changed',
+      data: { projectId: 'p1', paths: ['sources/outline.md'] },
+    });
+    await settle(harness);
+    expect(countOf(MANUSCRIPT_PATH)).toBe(2);
+
+    push('project-store', {
+      type: 'files-changed',
+      data: { projectId: 'other', paths: ['drafts/ch02.md'] },
+    });
+    await settle(harness);
+    expect(countOf(MANUSCRIPT_PATH)).toBe(2);
+
+    push('project-store', {
+      type: 'files-changed',
+      data: { projectId: 'p1', paths: ['project.yaml'] },
+    });
+    await settle(harness);
+    expect(countOf(MANUSCRIPT_PATH)).toBe(3);
   });
 });
