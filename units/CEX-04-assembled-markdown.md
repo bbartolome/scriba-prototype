@@ -32,6 +32,6 @@ Front matter stripped (14); title page from metadata (15); dedication (16); fron
 - Exposed as an internal builder; tested here through a test-only route or the in-process service, and through `md` export in CEX-10.
 
 ## Acceptance criteria
-- [ ] The assembled document has the metadata block, matter in the right places and no per-file front matter (golden Markdown for a fixture project).
-- [ ] Bibliography `all` lists every Source; `cited` lists only cited ones; `off` omits the heading.
-- [ ] `author` falls back to the preference reader when unset.
+- [x] The assembled document has the metadata block, matter in the right places and no per-file front matter (golden Markdown for a fixture project).
+- [x] Bibliography `all` lists every Source; `cited` lists only cited ones; `off` omits the heading.
+- [x] `author` falls back to the preference reader when unset.

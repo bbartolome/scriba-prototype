@@ -1,6 +1,6 @@
 ---
 id: CEX-04
-status: planned
+status: done
 ---
 # CEX-04 plan — assembled Markdown: metadata block, matter placement, front-matter stripping, dedication and bibliography
 
