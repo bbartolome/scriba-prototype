@@ -27,21 +27,24 @@ export function nodeIdOfPort(portId: string): string {
   return dot < 0 ? portId : portId.slice(0, dot);
 }
 
-/** The vflow node of one file node, with its position and the file node as its data. */
-export function vflowNodeOf(node: FileNode): VflowNode {
+/**
+ * The vflow node of one file node, with its position and the file node as its data. A locked node
+ * (the canvas is read-only, a run is active) carries `draggable` false; an unlocked node has no
+ * `draggable` key, so the library's default applies.
+ */
+export function vflowNodeOf(node: FileNode, locked = false): VflowNode {
   return {
     type: 'html-template',
     id: node.id,
     point: signal({ x: node.position.x, y: node.position.y }),
     data: signal<FileNode>(node),
-    // Read-only while a run is active: the page sets this from `editable` (C-11).
-    draggable: signal(true),
+    ...(locked ? { draggable: signal(false) } : {}),
   };
 }
 
-/** The vflow nodes of a file, one per file node. */
-export function vflowNodesOf(file: GraphFile): VflowNode[] {
-  return file.nodes.map(vflowNodeOf);
+/** The vflow nodes of a file, one per file node, in file order. */
+export function vflowNodesOf(file: GraphFile, locked = false): VflowNode[] {
+  return file.nodes.map((node) => vflowNodeOf(node, locked));
 }
 
 /** The vflow edges of a file: one per wire (recipe) or story edge, with its port handles for a recipe. */
