@@ -11,10 +11,18 @@ export type PandocFormat = 'docx' | 'epub' | 'pdf';
 
 // The target arguments of each format. CEX-11 to CEX-13 add their own flags to their entry.
 // PDF is rendered by Typst, and Pandoc writes a PDF only when the output name ends in .pdf.
+// Target flags are in PANDOC_TARGET_ARGS; a flag that takes a file per run is in PANDOC_FILE_FLAGS.
 export const PANDOC_TARGET_ARGS: Record<PandocFormat, string[]> = {
   docx: ['--to=docx'],
   epub: ['--to=epub3'],
   pdf: ['--to=typst', '--pdf-engine=typst'],
+};
+
+// The flag that takes a file for each format, per run (the reference DOCX, a stylesheet, a template). The file is
+// the built-in one or a project override, so it cannot be a constant. A format with no entry takes no file.
+// CEX-12 and CEX-13 add their own line here.
+export const PANDOC_FILE_FLAGS: Partial<Record<PandocFormat, string>> = {
+  docx: '--reference-doc',
 };
 
 // Why a Pandoc run failed. Each reason has its fixed message.
@@ -102,18 +110,29 @@ function runChild(
 // Runs Pandoc for one format and writes the output to `outputPath`, an absolute path in the exports folder. The
 // child's working directory is a temp folder, because Pandoc writes PDF media into the current directory (P1).
 // Resolves with the warnings: the non-empty lines of stderr. Every failure is COMPILE_PANDOC_FAILED or the timeout.
+// `file`, when set, is passed through the format's flag in PANDOC_FILE_FLAGS; a format without one rejects it.
 export async function runPandoc(
   tuning: PandocTuning,
   format: PandocFormat,
   markdown: string,
   root: string,
   outputPath: string,
+  file?: string,
 ): Promise<string[]> {
   const workdir = await mkdtemp(join(tmpdir(), 'scriba-pandoc-'));
   try {
+    const fileArgs: string[] = [];
+    if (file !== undefined) {
+      const flag = PANDOC_FILE_FLAGS[format];
+      if (flag === undefined) {
+        throw new Error(`Pandoc format ${format} takes no file.`);
+      }
+      fileArgs.push(`${flag}=${file}`);
+    }
     const args = [
       '--from=markdown',
       ...PANDOC_TARGET_ARGS[format],
+      ...fileArgs,
       `--resource-path=${root}`,
       `--output=${outputPath}`,
     ];

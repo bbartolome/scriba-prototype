@@ -23,6 +23,7 @@ import { PreferencesReader } from '../setup-auth/setup-auth.module';
 import { ManuscriptService } from './manuscript.service';
 import {
   renderDocument,
+  renderTitlePage,
   type AssemblyParts,
   type BibliographyEntry,
   type MetadataValues,
@@ -58,8 +59,8 @@ export class AssemblyService {
     private readonly manuscript: ManuscriptService,
   ) {}
 
-  // The document of the active project at `now` (P12).
-  assemble(now: Date): string {
+  // The document of the active project at `now` (P12). `titlePage` adds the DOCX-only title block (D6).
+  assemble(now: Date, titlePage = false): string {
     const projectId = this.activeProjectId();
     const project = this.projectYaml(projectId);
     const settings = project.export ?? {};
@@ -110,7 +111,8 @@ export class AssemblyService {
     if (dedication !== undefined) parts.dedication = dedication;
     if (bibliography !== undefined) parts.bibliography = bibliography;
 
-    return renderDocument(metadata, parts);
+    if (!titlePage) return renderDocument(metadata, parts);
+    return renderDocument(metadata, parts, renderTitlePage(metadata));
   }
 
   // The active project's id (P13).

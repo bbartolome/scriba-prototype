@@ -27,6 +27,7 @@ import {
   ProjectsService,
 } from '../project-store/project-store.module';
 import { AssemblyService } from './assembly.service';
+import { BUILTIN_REFERENCE_DOCX } from './builtin-assets';
 import {
   DEFAULT_PANDOC_TUNING,
   PANDOC_TUNING,
@@ -34,7 +35,7 @@ import {
 } from './export-tuning';
 import { ManuscriptService } from './manuscript.service';
 import { PreflightService } from './preflight.service';
-import { runPandoc } from './pandoc-runner';
+import { runPandoc, type PandocFormat } from './pandoc-runner';
 import { slugOf, stampOf } from './snapshot-names';
 
 // Fixed messages of this module. No input value is echoed.
@@ -121,7 +122,7 @@ export class ExportService {
           EMPTY_MESSAGE,
         );
       }
-      const markdown = this.assembly.assemble(now);
+      const markdown = this.assembly.assemble(now, format === 'docx');
       const project = this.projectOf(projectId);
       const root = project.root;
       // An unset title gives the empty slug, which slugOf turns into `snapshot`. The assembly has already read it.
@@ -147,6 +148,7 @@ export class ExportService {
           markdown,
           root,
           partial,
+          this.templateOf(format),
         );
         bytes = (await stat(partial)).size;
       }
@@ -199,6 +201,17 @@ export class ExportService {
       bytes: newest.stats.size,
       type: CONTENT_TYPES[format],
     };
+  }
+
+  // The reference or template file that a Pandoc format takes for this run. CEX-12 and CEX-13 add their case, and
+  // CEX-14 puts the project override first, before the built-in path.
+  private templateOf(format: PandocFormat): string | undefined {
+    switch (format) {
+      case 'docx':
+        return BUILTIN_REFERENCE_DOCX;
+      default:
+        return undefined;
+    }
   }
 
   // The exports folder of the project. The module folder is created by the file API's stateDir (D11, step 6).

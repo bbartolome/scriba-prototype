@@ -41,6 +41,7 @@ RUN set -eux; \
     mkdir -p /out/app/apps/api /out/app/apps/web/dist/scriba-web /out/app/packages/contracts; \
     cp -a node_modules /out/app/; \
     cp -a apps/api/package.json apps/api/dist /out/app/apps/api/; \
+    cp -a apps/api/assets /out/app/apps/api/; \
     if [ -d apps/api/node_modules ]; then cp -a apps/api/node_modules /out/app/apps/api/; fi; \
     cp -a apps/web/dist/scriba-web/browser /out/app/apps/web/dist/scriba-web/; \
     cp -a packages/contracts/package.json packages/contracts/dist /out/app/packages/contracts/; \

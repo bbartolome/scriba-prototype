@@ -70,13 +70,49 @@ export function renderBibliography(entries: BibliographyEntry[]): string {
   return ['# Bibliography {.unnumbered}', ...paragraphs].join('\n\n');
 }
 
-// The whole document (P4, P5): the metadata block, the front matter, the dedication, the body, the back matter and the
-// bibliography, one blank line between blocks, one final newline. A text that is empty after trimming adds no block.
+// The DOCX-only title block (O1, D4 to D5, D14), placed after the metadata block: the contact block (one paragraph per
+// non-empty line, omitted when unset), the rounded word count, a raw OpenXML page break, and a second YAML block with
+// the running-header values. The second block's keys are written to the DOCX custom properties (the header's fields).
+export function renderTitlePage(values: MetadataValues): string {
+  const blocks: string[] = [];
+  if (isSet(values.contact)) {
+    const lines = values.contact
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line !== '');
+    if (lines.length > 0) {
+      blocks.push(wrap(lines.join('\n\n'), 'custom-style="Contact Block"'));
+    }
+  }
+  const count = values.wordcount.toLocaleString('en-US');
+  blocks.push(wrap(`About ${count} words`, 'custom-style="Word Count"'));
+  blocks.push(
+    '```{=openxml}\n<w:p><w:r><w:br w:type="page"/></w:r></w:p>\n```',
+  );
+  const header: string[] = ['---'];
+  if (isSet(values.author)) {
+    const words = values.author.trim().split(/\s+/);
+    header.push(`surname: ${scalar(words[words.length - 1])}`);
+  }
+  const colon = values.title.indexOf(':');
+  const shortTitle =
+    colon === -1 ? values.title.trim() : values.title.slice(0, colon).trim();
+  header.push(`shorttitle: ${scalar(shortTitle)}`);
+  header.push('---');
+  blocks.push(header.join('\n'));
+  return blocks.join('\n\n');
+}
+
+// The whole document (P4, P5): the metadata block, the title block when given, the front matter, the dedication, the
+// body, the back matter and the bibliography, one blank line between blocks, one final newline. A text that is empty
+// after trimming adds no block.
 export function renderDocument(
   metadata: MetadataValues,
   parts: AssemblyParts,
+  titleBlock?: string,
 ): string {
   const blocks: string[] = [renderMetadata(metadata)];
+  if (titleBlock !== undefined) blocks.push(titleBlock);
   const nonEmpty = (texts: string[]): string[] =>
     texts.map((text) => text.trimEnd()).filter((text) => text.trim() !== '');
 
