@@ -418,7 +418,14 @@ interface DialogState {
         <button type="button" [disabled]="!editable()" (click)="save()">
           Save
         </button>
-        <button type="button" data-arrange (click)="arrange()">Arrange</button>
+        <button
+          type="button"
+          data-arrange
+          [disabled]="!editable()"
+          (click)="arrange()"
+        >
+          Arrange
+        </button>
         @if (!isStory()) {
           <button
             type="button"
@@ -538,6 +545,7 @@ interface DialogState {
                   >
                     <span
                       cdkDrag
+                      [cdkDragDisabled]="!editable()"
                       class="chip"
                       [attr.data-entity]="entity.id"
                       [cdkDragData]="{ id: entity.id, type: entity.type }"
@@ -1222,6 +1230,7 @@ export class CanvasPage {
    * Nothing is saved: the author saves the result like any edit.
    */
   protected arrange(): void {
+    if (!this.editable()) return;
     const current = this.file();
     if (current === undefined) return;
     const next = arrangeOf(current);
@@ -1402,6 +1411,7 @@ export class CanvasPage {
    * shows its reason and writes nothing; an accepted drop clears the reason and pins the chip in the node's params.
    */
   protected onChipDrop(portId: string, event: CdkDragDrop<unknown>): void {
+    if (!this.editable()) return;
     if (!event.isPointerOverContainer) return;
     const current = this.file();
     const { nodeId, key } = splitPort(portId);
@@ -1423,6 +1433,7 @@ export class CanvasPage {
 
   /** Removes one pinned chip: the item at its index of a list port, or the key of a scalar port (C-8). */
   protected removeChip(nodeId: string, key: string, index: number): void {
+    if (!this.editable()) return;
     const current = this.file();
     const node = current?.nodes.find((candidate) => candidate.id === nodeId);
     const port = this.readyPorts()

@@ -1845,3 +1845,99 @@ it('Output nodes show their pending-change link.', async () => {
   restoreMatchMedia();
   TestBed.resetTestingModule();
 });
+
+// Supporting check R2 (GRR-12 C-15, step 5g): while a run is active a chip drop pins nothing and a chip removal
+// changes nothing; after `run-ended` the same drop pins the chip.
+it('R2: a run active blocks a chip drop and a chip removal; after `run-ended` the drop pins.', async () => {
+  doubles = createShellTestDoubles();
+  respondProject();
+  const graph = {
+    schemaVersion: 1,
+    view: 'recipe',
+    name: 'Read-only drops',
+    nodes: [
+      {
+        id: 'cold-open',
+        kind: 'tool',
+        tool: 'cold_open',
+        position: { x: 400, y: 120 },
+        params: { entityIds: ['anna'] },
+      },
+    ],
+    edges: [],
+  };
+  const run = {
+    ...runOf({ 'cold-open': { status: 'running' } }),
+    graphId: 'read-only-drops',
+  };
+  doubles.api.respond('GET', graphPath('read-only-drops'), {
+    graph: structuredClone(graph),
+    issues: [],
+  });
+  doubles.api.respond('POST', graphValidatePath(), { issues: [] });
+  doubles.api.respond('GET', RUN_CURRENT_PATH, { run });
+  respondTools();
+
+  const { fixture, root } = await render('/projects/p1/graphs/read-only-drops');
+  await until(fixture, () => {
+    expect(root.querySelector('[data-run-status]')?.textContent?.trim()).toBe(
+      'Running',
+    );
+    expect(
+      root.querySelector('[data-drop-port="cold-open.person"]'),
+    ).not.toBeNull();
+  });
+  dropOn(root, 'cold-open.person', ANNA);
+  fixture.detectChanges();
+  expect(root.querySelector('[data-pinned="cold-open.person"]')).toBeNull();
+  removeFirstOn(fixture, root, 'cold-open.entityIds');
+  expect(
+    root.querySelector('[data-pinned="cold-open.entityIds"]'),
+  ).not.toBeNull();
+
+  doubles.api.respond('GET', RUN_CURRENT_PATH, {
+    run: {
+      ...runOf({ 'cold-open': { status: 'done' } }, 'done'),
+      graphId: 'read-only-drops',
+    },
+  });
+  doubles.events.push({
+    module: 'graph-runner',
+    type: 'run-ended',
+    data: { runId: 'run-1', status: 'done' },
+  });
+  await until(fixture, () => {
+    expect(root.querySelector('[data-run-status]')?.textContent?.trim()).toBe(
+      'Done',
+    );
+  });
+  dropOn(root, 'cold-open.person', ANNA);
+  fixture.detectChanges();
+  expect(root.querySelector('[data-pinned="cold-open.person"]')).not.toBeNull();
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+// Supporting check R3 (GRR-14 C-17, step 5h): Arrange is disabled while a run is active and enabled after `run-ended`.
+it('R3: Arrange is disabled while a run is active and enabled after `run-ended`.', async () => {
+  doubles = createShellTestDoubles();
+  respondDialogRun(runOf({ 'cold-open': { status: 'running' } }));
+
+  const { fixture, root } = await render('/projects/p1/graphs/dialog-run');
+  await until(fixture, () => {
+    expect(buttonNamed(root, 'Arrange').disabled).toBe(true);
+  });
+  doubles.api.respond('GET', RUN_CURRENT_PATH, {
+    run: runOf({ 'cold-open': { status: 'done' } }, 'done'),
+  });
+  doubles.events.push({
+    module: 'graph-runner',
+    type: 'run-ended',
+    data: { runId: 'run-1', status: 'done' },
+  });
+  await until(fixture, () => {
+    expect(buttonNamed(root, 'Arrange').disabled).toBe(false);
+  });
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
