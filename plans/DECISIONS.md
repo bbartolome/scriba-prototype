@@ -6563,3 +6563,27 @@ Part D (gates and commit):
 - **Evidence relied on (the implementer's report; the reviewer read the code and did not re-run the gates):** C1 passed (the CEX-02 to CEX-08 unit files have no open `- [ ]`; the seven plans are `status: done`); T2, T3 and T4 pass; both negative controls fail as expected and the file was reverted byte-identical; the re-export probe passes through the entry file and the direct import is refused by `boundaries/dependencies`; the real-sample run on a temp copy of `examples/` passes with the order block and fails without it.
 - **Test fixture note:** the T4 fixture headings are `# Chapter 1` to `# Chapter 4`, the plan's `# Chapter N` pattern. The test never reads `examples/` (module line 59).
 - **Next:** the merge (rebase onto the current main, root gates, checkboxes, fast-forward) follows in this session, because the limit is reached and approved units go to main.
+
+## 2026-11-19 — CEX-17 — Merged to main (fast-forward 84e25db to c4d3c0d); gates recorded
+
+- **Rebase (step 3.2):** `git rebase main` in the worktree `scriba-prototype-wt/CEX-17` stopped in an interactive state with the first pick applied; `git rebase --abort` restored `unit/CEX-17` at 291dd38 (backup `backup/CEX-17-pre-rebase`). The four code commits were replayed by cherry-pick in a fresh detached worktree at main 3fc6ab6 (tip ed883a5). Patch id `e1eaab761f1abea0262533612709c9a197b3bce9` confirmed.
+- **Second replay:** main moved to 84e25db (the GNP-14 plan commit, plans only). The branch was replayed again onto 84e25db: four code commits plus the docs commit, tip c4d3c0d. The code diff against ed883a5 is empty, and the patch id is still e1eaab76. Backup `backup/CEX-17-pre-merge` at ed883a5.
+- **Gates (step 3.3, on ed883a5; the code is the same at c4d3c0d):** `npm ci` exit 0; `npm run lint` exit 0; `npm run build` exit 0; `npm test` run 1 exit 1, with one failure: `apps/web` `canvas-page.spec.ts` "saving without edits produces byte-equivalent JSON", "Test timed out in 5000ms" (the file has 17 tests; load 8.7 at the start). The file is not changed by this unit. The same test is recorded earlier (GRR-13 and GRR-15 records). Run 2 exit 0: scripts 253 of 253; api and web workspace suites all pass (web 79 files, 570 tests); packages/packs 14 of 14; e2e 12 of 12. No test, timeout or config was changed.
+- **Criteria (unit lines 25 to 28):** all four ticked on c4d3c0d (M1 to M4 passed in the implementer's run; the reviewers approved the code).
+- **Status:** `plans/CEX-17.md` is `status: done` on main (c4d3c0d).
+- **Kept (carried rule):** branch `unit/CEX-17` and worktree `scriba-prototype-wt/CEX-17` (at c4d3c0d) are not deleted; the step 3.10 deletion is not done, and the user decides. Backups `backup/CEX-17-pre-rebase` and `backup/CEX-17-pre-merge` are kept. The scratch worktrees `CEX-17-replay` and `CEX-17-replay2` were removed (clean, non-forced).
+
+## 2026-11-19 — CEX-09 — Merged to main (fast-forward 788d0cf to a43c75a); gates recorded
+
+- **Replay (step 3.2):** main moved to 788d0cf (the review record). The one code commit 03cc1ac was replayed by cherry-pick in a fresh detached worktree at main 788d0cf (tip ae7df33). Patch id `20fc72778bdc04900dbe0dc2f67d36829f515769` confirmed. Branch `unit/CEX-09` reset to ae7df33; backup `backup/CEX-09-pre-rebase` at 03cc1ac.
+- **Gates (step 3.3, on ae7df33, after `npm ci` exit 0):** `npm run lint` exit 0; `npm run build` exit 0; `npm test` exit 0 in one run: scripts 253 of 253; api 540 of 540; web 570 of 570; packages/packs 14 of 14; e2e 12 of 12. This run is clean; the recorded flakes did not recur.
+- **Criteria (unit lines 21 to 24):** all four ticked on a43c75a: C1 (CEX-02 to CEX-07 pass on main; CEX-08 is also in blocked_by and is done); the five-check fixtures; no outbound request; the nonfiction order (T4 and the throwaway real-sample run, which is not committed).
+- **Status:** `plans/CEX-09.md` is `status: done` on main (a43c75a). The fast-forward moved the code, the checkboxes and the status together.
+- **Kept (carried rule):** branch `unit/CEX-09` and worktree `scriba-prototype-wt/CEX-09` (at a43c75a) are not deleted; the user decides. Backup `backup/CEX-09-pre-rebase` is kept. The scratch worktree `CEX-09-replay` was removed (clean, non-forced).
+
+## 2026-11-19 — GNP-14 — Plan revised after the step 16 failure (Opus, READY); plan status planned
+
+- **Cause (verified by the reviser in the sources):** the implementer's diagnosis is right. `e2e/specs/tools-preview.e2e.ts` fixes the viewport at 1280 by 2100. On the branch, the two new fiction rows in the `/tools` list push the person picker to y=2290 (target 2302), below the viewport. The run order (the user pack rows that `tools-editor.e2e.ts` leaves) is a second trigger of the same cause.
+- **Choice C12 (plan, not a unit change):** raise the height in `test.use` of `e2e/specs/tools-preview.e2e.ts` from 2100 to 3200 (lines 20 and 21 only). No step, assertion or drag change; this follows the rule TRG-13 step 11 and TRG-14 step 9 set for this spec. A scroll and a `genrePack` filter were rejected in the plan.
+- **Unit changes:** none. No criterion changed.
+- **Status:** `plans/GNP-14.md` is `status: planned` (commit 84e25db). Not started in this session: the limit was reached. The next implementer continues on `unit/GNP-14` at f997d59 (steps 0 to 14 kept as committed), section 4 of the plan.
