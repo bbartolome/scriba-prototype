@@ -6493,3 +6493,11 @@ Part D (gates and commit):
 - **Decision (orchestrator):** the recurring timeout is recorded, not fixed. No test, timeout, config or script was changed, and no run was dropped. The reviewer's item 2 asks for exit 0 in a fresh clone, and run 2 gives it, with run 1's failure kept on record. The flake stays an open item for the owner; it is not closed by this entry. The worktree's run 1 is a clean first-run exit 0.
 - **Approval:** the patch id is `283f8cd775cac8a9487f91595825002e33427257`, unchanged at main 2fa3287 (code and tests only; the diff excludes plans and units). Part A was APPROVED on this id in the entry above, so its approval holds. Part B needs a new review of its gate evidence (items 1 and 2) and is started now.
 - **Status:** `plans/CEX-07.md` stays `status: planned`.
+
+## 2026-11-19 — CEX-07 — Step 3, failed check: replay of ee0b40a onto main adb9cc4 conflicts in two files; replay aborted; new Haiku implementer started
+
+- **Cause:** CEX-06 (merged at 4c70eb4) changed `apps/api/src/modules/compile-export/preflight-checks.ts` and `preflight.service.ts`, which CEX-07 also changes (plan section 7). The branch was made before CEX-06 landed, so the first cherry-pick of `ee0b40a` onto main conflicts: 2 conflict blocks in each file. The other four paths of the unit apply cleanly.
+- **Action:** the cherry-pick was aborted (`git cherry-pick --abort`, scratch worktree `scriba-prototype-wt/CEX-07-replay` is clean at adb9cc4). Nothing on `unit/CEX-07` was changed. Backup of the tip: `backup/CEX-07-pre-rebase` at 80f96aa.
+- **Consequence:** the conflict resolution changes the code, so the patch id of the approval (`283f8cd775cac8a9487f91595825002e33427257`) no longer holds once the replay is done. The new patch id needs new Sonnet reviews for Parts A and B, and the gates run on the replayed tip. The approval record above stays as the record of the earlier code.
+- **Next:** a new Haiku implementer replays `ee0b40a` and `80f96aa` in the scratch worktree, resolves the two files so that the CEX-06 behaviour on main is kept and the CEX-07 checks of the plan are added, and reports the new commits and the new patch id.
+- **Status:** `plans/CEX-07.md` stays `status: planned`.
