@@ -6587,3 +6587,10 @@ Part D (gates and commit):
 - **Choice C12 (plan, not a unit change):** raise the height in `test.use` of `e2e/specs/tools-preview.e2e.ts` from 2100 to 3200 (lines 20 and 21 only). No step, assertion or drag change; this follows the rule TRG-13 step 11 and TRG-14 step 9 set for this spec. A scroll and a `genrePack` filter were rejected in the plan.
 - **Unit changes:** none. No criterion changed.
 - **Status:** `plans/GNP-14.md` is `status: planned` (commit 84e25db). Not started in this session: the limit was reached. The next implementer continues on `unit/GNP-14` at f997d59 (steps 0 to 14 kept as committed), section 4 of the plan.
+
+## 2026-11-19 — GNP-14 — Sonnet review of all three parts on patch id cfc1c851b1f154cd7f0cf6a67ceea54123a3200b (branch unit/GNP-14 at 42c841b, on 3e33e75): Part 1 APPROVED; Part 2 APPROVED; Part 3 APPROVED
+
+- **Result:** all three reviewers reply APPROVED for the same patch id, so the code approval holds. Part 1 (steps 0 to 12; commit 72f4c44; criteria 1 and 2; the recipe golden differs from main by exactly the two catalogue lines; scope checked with `git show --stat 72f4c44`), Part 2 (steps 13 and 14; commit f997d59; criterion 3; the scope is the three files of the part), Part 3 (step C and steps 15 to 18; commit 42c841b; the spec diff against 3e33e75 is the C12 change only, lines 20 and 21 plus the comment).
+- **Line numbers (Part 3):** the TRG-05 tests are at lines 85 and 169 in the new spec, against 83 and 167 in plan step 16. The shift is the two-line-longer comment; no test body changed.
+- **Evidence relied on (implementer's report; the reviewers read the code and did not re-run the suites):** step 15 gates on 42c841b: build, lint, `prettier --check .` exit 0; e2e 12 of 12; root `npm test` exit 0 without the F7 fallback. Step 16: tools-preview three runs, 2 of 2 each; tools-editor plus tools-preview, 4 of 4 (E1, E2, TRG-05 C1 and C2).
+- **Next:** the merge (rebase onto the current main, gates, checkboxes and status, fast-forward) follows in this session.
