@@ -6037,3 +6037,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **E1 failure:** "TRG-15 E1: editing a port and an entity kind in the source changes the node preview and the picker, after the lint answer and with no save" (2.3 s). `e2e/specs/tools-live-preview.e2e.ts:124`, in the state BEFORE the edit: `expect(await pickerIds(page, 'entityIds')).toEqual(['ada'])`. Expected `["ada"]`, received `[]`. The picker offers no entity option before any edit. The `li[data-port="coreIdea"]` check at line 122 passed.
 - **Open cause:** either the picker's options are read before the entity list loads (a timing problem in the test or in the picker), or the fixture does not seed the entity `ada` that the picker should offer. Not diagnosed.
 - **Action:** a new Haiku implementer diagnoses and corrects the cause, in the code or in the test setup, without weakening any assertion. It commits to `unit/TRG-15`, then re-runs E1 and E2 serially, then the gates. TRG-15 does not go to main until E1 and E2 pass.
+
+## 2026-11-19 — GRR-14 — Review result: APPROVED (part A, the whole plan), patch id a1bb200389b37b59ea0785ae3efa937c3cdec156
+
+- **Branch:** `unit/GRR-14` at c27bc4b, on fd72b8b (plan `status: planned`, revision 3). Patch id (`git diff main...unit/GRR-14 -- . ':!plans' ':!units' | git patch-id --stable`): a1bb200389b37b59ea0785ae3efa937c3cdec156.
+- **Result:** APPROVED by one reviewer, Part A (steps 0 to 8). The 8 changed files are exactly the files of plan section 4, all under apps/web/src/app/features/graph-runner/.
+- **Step 0 and C-16:** GRR-12 and GRR-13 were not on main. C-16 was added fresh (one `projectIdOfRoute`, one `projectId` signal, `load(id, projectId)`). C-17 and RA do not apply. The Arrange button has no run guard, because `editable` does not exist on main.
+- **Tests:** S1 to S4 in canvas-page.spec.ts pass (7 of 7 when run alone, reported by the implementer). W-S1, W-L1, KS1 and KS2 pass. The reviewer read the code and tests and ran nothing.
+- **Gates:** lint and build exit 0. The root `npm test` did NOT exit 0. Web tests timed out (5 s) under machine load, and each failing file passes when re-run alone. The gates must pass on a quiet run before the merge.
+- **Merge order:** GRR-14 needs no change if GRR-12 or GRR-13 merges first. Their merge steps reconcile the copies, as the plan's section 7 says.
