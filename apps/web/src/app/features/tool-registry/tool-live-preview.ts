@@ -4,7 +4,6 @@ import {
   DestroyRef,
   inject,
   input,
-  OnInit,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -137,7 +136,7 @@ const TABS: readonly { readonly id: LiveTab; readonly label: string }[] = [
     </section>
   `,
 })
-export class ToolLivePreview implements OnInit {
+export class ToolLivePreview {
   /** The tool name, used in the render path. A draft has its name here, and it is not saved. */
   readonly tool = input.required<string>();
   /** The YAML text the views are of. Render receives it, so an unsaved text renders. */
@@ -152,8 +151,10 @@ export class ToolLivePreview implements OnInit {
 
   /** The selected tab. The form is the first and the default. */
   protected readonly tab = signal<LiveTab>('form');
-  /** The active project's ID, or null when none is active. */
+  /** The active project's ID, or null when none is active. Read on the first Render, not at creation. */
   private readonly active = signal<string | null>(null);
+  /** True once the active project has been read. */
+  private activeLoaded = false;
   /** True when the active project could not be read. */
   private readonly activeFailed = signal(false);
   /** The arguments of the form, shared by the Form and the Node tabs. */
@@ -176,21 +177,10 @@ export class ToolLivePreview implements OnInit {
       : JSON.stringify(this.views()?.functionSchema, null, 2),
   );
 
-  ngOnInit(): void {
-    this.api
-      .get(ACTIVE_PROJECT_PATH, activeCopy)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: ({ active }) => this.active.set(active),
-        error: () => this.activeFailed.set(true),
-      });
-  }
-
   /** Render: the chain of a render. Each step stops it when it fails. Nothing is saved. */
   protected render(): void {
     const view = this.views();
     if (view === null || this.running()) return;
-    const project = this.active();
     this.prompt.set(null);
     this.issues.set([]);
     this.resolutionErrors.set([]);
@@ -199,14 +189,43 @@ export class ToolLivePreview implements OnInit {
       this.runNote.set('The active project could not be read.');
       return;
     }
-    if (project === null) {
-      this.runNote.set('No active project, so the prompt cannot be rendered.');
+    this.running.set(true);
+    this.loadActive(() => {
+      const project = this.active();
+      if (project === null) {
+        this.runNote.set(
+          'No active project, so the prompt cannot be rendered.',
+        );
+        this.running.set(false);
+        return;
+      }
+      this.fillStyle(project, view.form.fields, this.formValue(), (filled) =>
+        this.resolve(project, view.form.fields, filled),
+      );
+    });
+  }
+
+  /** Reads the active project once, on the first Render. A failed read sets activeFailed. */
+  private loadActive(next: () => void): void {
+    if (this.activeLoaded) {
+      next();
       return;
     }
-    this.running.set(true);
-    this.fillStyle(project, view.form.fields, this.formValue(), (filled) =>
-      this.resolve(project, view.form.fields, filled),
-    );
+    this.api
+      .get(ACTIVE_PROJECT_PATH, activeCopy)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ active }) => {
+          this.active.set(active);
+          this.activeLoaded = true;
+          next();
+        },
+        error: () => {
+          this.activeFailed.set(true);
+          this.runNote.set('The active project could not be read.');
+          this.running.set(false);
+        },
+      });
   }
 
   /** An empty style field takes the project's style profile. A failed read leaves it empty. */

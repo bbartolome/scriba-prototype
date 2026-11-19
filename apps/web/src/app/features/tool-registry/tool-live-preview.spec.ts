@@ -7,7 +7,7 @@ import type {
   ToolArguments,
 } from '@bbartolome/scriba-contracts/tool-registry';
 import { EditorView } from '@codemirror/view';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../../shell';
 import {
   restoreMatchMedia,
@@ -362,9 +362,7 @@ describe('ToolLivePreview: the four tabs', () => {
 
     expect(root(fixture).querySelector('[data-live-note]')).not.toBeNull();
     expect(root(fixture).querySelectorAll('[role="tab"]')).toHaveLength(0);
-    expect(doubles.api.requests.map((request) => request.path)).toEqual([
-      ACTIVE_PATH,
-    ]);
+    expect(doubles.api.requests).toEqual([]);
   });
 
   it('V3b the Function tab shows the function schema as JSON', async () => {
@@ -415,6 +413,7 @@ describe('ToolsListPage: the live panel beside the Source tab', () => {
       lint: [],
       views: VIEWS_WITHOUT_CORE,
     });
+    vi.useFakeTimers();
     respondToProject();
     const fixture = TestBed.createComponent(ToolsListPage);
     await settle(fixture);
@@ -452,16 +451,17 @@ describe('ToolsListPage: the live panel beside the Source tab', () => {
     editor.dispatch({
       changes: { from: editor.state.doc.length, insert: '# changed\n' },
     });
-    // The editor lints after its debounce of 500 ms, with a real timer in this test.
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    // The editor lints after its debounce of 500 ms (fake time, as tool-editor.spec.ts T1c).
+    vi.advanceTimersByTime(500);
     await settle(fixture);
     expect(portCount()).toBe(PORTS_WITHOUT_CORE.inputs.length + 1);
 
     editor.dispatch({
       changes: { from: 0, to: editor.state.doc.length, insert: SOURCE },
     });
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    vi.advanceTimersByTime(500);
     await settle(fixture);
     expect(portCount()).toBe(PORTS.inputs.length + 1);
+    vi.useRealTimers();
   });
 });
