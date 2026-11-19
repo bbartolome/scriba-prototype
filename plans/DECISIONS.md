@@ -6449,3 +6449,14 @@ Part D (gates and commit):
 - **Fast-forward:** `main` moved from 7c09659 to 7a3e61a with `git merge --ff-only unit/CEX-08`. The history of main is linear.
 - **Kept (carried rule):** branch `unit/CEX-08`, worktree `scriba-prototype-wt/CEX-08` and `backup/CEX-08-pre-rebase` (e568c97) are not deleted. Step 3 item 10 (delete the branch and worktree) is not done for this reason. The user decides.
 - **Status:** `plans/CEX-08.md` is `status: done` on main (7a3e61a).
+
+## 2026-11-19 — CEX-06 — Gate rework run 3 (Haiku, medium) on unit/CEX-06 e4ada34: COMPLETE, all gates exit 0 on first run; Sonnet reviewers started for Parts A and B
+
+- **Load and versions:** load 2.14 at start, 2.88 at the start of the root test, 4.37 at its end; clone test load 4.36 to 3.67. Node v26.13.0, npm 11.20.0.
+- **Worktree `scriba-prototype-wt/CEX-06` (e4ada34, clean, no commit or file change):** `npm ci` 0; API build 0; API test 0 (20 files, 253 tests); API lint 0; root build 0; root lint 0; root `npm test` 0 on the first run, with no "Test timed out" lines. Logs `/tmp/cex06-gates-r3/worktree/`.
+- **Fresh clone `/tmp/cex06-fresh` (e4ada34, clean):** `npm ci` 0; `npm run build` 0; `npm test` 0 on the first run; `npm run lint` 0. Logs `/tmp/cex06-gates-r3/clone/`.
+- **Patch id:** `87a3849224bb4edb20ba82415b0c865253e48226` before and after the runs.
+- **Rework items:** item 1 (clean first-run `npm test` exit 0 in the fresh clone, lint recorded) met. Item 3 (six exit codes reported in the worktree) met. Item 2 (two commits instead of one) stays the accepted deviation recorded above.
+- **Orchestrator note:** the web timeouts of the earlier runs did not recur at load 2.9 to 4.4. This is one clean pass per gate, not a retry.
+- **Next:** Sonnet reviewers for Part A and Part B on patch id `87a3849224bb4edb20ba82415b0c865253e48226`, in parallel. Step 3 follows only if both approve.
+- **Status:** `plans/CEX-06.md` stays `status: planned`.
