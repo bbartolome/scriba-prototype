@@ -6182,3 +6182,10 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Reviewer:** Sonnet, medium, one part (Part A). Reran both test files: 4 of 4 and 6 of 6. File list: the six paths of plan section 2 and no other code file.
 - **Round-1 items:** item 1 (ticks) satisfied by 7021687. Item 2 (commit message) satisfied under the disposition recorded above: four part commits kept, each with CEX-03.
 - **Approval** holds for patch id e7ac643 while the code diff is unchanged. Next: step 3 (rebase, gates, status done, fast-forward).
+
+## 2026-11-19 — GRR-13 — Rebase onto main 220cd68: conflict, failed check
+
+- **Branch before the check:** `unit/GRR-13` at 7e18b90, patch id 1ef8374e639d4bbb9f4f0de1020412d65edbacd7 (approved, round 2). Backup: `backup/GRR-13-pre-rebase` at 7e18b90.
+- **Result:** `git rebase main` in the worktree `scriba-prototype-wt/GRR-13` stalled ("local changes would be overwritten by merge") and was aborted. The replay by cherry-pick (first commit 63cca63) conflicted in `apps/web/src/app/features/graph-runner/graph-runner-contract.ts` and `graph-runner-contract.spec.ts`. That cherry-pick was aborted. `unit/GRR-13` is back at 7e18b90. Main has the GRR-12 and GRR-14 code in these files.
+- **Action:** a new Haiku implementer rebases `unit/GRR-13` onto main, resolves the two conflicts so that both the main code and the GRR-13 code remain, then does plan steps 5g and 5h and steps 6 to 8 of `plans/GRR-13.md` (revision 3, on main). The patch id changes, so all four parts get new Sonnet reviewers.
+- **Reason:** prompt step 3.2. The conflict is in files other than `package-lock.json`.
