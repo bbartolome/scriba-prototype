@@ -1,3 +1,5 @@
+import { CdkDrag, type CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import { getDebugNode } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -6,7 +8,7 @@ import { ACTIVE_PROJECT_ROUTE } from '@bbartolome/scriba-contracts/project-store
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../app';
 import { APP_ROUTES } from '../../app.routes';
-import type { ApiPath } from '../../shell';
+import { ApiError, type ApiPath } from '../../shell';
 import {
   restoreMatchMedia,
   stubMatchMedia,
@@ -16,7 +18,13 @@ import {
   type ShellTestDoubles,
 } from '../../shell/testing/test-doubles';
 import { manuscriptRoutes } from './compile-export.routes';
-import { MANUSCRIPT_PATH } from './manuscript-contract';
+import {
+  MANUSCRIPT_PART_PATH,
+  MANUSCRIPT_PATH,
+  MANUSCRIPT_REORDER_PATH,
+  MANUSCRIPT_STATUS_PATH,
+  ORDER_CONFLICT_CODE,
+} from './manuscript-contract';
 
 const WAIT = { timeout: 5000 };
 const REV1 = `sha256:${'1'.repeat(64)}`;
@@ -55,6 +63,12 @@ const VIEW_2 = {
   entries: [FRONT, CH01, CH03, CH02, BACK],
   revision: REV2,
 };
+
+/** Revision 3: as revision 2. */
+const VIEW_3 = { ...VIEW_2, revision: REV3 };
+
+const CONFLICT_TEXT =
+  'The manuscript changed since it was read. Reload it and try again.';
 
 /** Revision 1 with the three kinds of warning. */
 const VIEW_WARNED = {
@@ -166,6 +180,56 @@ function rowOf(root: HTMLElement, path: string): HTMLElement {
   return row;
 }
 
+/** The drag of a row, from its debug node (P5). */
+function dragOf(row: HTMLElement): CdkDrag {
+  const drag = getDebugNode(row)?.injector.get(CdkDrag);
+  if (!drag) throw new Error('No drag on the row.');
+  return drag;
+}
+
+/** Simulates a drop on one part list, as the CDK emits it after a pointer gesture (P5). */
+function dropOn(
+  list: HTMLElement,
+  previousIndex: number,
+  currentIndex: number,
+): void {
+  const dropList = getDebugNode(list)?.injector.get(CdkDropList);
+  if (!dropList) throw new Error('No drop list on the element.');
+  dropList.dropped.emit({
+    previousIndex,
+    currentIndex,
+  } as unknown as CdkDragDrop<unknown>);
+}
+
+/** The `ul[data-part]` list of one part. */
+function partList(root: HTMLElement, part: string): HTMLElement {
+  const list = root.querySelector(`ul[data-part="${part}"]`);
+  if (!(list instanceof HTMLElement)) throw new Error(`No ${part} list.`);
+  return list;
+}
+
+/** The paths of one part list, in order. */
+function pathsIn(root: HTMLElement, part: string): (string | null)[] {
+  return Array.from(partList(root, part).querySelectorAll('li')).map((row) =>
+    row.getAttribute('data-path'),
+  );
+}
+
+/** A native select, by its aria-label. */
+function selectNamed(root: HTMLElement, label: string): HTMLSelectElement {
+  const select = root.querySelector(`select[aria-label="${label}"]`);
+  if (!(select instanceof HTMLSelectElement)) {
+    throw new Error(`No select "${label}".`);
+  }
+  return select;
+}
+
+/** Sets a select's value and dispatches the change event that a user's choice dispatches. */
+function choose(select: HTMLSelectElement, value: string): void {
+  select.value = value;
+  select.dispatchEvent(new Event('change'));
+}
+
 describe('ManuscriptPage', () => {
   it('T1 the Manuscript item is in the phone nav with a project open', async () => {
     doubles.api.respond('GET', ACTIVE, { active: 'p1' });
@@ -265,5 +329,123 @@ describe('ManuscriptPage', () => {
     });
     await settle(harness);
     expect(countOf(MANUSCRIPT_PATH)).toBe(3);
+  });
+
+  it('M1 a drag sends a reorder with the current revision; graph-ordered rows can not be dragged', async () => {
+    doubles.api.respond('GET', MANUSCRIPT_PATH, VIEW_1);
+    doubles.api.respond('POST', MANUSCRIPT_REORDER_PATH, VIEW_2);
+    const harness = await renderPage('/projects/p1/manuscript', 1280, 800);
+    const root = harness.routeNativeElement as HTMLElement;
+    await until(harness.fixture, () => {
+      expect(pathsIn(root, 'body')).toEqual([
+        'drafts/ch01.md',
+        'drafts/ch02.md',
+        'drafts/ch03.md',
+      ]);
+    });
+    const graphRow = root.querySelector<HTMLElement>(
+      'li[data-path="drafts/ch01.md"]',
+    );
+    expect(dragOf(graphRow as HTMLElement).disabled).toBe(true);
+
+    dropOn(partList(root, 'body'), 2, 1);
+    await settle(harness);
+
+    expect(doubles.api.requests.at(-1)).toEqual({
+      method: 'POST',
+      path: MANUSCRIPT_REORDER_PATH,
+      body: {
+        revision: REV1,
+        front: ['drafts/front.md'],
+        body: ['drafts/ch01.md', 'drafts/ch03.md', 'drafts/ch02.md'],
+        back: ['drafts/back.md'],
+      },
+    });
+    expect(pathsIn(root, 'body')).toEqual([
+      'drafts/ch01.md',
+      'drafts/ch03.md',
+      'drafts/ch02.md',
+    ]);
+  });
+
+  it('M2 a conflict shows the reload prompt, and manuscript-updated refetches', async () => {
+    doubles.api.respond('GET', MANUSCRIPT_PATH, VIEW_1);
+    doubles.api.fail(
+      'POST',
+      MANUSCRIPT_REORDER_PATH,
+      new ApiError(409, ORDER_CONFLICT_CODE, CONFLICT_TEXT),
+    );
+    const harness = await renderPage('/projects/p1/manuscript', 1280, 800);
+    const root = harness.routeNativeElement as HTMLElement;
+    await until(harness.fixture, () => {
+      expect(pathsIn(root, 'body')).toHaveLength(3);
+    });
+
+    dropOn(partList(root, 'body'), 2, 1);
+    await settle(harness);
+
+    const alert = root.querySelector('[role="alert"]');
+    expect(alert?.textContent).toContain(CONFLICT_TEXT);
+    const reload = Array.from(root.querySelectorAll('button')).find(
+      (button) => button.textContent?.trim() === 'Reload manuscript',
+    );
+    expect(reload).toBeDefined();
+
+    doubles.api.respond('GET', MANUSCRIPT_PATH, VIEW_2);
+    push('compile-export', {
+      type: 'manuscript-updated',
+      data: { projectId: 'p1', revision: REV2 },
+    });
+    await settle(harness);
+
+    expect(countOf(MANUSCRIPT_PATH)).toBe(2);
+    expect(pathsIn(root, 'body')).toEqual([
+      'drafts/ch01.md',
+      'drafts/ch03.md',
+      'drafts/ch02.md',
+    ]);
+    expect(root.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it('M3 status and part changes send their requests, each with the revision of the last answer', async () => {
+    doubles.api.respond('GET', MANUSCRIPT_PATH, VIEW_1);
+    doubles.api.respond('POST', MANUSCRIPT_STATUS_PATH, VIEW_2);
+    doubles.api.respond('POST', MANUSCRIPT_PART_PATH, VIEW_3);
+    const harness = await renderPage('/projects/p1/manuscript', 1280, 800);
+    const root = harness.routeNativeElement as HTMLElement;
+    await until(harness.fixture, () => {
+      selectNamed(root, 'Status of ch02.md');
+    });
+
+    choose(selectNamed(root, 'Status of ch02.md'), 'final');
+    await settle(harness);
+    expect(doubles.api.requests.at(-1)).toEqual({
+      method: 'POST',
+      path: MANUSCRIPT_STATUS_PATH,
+      body: { revision: REV1, path: 'drafts/ch02.md', status: 'final' },
+    });
+
+    choose(selectNamed(root, 'Part of ch02.md'), 'back');
+    await settle(harness);
+    expect(doubles.api.requests.at(-1)).toEqual({
+      method: 'POST',
+      path: MANUSCRIPT_PART_PATH,
+      body: { revision: REV2, path: 'drafts/ch02.md', part: 'back' },
+    });
+  });
+
+  it('T4 a drop above the graph block is refused, and a graph row part select is disabled', async () => {
+    doubles.api.respond('GET', MANUSCRIPT_PATH, VIEW_1);
+    const harness = await renderPage('/projects/p1/manuscript', 1280, 800);
+    const root = harness.routeNativeElement as HTMLElement;
+    await until(harness.fixture, () => {
+      selectNamed(root, 'Part of ch01.md');
+    });
+
+    dropOn(partList(root, 'body'), 1, 0);
+    await settle(harness);
+
+    expect(countOf(MANUSCRIPT_REORDER_PATH, 'POST')).toBe(0);
+    expect(selectNamed(root, 'Part of ch01.md').disabled).toBe(true);
   });
 });
