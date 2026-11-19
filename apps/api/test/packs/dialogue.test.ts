@@ -76,7 +76,7 @@ const caseOptions = {
 };
 
 it(
-  "AC 2: the dialogue golden case matches, its prompt holds each input entity with its ID and the citation and placeholder instructions, its output is a draft with the expected sourcesUsed, and invalid arguments return an Ajv error that names coreIdea",
+  'AC 2: the dialogue golden case matches, its prompt holds each input entity with its ID and the citation and placeholder instructions, its output is a draft with the expected sourcesUsed, and invalid arguments return an Ajv error that names coreIdea',
   goldenCase({
     ...caseOptions,
     check: (result) => {
@@ -96,79 +96,75 @@ it(
   120000,
 );
 
-it(
-  'AC 3: the rendered prompt holds both characters\' voice and relationship notes and the distinct-voice instruction, and a call with one character returns an Ajv error that names characterIds',
-  async () => {
-    await goldenCase({
-      ...caseOptions,
-      check: (result) => {
-        const prompt = renderedPrompt(result);
-        for (const text of [
-          'voice: Terse.',
-          'voice: Talkative.',
-          'She tolerates his talk',
-          'He wants her approval',
-          'distinct diction',
-        ]) {
-          expect(prompt, text).toContain(text);
-        }
-      },
-    })();
-
-    // The one-character call: the fixture's arguments with one character, through a new app and mock.
-    const fixture = JSON.parse(
-      readFileSync(
-        join(GOLDEN_ROOT, 'dialogue', 'keepers-exchange.fixture.json'),
-        'utf8',
-      ),
-    ) as Fixture;
-    const scenario = 'pack-dialogue';
-    const mock = await startMockOpenAI();
-    const library = makeLibrary(
-      stringify({
-        schemaVersion: 1,
-        providers: {
-          schemaVersion: 1,
-          list: [
-            {
-              id: 'mock',
-              kind: 'openai-compatible',
-              baseURL: `${mock.baseUrl}/scenario/${scenario}/v1`,
-              model: 'mock-model',
-              ...PROVIDER_DEFAULTS,
-            },
-          ],
-          appDefault: { providerId: 'mock', model: 'mock-model' },
-        },
-      }),
-    );
-    try {
-      const app = await createTestApp({
-        libraryDir: library,
-        env: { SCRIBA_PACKS_DIR: PACKS_ROOT },
-      });
-      try {
-        const cookie = await sessionCookie(app, library);
-        const path = TOOL_EXECUTE_ROUTE.replace(':name', 'dialogue');
-        const reply = await post(app, cookie, path, {
-          arguments: { ...fixture.arguments, characterIds: ['nell-carrow'] },
-          entities: fixture.entities,
-        });
-        expect(reply.status).toBe(422);
-        const error = errorBodySchema.parse(
-          JSON.parse(reply.body) as unknown,
-        ).error;
-        expect(error.code).toBe('TOOL_ARGS_INVALID');
-        expect(error.message).toContain('characterIds');
-        expect(error.message).toContain('at least 2 items');
-        expect(await recordsOf(mock, scenario)).toHaveLength(0);
-      } finally {
-        await app.close();
+it("AC 3: the rendered prompt holds both characters' voice and relationship notes and the distinct-voice instruction, and a call with one character returns an Ajv error that names characterIds", async () => {
+  await goldenCase({
+    ...caseOptions,
+    check: (result) => {
+      const prompt = renderedPrompt(result);
+      for (const text of [
+        'voice: Terse.',
+        'voice: Talkative.',
+        'She tolerates his talk',
+        'He wants her approval',
+        'distinct diction',
+      ]) {
+        expect(prompt, text).toContain(text);
       }
+    },
+  })();
+
+  // The one-character call: the fixture's arguments with one character, through a new app and mock.
+  const fixture = JSON.parse(
+    readFileSync(
+      join(GOLDEN_ROOT, 'dialogue', 'keepers-exchange.fixture.json'),
+      'utf8',
+    ),
+  ) as Fixture;
+  const scenario = 'pack-dialogue';
+  const mock = await startMockOpenAI();
+  const library = makeLibrary(
+    stringify({
+      schemaVersion: 1,
+      providers: {
+        schemaVersion: 1,
+        list: [
+          {
+            id: 'mock',
+            kind: 'openai-compatible',
+            baseURL: `${mock.baseUrl}/scenario/${scenario}/v1`,
+            model: 'mock-model',
+            ...PROVIDER_DEFAULTS,
+          },
+        ],
+        appDefault: { providerId: 'mock', model: 'mock-model' },
+      },
+    }),
+  );
+  try {
+    const app = await createTestApp({
+      libraryDir: library,
+      env: { SCRIBA_PACKS_DIR: PACKS_ROOT },
+    });
+    try {
+      const cookie = await sessionCookie(app, library);
+      const path = TOOL_EXECUTE_ROUTE.replace(':name', 'dialogue');
+      const reply = await post(app, cookie, path, {
+        arguments: { ...fixture.arguments, characterIds: ['nell-carrow'] },
+        entities: fixture.entities,
+      });
+      expect(reply.status).toBe(422);
+      const error = errorBodySchema.parse(
+        JSON.parse(reply.body) as unknown,
+      ).error;
+      expect(error.code).toBe('TOOL_ARGS_INVALID');
+      expect(error.message).toContain('characterIds');
+      expect(error.message).toContain('at least 2 items');
+      expect(await recordsOf(mock, scenario)).toHaveLength(0);
     } finally {
-      await mock.close();
-      rmSync(library, { recursive: true, force: true });
+      await app.close();
     }
-  },
-  120000,
-);
+  } finally {
+    await mock.close();
+    rmSync(library, { recursive: true, force: true });
+  }
+}, 120000);

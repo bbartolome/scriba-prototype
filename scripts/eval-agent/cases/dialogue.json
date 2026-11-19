@@ -1,0 +1,8 @@
+{
+  "sample": "fiction",
+  "intent": "Write a short exchange for my lighthouse story where the two keepers argue about sending a signal about the late supply boat, each in their own voice.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["dialogue"]
+  }
+}
