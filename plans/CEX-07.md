@@ -1,6 +1,6 @@
 ---
 id: CEX-07
-status: planned
+status: done
 ---
 # CEX-07 plan — entity links and banned phrases
 

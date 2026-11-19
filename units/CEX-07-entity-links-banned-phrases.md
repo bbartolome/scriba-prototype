@@ -20,5 +20,5 @@ unblocks: [CEX-09]
 - No style profile → the check passes with an `info` note.
 
 ## Acceptance criteria
-- [ ] Fixtures with an unknown `[@id]`, a multi-citation with one bad ID, a bad `links` entry, a missing image and an outside-project link each produce an error at the right line.
-- [ ] A banned phrase split across a line break is found; occurrences in code are not; no style profile gives an `info` pass.
+- [x] Fixtures with an unknown `[@id]`, a multi-citation with one bad ID, a bad `links` entry, a missing image and an outside-project link each produce an error at the right line.
+- [x] A banned phrase split across a line break is found; occurrences in code are not; no style profile gives an `info` pass.
