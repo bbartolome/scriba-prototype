@@ -4,6 +4,12 @@ import {
   graphDetailSchema,
   graphIdResultSchema,
   graphListSchema,
+  nodeStatusDataSchema,
+  RUN_CURRENT_ROUTE,
+  RUN_STOP_ROUTE,
+  RUNS_ROUTE,
+  runEndedDataSchema,
+  runStartResultSchema,
   validationResultSchema,
 } from '@bbartolome/scriba-contracts/graph-runner';
 import {
@@ -33,10 +39,16 @@ import {
   GRAPHS_PATH,
   GRAPH_CREATE_PATH,
   noBodyCopy,
+  nodeStatusDataCopy,
   pendingListCopy,
-  projectFilesPath,
   pendingPath,
+  projectFilesPath,
   RUN_CURRENT_PATH,
+  RUN_STOP_PATH,
+  RUNS_PATH,
+  runEndedDataCopy,
+  runStartCopy,
+  stopCopy,
   toolListCopy,
   toolPath,
   toolViewsCopy,
@@ -420,6 +432,105 @@ describe('graph-runner-contract', () => {
     );
     expect(entitiesPath('a/b')).toBe(
       PROJECT_ENTITIES_ROUTE.replace(':projectId', 'a%2Fb'),
+    );
+  });
+
+  it('K6 runStartCopy and stopCopy agree with the run command shapes, and the run paths equal the contract routes', () => {
+    expect(runStartCopy.safeParse({ runId: 'r1' }).success).toBe(true);
+    expect(runStartCopy.safeParse({ runId: 'r1' }).success).toBe(
+      runStartResultSchema.safeParse({ runId: 'r1' }).success,
+    );
+    expect(runStartCopy.safeParse({}).success).toBe(false);
+    expect(runStartCopy.safeParse({ runId: 'r1', extra: 1 }).success).toBe(
+      false,
+    );
+    expect(stopCopy.safeParse({}).success).toBe(true);
+    expect(stopCopy.safeParse({ runId: 'r1' }).success).toBe(false);
+    expect(RUNS_PATH).toBe(RUNS_ROUTE);
+    expect(RUN_STOP_PATH).toBe(RUN_STOP_ROUTE);
+    expect(RUN_CURRENT_PATH).toBe(RUN_CURRENT_ROUTE);
+  });
+
+  it('K7 nodeStatusDataCopy and runEndedDataCopy agree with the event data schemas on each sample', () => {
+    const acceptedNodes: unknown[] = [
+      {
+        runId: 'r1',
+        nodeId: 'cold-open',
+        status: 'done',
+        result: {
+          output: { kind: 'draft', content: 'Opening text' },
+          sourcesUsed: ['anna'],
+        },
+      },
+      {
+        runId: 'r1',
+        nodeId: 'draft',
+        status: 'error',
+        error: {
+          code: 'PLATFORM_INTERNAL',
+          message: 'The model did not answer.',
+        },
+      },
+      {
+        runId: 'r1',
+        nodeId: 'draft',
+        status: 'done',
+        result: { pendingChangeId: 'pc-1', path: 'drafts/a.md' },
+      },
+      { runId: 'r1', nodeId: 'cold-open', status: 'running' },
+    ];
+    const refusedNodes: unknown[] = [
+      { runId: 'r1', nodeId: 'cold-open', status: 'paused' },
+      { nodeId: 'cold-open', status: 'running' },
+      { runId: 'r1', nodeId: 'Bad Id', status: 'running' },
+    ];
+    for (const sample of [...acceptedNodes, ...refusedNodes]) {
+      expect(nodeStatusDataCopy.safeParse(sample).success).toBe(
+        nodeStatusDataSchema.safeParse(sample).success,
+      );
+    }
+    for (const sample of acceptedNodes) {
+      expect(nodeStatusDataCopy.safeParse(sample).success).toBe(true);
+    }
+
+    const acceptedEnds: unknown[] = [
+      { runId: 'r1', status: 'stopped', reason: 'author' },
+      { runId: 'r1', status: 'done' },
+    ];
+    const refusedEnds: unknown[] = [
+      { runId: 'r1', status: 'paused' },
+      { status: 'done' },
+      { runId: 'r1', status: 'stopped', reason: 'bored' },
+    ];
+    for (const sample of [...acceptedEnds, ...refusedEnds]) {
+      expect(runEndedDataCopy.safeParse(sample).success).toBe(
+        runEndedDataSchema.safeParse(sample).success,
+      );
+    }
+    for (const sample of acceptedEnds) {
+      expect(runEndedDataCopy.safeParse(sample).success).toBe(true);
+    }
+  });
+
+  it('K8 fileListCopy agrees with fileListSchema on each sample, and projectFilesPath encodes the id', () => {
+    const entries = [
+      { path: 'drafts', kind: 'dir', size: 0, mtime: '2026-11-14T09:00:00Z' },
+      {
+        path: 'drafts/ch01.md',
+        kind: 'file',
+        size: 12,
+        mtime: '2026-11-14T09:00:00Z',
+      },
+    ];
+    const refused = [{ entries: [{ ...entries[1], kind: 'link' }] }, {}];
+    for (const sample of [{ entries }, ...refused]) {
+      expect(fileListCopy.safeParse(sample).success).toBe(
+        fileListSchema.safeParse(sample).success,
+      );
+    }
+    expect(fileListCopy.safeParse({ entries }).success).toBe(true);
+    expect(projectFilesPath('p 1')).toBe(
+      '/api/project-store/projects/p%201/files',
     );
   });
 });

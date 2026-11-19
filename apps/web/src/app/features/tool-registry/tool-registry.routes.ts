@@ -19,3 +19,4 @@ export {
   type ToolFormLayout,
   type ToolFormPortRow,
 } from './tool-form';
+export { EntityPicker } from './entity-picker';

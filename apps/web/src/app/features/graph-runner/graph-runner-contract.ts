@@ -4,6 +4,9 @@ import type {
   GraphIdResult,
   GraphList,
   GraphSummary,
+  NodeStatusData,
+  RunEndedData,
+  RunStartResult,
   RunState,
   ValidationResult,
 } from '@bbartolome/scriba-contracts/graph-runner';
@@ -29,6 +32,12 @@ export const GRAPHS_PATH = '/api/graph-runner/graphs' as ApiPath;
 
 /** The current-run read (`RUN_CURRENT_ROUTE`). */
 export const RUN_CURRENT_PATH = '/api/graph-runner/runs/current' as ApiPath;
+
+/** The start command of a run (`RUNS_ROUTE`). */
+export const RUNS_PATH = '/api/graph-runner/runs' as ApiPath;
+
+/** The stop command of a run (`RUN_STOP_ROUTE`). */
+export const RUN_STOP_PATH = '/api/graph-runner/runs/stop' as ApiPath;
 
 /** The create command (`GRAPH_CREATE_ROUTE`). */
 export const GRAPH_CREATE_PATH = '/api/graph-runner/graphs/create' as ApiPath;
@@ -147,7 +156,18 @@ function isUtcDatetime(value: unknown): value is string {
 const GRAPH_ID = /^[a-z0-9][a-z0-9-]*$/;
 
 const RUN_STATUSES = ['running', 'done', 'error', 'stopped'];
+const RUN_REASONS = ['author', 'project-switched', 'interrupted'];
+const NODE_RUN_STATUSES = [
+  'idle',
+  'queued',
+  'running',
+  'done',
+  'error',
+  'stopped',
+];
 const PENDING_STATUSES = ['pending', 'accepted', 'rejected'];
+// The error code pattern of the platform (`errorCodeSchema`), without its list of prefixes.
+const ERROR_CODE = /^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$/;
 
 /** One row of the graph list, checked as `graphSummarySchema` does. */
 function summaryOf(value: unknown): GraphSummary | undefined {
@@ -509,5 +529,133 @@ export const toolViewsCopy: ResponseSchema<{ views: ToolViews | null }> = {
       success: true,
       data: { views: data['views'] as ToolViews | null },
     };
+  },
+};
+
+/** Response of POST .../runs (`runStartResultSchema`): `{runId}`. Keys the schema does not name are refused. */
+export const runStartCopy: ResponseSchema<RunStartResult> = {
+  safeParse(data) {
+    if (
+      !isRecord(data) ||
+      Object.keys(data).some((key) => key !== 'runId') ||
+      typeof data['runId'] !== 'string' ||
+      data['runId'] === ''
+    ) {
+      return { success: false, error: 'the reply is not {runId}' };
+    }
+    return { success: true, data: { runId: data['runId'] } };
+  },
+};
+
+/** Response of POST .../runs/stop: the empty object `{}`. */
+export const stopCopy: ResponseSchema<Record<string, never>> = {
+  safeParse(data) {
+    if (!isRecord(data) || Object.keys(data).length > 0) {
+      return { success: false, error: 'the reply is not {}' };
+    }
+    return { success: true, data: {} };
+  },
+};
+
+/** A tool result or an output result, checked as `nodeResultSchema` does. */
+function nodeResultOk(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  const output = value['output'];
+  if (output !== undefined) {
+    return (
+      isRecord(output) &&
+      typeof output['kind'] === 'string' &&
+      OUTPUT_KINDS.includes(output['kind']) &&
+      typeof output['content'] === 'string' &&
+      Array.isArray(value['sourcesUsed']) &&
+      value['sourcesUsed'].every((id) => typeof id === 'string' && id !== '')
+    );
+  }
+  return (
+    typeof value['pendingChangeId'] === 'string' &&
+    value['pendingChangeId'] !== '' &&
+    typeof value['path'] === 'string'
+  );
+}
+
+/** The data of a node-status event (`nodeStatusDataSchema`), checked on arrival. */
+export const nodeStatusDataCopy: ResponseSchema<NodeStatusData> = {
+  safeParse(data) {
+    if (!isRecord(data)) {
+      return { success: false, error: 'the data is not an object' };
+    }
+    const { runId, nodeId, status, result, error } = data;
+    if (
+      typeof runId !== 'string' ||
+      runId === '' ||
+      typeof nodeId !== 'string' ||
+      !GRAPH_ID.test(nodeId) ||
+      typeof status !== 'string' ||
+      !NODE_RUN_STATUSES.includes(status) ||
+      (result !== undefined && !nodeResultOk(result)) ||
+      (error !== undefined &&
+        (!isRecord(error) ||
+          typeof error['code'] !== 'string' ||
+          !ERROR_CODE.test(error['code']) ||
+          typeof error['message'] !== 'string'))
+    ) {
+      return { success: false, error: 'the node-status data is not valid' };
+    }
+    return { success: true, data: data as unknown as NodeStatusData };
+  },
+};
+
+/** The data of a run-ended event (`runEndedDataSchema`), checked on arrival. */
+export const runEndedDataCopy: ResponseSchema<RunEndedData> = {
+  safeParse(data) {
+    if (
+      !isRecord(data) ||
+      typeof data['runId'] !== 'string' ||
+      data['runId'] === '' ||
+      typeof data['status'] !== 'string' ||
+      !RUN_STATUSES.includes(data['status']) ||
+      (data['reason'] !== undefined &&
+        (typeof data['reason'] !== 'string' ||
+          !RUN_REASONS.includes(data['reason'])))
+    ) {
+      return { success: false, error: 'the run-ended data is not valid' };
+    }
+    return { success: true, data: data as unknown as RunEndedData };
+  },
+};
+
+/** One entry of a file list, checked as `fileEntrySchema` does. */
+function fileEntryOf(value: unknown): FileEntry | undefined {
+  if (!isRecord(value)) return undefined;
+  const { path, kind, size, mtime } = value;
+  if (
+    typeof path !== 'string' ||
+    (kind !== 'file' && kind !== 'dir') ||
+    typeof size !== 'number' ||
+    !Number.isInteger(size) ||
+    size < 0 ||
+    !isUtcDatetime(mtime)
+  ) {
+    return undefined;
+  }
+  return { path, kind, size, mtime };
+}
+
+/** Response of GET .../files (`fileListSchema`): `{entries}`. */
+export const fileListCopy: ResponseSchema<FileList> = {
+  safeParse(data) {
+    const entries = isRecord(data) ? data['entries'] : undefined;
+    if (!Array.isArray(entries)) {
+      return { success: false, error: 'entries is not a list' };
+    }
+    const parsed: FileEntry[] = [];
+    for (const item of entries) {
+      const entry = fileEntryOf(item);
+      if (entry === undefined) {
+        return { success: false, error: 'an entry is not valid' };
+      }
+      parsed.push(entry);
+    }
+    return { success: true, data: { entries: parsed } };
   },
 };
