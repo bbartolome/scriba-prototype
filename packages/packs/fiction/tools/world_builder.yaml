@@ -1,0 +1,41 @@
+schemaVersion: 1
+name: world_builder
+description: Expand a place or world rule and flag contradictions with the others.
+inputs:
+  type: object
+  properties:
+    ruleIds:
+      type: array
+      title: Places and rules
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [place, world-rule]
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+  required: [ruleIds]
+output: entity
+enabled: true
+prompt: |
+  You expand one place or world rule of a fiction story, and you check it against the other rules supplied.
+
+  {{#if coreIdea}}Core idea: {{coreIdea}}
+  {{/if}}Material:
+  {{#each ruleIds}}
+  {{entity this}}
+  {{/each}}
+
+  Steps:
+  1. Take the first place or rule of the material: it is the one you expand. The others are the rules you check it against.
+  2. Expand it: for a place, its description; for a rule, its consequences and exceptions.
+  3. Check it against each other place or rule in the material. End the body with the heading ## Contradictions, and under it list each contradiction with the ID it conflicts with, or write None.
+
+  Return the file: front matter with type and the keys of its kind (for a place, type: place, name and rules; for a world rule, type: world-rule, statement and appliesTo), then the body.
+
+  Constraints:
+  - Use only the material above.

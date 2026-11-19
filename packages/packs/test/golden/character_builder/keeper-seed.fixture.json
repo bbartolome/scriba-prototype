@@ -1,0 +1,22 @@
+{
+  "arguments": {
+    "seed": "A keeper who has never once left the rock, and who counts the boats that do not come.",
+    "role": "keeper",
+    "coreIdea": "Duty can outlast the reasons for it.",
+    "entityIds": ["tomas-reyes", "skerry-light"]
+  },
+  "entities": [
+    {
+      "ref": "tomas-reyes",
+      "type": "character",
+      "path": "entities/tomas-reyes.md",
+      "content": "Tomas Reyes keeps the lamp and trusts the supply boat to come on time."
+    },
+    {
+      "ref": "skerry-light",
+      "type": "place",
+      "path": "entities/skerry-light.md",
+      "content": "Skerry Light is a lamp on a bare rock, reached only on a spring tide."
+    }
+  ]
+}

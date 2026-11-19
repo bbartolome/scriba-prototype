@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Return one Markdown file: YAML front matter between two lines of ---, then the Markdown body. Return nothing outside the file."
+    },
+    {
+      "role": "user",
+      "content": "You write a character for a fiction story: one Markdown file with the character's front matter and a backstory.\n\nSeed: A keeper who has never once left the rock, and who counts the boats that do not come.\nRole: keeper\nCore idea: Duty can outlast the reasons for it.\n\nMaterial:\ncharacter tomas-reyes (entities/tomas-reyes.md)\nTomas Reyes keeps the lamp and trusts the supply boat to come on time.\nplace skerry-light (entities/skerry-light.md)\nSkerry Light is a lamp on a bare rock, reached only on a spring tide.\n\nSteps:\n1. Name the character, and give the want, the need and the flaw, so that together they show the core idea.\n2. Describe the voice in notes: how the character speaks.\n3. List relationships only with the characters in the material, each with a short note. Use an empty list when the material has no character.\n4. Write the backstory in the body, from the seed and the material.\n\nReturn the file: front matter with type: character and the keys name, want, need, flaw, voice and relationships (a list of entries with character, the ID of a character in the material, and note), then the backstory.\n\nConstraints:\n- Use only the material above.\n"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+schemaVersion: 1
+name: character_builder
+description: 'Draft a character from a seed: want, need, flaw and voice.'
+inputs:
+  type: object
+  properties:
+    seed:
+      type: string
+      title: Seed
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    role:
+      type: string
+      title: Role
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+  required: [seed, coreIdea]
+output: entity
+enabled: true
+prompt: |
+  You write a character for a fiction story: one Markdown file with the character's front matter and a backstory.
+
+  Seed: {{seed}}
+  {{#if role}}Role: {{role}}
+  {{/if}}Core idea: {{coreIdea}}
+
+  Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+
+  Steps:
+  1. Name the character, and give the want, the need and the flaw, so that together they show the core idea.
+  2. Describe the voice in notes: how the character speaks.
+  3. List relationships only with the characters in the material, each with a short note. Use an empty list when the material has no character.
+  4. Write the backstory in the body, from the seed and the material.
+
+  Return the file: front matter with type: character and the keys name, want, need, flaw, voice and relationships (a list of entries with character, the ID of a character in the material, and note), then the backstory.
+
+  Constraints:
+  - Use only the material above.

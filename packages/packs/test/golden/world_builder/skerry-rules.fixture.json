@@ -1,0 +1,20 @@
+{
+  "arguments": {
+    "ruleIds": ["skerry-light", "spring-tide-only"],
+    "coreIdea": "The island keeps its own calendar."
+  },
+  "entities": [
+    {
+      "ref": "skerry-light",
+      "type": "place",
+      "path": "entities/skerry-light.md",
+      "content": "Skerry Light is a lamp on a bare rock, reached only on a spring tide."
+    },
+    {
+      "ref": "spring-tide-only",
+      "type": "world-rule",
+      "path": "entities/spring-tide-only.md",
+      "content": "The supply boat comes only on a spring tide."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "---\ntype: place\nname: Skerry Light\nrules: [spring-tide-only]\n---\n\nA lamp on a bare rock.\n\n## Contradictions\n\nNone."
+        ]
+      }
+    }
+  ]
+}

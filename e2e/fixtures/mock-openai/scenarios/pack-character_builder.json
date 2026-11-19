@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "---\ntype: character\nname: Ana Reyes\n---\n\nAna Reyes came to the rock as relief keeper."
+        ]
+      }
+    }
+  ]
+}
