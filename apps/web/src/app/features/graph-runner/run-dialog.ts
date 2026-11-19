@@ -143,6 +143,18 @@ function modeOf(value: InputValue | undefined): 'text' | 'file' {
       </div>
     </section>
   `,
+  styles: `
+    section[data-run-dialog] {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--mat-sys-outline-variant);
+      background: var(--mat-sys-surface-container-high);
+      color: var(--mat-sys-on-surface);
+    }
+    [data-run-error] {
+      color: var(--mat-sys-error);
+    }
+  `,
 })
 export class RunDialog implements OnInit {
   /** The dialog's heading, for example "Run the whole recipe". */

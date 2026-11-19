@@ -714,13 +714,14 @@ interface DialogState {
     }
     .vnode {
       min-width: 160px;
-      border: 1px solid currentColor;
+      border: 1px solid var(--mat-sys-outline);
       border-radius: 6px;
       padding: 4px 8px;
-      background: Canvas;
+      background: var(--mat-sys-surface-container);
+      color: var(--mat-sys-on-surface);
     }
     .vnode.issue {
-      border-color: crimson;
+      border-color: var(--mat-sys-error);
       border-width: 2px;
     }
     .vnode-head {
@@ -733,26 +734,62 @@ interface DialogState {
       min-height: 40px;
     }
     circle.issue {
-      stroke: crimson;
+      stroke: var(--mat-sys-error);
       stroke-width: 3px;
     }
     .story-panel {
-      border-top: 1px solid currentColor;
+      border-top: 1px solid var(--mat-sys-outline-variant);
       padding: 4px 0;
     }
     [data-badge] {
       margin-left: 4px;
       padding: 0 4px;
-      border: 1px solid crimson;
+      border: 1px solid var(--mat-sys-error);
       border-radius: 8px;
-      color: crimson;
+      background: var(--mat-sys-error-container);
+      color: var(--mat-sys-on-error-container);
     }
     .chip {
       display: inline-block;
       margin-left: 4px;
       padding: 0 4px;
-      border: 1px solid currentColor;
+      border: 1px solid var(--mat-sys-outline-variant);
       border-radius: 8px;
+      background: var(--mat-sys-secondary-container);
+      color: var(--mat-sys-on-secondary-container);
+    }
+    .port-glyph.port-text {
+      color: var(--mat-sys-primary);
+    }
+    .port-glyph.port-entity {
+      color: var(--mat-sys-tertiary);
+    }
+    .port-glyph.port-style {
+      color: var(--mat-sys-secondary);
+    }
+    .badge[data-status='idle'] {
+      background: var(--mat-sys-surface-variant);
+      color: var(--mat-sys-on-surface-variant);
+    }
+    .badge[data-status='queued'] {
+      background: var(--mat-sys-secondary-container);
+      color: var(--mat-sys-on-secondary-container);
+    }
+    .badge[data-status='running'] {
+      background: var(--mat-sys-tertiary-container);
+      color: var(--mat-sys-on-tertiary-container);
+    }
+    .badge[data-status='done'] {
+      background: var(--mat-sys-primary-container);
+      color: var(--mat-sys-on-primary-container);
+    }
+    .badge[data-status='error'] {
+      background: var(--mat-sys-error-container);
+      color: var(--mat-sys-on-error-container);
+    }
+    .badge[data-status='stopped'] {
+      background: var(--mat-sys-surface-container-highest);
+      color: var(--mat-sys-on-surface);
     }
     .canvas-row {
       display: flex;
