@@ -7,7 +7,11 @@ import {
   manuscriptViewSchema,
   type ManuscriptView,
 } from '@bbartolome/scriba-contracts/compile-export';
-import { createTestApp, type TestApp } from './create-test-app';
+import {
+  createTestApp,
+  type TestApp,
+  type TestAppOptions,
+} from './create-test-app';
 import { send, sessionCookie, type Reply } from './guard-request';
 import { LOOPBACK_HOST } from './invariant-sweep';
 import { ACTIVE_BOOK_SETTINGS, putFile } from './project-store-files.kit';
@@ -45,15 +49,18 @@ export function manuscriptLibrary(files: Record<string, string>): {
 }
 
 // Boots the composed app on a manuscript library, takes the session cookie, and removes the library in every case.
+// `options.modules` replaces the composed modules when set (the export tests add a tuning module).
 export async function withManuscript<T>(
   files: Record<string, string>,
   run: (app: TestApp, cookie: string, library: string) => Promise<T>,
+  options: Pick<TestAppOptions, 'modules'> = {},
 ): Promise<T> {
   const fixture = manuscriptLibrary(files);
   try {
     const app = await createTestApp({
       libraryDir: fixture.library,
       staticRoot: STATIC_ROOT,
+      modules: options.modules,
     });
     try {
       const cookie = await sessionCookie(app, fixture.library);

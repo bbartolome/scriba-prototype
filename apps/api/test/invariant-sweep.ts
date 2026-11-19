@@ -180,6 +180,9 @@ export const FIXTURE_PATHS: Readonly<Record<string, Fixture>> = {
   '/api/setup-auth/steps/:step': {
     path: '/api/setup-auth/steps/access',
   },
+  '/api/compile-export/exports/:format': {
+    path: '/api/compile-export/exports/md',
+  },
 };
 
 // The disposable derived caches, exempt from the library snapshot. The exemption covers each path and
