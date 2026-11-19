@@ -6161,3 +6161,16 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Not re-checked by the orchestrator:** the port 8080 check before the e2e runs and the four e2e counts (tools-preview 2, tools-editor 2, tools-live-preview 2, tools-try 1). They are the implementer's and the reviewer's evidence. The implementer's gate run and the e2e runs were on 8c156c3, and no file under apps, e2e, packages or scripts changed after that (checked).
 - **Follow-up, not TRG-17:** running the TRG-14 spec alone fails to compile (TS2591, node types missing in `tool-template.spec.ts`; `apps/web/tsconfig.spec.json` sets `types: ["vitest/globals"]` only). The full web run passes. For the owner of TRG-14.
 - **Cleanup:** worktree `TRG-17` removed (not forced); branch `unit/TRG-17` deleted with `-d` (merged).
+
+## 2026-11-19 — CEX-03 — Review result: REWORK (branch unit/CEX-03 at b9163e1; patch id e7ac64315a4205d532653602b8f7a6c9489933c1)
+
+- **Reviewer:** Sonnet, medium, one part (Part A, the only part of plan section 8). Reviewed against `plans/CEX-03.md` revision 2 (status planned) on main. Patch id checked: e7ac64315a4205d532653602b8f7a6c9489933c1 (`git diff main...unit/CEX-03 -- . ':!plans' ':!units' | git patch-id --stable`).
+- **Tests run by the reviewer** in `scriba-prototype-wt/CEX-03/apps/api`: C1 to C4 pass (`npx vitest run test/compile-export-order.test.ts`, 4 of 4); step 7b pass (`compile-export-manuscript.test.ts`, 6 of 6). Steps 7c to 7e not run. Node v26.13.0, npm 11.20.0.
+- **File list:** the six paths of plan section 2 and no others.
+- **REWORK list (verbatim, not changed):**
+  1. Step 8 is not done: `units/CEX-03-order-writes.md` lines 26 to 29 are still `- [ ]` on unit/CEX-03, and the diff of `units` is empty. Correction: tick the four boxes (all four tests pass) and add that file to the commit, as steps 8 and 9 require.
+  2. Step 9 is not followed as written: there are four commits (518e348, 5df81f0, a750aeb, b9163e1) and none has the message `feat(CEX-03): reorder, status and part writes with revision checks`. This is minor. When item 1 is fixed, make the unit-file tick commit name that message, or squash the work into one commit with it.
+- **Orchestrator disposition (the items above are unchanged):**
+  - Item 1: plan step 8 asks for the ticks on the branch; prompt.md step 3 item 8 puts them in the merge commit. Both give the same main. `units/` and `plans/` are excluded from the patch id, so the tick commit does not change it. Disposition: a new Haiku implementer makes one tick commit that contains only `units/CEX-03-order-writes.md`, after the tests pass, with the message `docs(CEX-03): tick criteria 1 to 4`. Step 3 item 8 then accepts that commit and does not make it again.
+  - Item 2: the commit structure stays as decided for GRR-13 on 2026-11-19: four part commits, each with CEX-03, not squashed. The exact message of plan step 9 is not a code check, and rewriting the branch is not needed.
+- **Action:** a new Haiku implementer makes the tick commit on unit/CEX-03 and reports COMPLETE. Then a new Sonnet reviewer checks Part A for the same patch id, plus the tick commit. Approval holds only if that patch id is unchanged.
