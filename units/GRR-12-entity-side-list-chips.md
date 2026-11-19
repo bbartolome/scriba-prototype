@@ -20,7 +20,7 @@ Drag a chip onto an entity port with no typing (15), refused with a reason on th
 - Pinned chips can be removed from the port.
 
 ## Acceptance criteria
-- [ ] Dropping a matching chip pins it with no typing (saved `params` contain the reference).
-- [ ] Dropping on a text port, a port filtered to another kind, or a wired port is refused with a reason and the file is unchanged.
-- [ ] Removing a pinned chip clears it from `params`.
-- [ ] Drop rules are tested as the drop handler's observable outcome on the saved graph (Vitest) and as a real gesture (Playwright).
+- [x] Dropping a matching chip pins it with no typing (saved `params` contain the reference).
+- [x] Dropping on a text port, a port filtered to another kind, or a wired port is refused with a reason and the file is unchanged.
+- [x] Removing a pinned chip clears it from `params`.
+- [x] Drop rules are tested as the drop handler's observable outcome on the saved graph (Vitest) and as a real gesture (Playwright).
