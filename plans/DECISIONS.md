@@ -6766,3 +6766,9 @@ Part D (gates and commit):
 - **Decision (user, relayed):** revisit GRR-15 once PLT-23 is on main: rerun step 13 of `plans/GRR-15.md` on `unit/GRR-15` (full e2e, zero failures). This carries out the user decision of this date, option (b), above.
 - **Consequence:** GRR-15 stays `status: planned`, not merged. Its hold stays. The Haiku rework for the REWORK list is not started. Step 13 state: not yet run (PLT-23 is not on main).
 - **Reason:** option (b) needs the two full-suite failures fixed on main before step 13 can pass.
+
+## 2026-11-19 — GNP-16 — review: APPROVED for patch id 61e10af2d20f183722196daa15d2a0f10c5cb350
+
+- **Review:** two Sonnet reviewers, one per part of "Review parts" in `plans/GNP-16.md` (Part 1: steps 0 to 9; Part 2: steps 10 to 16). Both replied APPROVED for the same patch id `61e10af2d20f183722196daa15d2a0f10c5cb350`, on `unit/GNP-16` at `7d5a247` (`git diff main...unit/GNP-16 -- . :!plans :!units | git patch-id --stable`).
+- **Note (Part 2 reviewer):** the code is in two commits (ab6a7e2, 7d5a247), not the one commit that step 15 names. Approved as a note, not a condition; the tree equals one commit.
+- **Not run:** the real-model eval run with a small and a larger local model (plan open point 7). GNP-19 carries it.
