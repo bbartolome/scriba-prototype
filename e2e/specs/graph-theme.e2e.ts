@@ -180,7 +180,9 @@ async function expectTokens(
 }
 
 /** The app default this run finds, which the test restores at its end. */
-async function readAppDefault(page: Page): Promise<AppDefaultReply['appDefault']> {
+async function readAppDefault(
+  page: Page,
+): Promise<AppDefaultReply['appDefault']> {
   const before = await page.request.get(APP_DEFAULT_PATH);
   expect(before.status()).toBe(200);
   return ((await before.json()) as AppDefaultReply).appDefault;
