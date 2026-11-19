@@ -6152,3 +6152,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
   - Rebase onto main. Main has the GRR-12 and GRR-14 code, so the step-0 counts on main are `onChipDrop` 2 and `arrange` 4 (the branch has 0). Steps 5g (R2) and 5h (R3) therefore apply, as second commit(s), and steps 6 to 8 run again. The patch id will change, so all four parts get new reviewers.
   - The initial bundle is 589.48 kB, 89.48 kB over the 500 kB budget. The implementer reports the same figure as GRR-12 on main. The orchestrator verifies this at the merge (plan step 7 says the budgets hold; if main shows the same overage, it is pre-existing and recorded as a follow-up).
   - The commit structure stays as decided on 2026-11-19: three part commits plus the fix commits, each with GRR-13.
+
+## 2026-11-19 — TRG-17 — On main (Editor-UI gate, closes Tool registry phase:editor-ui): main at 5465ae5
+
+- **On main:** the code commit is none (the unit adds no code and no test). The commits on main are d5764f9 (the implementer's ticks of criteria 1 and 2, rebased onto 3ea0751) and 5465ae5 (status done). Fast-forward from the branch; main is linear.
+- **Review:** APPROVED on empty patch id (aefadae, the review result above). Reviewer: Sonnet, medium, the whole plan as one part.
+- **Gates on the rebased work** (the branch at 78ddc6f before its status commit): `npm ci` 0, root `npm run lint` 0 (Prettier, "All matched files use Prettier code style!"), root `npm test` 0 (node 26, npm 11.20.0; the test log shows 0 failures), root `npm run build` 0. Load 5.2 to 6.6 during the run. The rebase onto 3ea0751 changed only plans/CEX-03.md on main, so no code changed after the gates.
+- **Not re-checked by the orchestrator:** the port 8080 check before the e2e runs and the four e2e counts (tools-preview 2, tools-editor 2, tools-live-preview 2, tools-try 1). They are the implementer's and the reviewer's evidence. The implementer's gate run and the e2e runs were on 8c156c3, and no file under apps, e2e, packages or scripts changed after that (checked).
+- **Follow-up, not TRG-17:** running the TRG-14 spec alone fails to compile (TS2591, node types missing in `tool-template.spec.ts`; `apps/web/tsconfig.spec.json` sets `types: ["vitest/globals"]` only). The full web run passes. For the owner of TRG-14.
+- **Cleanup:** worktree `TRG-17` removed (not forced); branch `unit/TRG-17` deleted with `-d` (merged).
