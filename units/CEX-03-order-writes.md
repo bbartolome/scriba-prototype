@@ -23,7 +23,7 @@ Drag to reorder (24), graph-ordered files locked (25), status per file (26) stor
 - After every successful write, publish `manuscript-updated`.
 
 ## Acceptance criteria
-- [ ] Reordering with a stale `revision` returns a conflict and leaves `project.yaml` byte-identical.
-- [ ] A valid reorder writes every file's entry and keeps comments and other keys in `project.yaml` byte-identical.
-- [ ] Moving graph-ordered files relative to each other is refused; a non-permutation is refused.
-- [ ] Status and part writes materialise the full order; `manuscript-updated` is published after each.
+- [x] Reordering with a stale `revision` returns a conflict and leaves `project.yaml` byte-identical.
+- [x] A valid reorder writes every file's entry and keeps comments and other keys in `project.yaml` byte-identical.
+- [x] Moving graph-ordered files relative to each other is refused; a non-permutation is refused.
+- [x] Status and part writes materialise the full order; `manuscript-updated` is published after each.
