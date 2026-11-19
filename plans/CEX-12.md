@@ -1,6 +1,6 @@
 ---
 id: CEX-12
-status: planned
+status: done
 ---
 # CEX-12 plan — EPUB 3 export with stylesheet, TOC and stable identifier
 

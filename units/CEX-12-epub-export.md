@@ -15,6 +15,6 @@ unblocks: [CEX-15]
 - `--to=epub3 --split-level=1`, a TOC, title, author, language, a stable identifier derived from the project, and the built-in stylesheet (overridable via CEX-14).
 
 ## Acceptance criteria (structural, unzipped)
-- [ ] The spine and nav follow effective order with front and back matter placed correctly.
-- [ ] Metadata has title, author, language and identifier.
-- [ ] The bibliography is present for a nonfiction fixture and absent when the mode is `off`.
+- [x] The spine and nav follow effective order with front and back matter placed correctly.
+- [x] Metadata has title, author, language and identifier.
+- [x] The bibliography is present for a nonfiction fixture and absent when the mode is `off`.
