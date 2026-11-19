@@ -6008,3 +6008,13 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Passed before the stop:** step 0 (worktree clean; GRR-12 and GRR-14 not on main, so steps 5g and 5h do not apply; `npm ci` and the contracts build exit 0; A1 holds). Step 1 (copies RUNS_PATH, RUN_STOP_PATH, projectFilesPath, runStartCopy, stopCopy, nodeStatusDataCopy, runEndedDataCopy, fileListCopy; K6 to K8) and step 2 (run-state.ts, W3). `ng test` on run-state and graph-runner-contract: 20 tests in 2 files, all passed. Step 4: run-dialog.ts; prettier, eslint and `tsc -p apps/web/tsconfig.app.json` pass, no test yet.
 - **Not done:** step 3's adapter change, steps 5 to 10. No e2e run (port 8080 not checked; the plan has no e2e step in these steps).
 - **Action:** the plan goes back to `status: draft`. A new Opus reviser corrects C-11 so that the nodes are undraggable during a run without the per-node `draggable` signal on every render, or shows that the explicit signal is needed and the slowdown has another cause. The next implementer continues in the existing worktree, from the commits on `unit/GRR-13` (4a3ea52), and keeps the uncommitted files the revised plan keeps.
+
+## 2026-11-19 — TRG-15 — Review result: APPROVED (round 2, all parts), patch id ba691a9d43a35998e3bb5b5198f0de55f73b34fd
+
+- **Branch:** `unit/TRG-15`, HEAD 8b73218 (commits 12e6d6a Part A, 742c6c3 Part B, 8b73218 rework of Part B), based on main 5b10994. Patch id (`git diff main...unit/TRG-15 -- . ':!plans' ':!units' | git patch-id --stable`): ba691a9d43a35998e3bb5b5198f0de55f73b34fd.
+- **Rework (round 1, REWORK part B) fixed in 8b73218:** V5 sends no request while `views` is null (the active-project read moved to the first Render); V6 uses fake timers.
+- **Part A (steps 0 to 4; R0, R1, R2, S4a):** APPROVED by one reviewer. The file list matches plan section 3 (14 files in the whole diff).
+- **Part B (steps 5 to 10; T7, V1 to V6, E1, E2):** APPROVED by one reviewer. The reviewer accepts the first-Render read: plan section 5.2 requires no request while `views` is null, and step 6 gives no timing for the read.
+- **Not passed:** E1 and E2 are NOT run. Port 8080 is held by the user's `live` dev stack. Their test code matches plan section 5. No checkbox is marked. The unit cannot go to main as complete until E1 and E2 pass, or until a Navigator decision covers them.
+- **Gates:** on 8b73218, lint and build exit 0, web 510 of 510 when run alone. The root `npm test` did not exit 0 in the last run: timeouts in other files under load, each re-run alone passes.
+- **Minor, not a blocker (reviewer, part B):** after a failed active-project read, `activeFailed` stays set, so later Renders show the note without a retry.
