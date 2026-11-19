@@ -6683,3 +6683,10 @@ Part D (gates and commit):
 - **Unit change:** `units/CEX-11-docx-export.md` lines 8 and 9 and `units/CEX-14-template-overrides-settings.md` lines 7 and 8, in one commit, by a reviser applying the Navigator decision. CEX-11 `parallel_with: [CEX-12, CEX-13, CEX-16]`, `unblocks: [CEX-14, CEX-15]`; CEX-14 `blocked_by: [CEX-03, CEX-10, CEX-11]`, `parallel_with: [CEX-12, CEX-13, CEX-16]`.
 - **Checks before the commit:** `plans/CEX-14.md` absent on main; no `unit/CEX-14` branch; the four lines matched the expected text. After the commit, `git show --stat` lists only the two unit files.
 - **Plan:** `plans/CEX-11.md` section 7 (O4 (ii)) and section 6a/6b record the commit. The plan's status is set after the plan's stale lines are corrected.
+
+## 2026-11-19 — CEX-11 — Sonnet review, Part 1, on patch id 256b33a941e67fc6395e34c7b7592b0950c7cae0 (branch unit/CEX-11 at 88aa294, on main 97f127e): APPROVED
+
+- **Implementation:** Haiku implementer, COMPLETE. Commits on `unit/CEX-11`: 24d4320 (reference DOCX asset), 2afda60 (reference path, runner file flag, title block), 88aa294 (tests C1 to C3 and extras E1 to E3). Nine files, exactly the paths of plan section 3; the Dockerfile change is one line.
+- **Tests (local procedure, plan step 12, Navigator decision on O5):** the static pandoc 3.13 binary from `bbartolome/scriba:dev` on PATH (sha256 9ff87e66…, same as the image's copy), with `SCRIBA_REQUIRE_EXPORT_TOOLS=1`: `test/compile-export-docx.test.ts` 6 of 6 passed (C1, C2, C3, E1, E2, E3). Host arm64; CI (amd64) not observed (A8, A10).
+- **Review:** one reviewer, Part 1 (plan section 8). APPROVED. Patch id re-checked by the reviewer: 256b33a941e67fc6395e34c7b7592b0950c7cae0. Notes accepted: the reference's Normal, BodyText, Heading1, Title, Author, Date and ContactBlock/WordCount formatting goes beyond step 2(b) and fits U2; renderTitlePage omits the Contact Block when `contact` is empty (D5); three commits instead of one (step 14's message not used).
+- **Next:** rebase onto main, the three gates, then the criteria and the merge (plan section 4 step 14 and orchestrator step 3).
