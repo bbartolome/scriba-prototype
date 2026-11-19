@@ -17,5 +17,5 @@ unblocks: [CEX-20]
 - Refreshes on `snapshot-created` / `snapshot-restored`.
 
 ## Acceptance criteria (Vitest + fakes)
-- [ ] Restore needs confirmation; the dialog names the pre-restore snapshot.
-- [ ] Unreadable snapshots can't be restored.
+- [x] Restore needs confirmation; the dialog names the pre-restore snapshot.
+- [x] Unreadable snapshots can't be restored.

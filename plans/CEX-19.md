@@ -1,6 +1,6 @@
 ---
 id: CEX-19
-status: planned
+status: done
 ---
 # CEX-19 plan — snapshots panel: create with label, list, restore behind confirmation
 
