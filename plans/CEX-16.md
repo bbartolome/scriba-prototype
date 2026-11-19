@@ -1,6 +1,6 @@
 ---
 id: CEX-16
-status: planned
+status: done
 ---
 # CEX-16 plan — snapshot API: create, list, restore with pre-restore snapshot, manifest, events
 

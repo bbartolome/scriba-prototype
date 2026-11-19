@@ -23,7 +23,7 @@ One-click labelled snapshots (52), listed newest first (53), exact restore (54) 
 - Deleting snapshots in the app is out of scope.
 
 ## Acceptance criteria
-- [ ] A created snapshot matches `snapshots/<label>-<ts>/` with the top-level drafts and a valid manifest; the list returns it newest first.
-- [ ] Restore brings back drafts, order and statuses, removes files created after the snapshot, and creates a `pre-restore` snapshot.
-- [ ] `drafts/.versions/` is byte-identical before and after restore.
-- [ ] A pending change against a restored file shows as a conflict.
+- [x] A created snapshot matches `snapshots/<label>-<ts>/` with the top-level drafts and a valid manifest; the list returns it newest first.
+- [x] Restore brings back drafts, order and statuses, removes files created after the snapshot, and creates a `pre-restore` snapshot.
+- [x] `drafts/.versions/` is byte-identical before and after restore.
+- [x] A pending change against a restored file shows as a conflict.
