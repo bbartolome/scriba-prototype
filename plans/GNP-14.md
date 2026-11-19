@@ -1,6 +1,6 @@
 ---
 id: GNP-14
-status: draft
+status: planned
 ---
 # GNP-14 plan — character_builder and world_builder entity tools, golden cases and eval cases
 
@@ -9,6 +9,8 @@ Batch: [GNP-14] (Genre packs, phase:fiction, M6), a batch of one. Draft by the p
 The planner changed no file except this one, committed nothing, and ran no build, test, lint or npm command.
 
 Revised by the Opus reviser at main `544dddc` (the draft commit; `git diff 27ccbae 544dddc` changes only this file). The reviser settled both open points of section 8 from the sources (C10, C11), corrected the prompts, the scenarios, the eval cases, the eval test file, the update-run commands and one line citation, and made no unit change. The orchestrator sets the status.
+
+Revised a second time by the Opus reviser at main `30df941` (`git diff --name-only 3e33e75 30df941` lists only `plans/` files), after the PLAN DOES NOT WORK report at step 16 (`plans/DECISIONS.md` entry of 2026-11-19 "GNP-14 — Step 16 failed"). The branch `unit/GNP-14` (head `f997d59`: `72f4c44` steps 0 to 12, `f997d59` steps 13 and 14) is kept as the history; section 4 "Continuation" says where the next implementer starts. Corrections: the cause of the step 16 failure (F1 to F6 in section 2), the choice C12, the file `e2e/specs/tools-preview.e2e.ts` in section 3, steps 15 to 17, and section 9. No unit change; the criteria are unchanged.
 
 ## 1. Decisions this plan obeys
 
@@ -45,6 +47,9 @@ Labels: **U** = the unit; **M** = the module `modules/genre-packs.md`; **D** = a
 - **C9 The entity that world_builder expands.** The first entry of `ruleIds` is the place or rule to expand; the other entries are the rules it is checked against. The unit says "Expand a place or world rule and flag contradictions with the others" (unit line 16) and gives no second input, so the order of the list is the simplest carrier. The prompt says so.
 - **C10 Constraint 4 for the entity prompts (section 8, point 1, settled by the reviser).** Option (a): `Use only the material above.` and nothing more. The citation, `TK`, style-profile and length clauses are left out. Sources: the Navigator's decision for the non-draft `propose_graph` (`plans/DECISIONS.md` entry of 2026-11-16 "GNP-04, GNP-07 — Navigator decisions", point 2, option (a)); `plans/GNP-04.md` C8 (line 64), which names `units/GNP-14-character-world-builder.md` line 15 as a non-draft unit that gives its own prompt rules; `plans/GNP-20.md` D5, which applied the same precedent to the `check` tool without a new Navigator decision (status done). The skeleton is stated for first-draft templates of draft tools (module line 46); an entity file is front matter plus invented fiction (backstory, consequences), so "cite each factual sentence" and `TK` have no object, and neither tool has a style or length input (unit lines 15 and 16). No other unit depends on the choice, and a prompt is cheap to change (module line 54), so it is not a decision for the Navigator (`prompt.md`, "Navigator").
 - **C11 Sample id of the eval cases (section 8, point 2, settled from the unit files).** `fiction`. Sources: `units/PST-11-nonfiction-sample-skeleton.md` line 17 ("Genre packs adds `fiction` at M6"); `units/PLT-20-examples-check-m1-layer.md` line 19 (`examples/fiction/` at M6; line 24: entries match folders one to one); `units/GNP-18-fiction-sample.md` line 3 (`examples/fiction`). No unit change is needed. No test checks a case's sample against `examples/samples.yaml` (`scripts/eval-cases.test.mjs`, `scripts/eval-agent/run.test.mjs`; `run.mjs` line 108 checks only a non-empty string), so the data test passes before GNP-18 lands; a manual run of the two cases waits for GNP-18 and is recorded as not run.
+
+- **C12 The TRG-05 spec's viewport (second revision; the step 16 failure).** Raise the height in `test.use` of `e2e/specs/tools-preview.e2e.ts` (line 21) from 2100 to 3200, and update the comment of line 20. Nothing else in the spec changes: no step, no wait, no assertion, no scroll, no drag change (the drag of `plans/TRG-05.md` step 10, F-E, stays as it is). Sources: the cause F1 to F6 below; the rule that `plans/TRG-13.md` step 11 and `plans/TRG-14.md` step 9 set for this spec when the list grows ("raise the viewport height in `test.use` (line 21) only, and record the change. Do not weaken T2"); TRG-14 applied it (1600 to 2100, `plans/DECISIONS.md` TRG-14 records, "TRG-05 C2 is not weakened"). Why 3200: the branch alone puts the picker's centre at y=2302; the full suite adds the two user rows that `tools-editor.e2e.ts` leaves (F5); GNP-15, GNP-16 and GNP-17 each add one more fiction row. 3200 leaves about 900 px for these, and keeps the target far from the bottom edge. A scroll before the drag was rejected: with the chip near the top or the picker near the bottom, CDK's viewport auto-scroll during the drag can move the target after it is measured, which the F-E measure does not allow for. A change of `tools-list.ts` (for example a `genrePack` filter on the list read) was rejected: it changes TRG-13 behaviour for no criterion.
+- **M11 The module's system seam.** "The Playwright e2e is unchanged; this module adds no e2e step" (module line 89). C12 adds no e2e step and changes no step or assertion of an existing one; it changes the window size of one spec, as the mock scenarios of M7 add files under `e2e/` without changing the e2e. This plan reads the line so. If a reviewer reads it as "no file under `e2e/specs` changes", the change is a Navigator point, not a plan choice.
 
 ## 2. Facts checked and facts assumed
 
@@ -89,6 +94,18 @@ Other plans and status:
 - `grep -l '^status: *(draft|planned)' plans/*.md` gives `plans/CEX-07.md`, `plans/CEX-17.md` and `plans/GRR-15.md` (section 7).
 - `plans/GNP-14.md`, the two tool specs, the two fixtures, the two scenarios, `apps/api/test/packs/character-world-builder.test.ts` and the two eval cases do not exist on main.
 
+The step 16 failure (second revision; read from the sources, the suite was not run by the reviser):
+- **F1.** `e2e/specs/tools-preview.e2e.ts` line 21 fixes the viewport at 1280 by 2100; line 20 says the height keeps "the chip and the picker on screen for the drag". TRG-05 C2 (line 167) measures the person select with `boundingBox` (viewport coordinates, line 207) and moves the real mouse there (line 208). A target below the viewport gets no drop, so `toHaveValue('ada')` (line 211) gets "". This matches the implementer's measure (box y=2290, target y=2302 > 2100).
+- **F2.** The detail with the chips and the form layout is rendered after every group of the list (`apps/web/src/app/features/tool-registry/tools-list.ts` lines 206 to 245 the groups, line 246 the detail; `tools-preview.ts` lines 140 to 177 the chips above the form layout). So every list row pushes the picker down.
+- **F3.** The web list reads `TOOLS_PATH` with no `genrePack` (`tools-list.ts` line 709), and the API lists every origin when no `genrePack` is given (`apps/api/src/modules/tool-registry/catalog.service.ts` lines 188 to 199). The groups are `core`, `nonfiction`, `fiction`, `user` (`tool-copy.ts` lines 41 to 46), and an empty group is not shown (`tools-list.ts` line 464). On base `3e33e75` the fiction group is empty; on the branch it is a new group with two rows, above the `user` group that holds the `cold_open` row the spec opens.
+- **F4.** `git diff --stat 3e33e75 unit/GNP-14 -- e2e apps/web` lists only the two scenario files; the branch changes no web file and not the spec. So on the branch the only layout change on `/tools` is the fiction group (F3). With the two tool specs moved aside both TRG-05 tests pass (the implementer's report), which fits F2 and F3.
+- **F5.** The full-suite failure on main (`plans/DECISIONS.md` GRR-15 verification, main `cc82fb0`: fails in the full run, passes alone) has the same mechanism. Playwright runs one worker over one library (`e2e/playwright.config.ts` `workers: 1`; `e2e/harness/global-setup.ts` line 23, one `mkdtemp`), files in name order, so `tools-editor.e2e.ts` runs before `tools-preview.e2e.ts`. E1 of `tools-editor.e2e.ts` saves `my_tool` and `cold_open_2` into the user pack and nothing removes them (no `rm` in that file), so in the full run the `user` group has two more rows above the detail. `plans/DECISIONS.md` TRG-14 records the same ("if `tools-editor.e2e.ts` and `tools-preview.e2e.ts` run in one Playwright invocation, TRG-05 C2 can fail"). `tools-live-preview.e2e.ts` removes its probe (line 105).
+- **F6.** So the step 16 failure is caused by this branch (the two new rows), not by the run order: step 16 runs the spec alone, and on base the same command passes. The run order is a second, older trigger of the same cause. C12 covers both.
+- **F7.** The root `npm test` is `npm test --workspaces && node --test 'scripts/*.test.mjs'` (`package.json` line 25); it does not run the e2e suite. The `apps/web` test "Loading the contract's example story graph and recipe and saving without edits produces byte-equivalent JSON" (`canvas-page.spec.ts` line 350) loops over the example cases in one test with the 5000 ms default; it has been recorded at 7011 ms and failing with "Test timed out in 5000ms" under load on other branches (`plans/DECISIONS.md` GRR-13 records near lines 5958 and 6005). It reads contracts examples and test doubles, not `packages/packs`. No criterion of this unit depends on it, and neither step 13 (it runs `node --test` on two files) nor step 16 does. Only step 15's root gate does; step 15 now says what it needs. Note: when a workspace fails, `&&` skips the scripts tests, so step 15 runs them on their own.
+- `git diff --name-only 3e33e75 30df941` lists only plan files (`plans/CEX-09.md`, `plans/DECISIONS.md`, `plans/GNP-14.md`, `plans/QUEUE.md`), so the branch needs no rebase for the code.
+- No draft or planned plan changes `e2e/specs/tools-preview.e2e.ts` (`grep -l tools-preview` over `plans/CEX-09.md`, `CEX-17.md`, `GRR-15.md`: only a mention in `GRR-15.md` line 60).
+- No app code reads the orientation or the height of the window (`grep` of `apps/web/src/app` for `matchMedia(`, `orientation` and `innerHeight` outside specs and `testing/`), so the taller window changes no layout rule; the device class stays desktop at width 1280.
+
 ### Facts assumed
 
 - **A1.** Node 26 and npm 11 are on the PATH, as the other plans state. Step 1 checks it.
@@ -102,7 +119,9 @@ Other plans and status:
 - **A9.** The e2e workspace has a test command and a `tools-preview.e2e.ts` spec, as `plans/GNP-02.md` step 11 and `plans/GNP-07.md` step 14 use them. Steps 15 and 16 check them.
 - **A10.** No test counts the built-in tools of the real packs. The grep of `apps/api/test`, `e2e/specs` and `scripts` for the tool names (`propose_graph`, `cold_open`, `throughline_check`, `mystery_question`) found only fixture-based tests, `toContain` checks, and the propose-graph test. Steps 15 and 16 check the rest.
 
-Not verified: no build, test or lint has run. Steps 1 to 17 check the facts above.
+- **A11.** A 3200 px tall window places the person select (y=2302 alone on the branch) and the chip inside the viewport in the alone run and in the run with `tools-editor.e2e.ts` (F5), and Chromium accepts that size. Step 16 checks it.
+
+Not verified: no build, test or lint has run. Steps 1 to 17 check the facts above. (Second revision: steps 0 to 14 ran on `unit/GNP-14`; the reviser ran no build, test or e2e.)
 
 ## 3. Files to change
 
@@ -124,8 +143,29 @@ Only the paths below change, with the content of the two tool specs, the fixture
 | `scripts/eval-agent/cases/character-builder.json` | new | the eval case (step 13) |
 | `scripts/eval-agent/cases/world-builder.json` | new | the eval case (step 13) |
 | `scripts/eval-case-character-world-builder.test.mjs` | new | the test of criterion 3 (step 13) |
+| `e2e/specs/tools-preview.e2e.ts` | changed: lines 20 and 21 only (C12, step 16) | the TRG-05 spec's viewport, for the longer `/tools` list |
 
-Not changed: `packages/packs/fiction/entity-types/**` (GNP-13); `packages/packs/core/**`; `packages/packs/nonfiction/**`; `packages/packs/test/*.ts` and `packages/packs/test/README.md` (GNP-01 and GNP-02); `packages/packs/test/golden/propose_graph/story.*` and its fixture; `packages/packs/test/golden/golden_probe/**`; `apps/api/src/**`; `apps/api/test/packs/golden.kit.ts`; `apps/api/vitest.config.mts`; `packages/contracts/**`; `e2e/fixtures/mock-openai/server.mjs`; `examples/**` (GNP-18 owns `examples/samples.yaml`); `scripts/eval-agent/run.mjs`, its `README.md` and `run.test.mjs`; `scripts/eval-cases.test.mjs`; `package.json`; `package-lock.json`; `.prettierignore`; `units/**`; `modules/**`; `plans/**` (except `plans/GNP-14.md`, by the orchestrator).
+### The change of `e2e/specs/tools-preview.e2e.ts` (C12)
+
+Replace lines 20 and 21:
+
+```ts
+// The person picker sits below the chips, so a tall viewport keeps the chip and the picker on screen for the drag.
+test.use({ viewport: { width: 1280, height: 2100 } });
+```
+
+with:
+
+```ts
+// The person picker sits below the tools list and the chips, so a tall viewport keeps the chip and the picker on
+// screen for the drag. The list grows with each built-in tool and with the user tools that tools-editor.e2e.ts
+// leaves in the shared library, so the height leaves room for both.
+test.use({ viewport: { width: 1280, height: 3200 } });
+```
+
+No other line of the file changes. `git diff 3e33e75 -- e2e/specs/tools-preview.e2e.ts` shows only these lines.
+
+Not changed: `packages/packs/fiction/entity-types/**` (GNP-13); `packages/packs/core/**`; `packages/packs/nonfiction/**`; `packages/packs/test/*.ts` and `packages/packs/test/README.md` (GNP-01 and GNP-02); `packages/packs/test/golden/propose_graph/story.*` and its fixture; `packages/packs/test/golden/golden_probe/**`; `apps/api/src/**`; `apps/api/test/packs/golden.kit.ts`; `apps/api/vitest.config.mts`; `packages/contracts/**`; `e2e/fixtures/mock-openai/server.mjs`; every other file under `e2e/specs/` and `e2e/harness/`; `apps/web/**`; `examples/**` (GNP-18 owns `examples/samples.yaml`); `scripts/eval-agent/run.mjs`, its `README.md` and `run.test.mjs`; `scripts/eval-cases.test.mjs`; `package.json`; `package-lock.json`; `.prettierignore`; `units/**`; `modules/**`; `plans/**` (except `plans/GNP-14.md`, by the orchestrator).
 
 ### The tool spec `packages/packs/fiction/tools/character_builder.yaml`
 
@@ -363,6 +403,10 @@ The imports and the path helper of `scripts/eval-case-throughline-check.test.mjs
 
 Run from `/Users/bbartolome/workspace/scriba-prototype`, on branch `unit/GNP-14` cut from `main` by the orchestrator (as for GNP-13: the branch and the worktree are made before the implementer starts; no `-b` when the branch exists). Record `node -v` and `npm -v` beside each result. Do not push. Do not use `git add -A` or `git commit -a`.
 
+**Continuation (second revision).** Steps 0 to 14 are done on `unit/GNP-14` (worktree `scriba-prototype-wt/GNP-14`): `72f4c44` holds steps 0 to 12 (with the `.gitkeep` deletion and the quoted `character_builder.yaml` description, accepted in `plans/DECISIONS.md`), `f997d59` holds steps 13 and 14. Both commits are kept as they are; do not amend, squash or rebase them. The next implementer starts at **step C**, then runs steps 15 to 18:
+- **C. Start check.** In the worktree: `git rev-parse --short HEAD` prints `f997d59`; `git status --short` prints nothing; `git diff --quiet 3e33e75 HEAD -- e2e/specs apps/web` exits 0. Then `npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api`, and re-run the three criterion commands once: `npm run lint:packs` and `npm test -w @bbartolome/scriba-packs` (criterion 1), `cd apps/api && npx vitest run test/packs/character-world-builder.test.ts` (criterion 2), `node --test scripts/eval-case-character-world-builder.test.mjs` (criterion 3). Each exits 0. If one fails, stop and report it.
+- Then make the change of C12 (section 3, "The change of `e2e/specs/tools-preview.e2e.ts`") and run `npx prettier --check e2e/specs/tools-preview.e2e.ts`; if it fails, `npx prettier --write` that file and check that only lines 20 to 23 differ from `3e33e75`.
+
 0. **Base.** `git rev-parse --short HEAD` prints `544dddc` or a later commit. `git diff --quiet 544dddc HEAD -- packages/packs apps/api/test/packs scripts e2e/fixtures/mock-openai/scenarios examples/samples.yaml` exits 0; if not, re-read the changed files before editing. `git status --short` prints nothing. `test ! -e packages/packs/fiction/tools/character_builder.yaml` and the same for `world_builder.yaml` exit 0. `git ls-files packages/packs/test/golden/character_builder packages/packs/test/golden/world_builder apps/api/test/packs/character-world-builder.test.ts scripts/eval-agent/cases/character-builder.json scripts/eval-agent/cases/world-builder.json scripts/eval-case-character-world-builder.test.mjs` prints nothing.
 1. **Runtime and baseline.** `node -v` prints `v26.x` and `npm -v` prints `11.x` (A1). Run `npm ci` if the worktree has no `node_modules/`. Then `npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api && npm test -w @bbartolome/scriba-packs && (cd apps/api && npx vitest run test/packs)` exits 0 on the unchanged tree.
 2. **character_builder spec (U1 to U5, M2 to M6, C1, C2, C10).** Create `packages/packs/fiction/tools/character_builder.yaml` with the text of section 3.
@@ -378,9 +422,9 @@ Run from `/Users/bbartolome/workspace/scriba-prototype`, on branch `unit/GNP-14`
 12. **API build and lint (A8).** `npm run build -w @bbartolome/scriba-api` and `npm run lint -w @bbartolome/scriba-api` exit 0. The build type-checks the new test file.
 13. **Eval data and its test (criterion 3, M10, C3, C8, C11).** Create `scripts/eval-agent/cases/character-builder.json` and `scripts/eval-agent/cases/world-builder.json` with the text of section 3. Create `scripts/eval-case-character-world-builder.test.mjs` as section 3 describes. Then `npx prettier --write` on the three files. `node --test scripts/eval-case-character-world-builder.test.mjs` exits 0 with one test passed, and `node --test scripts/eval-cases.test.mjs` still exits 0 with its two tests passed (its first test reads every case file).
 14. **Format check (A6).** `npx prettier --check packages/packs/fiction/tools packages/packs/test/golden apps/api/test/packs scripts/eval-agent/cases scripts/eval-case-character-world-builder.test.mjs e2e/fixtures/mock-openai/scenarios` exits 0. If a golden fails this check, stop and report it; the fix is a decision for the Navigator, not for this unit.
-15. **Root gates and e2e mock (A9, A10).** From the root: `npm run build`, `npm test`, `npm run lint` and `npx prettier --check .` exit 0. `npm test -w @bbartolome/scriba-e2e` exits 0, which shows that the mock still loads the new scenario files.
-16. **Tools preview in the running app (A9).** `npm run e2e -w @bbartolome/scriba-e2e -- tools-preview.e2e.ts` passes, as `plans/GNP-07.md` step 14 expects. If the browser cannot run here, record it as not run.
-17. **Commit.** `git add --` the paths of section 3 by name (the deletion of step 4 is already staged). `git diff --cached --stat` lists exactly those paths and the deletion, and no `plans/` or `units/` file. Commit with `feat(GNP-14): character_builder and world_builder entity tools with golden and eval cases`. Do not push.
+15. **Root gates and e2e mock (A9, A10, F7).** From the root: `npm run build`, `npm run lint` and `npx prettier --check .` exit 0. `npm test -w @bbartolome/scriba-e2e` exits 0, which shows that the mock still loads the new scenario files. Then `npm test` from the root. If it exits 0, the gate is met. If it exits 1 and the only failing test is `apps/web` `canvas-page.spec.ts` "Loading the contract's example story graph and recipe and saving without edits produces byte-equivalent JSON" with "Test timed out in 5000ms" (F7), the gate is met only when all of these hold, each recorded with the load average (`uptime`): (a) `npm test -w @bbartolome/scriba-web` run alone exits 0; (b) `npm test` exits 0 for every other workspace (`-w @bbartolome/scriba-contracts`, `-w @bbartolome/scriba-api`, `-w @bbartolome/scriba-packs`, `-w @bbartolome/scriba-e2e`); (c) `node --test 'scripts/*.test.mjs'` exits 0 (the root `&&` skips it when a workspace fails); (d) `git diff --name-only 3e33e75 HEAD -- apps/web packages/contracts` prints nothing. Any other failure: stop and report it.
+16. **Tools preview in the running app (A9, C12, F1 to F6).** After the C12 change: (a) `npm run e2e -w @bbartolome/scriba-e2e -- tools-preview.e2e.ts --trace off`, three times, each in its own invocation, with port 8080 free before each run (`plans/DECISIONS.md` TRG-14 diagnosis: a busy port fails the run for another reason). Each run: 2 passed (TRG-05 C1 at line 83, C2 at line 167). (b) Once: `npm run e2e -w @bbartolome/scriba-e2e -- tools-editor.e2e.ts tools-preview.e2e.ts --trace off`, which puts the two user rows of F5 in the list before TRG-05 runs. TRG-05 C1 and C2 pass; record the result of E1 and E2. If a TRG-05 test fails in (a) or (b), stop and report the failing line, the person select's `boundingBox` and the viewport height (a temporary log, reverted before the commit); do not change any other line of the spec, and do not change any assertion. If the browser cannot run here, record it as not run.
+17. **Commit.** On `unit/GNP-14`, on top of `f997d59`: `git add -- e2e/specs/tools-preview.e2e.ts`, then `git diff --cached --stat` lists that file only, and no `plans/` or `units/` file. Commit with `test(GNP-14): raise the TRG-05 spec viewport for the longer tools list`. Do not push. Then `git diff --stat 3e33e75 HEAD` lists exactly the paths of section 3 (the deletion included), and nothing else. (The other paths of section 3 are already in `72f4c44` and `f997d59`, which replace the single commit this step named before.)
 18. **Record.** Store the Node and npm versions and each command's output. A criterion is marked passed only when its row in section 5 holds.
 
 ## 5. Acceptance criteria and tests
@@ -419,6 +463,8 @@ Units without a plan that change the same files (their paths are not in any draf
 - **GNP-18 (fiction sample).** It adds the entry `fiction` to `examples/samples.yaml` (unit line 15; C11). No file of this plan is in that path.
 - **GNP-19 (fiction gate).** It changes no file of this plan.
 
+`e2e/specs/tools-preview.e2e.ts` (C12): no draft or planned plan changes it (section 2). Its owners are done: TRG-05 (`237a9f7`), TRG-13 (`e373e38`) and TRG-14 (`446c34a`, which set 2100). `plans/TRG-13.md` step 11 and `plans/TRG-14.md` step 9 are the rule C12 follows. GNP-15, GNP-16 and GNP-17 also lengthen the list; 3200 leaves room for their three rows, and they follow the same rule if a later list needs more. `plans/GRR-15.md` step 13 (the full suite) loses one of its two pre-existing failures once this lands, if F5 holds; its journey failure is unrelated.
+
 Done plans whose files this plan changes or extends:
 
 - **`plans/GNP-04.md`** (the recipe golden and the catalogue of `propose_graph`). Its golden is regenerated by step 11.
@@ -442,7 +488,8 @@ None. Both points of the draft are settled by the reviser from the sources; neit
 
 ## 9. Review parts
 
-The plan has two parts. Each step of section 4 and each test of section 5 is in exactly one part.
+The plan has three parts. Each step of section 4 (with step C of "Continuation") and each test of section 5 is in exactly one part.
 
-- **Part 1 — the two tools, their golden test and the catalogue.** Steps 0 to 12. Tests: criterion 1 (`real-packs.test.ts`, "the suite passes on the real packs") and criterion 2 (`character-world-builder.test.ts`, "AC 2: ..."). Files: the two specs, the two fixtures, the two scenarios, the test file, the two goldens and `propose_graph/recipe.golden.json`, and the `.gitkeep` deletion. The reviewer of part 1 checks that step 11 adds exactly the two catalogue lines.
-- **Part 2 — the eval cases, the gates and the commit.** Steps 13 to 18. Test: criterion 3 (`scripts/eval-case-character-world-builder.test.mjs`, "AC 3: the character-builder and world-builder eval cases ..."). Files: the two eval case files and the new data test file, and the commit of step 17, which the reviewer of part 2 checks against section 3.
+- **Part 1 — the two tools, their golden test and the catalogue.** Steps 0 to 12 (commit `72f4c44`). Tests: criterion 1 (`real-packs.test.ts`, "the suite passes on the real packs") and criterion 2 (`character-world-builder.test.ts`, "AC 2: ..."). Files: the two specs, the two fixtures, the two scenarios, the test file, the two goldens and `propose_graph/recipe.golden.json`, and the `.gitkeep` deletion. The reviewer of part 1 checks that step 11 adds exactly the two catalogue lines.
+- **Part 2 — the eval cases and the format check.** Steps 13 and 14 (commit `f997d59`). Test: criterion 3 (`scripts/eval-case-character-world-builder.test.mjs`, "AC 3: the character-builder and world-builder eval cases ..."). Files: the two eval case files and the new data test file.
+- **Part 3 — the TRG-05 viewport, the gates and the commit.** Step C, steps 15 to 18 (the new commit of step 17). No criterion test (the three are in parts 1 and 2; step C re-runs them as a start check only). File: `e2e/specs/tools-preview.e2e.ts`. The reviewer of part 3 checks that the diff of the spec against `3e33e75` is lines 20 to 23 only, that no assertion or drag step changed, the step 16 logs ((a) three runs, (b) the run with `tools-editor.e2e.ts`), the step 15 gate as written, and `git diff --stat 3e33e75 HEAD` against section 3.
