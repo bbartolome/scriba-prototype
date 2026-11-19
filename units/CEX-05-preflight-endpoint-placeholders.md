@@ -21,6 +21,6 @@ Preflight on demand and before every export (32), placeholders flagged with file
 - Preflight never blocks; it writes nothing.
 
 ## Acceptance criteria
-- [ ] A fixture with `TK`, `TODO` in prose and `TODO` inside code reports exactly the prose occurrences with correct lines.
-- [ ] A clean fixture passes.
-- [ ] The mock OpenAI server receives no request during preflight.
+- [x] A fixture with `TK`, `TODO` in prose and `TODO` inside code reports exactly the prose occurrences with correct lines.
+- [x] A clean fixture passes.
+- [x] The mock OpenAI server receives no request during preflight.

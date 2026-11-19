@@ -1,6 +1,6 @@
 ---
 id: CEX-05
-status: planned
+status: done
 ---
 # CEX-05 plan — preflight endpoint, result shape and the placeholders check
 
