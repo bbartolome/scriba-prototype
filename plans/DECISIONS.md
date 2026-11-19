@@ -6324,3 +6324,17 @@ Part D (gates and commit):
 - **Orchestrator notes (outside the reviewer lists):** (a) This session does not create pull requests (prompt.md). Items A3 and D7 name the PR; they are for the merge decision, not a PR. (b) Item D1 depends on the main verification run started in the entry above; its result will be recorded when it replies. (c) The Haiku implementer for this REWORK list is not started yet, because it runs the same e2e ports as the verification run.
 - **Approved parts:** Part C and Part E approve the code of the patch id above. The unit is not approved until Parts A, B and D approve it.
 - **Status:** `plans/GRR-15.md` stays `status: planned`. Branch `unit/GRR-15` (ec6293d) and worktree `scriba-prototype-wt/GRR-15` are kept.
+
+## 2026-11-19 — GRR-15 — Step 13 failures verified on main cc82fb0: they reproduce without the unit's code; decision for the user
+
+- **Question:** the implementer reported that the two full-suite failures (journey "project from sample"; tools-preview TRG-05 C2) predate GRR-15. The orchestrator tested this on main at cc82fb0, with no GRR-15 code, in the worktree `scriba-prototype-wt/verify-main-cc82fb0` (detached, kept). Node v26.13.0, npm 11.20.0, `npm ci` exit 0. Port 8080 (the only e2e port in `e2e/harness/global-setup.ts`) was free before the run.
+- **Run 1, full suite:** `env -u SCRIBA_E2E_MEASURE npm run e2e -w @bbartolome/scriba-e2e -- --trace off`, exit 1, "2 failed", "22 passed (54.2s)", 0 skipped. Log `/tmp/verify-main-full.log`.
+  - Failing: `specs/journey.e2e.ts:12:1` "journey: setup, project from sample, agent run, accept change, manuscript › project from sample"; first error line "Error: expect(received).toEqual(expected) // deep equality".
+  - Failing: `specs/tools-preview.e2e.ts:167:1` "TRG-05 C2: the picker offers person entities only and takes a dropped person chip"; first error line "Error: expect(locator).toHaveValue(expected) failed".
+  - Note: the first attempt, `npm run e2e -- --trace off` without `-w`, ran no tests ("Error: No tests found"; npm passed "off" as a file filter). It is not a result and was not used.
+- **Run 2, journey spec alone:** `... -- specs/journey.e2e.ts --trace off`, exit 0, "1 passed (24.9s)". Log `/tmp/verify-main-journey.log`.
+- **Run 3, tools-preview spec alone:** `... -- specs/tools-preview.e2e.ts --trace off`, exit 0, "2 passed (21.2s)", includes TRG-05 C2. Log `/tmp/verify-main-tools.log`.
+- **Finding:** both failures occur on main in the full suite without any GRR-15 code. Each passes alone on main. So they come from the order or state of the full run on main, not from the unit's code. The implementer's claim is confirmed for the full run, and this is a pre-existing full-suite failure.
+- **Consequence for GRR-15:** step 13 (full e2e with zero failures) is not met on main either. Merging GRR-15 now means merging with two known failures in the full suite. The plan does not allow that, and the decision belongs to the user. The options are (a) merge with the failures recorded as pre-existing and step 13 changed by the plan's owner, (b) fix the two full-suite failures on main first, as a separate unit or fix, then rerun step 13, or (c) hold GRR-15.
+- **Not started:** the Haiku rework for the REWORK list (entry above) is not started. The user's decision on step 13 changes its scope (item 1 of Part D), so it waits for that decision.
+- **Status:** `plans/GRR-15.md` stays `status: planned`. Branch `unit/GRR-15` (ec6293d) and worktree `scriba-prototype-wt/GRR-15` are kept. Not merged.
