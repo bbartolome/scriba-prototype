@@ -1,0 +1,192 @@
+---
+id: CEX-05
+status: draft
+---
+# CEX-05 plan — preflight endpoint, result shape and the placeholders check
+
+Revision 1, the planner's draft at main `4a4efa9` (the HEAD when the facts were read; `git diff --stat 8c92e53 4a4efa9` lists only `plans/`). At the time of the commit, main is at `1ce2248`, and `git diff --stat 4a4efa9 1ce2248` lists only `plans/GRR-15.md`. Unit: `units/CEX-05-preflight-endpoint-placeholders.md` (module compile-export, phase:assembly-preflight, M5). Its blocker CEX-02 is merged and `done` (`plans/CEX-02.md` line 3, commit `05c582f`). The unit file has 27 lines and no notes section (read in full). The only recorded change of the unit is commit `098add9`, which added CEX-18 to `unblocks` (`git show 098add9 -- units/CEX-05-preflight-endpoint-placeholders.md`). This plan follows that change. It changes no unit, module, contract or existing test file, and marks nothing passed.
+
+## 1. Decisions this plan obeys
+
+### 1a. Settled by the unit, the module and the contract
+
+- **S1 Endpoint and result.** `POST /api/compile-export/preflight` returns `{ranAt, revision, checks: [{id, status, findings}]}` over the assembled manuscript files in effective order. Source: unit line 18; module line 40 (preflight is a POST); `PREFLIGHT_ROUTE` (`packages/contracts/src/compile-export/routes.ts` line 15); `preflightResultSchema` (`preflight.ts` lines 34 to 38).
+- **S2 Findings.** Every finding carries `path` and `line`, and `offset` and `length` where useful. Source: unit line 18; `preflightFindingSchema` (`preflight.ts` lines 15 to 25).
+- **S3 Placeholder words and braces.** Whole-word `TK`, `TKTK`, `TODO`, `FIXME`, `XXX`, case-sensitive, plus unrendered `{{…}}`; severity `error`. Source: unit line 19; `PLACEHOLDER_WORDS` and `PLACEHOLDER_PATTERN` (`packages/contracts/src/compile-export/constants.ts` lines 73 to 81); `plans/CEX-01.md` line 110 (the pattern has no `g` flag).
+- **S4 Code is skipped.** Fenced and inline code are not scanned. Source: unit line 19; `plans/CEX-04.md` line 42 (P10: CEX-05 skips code, as the citation scan does).
+- **S5 Out of scope.** Per-project placeholder lists. Source: unit line 19; module line 69.
+- **S6 Model-free.** All checks are deterministic and never call a model. Source: unit line 20; module lines 42 and 55; unit criterion 3 (line 26).
+- **S7 Never blocks, writes nothing.** Source: unit line 21; module line 40 (a command even though it writes nothing).
+- **S8 Pluggable checks.** CEX-06 and CEX-07 add the other four checks. Source: unit line 18; module line 34.
+- **S9 File access.** Reads go through the Project store's file API and the view (module line 41). Preflight never reads or writes `drafts/.versions/` (module line 42) and publishes no event (module line 44).
+- **S10 Membership and order.** The manuscript files are the view's entries: top-level `.md` files in `drafts/`, in effective order. Source: module line 43; `ManuscriptService.view()` (`apps/api/src/modules/compile-export/manuscript.service.ts` line 73).
+- **S11 Test seam.** External behaviour only, through HTTP, with the module in Platform's `create-test-app` behind Setup & auth's guard. The mock OpenAI server runs only to prove no model call. Source: module lines 58 and 59.
+
+### 1b. Settled by earlier plans and DECISIONS
+
+- **D1 Contract.** CEX-01 approved (`plans/DECISIONS.md` line 5806). `plans/CEX-01.md` line 294 lists what CEX-05 needs from it (provided), and line 37 names the route paths.
+- **D2 View and revision.** CEX-02 approved (`plans/DECISIONS.md` line 5862). `plans/CEX-02.md` line 159: the preflight result takes its `revision` from the view.
+- **D3 Shared helpers.** CEX-04 merged (`plans/DECISIONS.md` line 6214). `plans/CEX-04.md` line 155: CEX-05 uses CEX-04's helpers and writes no second copy of a front-matter or fence rule.
+- **D4 No DECISIONS entry names CEX-05.** `grep -c 'CEX-05' plans/DECISIONS.md` prints `0`.
+
+### 1c. Planner's choices (the simplest option the sources allow)
+
+- **P1 Files.** One pure file for the check and the runner type (`preflight-checks.ts`), one service (`preflight.service.ts`), one controller (`preflight.controller.ts`), and one edit of the pure helper file (`markdown-text.ts`). The layout follows CEX-04 P1.
+- **P2 One fence rule.** `withoutFences` (`markdown-text.ts` lines 59 to 82) keeps only the lines outside fences, so it drops lines and cannot give line numbers. `plans/CEX-04.md` line 155 says CEX-05 "may reuse" it; this plan does not use it for line numbers. The fence state machine moves unchanged into a helper `fencedLines(lines)` that returns one flag per line (the opening fence, the lines inside it and the closing fence are flagged). `withoutFences` is rewritten on top of it with the same output, and `maskCode` (P3) uses it too. The file's header (lines 1 and 2) requires one fence rule, so no second copy is written.
+- **P3 `maskCode(text)`.** Returns text of the same length with the same line terminators. Flagged lines have every character other than CR and LF replaced by a space. Then every match of `INLINE_CODE` (`markdown-text.ts` line 14, the constant `citationIds` uses) over the whole text is replaced the same way. Offsets and line numbers of the input hold in the output.
+- **P4 Scanned text: the body.** Each file is scanned after its YAML front matter, as `splitFrontMatter(content).body` (CEX-04 P2). The assembled document has no per-file front matter (CEX-04 S2), and the citation scan reads the body (CEX-04 P10). The unit is silent on this. Open point 1.
+- **P5 Positions.** `offset` is an index into the file text as `FilesService.read(...).content` returns it; `length` is the match length. The body starts at `content.length - body.length`, because the body is a suffix of the text (`splitFrontMatter`, `markdown-text.ts` lines 25 to 55). `line` is 1 plus the number of line terminators (`/\r\n|\n|\r/`) before `offset`.
+- **P6 Messages.** Fixed texts, with no token echoed: `Placeholder word left in the text.` for a word, and `Unrendered placeholder left in the text.` for a match that starts with `{{`.
+- **P7 Severity.** Every placeholder finding has severity `error` (unit line 19).
+- **P8 Check status.** Derived by the framework from the findings: any `error` gives `fail`; otherwise any `warning` gives `warn`; otherwise `pass` (`CHECK_STATUSES` and `FINDING_SEVERITIES`, `constants.ts` lines 66 to 70). A runner returns findings only.
+- **P9 Registry.** `PREFLIGHT_RUNNERS` is an array in `preflight.service.ts` holding `placeholdersCheck`. `checks` lists the registered runners in array order. A check not yet built is not listed, because `CHECK_STATUSES` has no "skipped" value. CEX-06 and CEX-07 append to the array.
+- **P10 Runner input.** `{files}`, where each file is `{path, part, content}` for each view entry, in view order, with all three parts. A runner returns `Omit<PreflightFinding, 'check'>[]`, and the framework adds `check: runner.id`.
+- **P11 Clock.** `PreflightService.run(now: Date)` takes the time as an argument, as `AssemblyService.assemble(now)` does (CEX-04 P12). The controller passes `new Date()`. `ranAt` is `now.toISOString()`.
+- **P12 Revision.** `view.revision`, as D2 says. `revisionOf` hashes the order field and the file list, not the text (`manuscript.service.ts` line 150 and lines 261 to 266). Open point 2.
+- **P13 Active project.** A copy of `AssemblyService.activeProjectId` (`assembly.service.ts` lines 117 to 125): `PROJECT_ERROR_CODES.NO_ACTIVE` with `PROJECT_ERROR_STATUS.PROJECT_NO_ACTIVE` (409). This is a third copy; open point 7.
+- **P14 Route.** `@Post(PREFLIGHT_ROUTE)` with `@HttpCode(200)`, as the other commands are (`manuscript.controller.ts`). No body parameter: `preflightRequestSchema` is `z.object({})` and names no field (`preflight.ts` line 11).
+- **P15 Module.** `compile-export.module.ts`: `PreflightController` is added to `controllers`; `PreflightService` is added to `providers` and to `exports`. Exporting it now means CEX-09 and CEX-10 need no module edit for preflight (CEX-09 unit line 17; CEX-10 unit line 15).
+- **P16 Errors.** No new code. No active project gives `PROJECT_NO_ACTIVE` (409). An invalid `order` gives `PROJECT_INVALID` (422). Both come from `ManuscriptService.view()` (`manuscript.service.ts` lines 177 to 187 and 190 to 209). A file the store cannot read as text propagates the store's refusal (`plans/CEX-02.md` line 174).
+- **P17 Tests.** One file, `apps/api/test/compile-export-preflight.test.ts`, with C1 to C3. It uses `manuscriptLibrary`, `STATIC_ROOT`, `getManuscript` and `manuscriptOf` from the existing kit (`apps/api/test/compile-export-manuscript.kit.ts` lines 16, 20, 70 and 79), `send` and `sessionCookie` (`apps/api/test/guard-request.ts` lines 27 and 80), and `LOOPBACK_HOST` and `LOOPBACK_ORIGIN` (`apps/api/test/invariant-sweep.ts` lines 38 and 39). The kit is not edited.
+- **P18 Mock.** C3 uses the existing scenario `text-stream` (`e2e/fixtures/mock-openai/scenarios/text-stream.json`). Its provider settings are written as `apps/api/test/graph-runner-sample-recipe.test.ts` lines 66 to 80 writes them. The mock answers the records endpoint with an error for an unknown scenario (`e2e/fixtures/mock-openai/server.mjs` lines 239 to 245), so the scenario must exist.
+- **P19 Ticks.** After the tests pass, the three boxes of the unit file are ticked in a separate commit, as CEX-03's tick commit was (`plans/DECISIONS.md` line 6180). Open point 6.
+
+## 2. Files to create or change
+
+Only the paths below change. The contract package, the composition root, the other compile-export files, the test kits, and `plans/` and `modules/` do not change.
+
+| Path | Change | Purpose |
+|---|---|---|
+| `apps/api/src/modules/compile-export/markdown-text.ts` | edit | adds `fencedLines` (P2); rewrites `withoutFences` on it with the same output; adds `maskCode` (P3) |
+| `apps/api/src/modules/compile-export/preflight-checks.ts` | new | types `PreflightFile`, `PreflightInput`, `PreflightRunner`; `placeholdersCheck` (P4 to P7) |
+| `apps/api/src/modules/compile-export/preflight.service.ts` | new | `PreflightService.run(now)`; `PREFLIGHT_RUNNERS` (P9); status rule (P8); reads and errors (P10 to P13, P16) |
+| `apps/api/src/modules/compile-export/preflight.controller.ts` | new | the POST of `PREFLIGHT_ROUTE` (P14) |
+| `apps/api/src/modules/compile-export/compile-export.module.ts` | edit | P15 only: one import line per new file; `PreflightController` in `controllers`; `PreflightService` in `providers` and `exports` |
+| `apps/api/test/compile-export-preflight.test.ts` | new | C1 to C3 (section 4) |
+| `units/CEX-05-preflight-endpoint-placeholders.md` | edit (docs commit, step 15 only) | ticks the three boxes at lines 24 to 26 |
+
+## 3. Method
+
+Base: main `4a4efa9`. Work in a worktree, so that the main working tree is not switched. Another session has an uncommitted edit to `plans/GRR-15.md` in that tree (section 7a). Do not stage, revert or commit that file. Record `node -v` (v26.x; `plans/PLT-02.md` section 1 records that Node 26 runs every test) and `npm -v` beside each result. Do not push and do not open a pull request.
+
+0. **Preconditions.** `git diff --name-only 4a4efa9 -- apps/api/src/modules/compile-export apps/api/test packages/contracts` prints nothing, and `ls apps/api/src/modules/compile-export/preflight*` prints nothing. If either prints anything, re-read the cited lines before going on.
+1. **Worktree.** `git worktree add /Users/bbartolome/workspace/scriba-prototype-wt/CEX-05 -b unit/CEX-05 main`. Expected: `Preparing worktree (new branch 'unit/CEX-05')`. Run steps 2 to 17 in that folder.
+2. **Install and contracts.** `npm ci`, then `npm run build -w @bbartolome/scriba-contracts`. Expected: exit 0.
+3. **Baseline.** `npm test -w @bbartolome/scriba-api`. Expected: exit 0. Record the file and test counts.
+4. **Fence rule and masking (P2, P3).** Edit `markdown-text.ts` only: add `fencedLines`, rewrite `withoutFences` on it, add `maskCode`. Then `cd apps/api && npx vitest run test/compile-export-order.test.ts test/compile-export-manuscript.test.ts test/compile-export-assembly.test.ts`. Expected: every test passes, with the counts of step 3. Stop rule: if any test fails, revert this step, report, and do not continue.
+5. **The check (P4 to P7, P10).** Create `preflight-checks.ts`. For each file in the given order: `body = splitFrontMatter(content).body`; `bodyStart = content.length - body.length`; `masked = maskCode(body)`. For each match of `new RegExp(PLACEHOLDER_PATTERN.source, 'g')` in `masked`, add one finding: severity `error`, the file's path, the line (P5), `offset = bodyStart + match.index`, `length`, and the message (P6). The global copy is needed because `PLACEHOLDER_PATTERN` has no `g` flag and `matchAll` throws without one (checked, section 7a).
+6. **The service (P8, P9, P10 to P13, P16).** Create `preflight.service.ts`. `run(now)`: (a) the active project id (P13); (b) `ManuscriptService.view()`; (c) each entry's text by `FilesService.read(projectId, entry.path).content`, in view order, with its part; (d) each runner in `PREFLIGHT_RUNNERS` runs on that input, and the framework adds `check` to each finding; (e) the status by P8; (f) return `{ranAt: now.toISOString(), revision: view.revision, checks}`.
+7. **The controller (P14).** Create `preflight.controller.ts`: one `@Post(PREFLIGHT_ROUTE)` with `@HttpCode(200)`, no body parameter, returning `this.preflight.run(new Date())`.
+8. **The module (P15).** Edit `compile-export.module.ts` as P15 says and keep the existing entries (CEX-02, CEX-03 and CEX-04 are merged). Expected: `controllers` is `[ManuscriptController, PreflightController]`; `providers` adds `PreflightService`; `exports` is `[ManuscriptService, AssemblyService, PreflightService]`.
+9. **Tests.** Write `compile-export-preflight.test.ts` with C1 to C3 (section 4). Its fixtures are inline. It does not name the examples folder.
+10. **Format.** `npx prettier --write` on each file of section 2 that is code, then `npx prettier --check` on the same files. Expected: exit 0.
+11. **New tests.** `cd apps/api && npx vitest run test/compile-export-preflight.test.ts`. Expected: three pass. Then the three suites of step 4. Expected: all pass.
+12. **API gates.** From the worktree root: `npm run build -w @bbartolome/scriba-api`, `npm test -w @bbartolome/scriba-api` (the whole suite, including Setup & auth's invariant sweeps), and `npm run lint -w @bbartolome/scriba-api` (the PLT-09 boundaries). Expected: each exits 0.
+13. **Root gates.** From the root: `npm run build`, `npm test`, `npm run lint`. Expected: each exits 0.
+14. **Commit.** `git diff --cached --stat` lists exactly the section 2 code paths, without the unit file. Stage each path by name (`git add -- <path>`), never `git add -A` or `git commit -a`. Commit with `feat(CEX-05): preflight endpoint and placeholders check`.
+15. **Ticks.** After step 11 passes, tick the three boxes at unit lines 24 to 26 in a separate commit, `docs(CEX-05): tick criteria 1 to 3`, which changes only that file.
+16. **Fresh clone.** `git clone --branch unit/CEX-05 /Users/bbartolome/workspace/scriba-prototype <empty folder>`, then in it `npm ci && npm run build && npm test && npm run lint`. Expected: each exits 0.
+17. **Record.** Store the Node and npm versions and each command's output. A criterion is marked passed only when its row in section 4 holds.
+
+## 4. Acceptance criteria and tests
+
+The three criteria are unit lines 24 to 26, copied as written. Each has one test in `apps/api/test/compile-export-preflight.test.ts`. Every test boots `createTestApp({libraryDir, staticRoot: STATIC_ROOT})` (the composed app, default modules) on a library from `manuscriptLibrary`, takes the cookie with `sessionCookie`, and closes the app and removes the library in a `finally`. POSTs use `send` with `method: 'POST'`, `host: LOOPBACK_HOST`, `origin: LOOPBACK_ORIGIN` and the cookie.
+
+| Criterion (unit line) | Test | Pass condition |
+|---|---|---|
+| "A fixture with `TK`, `TODO` in prose and `TODO` inside code reports exactly the prose occurrences with correct lines." (24) | C1 "placeholders: prose occurrences only, with file, line, offset and length" | See the C1 fixture below. |
+| "A clean fixture passes." (25) | C2 "a clean fixture passes, the revision is the view's, and nothing is written" | See the C2 fixture below. |
+| "The mock OpenAI server receives no request during preflight." (26) | C3 "preflight makes no model call" | See the C3 fixture below. |
+
+**C1 fixture.** `drafts/a.md`, with no front matter, is the following text (line numbers in brackets are for reference only):
+
+````text
+# Chapter one                                   [1]
+
+The draft has a TK in prose.                    [3]
+
+TODO: finish the opening.                       [5]
+
+```text                                         [7]
+TODO in a fenced block.                         [8]
+```                                             [9]
+
+Inline `TODO` in code. Also todo, TODOS and XXXL are not placeholders.   [11]
+````
+
+`drafts/b.md` is the single line `Second file: {{chapter_title}} is unrendered.`
+
+Expected: status 200. `checks` has one entry, `{id: 'placeholders', status: 'fail'}`. Its findings, in this order, are `drafts/a.md` line 3 (`TK`), `drafts/a.md` line 5 (`TODO`) and `drafts/b.md` line 1 (`{{chapter_title}}`). Each finding has `check: 'placeholders'` and `severity: 'error'`. For each finding, `content.slice(offset, offset + length)` (the file read from disk) is the token. The fenced `TODO`, the inline `TODO`, `todo`, `TODOS` and `XXXL` give nothing. The 200 with error findings also shows that preflight never blocks.
+
+**C2 fixture.** `drafts/a.md` is `# Chapter one`, an empty line and `A clean sentence.`. `drafts/b.md` is `A second clean sentence.`. Steps: `snapshotLibrary(library)`; POST preflight with no body; `getManuscript` for the revision; `snapshotLibrary(library)` again. Expected: status 200; the body parses with `preflightResultSchema`; `checks` equals `[{id: 'placeholders', status: 'pass', findings: []}]`; `revision` equals the GET's `revision`; the two snapshots are equal.
+
+**C3 fixture.** `drafts/a.md` is `A TODO in prose.`. The mock is started with `startMockOpenAI()` before the app. After `manuscriptLibrary` writes the library, `.scriba/settings.yaml` is overwritten with `stringify` of `schemaVersion: 1`, `projects: {schemaVersion: 1, active: 'book'}` and `providers: {schemaVersion: 1, list: [{id: 'mock', kind: 'openai-compatible', baseURL: <mock.baseUrl>/scenario/text-stream/v1, model: 'mock-model', ...PROVIDER_DEFAULTS}]}` (P18). Expected: the POST answers 200 with one placeholder finding, and `recordsOf(mock, 'text-stream')` equals `[]`. `mock.close()` runs in the `finally`, as `graph-runner-sample-recipe.test.ts` line 176 does.
+
+The step 4 suites are the regression for P2 and P3: CEX-02's C5 and CEX-04's tests pin `withoutFences` and `citationIds` through their output.
+
+## 5. Downstream agreement
+
+- **CEX-02 (done).** Consumed: the view's entries (`path`, `part`) and `revision`. No CEX-02 file changes.
+- **CEX-04 (done).** `markdown-text.ts` gets P2 and P3. `splitFrontMatter` is used as it is. `withoutFences` keeps its output. `citationIds` is unchanged, and the inline-code rule of `maskCode` is the same constant it uses.
+- **CEX-06 (blocked by CEX-05; parallel with CEX-07).** Appends its runners to `PREFLIGHT_RUNNERS` (P9). Its unsupported-claims and orphan checks need grounding artefacts and story graphs, which P10's input does not carry (open point 3). If it needs them, it may change the input or the runner list; this plan allows that. A merge conflict in `preflight.service.ts` keeps both entries, as `plans/CEX-03.md` line 133 says for parallel units that both add providers or controllers to the same module.
+- **CEX-07 (blocked by CEX-05; parallel with CEX-06).** Its banned phrases and entity links skip code with `maskCode`, not with `withoutFences`, because it reports line numbers. Its `[@id]` check calls `citationIds`, as `plans/CEX-04.md` section 5 asks. Its front-matter `links` are its own read of the front matter (its unit, "Broken entity links"), so P4 does not conflict with it.
+- **CEX-09 (blocked by CEX-05; the gate).** Its criterion "each of the five checks has a fixture ... right check id, severity, path and line" (unit line 22): the placeholders check gives `placeholders`, `error`, a path and a line (C1). It relies on `PreflightService` being exported (P15) and adds nothing for preflight. Its "no outbound HTTP call" criterion (unit line 23) is the same as C3.
+- **CEX-10 (blocked by CEX-05).** Runs preflight first, attaches its summary, and succeeds when preflight has errors (unit line 15 and criterion at line 26). It calls `PreflightService.run(exportTime)` (P11) and derives the `preflightSummarySchema` counts (`preflight.ts` lines 41 to 47) from `checks`. This plan adds no summary helper (open point 4).
+- **CEX-18 (blocked by CEX-05; UI with fakes).** Reads `{ranAt, revision, checks}` from the POST of `PREFLIGHT_ROUTE`, and links each finding by its `path` and `line` (unit line 15). Its confirm dialog (unit line 16) depends on error findings, which this plan gives status `fail`.
+- **AGL-24 (blocked by CEX-09 and CEX-15).** Its `run_preflight` calls the in-process preflight (unit line 17) and expects five checks as a card (unit line 23). Five checks need CEX-06 and CEX-07, which CEX-09 requires. Consistent.
+- **CEX-20 (milestone demo, unit line 27).** "Type `TK` ... the placeholder error with a link to the line" is C1's output plus CEX-18's link.
+- **Blocker consistency.** This unit's `blocked_by` is `[CEX-02]` (line 7), and CEX-02 lists CEX-05 in `unblocks` (line 9). Its `unblocks` (CEX-06, CEX-07, CEX-09, CEX-10, CEX-18) matches the `blocked_by` of each, which names CEX-05 on line 7 of each unit file. `parallel_with` (CEX-03, CEX-04) is symmetric with CEX-03 line 8 and CEX-04 line 8. No unit file needs a change for this plan.
+- **Other plans.** `git grep -l -E '^status: (draft|planned)' HEAD -- plans/` lists only `plans/GRR-15.md`. Its scope is the graph-runner canvas, and it names no compile-export file, so there is no overlap.
+
+## 6. Open points
+
+1. **Front matter is not scanned** (P4). The unit is silent, so a `TODO` in a file's front matter is not flagged. This is the planner's choice, with the body as the scanned text. If the reviewer wants the whole file scanned, P4 and the C1 fixture change, and the position arithmetic of P5 becomes the identity.
+2. **The revision does not cover the text** (P12). `revisionOf` hashes the order field and the file list (`manuscript.service.ts` lines 261 to 266). A preflight result's `revision` does not change when a file's text changes. The unit asks only for `revision`. A stale-check by CEX-10 or CEX-18 would need a content hash, which this unit does not add.
+3. **The runner input is provisional** (P10). CEX-06 needs story graphs and grounding artefacts. CEX-06's planner decides whether the runners get injected services or a wider input.
+4. **No summary helper here.** The `preflightSummarySchema` counts are CEX-10's, derived from `checks`.
+5. **HTML comments are not skipped.** The unit names only fenced and inline code, so a `TODO` inside `<!-- -->` is flagged. This is the simplest reading. Skipping comments would need a Navigator decision.
+6. **Where the ticks go.** Step 15 uses a separate commit, following CEX-03's precedent. The orchestrator's merge step may move the ticks.
+7. **A third `activeProjectId` copy** (P13). Accepted now, because the other two copies are in files that other units own. A shared helper is a later refactor.
+8. **A body on the POST** is ignored (P14). No test sends a body with fields.
+9. **Pattern edge cases.** The contract's `\b` does not match `TODO` inside `_TODO_`, because underscore is a word character. This is accepted as the contract defines it.
+10. **Unit notes.** The task asked the planner to read notes that record a change of the unit. The unit file has no notes. The recorded change is commit `098add9` (`unblocks` gained CEX-18), which this plan follows. The orchestrator should confirm that no other note exists.
+11. **Shared working tree.** Since this session began, the main working tree has gained two commits (`f28f554`, `4a4efa9`) and an uncommitted edit to `plans/GRR-15.md` from another session (section 7a). Step 0 must be re-run at the current HEAD.
+
+## 7. Facts checked and facts assumed
+
+### 7a. CHECKED
+
+- **Repository and state.** `git status --short` (shows ` M plans/GRR-15.md`); `git log --oneline 8c92e53..HEAD` (`f28f554`, `4a4efa9`); `git diff --stat 8c92e53 HEAD` (`plans/DECISIONS.md` and `plans/GRR-15.md` only); `git diff --stat` (`plans/GRR-15.md` only); `git worktree list` (worktrees for CEX-03, CEX-04, GRR-11, GRR-13, GRR-15, TRG-14 and `live`); `git branch -a` (no `unit/CEX-05`); `ls plans/CEX-05.md` (absent).
+- **Unit `units/CEX-05-preflight-endpoint-placeholders.md`.** Read in full (27 lines). `blocked_by` line 7, `parallel_with` line 8, `unblocks` line 9; Why line 15; Decisions lines 18 to 21; criteria lines 24 to 26. `git log` for the file (commits `2fed3f4`, `098add9`); `git show 098add9` (the `unblocks` line changed from `[CEX-06, CEX-07, CEX-09, CEX-10]` to add CEX-18).
+- **Module `modules/compile-export.md`.** Read in full. Lines 3, 7, 34, 39 to 44, 46 to 55, 57 to 62 and 69 are the ones cited.
+- **`units/README.md`.** Read in full: unit format (lines 34 to 57), blocker notation (lines 59 to 65), phase table.
+- **Example plans.** `plans/PLT-02.md`: headings (`grep -n '^#'`) and sections 1, 3 and 4 read. `plans/CEX-04.md`: read in full, sections 1 to 8, and its headings (`grep -n '^#'`).
+- **Other units' blocker fields.** `units/CEX-06-claims-orphans-checks.md`, `CEX-07-entity-links-banned-phrases.md`, `CEX-09-assembly-preflight-gate.md`, `CEX-10-pandoc-runner-md-export.md`, `CEX-18-preflight-export-panels.md` and `CEX-02-effective-order-view-model.md` read in full; `units/CEX-20-milestone-gate.md` line 27 and `units/AGL-24-compile-tools.md` lines 7, 17 and 23 by grep; `units/CEX-01-contract-slice.md` line 22 by grep; `units/CEX-03-order-writes.md` line 8 and `units/CEX-04-assembled-markdown.md` line 8 by grep.
+- **Plan statuses.** `git grep -l -E '^status: (draft|planned)' HEAD -- plans/` lists only `plans/GRR-15.md` (`status: draft` at `4a4efa9`; `status: planned` at `1ce2248`, the HEAD at the commit of this plan). `git grep -n -E 'compile-export|CEX-0|markdown-text|preflight' HEAD -- plans/GRR-15.md` finds nothing; `git diff | grep -c -E 'compile-export|CEX'` prints `0`.
+- **DECISIONS (by unit id, not read whole).** `grep -c 'CEX-05' plans/DECISIONS.md` prints `0`. `grep -n -E '^## .*(CEX-0[1-5])'` gives lines 5806, 5862, 5876, 6165, 6178 and 6214. `grep -n -i preflight` gives only lines 2663 and 2852, which are about the installer.
+- **Earlier plans.** `plans/CEX-01.md` lines 37, 110 and 294 (grep). `plans/CEX-02.md` lines 159 and 174 (grep). `plans/CEX-03.md` line 133 (grep). `plans/CEX-04.md` lines 42 and 155 (grep), and sections 1 to 8 (read). `plans/PLT-02.md` section 1 (read, the Node 26 line).
+- **Contract (`packages/contracts/src/compile-export/`).** `preflight.ts` read in full (53 lines). `routes.ts` read (`PREFLIGHT_ROUTE` line 15). `constants.ts` read (`PREFLIGHT_CHECK_IDS` line 57, `FINDING_SEVERITIES` line 66, `CHECK_STATUSES` line 69, `PLACEHOLDER_WORDS` line 73, `PLACEHOLDER_PATTERN` line 80). `index.ts` read.
+- **API code (`apps/api/src/modules/compile-export/`).** `manuscript.service.ts` read in full (`view` line 73, `revision` line 150, `activeProjectId` line 177, `projectOrder` line 190, `revisionOf` line 261). `assembly.service.ts` read in full (`view()` call line 67, `activeProjectId` line 117, imports lines 13 to 17). `assembly.ts` head read. `markdown-text.ts` read in full (`INLINE_CODE` line 14, `splitFrontMatter` lines 25 to 55, `withoutFences` lines 59 to 82, `citationIds` lines 86 to 98, header lines 1 and 2). `word-count.ts` imports (`grep -n import`, line 2). `compile-export.module.ts` read in full (17 lines). `manuscript.controller.ts` read in full (`@HttpCode(200)` on each POST).
+- **Project store.** `apps/api/src/modules/project-store/files.service.ts` line 257 (`read(projectId, path): FileRead`) and lines 261 to 262 (`decodeText`, refusal when undefined), by `sed`. `project-store.service.ts` line 51 (`activeId()`), by grep.
+- **Test seams.** `apps/api/test/compile-export-manuscript.kit.ts` read in full (`STATIC_ROOT` line 16, `manuscriptLibrary` line 20, `withManuscript` line 48, `getManuscript` line 70, `manuscriptOf` line 79). `compile-export-manuscript.test.ts` (test names by grep; C1 lines 55 to 84 and C6 lines 300 to 314 read). `compile-export-assembly.test.ts` lines 1 to 60 read. `compile-export-order.test.ts` lines 33 to 43 (the POST helper with `origin: LOOPBACK_ORIGIN`). `guard-request.ts` read (`RequestOptions` lines 7 to 18, `send` line 27, `sessionCookie` line 80). `invariant-sweep.ts` (grep: `LOOPBACK_HOST` line 38, `LOOPBACK_ORIGIN` line 39, `snapshotLibrary` line 330). `providers-client.kit.ts` lines 1 to 80 read (`recordsOf` line 61). `graph-runner-sample-recipe.test.ts` lines 66 to 80 read, and lines 174 to 176 (`mock.close()` in `finally`). `create-test-app.ts` (grep: `TestAppOptions` line 9, `createTestApp` line 66). `project-store-files.kit.ts` line 40 (`ACTIVE_BOOK_SETTINGS`).
+- **Mock OpenAI.** `e2e/fixtures/mock-openai/server.mjs` (grep and `sed`: `REPLY_KINDS` line 15, `startMockOpenAI` line 17, scenario loading lines 60 to 85, records endpoint lines 239 to 245, `scenario.records.push` line 302). The `scenarios/` folder contains `text-stream.json`.
+- **Lint boundaries.** `eslint.config.mjs` lines 30 to 60 read: a module imports another only through its entry file (rule R1). `AssemblyService` already imports the project store through `../project-store/project-store.module`.
+- **Package.** `apps/api/package.json` lines 2 and 5 to 8: name `@bbartolome/scriba-api`; scripts `build`, `test` (`npm run build && vitest run`), `lint` (`eslint .`).
+- **Regex behaviour.** `node -e` with `node` v26.13.0 (`/Users/bbartolome/.n/bin/node`) on `PLACEHOLDER_PATTERN` as written in `constants.ts`: `TK in prose`, `{{chapter_title}}`, `TKTK` and the backtick-wrapped `` `TODO` `` match; `TODOS`, `XXXL` and `todo` do not. A non-global `matchAll` throws a `TypeError`; `new RegExp(source, 'g')` returns each match with its `index`. This was a one-line check, not a test or a build.
+- **Setup of this session.** The main tree's HEAD and `git status --short` as above. No file was written except `plans/CEX-05.md`.
+
+### 7b. ASSUMED
+
+- **A1.** The composed app answers a POST with no body on `PREFLIGHT_ROUTE` with 200 (C2 checks it; not run).
+- **A2.** A preflight POST writes nothing, so the two `snapshotLibrary` results in C2 are equal (C2 checks it; not run).
+- **A3.** The composed app makes no request to the mock at startup or on a GET, so the mock's `text-stream` records stay empty except for a preflight call (C3 checks it; not run).
+- **A4.** `FilesService.read(...).content` is the text the store decodes, with any BOM left in place. Only lines 257 to 262 of `files.service.ts` were read; `decodeText` was not.
+- **A5.** TypeScript's typing of `matchAll` gives each match an `index`. The `tsc` step of step 12 checks it; not run.
+- **A6.** `npx vitest run <file>` run from `apps/api` runs one file, as `plans/CEX-04.md` step 9 uses it; not run here.
+- **A7.** The `LINE` regex in `markdown-text.ts` (line 11) covers every character of a text, so that `text.match(LINE)` rejoins to the text. Read, not run.
+- **A8.** A preflight run that reads each file once more for the check, on top of the view's reads, is fast enough for a manuscript. Not measured.
+- **A9.** No other unit changes `markdown-text.ts` or `compile-export.module.ts` before this unit merges. Only the branch list was checked (section 7a), not future work.
+
+## 8. Review parts
+
+- **Part A (the only part).** Steps 0 to 17 and tests C1, C2 and C3 (criteria 1 to 3). The three tests read one endpoint, which needs the helpers (step 4), the check (step 5), the service (step 6), the controller (step 7), the module (step 8) and the test file (step 9), so the steps cannot be reviewed apart. Review against section 2 (only the listed paths change), P2 and P3 (the output of `withoutFences` is unchanged, shown by the step 4 suites), P5 (the line and offset arithmetic, shown by C1) and section 4.
