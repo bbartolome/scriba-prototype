@@ -71,24 +71,34 @@ export class ManuscriptService {
 
   // The view model of GET the manuscript. Recomputed on every call; nothing is kept between calls.
   view(): ManuscriptView {
+    return this.compose();
+  }
+
+  // The view the manuscript would have with `order` as its order field (P2). The revision is still that of the
+  // file on disk. The write service uses it for the candidate state of a write; nothing is written.
+  preview(order: OrderEntry[]): ManuscriptView {
+    return this.compose(order);
+  }
+
+  // The valid entries of the file's order field: first occurrence per path, naming a current member, with their
+  // unknown keys (P2). The write service uses it to keep the unknown keys of the entries it rewrites.
+  orderField(): OrderEntry[] {
+    const projectId = this.activeProjectId();
+    const project = this.projectOrder(projectId);
+    return this.fieldOf(project.order, this.members(projectId)).orderField;
+  }
+
+  // The view computation. With `override`, the override is the order field and the file's raw order is not used.
+  private compose(override?: OrderEntry[]): ManuscriptView {
     const projectId = this.activeProjectId();
     const project = this.projectOrder(projectId);
     const members = this.members(projectId);
-    const memberSet = new Set(members);
 
     // P8: the first occurrence of a path wins; a valid entry names a member, any other entry is stale.
-    const seen = new Set<string>();
-    const orderField: OrderEntry[] = [];
-    const warnings: ManuscriptWarning[] = [];
-    for (const entry of project.order) {
-      if (seen.has(entry.path)) continue;
-      seen.add(entry.path);
-      if (memberSet.has(entry.path)) {
-        orderField.push(entry);
-      } else {
-        warnings.push({ kind: 'staleEntry', path: entry.path });
-      }
-    }
+    const { orderField, warnings } = this.fieldOf(
+      override ?? project.order,
+      members,
+    );
 
     // P11 to P13: the story graphs, their invalid files and the projected pairs of the body.
     const partOf = new Map(
@@ -139,6 +149,28 @@ export class ManuscriptService {
       warnings,
       revision: this.revisionOf(project.raw, members),
     };
+  }
+
+  // The order field and its stale-entry warnings (P8): the first occurrence of a path wins, and an entry that
+  // names no member is stale.
+  private fieldOf(
+    order: OrderEntry[],
+    members: string[],
+  ): { orderField: OrderEntry[]; warnings: ManuscriptWarning[] } {
+    const memberSet = new Set(members);
+    const seen = new Set<string>();
+    const orderField: OrderEntry[] = [];
+    const warnings: ManuscriptWarning[] = [];
+    for (const entry of order) {
+      if (seen.has(entry.path)) continue;
+      seen.add(entry.path);
+      if (memberSet.has(entry.path)) {
+        orderField.push(entry);
+      } else {
+        warnings.push({ kind: 'staleEntry', path: entry.path });
+      }
+    }
+    return { orderField, warnings };
   }
 
   // The active project's id (P6).
