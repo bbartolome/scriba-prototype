@@ -6677,3 +6677,9 @@ Part D (gates and commit):
 - **Decision (Navigator, option a):** apply O4 (ii) (CEX-11 added to CEX-14's `blocked_by`, CEX-14 added to CEX-11's `unblocks`) and remove the mutual `parallel_with` entries in the same commit. `units/CEX-11-docx-export.md`: `parallel_with: [CEX-12, CEX-13, CEX-16]`, `unblocks: [CEX-14, CEX-15]` (sorted). `units/CEX-14-template-overrides-settings.md`: `blocked_by: [CEX-03, CEX-10, CEX-11]`, `parallel_with: [CEX-12, CEX-13, CEX-16]`.
 - **Reason:** `units/README.md` line 64 says `parallel_with` "never pairs a unit with one it depends on, directly or transitively". With CEX-14 blocked by CEX-11, the mutual pairing would break that rule. Option (b) (apply without removing the pair) ships a known violation. Option (c) (withdraw the decision) leaves CEX-14's criterion 2 without its dependency on `reference.docx`. Option (c) changes no convention, but it is not chosen.
 - **Procedure:** a reviser makes the four line edits in one commit, as the decision requires. The orchestrator does not write unit files.
+
+## 2026-11-19 — CEX-11 — unit change applied: commit c8b2638 (units CEX-11 and CEX-14; the parallel_with decision above)
+
+- **Unit change:** `units/CEX-11-docx-export.md` lines 8 and 9 and `units/CEX-14-template-overrides-settings.md` lines 7 and 8, in one commit, by a reviser applying the Navigator decision. CEX-11 `parallel_with: [CEX-12, CEX-13, CEX-16]`, `unblocks: [CEX-14, CEX-15]`; CEX-14 `blocked_by: [CEX-03, CEX-10, CEX-11]`, `parallel_with: [CEX-12, CEX-13, CEX-16]`.
+- **Checks before the commit:** `plans/CEX-14.md` absent on main; no `unit/CEX-14` branch; the four lines matched the expected text. After the commit, `git show --stat` lists only the two unit files.
+- **Plan:** `plans/CEX-11.md` section 7 (O4 (ii)) and section 6a/6b record the commit. The plan's status is set after the plan's stale lines are corrected.
