@@ -1,11 +1,7 @@
-# Queue (scout, 2026-11-18): M2; 43 units without a plan, in sequence
-TRG-15 | M2 | available | all blockers done
-TRG-17 | M2 | not available | waits on TRG-15
-GRR-12 | M4 | available | all blockers done
-GRR-13 | M4 | available | all blockers done
-GRR-14 | M4 | available | all blockers done
-GRR-15 | M4 | not available | waits on GRR-12, GRR-13, GRR-14
-GRR-17 | M4 | not available | waits on GRR-12, GRR-13, GRR-14, GRR-15
+# Queue (scout, 2026-11-19): M2; 39 units without a plan, in sequence
+TRG-17 | M2 | available | all blockers done
+GRR-15 | M4 | not available | waits on GRR-12, GRR-13
+GRR-17 | M4 | not available | waits on GRR-12, GRR-13, GRR-15
 CEX-03 | M5 | available | all blockers done
 CEX-04 | M5 | available | all blockers done
 CEX-05 | M5 | available | all blockers done
