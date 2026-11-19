@@ -14,8 +14,8 @@ unblocks: []
 Merging this **closes Tool registry `phase:editor-ui`**.
 
 ## Acceptance criteria (the `phase:editor-ui` checklist)
-- [ ] TRG-13…TRG-16 criteria pass on `main`.
-- [ ] **M2 done-when:** each of the four nonfiction workhorses (cold open, mystery question, myth-buster, numbers-to-people), as shipped by Genre packs, produces a draft that cites its source files.
+- [x] TRG-13…TRG-16 criteria pass on `main`.
+- [x] **M2 done-when:** each of the four nonfiction workhorses (cold open, mystery question, myth-buster, numbers-to-people), as shipped by Genre packs, produces a draft that cites its source files.
 
 ## Demo (M2, under 5 min)
 1. Open the nonfiction sample project, go to Tools. Show core, nonfiction and user groups; switch off `mystery_question`.
