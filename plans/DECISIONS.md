@@ -6200,3 +6200,30 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Part D (steps 7 to 10):** APPROVED. Implementer's gates: prettier, lint, build, root test exit 0 (web 77 files, 559 tests), root build exit 0. Reviewer ran prettier on the ten files. Bundle: initial 589.48 kB, 89.48 kB over the 500 kB budget (warning, exit 0), canvas page a lazy chunk. Step 9 (fresh clone) not run by the implementer; the orchestrator runs it at the merge check.
 - **Commit structure** stays as decided on 2026-11-19: part commits and fix commits, each with GRR-13, not squashed. Step 5g and 5h are one commit (541194b).
 - **Next:** merge checks on the rebased branch (step 3 of the prompt): rebase onto main, lint, test, build, fresh clone (plan step 9), bundle check, then fast-forward main.
+
+## 2026-11-19 — GRR-13 — On main (fast-forward 3b78639 to 17a33b5)
+
+- **Approved code:** patch id 8cb5e0210355007b194a78a91b92205267d13f1a (round 3, all four parts APPROVED). The patch id is unchanged after the replay onto main, the status commit and the fast-forward.
+- **On main, code commits in order:** 85c05aa (part A), a844f5f (part B), a8ebc2a (part B fix, C-11), f5c729e (part C), 6d47c37 (part C fix, lockNodes), 0c1abad (part B fix, V1), a8143fd (T1 assertion), 6bce2b6 (R2 and R3 guards), 6357388 (lint fix). Status and ticks: 17a33b5. Criteria 25 to 28 ticked; `plans/GRR-13.md` is `status: done`.
+- **Rebase:** `git rebase main` in the worktree stalled again ("local changes would be overwritten"). Replayed by cherry-pick with `git update-index --refresh` before each commit. Backups: `backup/GRR-13-pre-rebase` (7e18b90) and `backup/GRR-13-pre-merge` (baeb806).
+- **Merge checks on the replayed branch:** `npm ci` 0; root lint 0; root build 0; root test: first run exit 1 with 39 timeouts (5 s) in unrelated web specs, while load was 27 to 36 (a fresh clone and an implementer ran at the same time); rerun at load below 15 exit 0 (contracts 253, api 517, web 77 files and 559 tests, packs 14, e2e 12).
+- **Plan step 9 (fresh clone of unit/GRR-13, in a scratch folder outside the repo, removed afterwards):** `npm ci` 0, lint 0, build 0. Test: first run exit 1, seven tests in `preferences-step.spec.ts` (PR1 to PR7) timed out at 5 s on the cold clone under load, the known open flake; rerun exit 0 (77 files, 559 tests). The GRR-13 files do not touch that spec.
+- **Bundle:** initial 589.48 kB, 89.48 kB over the 500 kB budget (a warning, exit 0). Verified pre-existing: main at 3b78639 builds with the same initial total, 589.48 kB (transfer 144.72 kB, against 144.82 kB on the branch). The canvas page is the lazy chunk `chunk-Dehi8Svc.js` (217.65 kB), not in the initial bundle.
+- **Kept, not deleted:** worktree `scriba-prototype-wt/GRR-13` and branch `unit/GRR-13` (step 3.10 not done, as for CEX-03; the user decides).
+
+## 2026-11-19 — CEX-04 — Review result: Part A APPROVED; on main (fast-forward 17a33b5 to b0a9b67)
+
+- **Plan:** revision 2 by the Opus reviser (commit c034fbe, `status: planned`). READY, no unit change. Open points 1 to 6 settled in the plan (no Navigator decision needed): a source with no usable citation is listed by its title, else its id; only `[@id]` references count as cited; malformed front matter follows the SHL-11 rule; `penName` is not emitted; identifier `urn:scriba:<projectId>`; the sample outline keeps the unit's default (`all`).
+- **Code:** Implementer (Haiku) COMPLETE, two commits on `unit/CEX-04`: 7d5e3fc (shared Markdown helpers) and b5d8e12 (assembled Markdown builder). Patch id 417b9283f2e189203b140f4ae1b1cf7144797e4f.
+- **Review:** Sonnet, medium, one part (steps 0 to 14; tests C1 to C3). APPROVED. The six files are the section 2 set. The implementer's differences d1 to d9 are allowed. The two commits (step 12 asked for one) do not change the diff. Inline code in `citationIds` is removed per line only; P10 names no multi-line rule, so not a rework item.
+- **Checks after the replay onto main 17a33b5** (patch id unchanged): `npm ci` 0; root lint 0; root test 0 (api 140 files and 520 tests; web 77 and 559; contracts 253; packs 14; e2e 12); root build 0. The implementer's first root test run had exit 1 from load timeouts (load about 50), and its rerun passed. Its fresh-clone run before the replay passed (npm ci, build, test, lint).
+- **Step 8:** criteria 1 to 3 ticked; `plans/CEX-04.md` is `status: done` (commit b0a9b67).
+- **Kept, not deleted:** worktree `scriba-prototype-wt/CEX-04` and branch `unit/CEX-04`; backup `backup/CEX-04-pre-merge` (382ff2a).
+
+## 2026-11-19 — Follow-ups from the merge checks (not blockers)
+
+- The initial bundle is over the 500 kB budget on main (589.48 kB). It is pre-existing and was not caused by GRR-13 or CEX-04. Owner: to be decided.
+- `preferences-step.spec.ts` timed out on a cold clone (GRR-13 fresh clone, first run). Still open; it passed on rerun.
+- Root web tests time out under load above about 15 (seen today). A load problem, not a code one; rerun when the machine is quiet.
+- The "PlatformExceptionFilter hook failed" ERROR line in the root test log: still not investigated.
+- TS2591 for TRG-14 specs run alone: still open (owner TRG-14).
