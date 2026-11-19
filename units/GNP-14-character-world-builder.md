@@ -16,6 +16,6 @@ unblocks: [GNP-19]
 - **`fiction/tools/world_builder.yaml`**, output `entity`, `enabled: true`. Description: "Expand a place or world rule and flag contradictions with the others." Inputs: `ruleIds` [entity port list, kinds `place` and `world-rule`, required], `coreIdea` [text port]. Prompt: return the expanded place or rule as a Markdown entity file; put any contradictions with the other supplied rules under a fixed **"Contradictions"** heading in the body (the author sees them in review).
 
 ## Acceptance criteria
-- [ ] Both pass the validation suite; every entity input names an existing entity type.
-- [ ] Golden tests for both (rendered prompt with entities and IDs; output kind `entity`; `sourcesUsed`); world_builder's golden includes the Contradictions instruction.
-- [ ] Manual eval cases added.
+- [x] Both pass the validation suite; every entity input names an existing entity type.
+- [x] Golden tests for both (rendered prompt with entities and IDs; output kind `entity`; `sourcesUsed`); world_builder's golden includes the Contradictions instruction.
+- [x] Manual eval cases added.
