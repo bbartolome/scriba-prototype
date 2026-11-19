@@ -6288,3 +6288,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Other gates:** lint 0 (after ec6293d); root test 0 (contracts 253; api 520; web 560; packs 14; e2e 12); build 0 (the known bundle warning). Fresh clone of `unit/GRR-15` at ec6293d: `npm ci` 0, lint 0, build 0; test 1 on the first run (seven `preferences-step.spec.ts` timeouts under load, the known flake), 0 on the rerun.
 - **Open for the next session:** (a) a Sonnet review of the parts of the plan (Part A to Part E) on the patch id, as the rules say; (b) a decision on the two full-suite failures, which the plan's step 13 does not allow to pass as they are; the failures appear to predate this unit and should be checked against main's own full-suite run before the merge; (c) step 16 is empty and step 17 (PR) is not done.
 - **Status:** `plans/GRR-15.md` stays `status: planned`. Branch `unit/GRR-15` (ec6293d) and worktree `scriba-prototype-wt/GRR-15` are kept.
+
+## 2026-11-19 — GRR-15 — Orchestrator: review started, step 13 verification started
+
+- **Patch id of the code (unit/GRR-15, ec6293d):** 6b829738d21d346b7be31b3ad518e167e8db7dfe (`git diff main...unit/GRR-15 -- . ':!plans' ':!units' | git patch-id --stable`).
+- **Sonnet reviewers, Parts A to E** (plan section 9) started on this patch id. Results are recorded in a separate entry when all five have replied.
+- **Step 13 verification:** a separate run of the full e2e suite and of the two named specs (journey "project from sample"; tools-preview TRG-05 C2) on main at cc82fb0, in the worktree `scriba-prototype-wt/verify-main-cc82fb0`, without the GRR-15 code. The implementer's claim that both failures predate the unit is tested by that run. Results are recorded when it replies.
+- **Merge:** GRR-15 is not merged while step 13 is unmet. If the failures are present on main, the merge with a known failure is the user's decision.
+- **Worktrees kept:** GRR-11, GRR-13, CEX-03, CEX-04, GRR-15, TRG-14 and live are kept, not removed (carried-over rule of this session).
+- **Status:** `plans/GRR-15.md` stays `status: planned`.
