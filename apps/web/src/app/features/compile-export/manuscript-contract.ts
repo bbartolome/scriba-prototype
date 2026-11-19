@@ -65,7 +65,9 @@ function isManuscriptPath(value: unknown): value is string {
 }
 
 function isStrings(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+  return (
+    Array.isArray(value) && value.every((item) => typeof item === 'string')
+  );
 }
 
 /** One entry, checked as manuscriptEntrySchema does. */

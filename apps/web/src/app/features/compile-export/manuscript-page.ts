@@ -15,14 +15,7 @@ import type {
   ManuscriptView,
   ManuscriptWarning,
 } from '@bbartolome/scriba-contracts/compile-export';
-import {
-  catchError,
-  map,
-  type Observable,
-  of,
-  Subject,
-  switchMap,
-} from 'rxjs';
+import { catchError, map, type Observable, of, Subject, switchMap } from 'rxjs';
 import {
   ActiveProjectSignal,
   API_CLIENT,
@@ -66,7 +59,9 @@ function outcomeOf<T>(source: Observable<T>): Observable<Outcome<T>> {
 
 /** A files-changed path that can change the outline: project.yaml, the manuscript folder or a file in it. */
 function touchesManuscript(path: string): boolean {
-  return path === 'project.yaml' || path === 'drafts' || path.startsWith('drafts/');
+  return (
+    path === 'project.yaml' || path === 'drafts' || path.startsWith('drafts/')
+  );
 }
 
 const PART_HEADINGS: Record<ManuscriptPart, string> = {
@@ -94,8 +89,14 @@ function warningLine(warning: ManuscriptWarning): string {
 }
 
 /** The paths of each part, in the view's order: the lists a reorder request carries. */
-function listsOf(entries: readonly ManuscriptEntry[]): Record<ManuscriptPart, string[]> {
-  const lists: Record<ManuscriptPart, string[]> = { front: [], body: [], back: [] };
+function listsOf(
+  entries: readonly ManuscriptEntry[],
+): Record<ManuscriptPart, string[]> {
+  const lists: Record<ManuscriptPart, string[]> = {
+    front: [],
+    body: [],
+    back: [],
+  };
   for (const entry of entries) {
     lists[entry.part].push(entry.path);
   }
@@ -171,6 +172,7 @@ function isPart(value: string): value is ManuscriptPart {
           <h2>{{ section.heading }}</h2>
           <ul
             cdkDropList
+            [cdkDropListDisabled]="!editable()"
             [attr.data-part]="section.part"
             [cdkDropListSortPredicate]="
               section.part === 'body' ? canDropOnBody : anyDrop
@@ -178,8 +180,14 @@ function isPart(value: string): value is ManuscriptPart {
             (cdkDropListDropped)="drop($event, section.part)"
           >
             @for (row of section.rows; track row.path) {
-              <li cdkDrag [cdkDragDisabled]="row.graphOrdered" [attr.data-path]="row.path">
-                <span cdkDragHandle [attr.aria-label]="'Drag ' + row.name">::</span>
+              <li
+                cdkDrag
+                [cdkDragDisabled]="row.graphOrdered || !editable()"
+                [attr.data-path]="row.path"
+              >
+                <span cdkDragHandle [attr.aria-label]="'Drag ' + row.name"
+                  >::</span
+                >
                 <a
                   [routerLink]="['/projects', projectId(), 'files']"
                   [queryParams]="{ path: row.path }"
@@ -187,6 +195,7 @@ function isPart(value: string): value is ManuscriptPart {
                 >
                 <select
                   [attr.aria-label]="'Status of ' + row.name"
+                  [disabled]="!editable()"
                   (change)="setStatus(row.path, $event)"
                 >
                   @for (value of statuses; track value) {
@@ -197,7 +206,7 @@ function isPart(value: string): value is ManuscriptPart {
                 </select>
                 <select
                   [attr.aria-label]="'Part of ' + row.name"
-                  [disabled]="row.graphOrdered"
+                  [disabled]="row.graphOrdered || !editable()"
                   (change)="setPart(row.path, $event)"
                 >
                   @for (value of parts; track value) {
@@ -322,7 +331,7 @@ export class ManuscriptPage {
   /** A drop on a part list: a reorder of that part, sent with the current revision (D8, D9). */
   protected drop(event: CdkDragDrop<unknown>, part: ManuscriptPart): void {
     const current = this.view();
-    if (current === undefined) return;
+    if (!this.editable() || current === undefined) return;
     if (part === 'body' && event.currentIndex < this.graphCount()) return;
     const lists = listsOf(current.entries);
     moveItemInArray(lists[part], event.previousIndex, event.currentIndex);
@@ -338,7 +347,7 @@ export class ManuscriptPage {
   protected setStatus(path: string, event: Event): void {
     const current = this.view();
     const value = (event.target as HTMLSelectElement).value;
-    if (current === undefined || !isStatus(value)) return;
+    if (!this.editable() || current === undefined || !isStatus(value)) return;
     this.write(MANUSCRIPT_STATUS_PATH, {
       revision: current.revision,
       path,
@@ -350,7 +359,7 @@ export class ManuscriptPage {
   protected setPart(path: string, event: Event): void {
     const current = this.view();
     const value = (event.target as HTMLSelectElement).value;
-    if (current === undefined || !isPart(value)) return;
+    if (!this.editable() || current === undefined || !isPart(value)) return;
     this.write(MANUSCRIPT_PART_PATH, {
       revision: current.revision,
       path,

@@ -268,10 +268,7 @@ describe('ManuscriptPage', () => {
         'Story graph cycle among drafts/ch02.md, drafts/ch03.md. The graph is ignored.',
       ),
       leafWith(root, 'Story graph skipped as invalid: graphs/broken.json.'),
-      leafWith(
-        root,
-        'Order entry for a missing file ignored: drafts/gone.md.',
-      ),
+      leafWith(root, 'Order entry for a missing file ignored: drafts/gone.md.'),
       leafWith(root, 'Front matter'),
       leafWith(root, 'Body'),
       leafWith(root, 'Back matter'),
@@ -280,7 +277,8 @@ describe('ManuscriptPage', () => {
       const before = shown[i - 1] as HTMLElement;
       const after = shown[i] as HTMLElement;
       expect(
-        before.compareDocumentPosition(after) & Node.DOCUMENT_POSITION_FOLLOWING,
+        before.compareDocumentPosition(after) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
     }
 
@@ -447,5 +445,29 @@ describe('ManuscriptPage', () => {
 
     expect(countOf(MANUSCRIPT_REORDER_PATH, 'POST')).toBe(0);
     expect(selectNamed(root, 'Part of ch01.md').disabled).toBe(true);
+  });
+
+  it('M4 the phone viewport is read-only: the controls and drags are disabled and no write is sent', async () => {
+    doubles.api.respond('GET', MANUSCRIPT_PATH, VIEW_1);
+    const harness = await renderPage('/projects/p1/manuscript', 390, 844);
+    const root = harness.routeNativeElement as HTMLElement;
+    await until(harness.fixture, () => {
+      selectNamed(root, 'Status of ch02.md');
+    });
+
+    expect(selectNamed(root, 'Status of ch02.md').disabled).toBe(true);
+    expect(selectNamed(root, 'Part of ch02.md').disabled).toBe(true);
+    expect(dragOf(rowOf(root, 'drafts/ch02.md')).disabled).toBe(true);
+
+    dropOn(partList(root, 'body'), 1, 2);
+    choose(selectNamed(root, 'Status of ch02.md'), 'final');
+    await settle(harness);
+
+    expect(doubles.api.requests.map((request) => request.method)).toEqual([
+      'GET',
+    ]);
+    expect(
+      rowOf(root, 'drafts/ch02.md').querySelector('a')?.getAttribute('href'),
+    ).toContain('/projects/p1/files');
   });
 });
