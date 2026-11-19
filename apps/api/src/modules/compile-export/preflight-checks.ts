@@ -6,6 +6,7 @@ import {
   type PreflightFinding,
 } from '@bbartolome/scriba-contracts/compile-export';
 import type { StoryGraph } from '@bbartolome/scriba-contracts/graph-runner';
+import type { EntityResolution } from '@bbartolome/scriba-contracts/project-store';
 import { maskCode, splitFrontMatter } from './markdown-text';
 
 // One manuscript file as the checks read it: its view entry, its text and its hash, as the Project store decodes
@@ -17,6 +18,9 @@ export interface PreflightFile {
   hash: string;
 }
 
+// What a link target is in the project (P7): a file, a missing path, or a path the store refuses.
+export type LinkTarget = 'file' | 'missing' | 'refused';
+
 // The input of every runner (P10). It is internal to the module.
 export interface PreflightInput {
   projectId: string;
@@ -26,6 +30,10 @@ export interface PreflightInput {
   storyGraphs: { path: string; graph: StoryGraph }[];
   // The text of a project file, or undefined when the store cannot read it as text (P2).
   readText(path: string): string | undefined;
+  // Resolves entity ids through the Project store (P2, S4).
+  resolveIds(ids: string[]): EntityResolution;
+  // Says what a project-relative path is (P7).
+  targetOf(path: string): LinkTarget;
 }
 
 // A check. It returns its findings; the framework adds `check` and derives the status (P8).

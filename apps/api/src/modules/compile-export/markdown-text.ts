@@ -90,18 +90,18 @@ export function withoutFences(text: string): string {
   return lines.filter((_, i) => !flags[i]).join('\n');
 }
 
-// The text with its code blanked (P3): same length, same line terminators. Fenced lines and inline code become spaces,
-// so offsets and line numbers of the input hold in the output.
-export function maskCode(text: string): string {
+// The text with its code blanked (P3): same length, same line terminators. Fenced lines and inline code become `fill`
+// (a space by default), so offsets and line numbers of the input hold in the output.
+export function maskCode(text: string, fill = ' '): string {
   const parts = text.split(/(\r\n|\n|\r)/);
   const flags = fencedLines(parts.filter((_, i) => i % 2 === 0));
   const masked = parts
     .map((part, i) => {
       if (i % 2 === 1) return part;
-      return flags[i / 2] ? part.replace(/[^\r\n]/g, ' ') : part;
+      return flags[i / 2] ? part.replace(/[^\r\n]/g, fill) : part;
     })
     .join('');
-  return masked.replace(INLINE_CODE, (code) => code.replace(/[^\r\n]/g, ' '));
+  return masked.replace(INLINE_CODE, (code) => code.replace(/[^\r\n]/g, fill));
 }
 
 // The ids cited in a file's body (P10): front matter, fenced code and inline code are removed first, then every

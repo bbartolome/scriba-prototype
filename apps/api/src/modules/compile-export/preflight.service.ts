@@ -7,19 +7,23 @@ import {
 import {
   PROJECT_ERROR_CODES,
   PROJECT_ERROR_STATUS,
+  type FileEntry,
 } from '@bbartolome/scriba-contracts/project-store';
 import { ModuleError } from '../platform/platform.module';
 import {
+  EntitiesService,
   FilesService,
   ProjectStoreService,
 } from '../project-store/project-store.module';
 import { ManuscriptService } from './manuscript.service';
+import { entityLinksCheck } from './preflight-links-phrases';
 import {
   orphanScenesCheck,
   unsupportedClaimsCheck,
 } from './preflight-claims-orphans';
 import {
   placeholdersCheck,
+  type LinkTarget,
   type PreflightFile,
   type PreflightInput,
   type PreflightRunner,
@@ -32,6 +36,7 @@ const PREFLIGHT_RUNNERS: PreflightRunner[] = [
   placeholdersCheck,
   unsupportedClaimsCheck,
   orphanScenesCheck,
+  entityLinksCheck,
 ];
 
 // The status of a check (P8): any error fails it, else any warning warns it, else it passes.
@@ -48,6 +53,7 @@ export class PreflightService {
     private readonly store: ProjectStoreService,
     private readonly files: FilesService,
     private readonly manuscript: ManuscriptService,
+    private readonly entities: EntitiesService,
   ) {}
 
   // Runs every registered check on the active project (P11 to P13, P16). `now` is the time of the run.
@@ -81,6 +87,8 @@ export class PreflightService {
       files,
       storyGraphs,
       readText,
+      resolveIds: (ids) => this.entities.resolve(projectId, ids),
+      targetOf: this.targetOf(projectId),
     };
     const checks: PreflightCheck[] = PREFLIGHT_RUNNERS.map((runner) => {
       const findings: PreflightFinding[] = runner
@@ -89,6 +97,37 @@ export class PreflightService {
       return { id: runner.id, status: statusOf(findings), findings };
     });
     return { ranAt: now.toISOString(), revision: view.revision, checks };
+  }
+
+  // What a project-relative path is (P7). Each parent folder is listed once per run. A missing path gives `missing`,
+  // a path the store refuses gives `refused` (D7), and a listed entry of kind `file` gives `file`.
+  private targetOf(projectId: string): (path: string) => LinkTarget {
+    const listings = new Map<string, FileEntry[]>();
+    return (path) => {
+      const slash = path.lastIndexOf('/');
+      const parent = slash < 0 ? '.' : path.slice(0, slash);
+      const name = path.slice(slash + 1);
+      try {
+        let entries = listings.get(parent);
+        if (entries === undefined) {
+          entries = this.files.list(projectId, { path: parent }).entries;
+          listings.set(parent, entries);
+        }
+        const entry = entries.find(
+          (candidate) => candidate.path.split('/').pop() === name,
+        );
+        return entry?.kind === 'file' ? 'file' : 'missing';
+      } catch (error) {
+        if (
+          error instanceof ModuleError &&
+          error.code === PROJECT_ERROR_CODES.NOT_FOUND
+        ) {
+          return 'missing';
+        }
+        if (error instanceof ModuleError) return 'refused';
+        throw error;
+      }
+    };
   }
 
   // The active project's id (P13): a copy of AssemblyService's check, with its message.
