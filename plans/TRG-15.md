@@ -1,6 +1,6 @@
 ---
 id: TRG-15
-status: planned
+status: done
 ---
 # TRG-15 plan — Live previews beside the tool editor, and render of an inline source
 
