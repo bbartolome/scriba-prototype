@@ -5,8 +5,8 @@ module: compile-export
 phase: phase:export
 milestone: M5
 blocked_by: [CEX-10]
-parallel_with: [CEX-12, CEX-13, CEX-14, CEX-16]
-unblocks: [CEX-15]
+parallel_with: [CEX-12, CEX-13, CEX-16]
+unblocks: [CEX-14, CEX-15]
 ---
 
 # CEX-11 — DOCX

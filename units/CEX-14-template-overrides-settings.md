@@ -4,8 +4,8 @@ title: Per-project template overrides, "copy default into project", export setti
 module: compile-export
 phase: phase:export
 milestone: M5
-blocked_by: [CEX-03, CEX-10]
-parallel_with: [CEX-11, CEX-12, CEX-13, CEX-16]
+blocked_by: [CEX-03, CEX-10, CEX-11]
+parallel_with: [CEX-12, CEX-13, CEX-16]
 unblocks: [CEX-15, CEX-18]
 ---
 
