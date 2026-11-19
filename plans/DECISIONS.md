@@ -6139,3 +6139,16 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Implementer's report, not re-run by the reviewer:** the port 8080 check before each e2e run and the lint closing line. The orchestrator re-runs lint, test and build on the rebased commit (step 3) and records node and npm versions there. The e2e runs are not repeated: no file under apps, e2e, packages or scripts changed between 8c156c3 and main (checked: `git diff --name-only 8c156c3..main -- apps e2e packages scripts` is empty).
 - **Note, not rework:** running the TRG-14 spec alone fails to compile (TS2591, node types missing in tool-template.spec.ts; apps/web/tsconfig.spec.json sets `types: ["vitest/globals"]` only). The full web run passes. A follow-up for the owner of TRG-14; TRG-17 changes no code.
 - **Base:** main moved from 8c156c3 to 2fd25bb (plans only). The branch is rebased onto main in step 3 before the merge.
+
+## 2026-11-19 — GRR-13 — Review result, round 2: APPROVED, all four parts; patch id 1ef8374e639d4bbb9f4f0de1020412d65edbacd7 (branch unit/GRR-13 at 7e18b90)
+
+- **Patch id** checked: 1ef8374e639d4bbb9f4f0de1020412d65edbacd7 (`git diff main...unit/GRR-13 -- . ':!plans' ':!units' | git patch-id --stable` at 7e18b90). Reviewed against plan revision 3 on main (`plans/GRR-13.md`, status planned).
+- **Round 1 (patch id 7ccd4c6...)** left one REWORK item, for Part C: the T1 (b) run-to-here assertion used `toMatchObject`, which accepts extra keys. The implementer changed it to `toEqual` at 7e18b90 (one line, `canvas-page.spec.ts`). Nothing else changed.
+- **Part A (steps 0, 1, 2, 4):** APPROVED. Ten files, the section 4 list. K6, K7, K8 14 of 14 and W3 6 of 6 (implementer's report; the reviewer ran no test).
+- **Part B (step 3):** APPROVED. V1 4 of 4 (the reviewer read the four tests; the round-1 reviewer ran them).
+- **Part C (steps 5 and 6):** APPROVED. Canvas-page spec 7 of 7 at 7e18b90 (implementer's report). T1 (b) matches the plan's pass condition exactly.
+- **Part D (steps 7 to 10):** APPROVED. The gates in the implementer's round-2 report: prettier, lint and build (root and web), root `npm test` exit 0 (contracts 252, api 511, web 73 files, packs 14, e2e 12, node scripts 105 of 105), fresh clone npm ci, lint, test and build exit 0. Node v26.13.0, npm 11.20.0.
+- **Pending at merge, not rework:**
+  - Rebase onto main. Main has the GRR-12 and GRR-14 code, so the step-0 counts on main are `onChipDrop` 2 and `arrange` 4 (the branch has 0). Steps 5g (R2) and 5h (R3) therefore apply, as second commit(s), and steps 6 to 8 run again. The patch id will change, so all four parts get new reviewers.
+  - The initial bundle is 589.48 kB, 89.48 kB over the 500 kB budget. The implementer reports the same figure as GRR-12 on main. The orchestrator verifies this at the merge (plan step 7 says the budgets hold; if main shows the same overage, it is pre-existing and recorded as a follow-up).
+  - The commit structure stays as decided on 2026-11-19: three part commits plus the fix commits, each with GRR-13.
