@@ -1,0 +1,8 @@
+{
+  "sample": "fiction",
+  "intent": "Check my beats for loose ends in the lighthouse story: name any setup that never pays off, and any payoff with no setup.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["plot_manager"]
+  }
+}

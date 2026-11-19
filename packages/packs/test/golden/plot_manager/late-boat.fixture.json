@@ -1,0 +1,20 @@
+{
+  "arguments": {
+    "outline": "{\n  \"schemaVersion\": 1,\n  \"view\": \"story\",\n  \"name\": \"The late boat\",\n  \"nodes\": [\n    {\n      \"id\": \"hidden-page\",\n      \"kind\": \"beat\",\n      \"label\": \"Nell hides the logbook page\",\n      \"position\": {\n        \"x\": 0,\n        \"y\": 0\n      }\n    },\n    {\n      \"id\": \"storm-night\",\n      \"kind\": \"scene\",\n      \"label\": \"The storm night\",\n      \"path\": \"drafts/the-storm.md\",\n      \"position\": {\n        \"x\": 320,\n        \"y\": 0\n      }\n    },\n    {\n      \"id\": \"boat-late\",\n      \"kind\": \"beat\",\n      \"label\": \"The supply boat is three weeks late\",\n      \"position\": {\n        \"x\": 640,\n        \"y\": 0\n      }\n    },\n    {\n      \"id\": \"telegram\",\n      \"kind\": \"beat\",\n      \"label\": \"Pim reads the sealed telegram\",\n      \"position\": {\n        \"x\": 960,\n        \"y\": 0\n      }\n    },\n    {\n      \"id\": \"signal\",\n      \"kind\": \"beat\",\n      \"label\": \"The keepers agree to send a signal\",\n      \"position\": {\n        \"x\": 1280,\n        \"y\": 0\n      }\n    }\n  ],\n  \"edges\": [\n    {\n      \"id\": \"e1\",\n      \"from\": \"hidden-page\",\n      \"to\": \"storm-night\",\n      \"relation\": \"order\"\n    },\n    {\n      \"id\": \"e2\",\n      \"from\": \"storm-night\",\n      \"to\": \"boat-late\",\n      \"relation\": \"order\"\n    },\n    {\n      \"id\": \"e3\",\n      \"from\": \"boat-late\",\n      \"to\": \"telegram\",\n      \"relation\": \"order\"\n    },\n    {\n      \"id\": \"e4\",\n      \"from\": \"telegram\",\n      \"to\": \"signal\",\n      \"relation\": \"order\"\n    }\n  ]\n}\n",
+    "entityIds": ["nell-carrow", "pim-dorey"]
+  },
+  "entities": [
+    {
+      "ref": "nell-carrow",
+      "type": "character",
+      "path": "entities/nell-carrow.md",
+      "content": "---\ntype: character\nname: Nell Carrow\nwant: To keep the light lit without help.\nneed: To accept that the light is shared.\nflaw: Pride in doing everything alone.\nvoice: Terse. Short sentences, no greetings, numbers before names.\nrelationships:\n  - character: pim-dorey\n    note: Her relief keeper. She tolerates his talk and does not answer it.\n---\n\nNell Carrow has kept the light for nineteen winters."
+    },
+    {
+      "ref": "pim-dorey",
+      "type": "character",
+      "path": "entities/pim-dorey.md",
+      "content": "---\ntype: character\nname: Pim Dorey\nwant: To be trusted with the light.\nneed: To stop filling silences.\nflaw: Talks when afraid.\nvoice: Talkative. Long run-on sentences, questions, first names for everyone.\nrelationships:\n  - character: nell-carrow\n    note: His senior keeper. He wants her approval and fills the silence she leaves.\n---\n\nPim Dorey arrived on the last supply boat and has not stopped talking since."
+    }
+  ]
+}

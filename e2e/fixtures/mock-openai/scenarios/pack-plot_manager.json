@@ -1,0 +1,14 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Setup without payoff: \"Nell hides the logbook page\" never comes back.\n",
+          "Payoff without setup: \"Pim reads the sealed telegram\" has no earlier plant."
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+schemaVersion: 1
+name: plot_manager
+description: Check beats, setups and payoffs for gaps and loose ends.
+inputs:
+  type: object
+  properties:
+    outline:
+      type: string
+      title: Outline
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+  required: [outline]
+output: check
+enabled: true
+prompt: |
+  You check the beats of a fiction story for gaps and loose ends: setups that never pay off, payoffs with no setup, and threads that no beat resolves.
+
+  Outline:
+  {{outline}}
+
+  Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+
+  Steps:
+  1. Read the outline. A story graph file lists its beats and scenes by label and its edges by relation. A beat list has one beat on each line.
+  2. A setup is a beat that plants a detail the story needs later. A payoff is a beat that resolves an earlier setup. Find each setup with no later payoff, each payoff with no earlier setup, each beat that depends on a fact no earlier beat supplies, and each thread that no beat resolves.
+  3. Write one line for each finding: the problem, then where it occurs. Cite each beat or scene by its label in double quotes, exactly as the outline spells it, and each entity by its ID in the form [@id].
+
+  Constraints:
+  - Use only the outline and the material above. Never invent a beat.
+  - Do not rewrite any beat and do not suggest new beats or wording.
+  - Return only the findings, one per line. If there are none, return the single line: No findings.
