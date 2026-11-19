@@ -6777,3 +6777,18 @@ Part D (gates and commit):
 
 - **Review:** one Sonnet reviewer (the plan has one part, steps 1 to 9 with tests B1 to B5). APPROVED for patch id `6c13ca9245f2f42c7f3189cf5befb115b3a9a975`, on `unit/PST-24` at `bd33152` (`git diff main...unit/PST-24 -- . :!plans :!units | git patch-id --stable`).
 - **Implementer note:** `writeFileOrRefuse` takes the parameter name `data`, not `text`; the plan allows a rename. The implementer ran `npm ci` at the worktree root; per-workspace install does not work with npm workspaces.
+
+## 2026-11-19 — PLT-23 — PLAN DOES NOT WORK at step 1b (full suite before any change): the three 390 px phone specs fail, and they are not among the plan's causes
+
+- **Report:** Implementer (Haiku, medium) on `unit/PLT-23`, worktree `scriba-prototype-wt/PLT-23`, at c52b2b4. No commits made. `npm ci` exit 0.
+- **Full suite before any change** (step 1b, `npm run e2e -w @bbartolome/scriba-e2e -- --trace off`, exit 1, log `/tmp/plt23-1b-full-before.log`): 4 failed, 20 passed.
+  - `history-phone.e2e.ts:17` "the version history of a draft fits 390 by 844 and shows a read-only diff": `expect(documentFits).toBe(true)` at line 88, received false (page scrollWidth exceeds the 390 px viewport).
+  - `journey.e2e.ts:12` "project from sample": fails at line 204, as the plan expects.
+  - `review-phone.e2e.ts:47` "the review queue fits 390 by 844: list, diff, accept and reject work": fails (not read in detail).
+  - `search-phone.e2e.ts:17` "the search box fits 390 by 844 and a result opens its file": fails (not read in detail).
+  - Passed: `tools-preview.e2e.ts:169` "TRG-05 C2". Open point 2 of the plan is answered: C2 passes on this base, because of the 3200 px viewport.
+- **T1 (five specs, step 1):** exit 1. Journey fails at `journey.e2e.ts:204` with exactly the six extra names that the plan lists: canvas-chips, canvas-connect, canvas-move, canvas-wires-accepted, canvas-wires-refused, phone-history. Log `/tmp/plt23-T1.log`. `history-phone` also fails alone (`/tmp/plt23-hp-alone.log`, exit 1), so its failure is not caused by the library state.
+- **Finding:** the plan's causes cover journey (section 2.1) and TRG-05 C2 (section 2.2) only. The three 390 px phone specs (history-phone, review-phone, search-phone) fail with horizontal overflow, which is not an order or state cause in the plan. The implementer reports that main has 155 commits since cc82fb0, including the CEX-17 phone read-only gate (7f94f71) and the manuscript and snapshot route commits (6deb543 to 3ef58ac), and suggests a product regression. It did not bisect.
+- **Why it stops:** criteria 2, 3 and 5 need a full run with exit 0. The six-file change in plan section 4 cannot make that true. The plan's rule is that a product bug is fixed where the bug is, and the plan names that place. That place is not known yet.
+- **Not run:** T2 (the cc82fb0 check). No commit on `unit/PLT-23`; the branch stays at c52b2b4. Worktree clean. Port 8080 free.
+- **Status:** `plans/PLT-23.md` set to `status: draft` (commit after this entry). A reviser (Opus) must find the cause of the three phone failures, name where the fix goes, and correct the plan, or reply NAVIGATOR.
