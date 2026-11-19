@@ -6501,3 +6501,16 @@ Part D (gates and commit):
 - **Consequence:** the conflict resolution changes the code, so the patch id of the approval (`283f8cd775cac8a9487f91595825002e33427257`) no longer holds once the replay is done. The new patch id needs new Sonnet reviews for Parts A and B, and the gates run on the replayed tip. The approval record above stays as the record of the earlier code.
 - **Next:** a new Haiku implementer replays `ee0b40a` and `80f96aa` in the scratch worktree, resolves the two files so that the CEX-06 behaviour on main is kept and the CEX-07 checks of the plan are added, and reports the new commits and the new patch id.
 - **Status:** `plans/CEX-07.md` stays `status: planned`.
+
+## 2026-11-19 — CEX-07 — Step 3: replay onto main adb9cc4 by the implementer (scratch worktree), conflict resolved; patch id changed to fbfb3261c30a1ca46f59aaf8448e25d4f10dbb0c
+
+- **Replay:** `ee0b40a` was cherry-picked onto adb9cc4 and gave the conflict recorded above; the implementer resolved it in `scriba-prototype-wt/CEX-07-replay` (detached). Then `80f96aa` applied cleanly. The branch is now `2353119` (Part A, "feat(CEX-07): entity-links check, preflight input and link helpers (part A)") and `c89dfd3` (Part B, "feat(CEX-07): banned-phrases check and criterion 2 test (part B)"), both on adb9cc4. `unit/CEX-07` was moved to c89dfd3 with `git reset --hard` in its clean worktree; the tip before the move is `backup/CEX-07-pre-rebase` (80f96aa).
+- **Conflict resolution (kept both sides; no CEX-06 check, test or field removed):**
+  - `preflight-checks.ts` imports: main's StoryGraph import and the commit's EntityResolution import, both kept.
+  - `preflight-checks.ts` PreflightInput: main's `storyGraphs` and `readText`, plus the commit's `resolveIds` and `targetOf` (`readText` is identical on both sides, kept once).
+  - `preflight.service.ts` PREFLIGHT_RUNNERS: unsupportedClaims and orphanScenes from main, then entityLinks; bannedPhrases is added last by Part B.
+  - `preflight.service.ts` input object: main's `storyGraphs` and `readText`, plus `resolveIds` and `targetOf`.
+- **Files:** the implementer found that `compile-export-preflight.test.ts` already holds the identical CEX-06 text, so Part A changes 5 files, not 6 (`markdown-text.ts`, `preflight-checks.ts`, `preflight-links-phrases.ts`, `preflight.service.ts`, `compile-export-links-phrases.test.ts`). This is fewer files than section 3 lists, not more. The reviewers check it.
+- **Checks by the implementer (not the gates):** `npm ci` 0; `npm run build -w @bbartolome/scriba-contracts` 0 (needed first in a fresh worktree); `npm run build -w @bbartolome/scriba-api` 0. Named tests, 11 of 11 pass in 3 files: E1, B1, C1, C2, C3, and the CEX-06 tests in `compile-export-claims-orphans.test.ts` (claims unsupported/weak/changed; orphans (a), (b), (c); label-only story nodes; claims missing or unparseable artefact).
+- **Patch id:** `fbfb3261c30a1ca46f59aaf8448e25d4f10dbb0c` (`git diff adb9cc4...c89dfd3 -- . ':!plans' ':!units' | git patch-id --stable`). It differs from `283f8cd7…`, so the approval of that id no longer holds. New Sonnet reviews of Parts A and B on this id are needed before step 3 item 9. The gates on the replayed tip come next.
+- **Status:** `plans/CEX-07.md` stays `status: planned`.
