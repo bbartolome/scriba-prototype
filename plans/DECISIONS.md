@@ -6227,3 +6227,12 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - Root web tests time out under load above about 15 (seen today). A load problem, not a code one; rerun when the machine is quiet.
 - The "PlatformExceptionFilter hook failed" ERROR line in the root test log: still not investigated.
 - TS2591 for TRG-14 specs run alone: still open (owner TRG-14).
+
+## 2026-11-19 — GRR-15 — PLAN DOES NOT WORK at step 7 (large-graph baseline); status draft
+
+- **Report:** Implementer (Haiku, medium) on `unit/GRR-15`, commit 31c856a (touch checks: wire, node move, chip drop, background pan, pinch zoom; `e2e/specs/graph-touch.e2e.ts`). It stopped at step 7 and committed nothing more. Two specs are untracked in its worktree, not committed: `e2e/specs/graph-theme.e2e.ts` (T5, T6, T9) and `e2e/specs/graph-large.e2e.ts` (T7).
+- **Cause:** T7 baseline (150 `cold_open` nodes, desktop 1280x800, Node 26.13.0, load 2 to 3, SCRIBA_E2E_MEASURE=1). Open longest long task 190 ms, 174 ms and 208 ms in three runs. Run 3 is over the plan's 200 ms rule, so the plan's step 7 stops the unit. Pan: 0 long tasks in every run. openMs 459 to 534.
+- **Step 5 (criterion 2):** T5, T6 and T9 failed on the baseline, as the baseline run expects (for example `.vnode` background rgb(255, 255, 255) against rgb(239, 237, 240); badge background transparent). Steps 8 to 10 not done.
+- **Criterion 1:** `graph-touch.e2e.ts` passed on the baseline, 5 passed (T1 to T4, T8). One run only; step 11 asks for two.
+- **Differences from the plan, recorded by the implementer:** (1) step 6 ran before step 7; the graph-runner code was the same at both times, so the baseline holds. (2) A `touch-action: none` on `.chip` was tried and reverted; it did not help. The chip-drag failure was the test's first 12 px move, under Chromium's touch slop; fixed test-side (first move 30 px in 6 steps), no graph-runner file changed. (3) The node box is `[data-node="chapter-notes"]`, since `.vnode` carries `data-node`. (4) T7 scrolls the vflow into view; the background search uses a 0.05 grid; the long-task observer writes `window.__long`.
+- **Status:** `plans/GRR-15.md` set to `status: draft` (commit after this entry). Branch `unit/GRR-15` (31c856a) and worktree `scriba-prototype-wt/GRR-15` are kept. An Opus reviser corrects the plan for the step 7 cause.
