@@ -6189,3 +6189,14 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Result:** `git rebase main` in the worktree `scriba-prototype-wt/GRR-13` stalled ("local changes would be overwritten by merge") and was aborted. The replay by cherry-pick (first commit 63cca63) conflicted in `apps/web/src/app/features/graph-runner/graph-runner-contract.ts` and `graph-runner-contract.spec.ts`. That cherry-pick was aborted. `unit/GRR-13` is back at 7e18b90. Main has the GRR-12 and GRR-14 code in these files.
 - **Action:** a new Haiku implementer rebases `unit/GRR-13` onto main, resolves the two conflicts so that both the main code and the GRR-13 code remain, then does plan steps 5g and 5h and steps 6 to 8 of `plans/GRR-13.md` (revision 3, on main). The patch id changes, so all four parts get new Sonnet reviewers.
 - **Reason:** prompt step 3.2. The conflict is in files other than `package-lock.json`.
+
+## 2026-11-19 — GRR-13 — Review result, round 3: APPROVED, all four parts; patch id 8cb5e0210355007b194a78a91b92205267d13f1a (branch unit/GRR-13 at baeb806)
+
+- **Patch id** checked by each reviewer: 8cb5e0210355007b194a78a91b92205267d13f1a (`git diff main...unit/GRR-13 -- . ':!plans' ':!units' | git patch-id --stable`). Reviewed against plan revision 3 on main (`plans/GRR-13.md`, status planned). Branch rebased onto main f5ef2e6 (later main c034fbe is docs only).
+- **Round 3 is a new implementation pass**: the implementer replayed the seven approved commits onto main (the rebase stalled, then cherry-pick; conflicts in canvas-page, canvas-page.spec, graph-runner-contract and its spec, resolved keeping main's GRR-12 and GRR-14 code), then added the plan's steps 5g and 5h (R2, R3: read-only guards on chip drops, chip removal and Arrange) as commit 541194b, and a lint fix as baeb806. Reviewers: Sonnet, medium, one per part.
+- **Part A (steps 0, 1, 2, 4):** APPROVED. Ten files, all in section 4. K6, K7, K8, W3 pass (reviewer ran 23 tests in two files).
+- **Part B (step 3):** APPROVED. V1 4 of 4 (reviewer ran them).
+- **Part C (steps 5 and 6):** APPROVED. Canvas-page spec 17 of 17 (reviewer ran them). C-18 kept main's projectId signal; ActiveProjectSignal removed. Accepted as agreeing with the plan's intent.
+- **Part D (steps 7 to 10):** APPROVED. Implementer's gates: prettier, lint, build, root test exit 0 (web 77 files, 559 tests), root build exit 0. Reviewer ran prettier on the ten files. Bundle: initial 589.48 kB, 89.48 kB over the 500 kB budget (warning, exit 0), canvas page a lazy chunk. Step 9 (fresh clone) not run by the implementer; the orchestrator runs it at the merge check.
+- **Commit structure** stays as decided on 2026-11-19: part commits and fix commits, each with GRR-13, not squashed. Step 5g and 5h are one commit (541194b).
+- **Next:** merge checks on the rebased branch (step 3 of the prompt): rebase onto main, lint, test, build, fresh clone (plan step 9), bundle check, then fast-forward main.
