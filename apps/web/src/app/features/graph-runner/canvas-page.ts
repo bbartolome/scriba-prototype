@@ -1146,7 +1146,6 @@ export class CanvasPage {
       switchMap((detail) =>
         forkJoin({
           reads: this.readTools(detail.graph),
-          reads: this.readTools(detail.graph),
           files: this.readFiles(detail.graph, projectId),
           entities: this.readEntities(detail.graph, projectId),
         }).pipe(map((joined) => ({ detail, ...joined }))),

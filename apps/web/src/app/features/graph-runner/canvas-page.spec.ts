@@ -1095,6 +1095,70 @@ it('Dropping a matching chip pins it with no typing (saved `params` contain the 
   TestBed.resetTestingModule();
 });
 
+// Supporting check S1 (GRR-12 plan section 6, revision 3; D14, C-4, A9). The placeholder CDK appends into an
+// entered row is hidden by the page's CSS, and a chip clone elsewhere is not. The precondition shows that jsdom
+// applies this component's styles at all; if it fails, S1 moves to the e2e file (the plan's fallback).
+it('S1: the drop placeholder is hidden inside a port row and a chip in the side list is not.', async () => {
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  const graph = {
+    schemaVersion: 1,
+    view: 'recipe',
+    name: 'Chips',
+    nodes: [
+      {
+        id: 'chapter-notes',
+        kind: 'input',
+        position: { x: 40, y: 120 },
+        params: { type: 'text', label: 'Chapter notes' },
+      },
+      {
+        id: 'cold-open',
+        kind: 'tool',
+        tool: 'cold_open',
+        position: { x: 400, y: 120 },
+      },
+    ],
+    edges: [],
+  };
+  doubles.api.respond('GET', graphPath('placeholder'), {
+    graph: structuredClone(graph),
+    issues: [],
+  });
+  doubles.api.respond('POST', graphValidatePath(), { issues: [] });
+  respondTools();
+
+  const { fixture, root } = await render('/projects/p1/graphs/placeholder');
+  await until(fixture, () => {
+    expect(
+      root.querySelector('[data-drop-port="cold-open.person"]'),
+    ).not.toBeNull();
+  });
+
+  const reason = root.querySelector('[data-drop-reason]') as HTMLElement;
+  // getComputedStyle resolves em to px: 1.4em at jsdom's 16px root size is 22.4px. A value of 22.4px shows the
+  // component's styles are applied (plan deviation, recorded in the report).
+  expect(getComputedStyle(reason).minHeight).toBe('22.4px');
+
+  const chip = root.querySelector('[data-entity="anna"]') as HTMLElement;
+  const row = root.querySelector(
+    '[data-drop-port="cold-open.person"]',
+  ) as HTMLElement;
+  // What CDK appends into an entered row: a clone of the chip with the placeholder class (CDK lines 1166 to 1179).
+  const placeholder = chip.cloneNode(true) as HTMLElement;
+  placeholder.classList.add('cdk-drag-placeholder');
+  row.appendChild(placeholder);
+  expect(getComputedStyle(placeholder).display).toBe('none');
+
+  // Control: the same clone beside the chip, in its own side-list slot, is not hidden.
+  const control = chip.cloneNode(true) as HTMLElement;
+  control.classList.add('cdk-drag-placeholder');
+  chip.parentElement?.appendChild(control);
+  expect(getComputedStyle(control).display).not.toBe('none');
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
 // Criterion 2 of GRR-12, named as the criterion. A text port, a port filtered to person, and a wired
 // port each refuse a drop with its reason, and one refused drop after another leaves the file unchanged.
 it('Dropping on a text port, a port filtered to another kind, or a wired port is refused with a reason and the file is unchanged.', async () => {

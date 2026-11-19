@@ -50,7 +50,8 @@ export function groupEntitiesOf(
 /**
  * The reason a chip drop is refused, or undefined when the drop is accepted. The first failing check gives the
  * reason: a text port; a style port with a chip that is not a style profile; a wired port; a form field whose
- * entity kinds do not list the chip's type; a port the views do not give. `views` holds the ready tool nodes.
+ * entity kinds do not list the chip's type; a port the views do not give (last). `views` holds the ready tool
+ * nodes.
  */
 export function chipDropRefusalOf(
   file: GraphFile,
@@ -63,21 +64,22 @@ export function chipDropRefusalOf(
   const port = toolViews?.ports.inputs.find(
     (candidate) => candidate.key === key,
   );
-  if (toolViews === undefined || port === undefined) {
-    return 'This port takes no entities.';
-  }
-  if (port.type === 'text') return 'Text ports take no entities.';
-  if (port.type === 'style' && chip.type !== 'style-profile') {
-    return 'Style ports take style profiles.';
+  if (port !== undefined) {
+    if (port.type === 'text') return 'Text ports take no entities.';
+    if (port.type === 'style' && chip.type !== 'style-profile') {
+      return 'Style ports take style profiles.';
+    }
   }
   if (file.edges.some((edge) => edge.to === portId)) {
     return 'This port is already wired.';
   }
   const kinds =
-    toolViews.form.fields.find((field) => field.key === key)?.entityKinds ?? [];
+    toolViews?.form.fields.find((field) => field.key === key)?.entityKinds ??
+    [];
   if (kinds.length > 0 && !kinds.includes(chip.type)) {
     return `This port takes ${kinds.join(' or ')} entities.`;
   }
+  if (port === undefined) return 'This port takes no entities.';
   return undefined;
 }
 

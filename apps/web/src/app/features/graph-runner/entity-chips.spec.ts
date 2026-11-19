@@ -166,6 +166,18 @@ describe('W2 entity chip rules', () => {
     expect(chipDropRefusalOf(FILE, 'people.out', ANNA, VIEWS_BY_NODE)).toBe(
       'This port takes no entities.',
     );
+    // The missing port comes last: a wire into a port the views do not give is still reported as a wire.
+    const wiredMissing = {
+      ...FILE,
+      edges: [{ id: 'w2', from: 'people.out', to: 'cold-open.moment' }],
+    } as unknown as GraphFile;
+    expect(
+      chipDropRefusalOf(wiredMissing, 'cold-open.moment', ANNA, VIEWS_BY_NODE),
+    ).toBe('This port is already wired.');
+    // A text port that is missing from the views gives no text reason: the missing port is the reason.
+    expect(
+      chipDropRefusalOf(FILE, 'cold-open.coreIdea', CLAIM, new Map()),
+    ).toBe('This port takes no entities.');
 
     // Accepted: a matching chip on a port with no wire, and a style profile on a style port.
     expect(
