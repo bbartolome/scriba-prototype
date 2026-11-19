@@ -6522,3 +6522,17 @@ Part D (gates and commit):
 - **Part B (steps 10 to 13 in code; test B1): APPROVED.** The banned-phrases check is in `preflight-links-phrases.ts` and registered last; the pattern follows P10; it scans the NUL-masked body; P9 (a) and (c) match the three messages; B1's fixture and its three requests (a), (b), (c) match section 5. The reviewer noted that the fixture and expectations are as the plan gives them. The two-commit split is the accepted deviation and is not counted.
 - **Not yet done:** steps 14 and 16 (the gates) on this tip; they are run by the orchestrator now (`/tmp/cex07-step3/`). Step 3 item 3 and item 6 need them to pass before the fast-forward.
 - **Status:** `plans/CEX-07.md` stays `status: planned` until the gates pass.
+
+## 2026-11-19 — CEX-07 — Merged to main (fast-forward to af57499); gates recorded
+
+- **Code:** unit/CEX-07 at 80b50ce (Part A 3769e04, Part B 80b50ce) on main 32a904a. The two commits were replayed by cherry-pick (the carried rule), not rebased. Patch id `fbfb3261c30a1ca46f59aaf8448e25d4f10dbb0c`, approved by Sonnet for Part A and Part B (entry above). The code tree is the one gated at c89dfd3: `git diff c89dfd3 80b50ce -- . ':!plans' ':!units'` is empty. Then `unit/CEX-07` got the docs commit af57499 (criteria 1 and 2 ticked, plan `status: done`).
+- **Earlier attempts:** the first replay onto adb9cc4 conflicted in `preflight-checks.ts` and `preflight.service.ts` (recorded above, resolved by the implementer). Backups: `backup/CEX-07-pre-rebase` (80f96aa, the tip before the replay) and `backup/CEX-07-pre-rebase-2` (c89dfd3, the gated tip).
+- **Gates on c89dfd3 (Node v26.13.0, npm 11.20.0):**
+  - Worktree `scriba-prototype-wt/CEX-07`: `npm ci` 0; root `npm run lint` 0; root `npm run build` 0; root `npm test` 0 on the first run, with no "Test timed out" or FAIL line. Summaries: contracts 20 files and 253 tests; API 144 and 537; web 77 and 559; packs 4 and 14; e2e 1 and 12. Logs `/tmp/cex07-step3/`.
+  - Fresh clone `/tmp/cex07-fresh-s3/repo`, cloned from unit/CEX-07 at c89dfd3: `npm ci` 0; `npm run build` 0; `npm run lint` 0. `npm test` run 1: exit 1, with seven of eight `scriba-web` `preferences-step.spec.ts` tests (PR1 to PR7) "Test timed out in 5000ms" (load 4.39 at start). `npm test` run 2: exit 0, the same counts, no timeout or FAIL line (load 3.31 at end). Logs `/tmp/cex07-step3-clone/`.
+  - The clone's run 1 failure is the same recurring cold-clone flake recorded in the r1 entry above and in CEX-16's first run. It is recorded, not fixed. No test, timeout, config or script was changed, and no run was dropped.
+- **Named tests (the implementer's run on c89dfd3, `/tmp/cex07-rebase-impl/named.log`):** E1, B1, C1, C2 and C3 pass, and the CEX-06 tests in `compile-export-claims-orphans.test.ts` pass: 11 of 11 in 3 files.
+- **Files:** five paths change (`markdown-text.ts`, `preflight-checks.ts`, `preflight-links-phrases.ts`, `preflight.service.ts`, `compile-export-links-phrases.test.ts`). `compile-export-preflight.test.ts` is unchanged, as recorded above.
+- **Fast-forward:** `main` moved from 32a904a to af57499 with `git merge --ff-only unit/CEX-07`. The history of main is linear.
+- **Kept (carried rule):** branch `unit/CEX-07` and worktree `scriba-prototype-wt/CEX-07` (at af57499) are not deleted; the user decides about them. The scratch worktree `CEX-07-replay` is removed (clean, non-forced).
+- **Status:** `plans/CEX-07.md` is `status: done` on main (af57499). CEX-09 is now available (no plan); it is the next unit for a planner.
