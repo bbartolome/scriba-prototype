@@ -65,7 +65,9 @@ function errorCode(reply: Reply): string {
 }
 
 // The manuscript-updated data of each envelope in the observed blocks.
-function updatesOf(blocks: string[]): { projectId: string; revision: string }[] {
+function updatesOf(
+  blocks: string[],
+): { projectId: string; revision: string }[] {
   return blocks.flatMap((block) => {
     const line = block.split('\n').find((text) => text.startsWith('data: '));
     if (line === undefined) return [];
@@ -103,9 +105,7 @@ async function eventsAfter(
 
 // C1: the fixture for a stale revision. Order: a and b; file c is not in the order.
 const C1: Record<string, string> = {
-  'project.yaml': projectYaml(
-    '  - path: drafts/a.md\n  - path: drafts/b.md\n',
-  ),
+  'project.yaml': projectYaml('  - path: drafts/a.md\n  - path: drafts/b.md\n'),
   'drafts/a.md': 'Text a.\n',
   'drafts/b.md': 'Text b.\n',
   'drafts/c.md': 'Text c.\n',

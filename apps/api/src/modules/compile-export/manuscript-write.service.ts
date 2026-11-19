@@ -11,7 +11,10 @@ import {
   type ManuscriptView,
   type OrderEntry,
 } from '@bbartolome/scriba-contracts/compile-export';
-import { PROJECT_ERROR_CODES, PROJECT_ERROR_STATUS } from '@bbartolome/scriba-contracts/project-store';
+import {
+  PROJECT_ERROR_CODES,
+  PROJECT_ERROR_STATUS,
+} from '@bbartolome/scriba-contracts/project-store';
 import { EventsPublisher, ModuleError } from '../platform/platform.module';
 import {
   FilesService,
@@ -69,7 +72,10 @@ export class ManuscriptWriteService {
       back: request.back,
     };
     if (!samePerPart(partsOf(start.current.entries), lists)) {
-      throw refuse(COMPILE_ERROR_CODES.INVALID_REORDER, INVALID_REORDER_MESSAGE);
+      throw refuse(
+        COMPILE_ERROR_CODES.INVALID_REORDER,
+        INVALID_REORDER_MESSAGE,
+      );
     }
     // A reorder changes neither parts nor graphs, so the candidate keeps the block where it is and the requested
     // body must start with it. Any other order would not be the effective order that the next view shows.
@@ -77,7 +83,12 @@ export class ManuscriptWriteService {
       materialise(rowsFromLists(lists, this.statusOf(start)), start.extras),
     );
     const requested = [...request.front, ...request.body, ...request.back];
-    if (!sameOrder(candidate.entries.map((entry) => entry.path), requested)) {
+    if (
+      !sameOrder(
+        candidate.entries.map((entry) => entry.path),
+        requested,
+      )
+    ) {
       throw refuse(COMPILE_ERROR_CODES.GRAPH_ORDERED_MOVE, GRAPH_MOVE_MESSAGE);
     }
     return this.commit(start, candidate);
@@ -90,9 +101,7 @@ export class ManuscriptWriteService {
     const rows = rowsOf(start.current.entries).map((row) =>
       row.path === request.path ? { ...row, status: request.status } : row,
     );
-    const candidate = this.manuscript.preview(
-      materialise(rows, start.extras),
-    );
+    const candidate = this.manuscript.preview(materialise(rows, start.extras));
     return this.commit(start, candidate);
   }
 
