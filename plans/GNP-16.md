@@ -1,6 +1,6 @@
 ---
 id: GNP-16
-status: planned
+status: done
 ---
 # GNP-16 plan — dialogue tool, golden tests and eval case
 

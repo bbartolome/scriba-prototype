@@ -18,7 +18,7 @@ unblocks: [GNP-18, GNP-19, GNP-23]
 - Prompt: the shared skeleton (role line; material with each entity rendered with its ID; shape steps; constraints — only the material, `[@id]` citations, `TK (note)` for missing facts, style profile's tone, banned phrases and length). Shape steps: render **each character's full entity** (`voice` and `relationships` included) through `{{#each characterIds}}` and `{{entity this}}`; instruct the model to give each speaker distinct diction and to keep to the relationship notes; carry the subtext under the lines.
 
 ## Acceptance criteria
-- [ ] Passes `npm run lint:packs` and the content-check suite.
-- [ ] Golden test (GNP-02): the rendered prompt contains every input entity with its ID plus the citation and placeholder instructions; `sourcesUsed` equals the sources derived from the entity inputs (style profile excluded); invalid arguments return Ajv's readable error.
-- [ ] Golden: the rendered prompt contains both characters' `voice` and `relationships` plus the distinct-voice instruction; calling it with one character fails Ajv.
-- [ ] A manual eval case (small and larger local model) is added to the Agent loop's eval script data.
+- [x] Passes `npm run lint:packs` and the content-check suite.
+- [x] Golden test (GNP-02): the rendered prompt contains every input entity with its ID plus the citation and placeholder instructions; `sourcesUsed` equals the sources derived from the entity inputs (style profile excluded); invalid arguments return Ajv's readable error.
+- [x] Golden: the rendered prompt contains both characters' `voice` and `relationships` plus the distinct-voice instruction; calling it with one character fails Ajv.
+- [x] A manual eval case (small and larger local model) is added to the Agent loop's eval script data.
