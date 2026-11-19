@@ -1,6 +1,6 @@
 ---
 id: CEX-11
-status: planned
+status: done
 ---
 # CEX-11 plan — DOCX export with the standard-manuscript reference document
 
