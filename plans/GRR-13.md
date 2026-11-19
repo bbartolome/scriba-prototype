@@ -1,6 +1,6 @@
 ---
 id: GRR-13
-status: planned
+status: done
 ---
 # GRR-13 plan — run controls, input-values dialog, live status and results, read-only while running
 

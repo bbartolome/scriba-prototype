@@ -22,7 +22,7 @@ The input-values dialog (21–25), Run / Run to here / Stop (26–27, 32), live 
 - The canvas is **read-only** while its recipe is running.
 
 ## Acceptance criteria
-- [ ] Dialog tests (fakes): scope-aware fields for whole runs and Run to here, style default, target paths.
-- [ ] Badges follow fake `node-status` events and show the correct state after a reload mid-run (reconcile).
-- [ ] Stop posts and the canvas returns to editable after `run-ended`.
-- [ ] Output nodes show their pending-change link.
+- [x] Dialog tests (fakes): scope-aware fields for whole runs and Run to here, style default, target paths.
+- [x] Badges follow fake `node-status` events and show the correct state after a reload mid-run (reconcile).
+- [x] Stop posts and the canvas returns to editable after `run-ended`.
+- [x] Output nodes show their pending-change link.
