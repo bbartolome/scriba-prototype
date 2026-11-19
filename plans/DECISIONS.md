@@ -6263,3 +6263,11 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Rejected by the reviser:** ngx-vflow virtualisation or viewport lazy load (T7 waits for 150 visible nodes, so T7 would fail or change); deferring forms or handles (moves work out of T7's window, which does not meet criterion 3); preloading the canvas chunk (a race, and it moves a fixed cost); a criterion change (the Navigator's, not needed while an in-unit option exists).
 - **Unchanged:** criterion 3 text, T7, the 200 ms threshold, the load rule of revision 4 (below 2.0 to count), and the pass rule.
 - **Status:** `plans/GRR-15.md` set to `status: planned` (revision 5) after this record.
+
+## 2026-11-19 — CEX-05 — Review result: Part A APPROVED
+
+- **Plan:** `plans/CEX-05.md`, revision 2 by the Opus reviser, status planned (commit 4a233d0). READY, no unit change. Open points 1 to 12 settled in the plan, none to the Navigator; the notable ones: front matter is not scanned (criterion 1 and the unit's wording), the placeholder check flags a `TODO` inside an HTML comment (the unit names only fenced and inline code as skipped), and the runner input is `{projectId, view, files}`.
+- **Code:** Implementer (Haiku) COMPLETE, one commit on `unit/CEX-05`: 4b42ef4 (preflight endpoint and placeholders check). Six files, the section 2 set. Criteria 1 to 3 pass (C1, C2, C3). API tests 141 files and 523 tests; build, lint and the fresh-clone checks exit 0.
+- **Review:** Sonnet, medium, one part (Part A, steps 0 to 15; tests C1 to C3). APPROVED. The reviewer checked steps 4 to 9 against the code, the three criteria against their tests, and the file list against section 2. Steps 0 to 3 and 10 to 15 are process steps and rest on the implementer's report.
+- **Patch id:** 08c23e7ab75d5f2c46d74462b2cf29bf10fb0a03 (`git diff main...unit/CEX-05 -- . ':!plans' ':!units' | git patch-id --stable`).
+- **Next:** step 3 (rebase onto main, the three gates, the same patch id, status done, fast-forward).
