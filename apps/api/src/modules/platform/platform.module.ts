@@ -14,6 +14,7 @@ export { SCRIBA_ENV, type ScribaEnv } from './boot/env';
 export { BootError } from './boot/boot-error';
 export { setKnownSecrets } from './boot/redact';
 export { EXPECTED_COMPOSE_VERSION } from './compose-version';
+export { BUILD_INFO } from './build-info';
 export { ModuleError, ZodValidationPipe } from './errors/index';
 export { EventsPublisher } from './events/events.publisher';
 export { SettingsService } from './settings/settings.service';
