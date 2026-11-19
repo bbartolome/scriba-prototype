@@ -6,7 +6,7 @@ import {
   type PreflightCheck,
   type PreflightResult,
 } from '@bbartolome/scriba-contracts/compile-export';
-import { createTestApp, type TestApp } from './create-test-app';
+import type { TestApp } from './create-test-app';
 import { send, type Reply } from './guard-request';
 import { LOOPBACK_HOST, LOOPBACK_ORIGIN } from './invariant-sweep';
 import { withManuscript } from './compile-export-manuscript.kit';
@@ -187,8 +187,203 @@ it('claims: unsupported is an error, weak a warning, a changed file an info', as
       ),
     ).toBe('The old mill burned'.slice(0, K1_B_OLD_CLAIM.length));
 
-    // The supported claim gives nothing: the findings above are all of them.
+    // The supported claim gives nothing: the findings above are all of them. No story graph, no orphan finding.
+    expect(checkOf(result, 'orphan-scenes').findings).toEqual([]);
   });
+});
+
+// A story graph of the kit's format with the given nodes (the same as the file of the test kit's storyGraph, but with
+// the node kinds and the paths the orphan tests need). Each node's id is its first key, so its line is its id line
+// minus one (the opening brace).
+function graphText(nodes: Record<string, unknown>[]): string {
+  return `${JSON.stringify(
+    {
+      schemaVersion: 1,
+      view: 'story',
+      name: 'Story',
+      nodes,
+      edges: [],
+    },
+    null,
+    2,
+  )}\n`;
+}
+
+// The line of a node of a graph text (its opening brace), by its id.
+function nodeLine(graph: string, id: string): number {
+  return lineAt(graph, graph.indexOf(`"id": "${id}"`)) - 1;
+}
+
+// The line of a text in a file, one-based.
+function lineOfText(text: string, needle: string): number {
+  return lineAt(text, text.indexOf(needle));
+}
+
+// A scene or beat node with a path, or a label-only node without one.
+function node(
+  id: string,
+  kind: 'scene' | 'beat' | 'entity',
+  path?: string,
+): Record<string, unknown> {
+  return {
+    id,
+    kind,
+    label: id,
+    position: { x: 0, y: 0 },
+    ...(path === undefined ? {} : { path }),
+  };
+}
+
+it('orphans (a): a scene or beat path that names no top-level manuscript file is a warning', async () => {
+  const graph = graphText([
+    node('ch01', 'scene', 'drafts/ch01.md'),
+    node('sub', 'scene', 'drafts/sub/x.md'),
+    node('gone', 'beat', 'drafts/gone.md'),
+    node('versions', 'beat', 'drafts/.versions/ch01.md'),
+    node('outside', 'scene', 'notes/ideas.md'),
+    node('hero', 'entity', 'entities/hero.md'),
+  ]);
+  await withManuscript(
+    {
+      'drafts/ch01.md': 'Chapter one.\n',
+      'drafts/sub/x.md': 'A subfolder file.\n',
+      'graphs/story.json': graph,
+    },
+    async (app, cookie) => {
+      const reply = await postPreflight(app, cookie);
+      expect(reply.status).toBe(200);
+      const result = preflightResultSchema.parse(JSON.parse(reply.body));
+
+      const orphans = checkOf(result, 'orphan-scenes');
+      expect(orphans.status).toBe('warn');
+      expect(
+        orphans.findings.map((finding) => ({
+          check: finding.check,
+          severity: finding.severity,
+          path: finding.path,
+          line: finding.line,
+          message: finding.message,
+          ref: finding.ref,
+        })),
+      ).toEqual(
+        [
+          ['sub', 'drafts/sub/x.md'],
+          ['gone', 'drafts/gone.md'],
+          ['versions', 'drafts/.versions/ch01.md'],
+          ['outside', 'notes/ideas.md'],
+        ].map(([id, path]) => ({
+          check: 'orphan-scenes',
+          severity: 'warning',
+          path: 'graphs/story.json',
+          line: nodeLine(graph, id),
+          message: 'Scene or beat path names no manuscript file in drafts/.',
+          ref: { node: id, path },
+        })),
+      );
+    },
+  );
+});
+
+it('orphans (b): a stale order entry is a warning', async () => {
+  const projectYaml = [
+    'schemaVersion: 1',
+    'title: Book',
+    'genrePack: nonfiction',
+    'order:',
+    '  - path: drafts/ch01.md',
+    '  - path: drafts/gone.md',
+    '',
+  ].join('\n');
+  await withManuscript(
+    {
+      'project.yaml': projectYaml,
+      'drafts/ch01.md': 'Chapter one.\n',
+    },
+    async (app, cookie) => {
+      const reply = await postPreflight(app, cookie);
+      expect(reply.status).toBe(200);
+      const result = preflightResultSchema.parse(JSON.parse(reply.body));
+
+      const orphans = checkOf(result, 'orphan-scenes');
+      expect(orphans.status).toBe('warn');
+      expect(orphans.findings).toEqual([
+        {
+          check: 'orphan-scenes',
+          severity: 'warning',
+          path: 'project.yaml',
+          line: lineOfText(projectYaml, '- path: drafts/gone.md'),
+          message: 'Order entry names no manuscript file.',
+          ref: { path: 'drafts/gone.md' },
+        },
+      ]);
+    },
+  );
+});
+
+it('orphans (c): a body file that no story node points at is info, and only with a story graph', async () => {
+  const projectYaml = [
+    'schemaVersion: 1',
+    'title: Book',
+    'genrePack: nonfiction',
+    'order:',
+    '  - path: drafts/front.md',
+    '    part: front',
+    '',
+  ].join('\n');
+  const files = {
+    'project.yaml': projectYaml,
+    'drafts/ch01.md': 'Chapter one.\n',
+    'drafts/ch02.md': 'Chapter two.\n',
+    'drafts/front.md': 'A front page.\n',
+  };
+  const graph = graphText([node('ch01', 'scene', 'drafts/ch01.md')]);
+
+  await withManuscript(
+    { ...files, 'graphs/story.json': graph },
+    async (app, cookie) => {
+      const reply = await postPreflight(app, cookie);
+      expect(reply.status).toBe(200);
+      const result = preflightResultSchema.parse(JSON.parse(reply.body));
+
+      const orphans = checkOf(result, 'orphan-scenes');
+      expect(orphans.status).toBe('pass');
+      expect(orphans.findings).toEqual([
+        {
+          check: 'orphan-scenes',
+          severity: 'info',
+          path: 'drafts/ch02.md',
+          line: 1,
+          message: 'Body file is not on the story graph.',
+        },
+      ]);
+    },
+  );
+
+  await withManuscript(files, async (app, cookie) => {
+    const reply = await postPreflight(app, cookie);
+    expect(reply.status).toBe(200);
+    const result = preflightResultSchema.parse(JSON.parse(reply.body));
+    expect(checkOf(result, 'orphan-scenes').findings).toEqual([]);
+  });
+});
+
+it('orphans: label-only story nodes produce nothing', async () => {
+  await withManuscript(
+    {
+      'drafts/ch01.md': 'Chapter one.\n',
+      'graphs/story.json': graphText([
+        node('idea', 'scene'),
+        node('turn', 'beat'),
+        node('ch01', 'scene', 'drafts/ch01.md'),
+      ]),
+    },
+    async (app, cookie) => {
+      const reply = await postPreflight(app, cookie);
+      expect(reply.status).toBe(200);
+      const result = preflightResultSchema.parse(JSON.parse(reply.body));
+      expect(checkOf(result, 'orphan-scenes').findings).toEqual([]);
+    },
+  );
 });
 
 it('claims: a missing, unparseable or older-version artefact is not grounding-checked', async () => {

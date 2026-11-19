@@ -14,7 +14,10 @@ import {
   ProjectStoreService,
 } from '../project-store/project-store.module';
 import { ManuscriptService } from './manuscript.service';
-import { unsupportedClaimsCheck } from './preflight-claims-orphans';
+import {
+  orphanScenesCheck,
+  unsupportedClaimsCheck,
+} from './preflight-claims-orphans';
 import {
   placeholdersCheck,
   type PreflightFile,
@@ -28,6 +31,7 @@ const NO_ACTIVE_MESSAGE = 'No project is active. Activate a project first.';
 const PREFLIGHT_RUNNERS: PreflightRunner[] = [
   placeholdersCheck,
   unsupportedClaimsCheck,
+  orphanScenesCheck,
 ];
 
 // The status of a check (P8): any error fails it, else any warning warns it, else it passes.
