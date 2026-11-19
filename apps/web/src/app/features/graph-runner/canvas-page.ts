@@ -1,9 +1,17 @@
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ActivatedRoute,
   type ActivatedRouteSnapshot,
   Router,
+  RouterLink,
 } from '@angular/router';
 import {
   CdkDrag,
@@ -13,6 +21,8 @@ import {
 } from '@angular/cdk/drag-drop';
 import type {
   GraphFile,
+  NodeRunState,
+  RunState,
   ValidationIssue,
   ValidationResult,
 } from '@bbartolome/scriba-contracts/graph-runner';
@@ -47,7 +57,12 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { API_CLIENT, ApiError } from '../../shell';
+import {
+  ActiveProjectSignal,
+  API_CLIENT,
+  ApiError,
+  SSE_CLIENT,
+} from '../../shell';
 import { ToolForm } from '../tool-registry/tool-registry.routes';
 import {
   chipDropRefusalOf,
@@ -58,6 +73,7 @@ import {
   pinnedParamsAfterRemoval,
 } from './entity-chips';
 import {
+  currentRunCopy,
   entitiesPath,
   entityListCopy,
   fileListCopy,
@@ -66,6 +82,13 @@ import {
   graphSavePath,
   graphValidatePath,
   projectFilesPath,
+  nodeStatusDataCopy,
+  RUN_CURRENT_PATH,
+  RUN_STOP_PATH,
+  RUNS_PATH,
+  runEndedDataCopy,
+  runStartCopy,
+  stopCopy,
   TOOLS_PATH,
   toolListCopy,
   toolPath,
@@ -73,6 +96,17 @@ import {
   validationResultCopy,
 } from './graph-runner-contract';
 import { arrangeOf } from './layout';
+import { RunDialog } from './run-dialog';
+import {
+  type DialogField,
+  type DialogValues,
+  dialogFieldsOf,
+  foldNodeStatus,
+  foldRunEnded,
+  runOfGraph,
+  runRequestOf,
+  scopeOfRecipe,
+} from './run-state';
 import {
   type FileNode,
   labelWires,
@@ -224,13 +258,60 @@ function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
   return '';
 }
 
+/** A node's result: a tool result (output and cited ids) or an output result (pending change and path). */
+type NodeResultOf = NonNullable<NodeRunState['result']>;
+type ToolResultOf = Extract<NodeResultOf, { output: unknown }>;
+type OutputResultOf = Extract<NodeResultOf, { pendingChangeId: unknown }>;
+
+/** The tool result of a node, when it has one. */
+function toolResultOf(
+  result: NodeResultOf | undefined,
+): ToolResultOf | undefined {
+  return result !== undefined && 'output' in result ? result : undefined;
+}
+
+/** The output result of a node, when it has one. */
+function outputResultOf(
+  result: NodeResultOf | undefined,
+): OutputResultOf | undefined {
+  return result !== undefined && 'pendingChangeId' in result
+    ? result
+    : undefined;
+}
+
+/** The label of a run's status on the canvas. */
+const RUN_STATUS_LABELS: Readonly<Record<RunState['status'], string>> = {
+  running: 'Running',
+  done: 'Done',
+  error: 'Error',
+  stopped: 'Stopped',
+};
+
+/** The state of the input-values dialog: its heading, its fields, and the start in progress or refused. */
+interface DialogState {
+  readonly title: string;
+  /** The target node of a run to here; undefined for a whole run. */
+  readonly target: string | undefined;
+  readonly fields: readonly DialogField[];
+  readonly busy: boolean;
+  readonly failure: string;
+}
+
 /**
  * The canvas of one graph (`:graphId`): the view is story or recipe, from the file. Nodes can be moved,
  * added and removed, wires and edges can be connected and removed, and the whole file is saved. A recipe
  * also lists the palette, draws its tool nodes from the registry, and shows the live validation.
  */
 @Component({
-  imports: [Vflow, ToolForm, CdkDrag, CdkDropList, CdkDropListGroup],
+  imports: [
+    Vflow,
+    ToolForm,
+    CdkDrag,
+    CdkDropList,
+    CdkDropListGroup,
+    RouterLink,
+    RunDialog,
+  ],
   selector: 'app-canvas-page',
   template: `
     @if (loadFailed()) {
@@ -263,7 +344,11 @@ function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
         <ul class="palette" aria-label="Tool palette">
           @for (tool of palette(); track tool.name) {
             <li [attr.data-tool]="tool.name">
-              <button type="button" (click)="addTool(tool.name)">
+              <button
+                type="button"
+                [disabled]="!editable()"
+                (click)="addTool(tool.name)"
+              >
                 {{ tool.name }}
               </button>
               <span>{{ tool.description }}</span>
@@ -319,14 +404,35 @@ function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
           [value]="newLabel()"
           (input)="newLabel.set($any($event.target).value)"
         />
-        <button type="button" (click)="add()">Add</button>
-        <button type="button" (click)="deleteSelected()">
+        <button type="button" [disabled]="!editable()" (click)="add()">
+          Add
+        </button>
+        <button
+          type="button"
+          [disabled]="!editable()"
+          (click)="deleteSelected()"
+        >
           Delete selected
         </button>
-        <button type="button" (click)="save()">Save</button>
+        <button type="button" [disabled]="!editable()" (click)="save()">
+          Save
+        </button>
         <button type="button" data-arrange (click)="arrange()">Arrange</button>
         @if (!isStory()) {
-          <button type="button" data-run [disabled]="runBlocked()">Run</button>
+          <button
+            type="button"
+            data-run
+            [disabled]="runBlocked() || !editable()"
+            (click)="openRun()"
+          >
+            Run
+          </button>
+          @if (currentRun(); as run) {
+            <p data-run-status>{{ runStatusOf(run) }}</p>
+          }
+          @if (currentRun()?.status === 'running') {
+            <button type="button" data-stop (click)="stop()">Stop</button>
+          }
           <ul data-run-reasons class="run-reasons">
             @for (issue of blocking(); track $index) {
               <li>{{ issue.message }}</li>
@@ -334,6 +440,17 @@ function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
           </ul>
         }
       </div>
+      @if (dialog(); as open) {
+        <app-run-dialog
+          [title]="open.title"
+          [fields]="open.fields"
+          [projectId]="projectId()"
+          [busy]="open.busy"
+          [failure]="open.failure"
+          (start)="onStart($event)"
+          (cancel)="closeDialog()"
+        />
+      }
       @if (isStory()) {
         <section class="story-panel" aria-label="Story details">
           <h3>Files</h3>
@@ -450,6 +567,15 @@ function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
               <div class="vnode-head">
                 <span>{{ ctx.data().kind }}</span>
                 <span>{{ labelOf(ctx.data()) }}</span>
+                @if (!isStory()) {
+                  @if (currentRun(); as run) {
+                    @if (run.nodes[ctx.node.id]; as state) {
+                      <span class="badge" [attr.data-status]="state.status">{{
+                        state.status
+                      }}</span>
+                    }
+                  }
+                }
               </div>
               @if (isStory()) {
                 <handle type="target" position="left"></handle>
@@ -519,13 +645,53 @@ function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
                     }
                   </div>
                 }
+                @if (currentRun(); as run) {
+                  @if (run.nodes[ctx.node.id]; as state) {
+                    @if (state.error; as error) {
+                      <p data-node-error>{{ error.message }}</p>
+                    }
+                    @if (toolResultOf(state.result); as tool) {
+                      <details data-result>
+                        <summary>Result</summary>
+                        <pre data-result-text>{{ tool.output.content }}</pre>
+                        <ul data-sources>
+                          @for (id of tool.sourcesUsed; track id) {
+                            <li>{{ id }}</li>
+                          }
+                        </ul>
+                      </details>
+                    }
+                    @if (outputResultOf(state.result); as output) {
+                      <a
+                        data-review-link
+                        [routerLink]="['/projects', projectId(), 'review']"
+                        [queryParams]="{ run: run.runId }"
+                        >Review pending change {{ output.pendingChangeId }}</a
+                      >
+                    }
+                  }
+                }
+                @if (
+                  ctx.data().kind === 'tool' || ctx.data().kind === 'output'
+                ) {
+                  <button
+                    type="button"
+                    data-run-to-here
+                    [disabled]="!editable() || runBlocked()"
+                    (click)="openRunTo(ctx.node.id)"
+                  >
+                    Run to here
+                  </button>
+                }
                 @if (readyViewsOf(ctx.node.id); as views) {
-                  <app-tool-form
-                    [form]="views.form"
-                    layout="node-body"
-                    [value]="formValueFor(ctx.data(), views.form)"
-                    (valueChange)="onSettings(ctx.node.id, $event)"
-                  />
+                  <fieldset [disabled]="!editable()">
+                    <app-tool-form
+                      [form]="views.form"
+                      layout="node-body"
+                      [value]="formValueFor(ctx.data(), views.form)"
+                      (valueChange)="onSettings(ctx.node.id, $event)"
+                    />
+                  </fieldset>
                 }
               }
             </div>
@@ -613,6 +779,7 @@ function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
 })
 export class CanvasPage {
   private readonly api = inject(API_CLIENT);
+  private readonly events = inject(SSE_CLIENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
 
@@ -621,6 +788,8 @@ export class CanvasPage {
 
   protected readonly portIdOf = portIdOf;
   protected readonly labelOf = labelOf;
+  protected readonly toolResultOf = toolResultOf;
+  protected readonly outputResultOf = outputResultOf;
   protected readonly glyphOf = typeGlyphOf;
   protected readonly portTypes = PORT_TYPES;
 
@@ -681,6 +850,32 @@ export class CanvasPage {
   );
   /** The one line of the last refused drop; empty after an accepted drop (C-11). */
   protected readonly dropReason = signal('');
+  /** The id of the graph on the page, from the route. A new id loads a new graph. */
+  private readonly currentGraphId = signal<string | undefined>(undefined);
+  /** The run state of the active project: the current run, folded with its node and end events. */
+  private readonly run = signal<RunState | null>(null);
+  /** True from the Start click until the first current-run read after the start answers (C-3). */
+  protected readonly starting = signal(false);
+  private awaitingStartRead = false;
+  /** The input-values dialog, when it is open. */
+  protected readonly dialog = signal<DialogState | undefined>(undefined);
+  /** Counts the stream's events: a read sent before the latest event is answered again (C-2). */
+  private eventSeq = 0;
+  /** A read of the current run; the latest read wins. */
+  private readonly reads = new Subject<void>();
+
+  /** The current run, when it is this graph's. */
+  protected readonly currentRun = computed(() =>
+    runOfGraph(this.run(), this.currentGraphId() ?? ''),
+  );
+  /** True while this recipe's run is running (C-3). A story never runs. */
+  protected readonly running = computed(
+    () => !this.isStory() && this.currentRun()?.status === 'running',
+  );
+  /** The canvas is editable unless a run is running or starting (C-3, D9). */
+  protected readonly editable = computed(
+    () => !this.running() && !this.starting(),
+  );
 
   protected readonly panelVisible = computed(
     () => this.issues().length > 0 || this.refusal() !== undefined,
@@ -767,20 +962,78 @@ export class CanvasPage {
           validator: (ends) => {
             const current = this.file();
             return (
-              current === undefined ||
-              acceptsWire(current, ends, this.readyPorts())
+              this.editable() &&
+              (current === undefined ||
+                acceptsWire(current, ends, this.readyPorts()))
             );
           },
         },
   );
 
-  /** The id of the graph on the page, from the route. */
-  private graphId: string | undefined;
-
   /** A change of the file, which schedules one validation (C-10). */
   private readonly changes = new Subject<void>();
 
   constructor() {
+    // Each node's drag follows `editable`, so no node moves while a run is active (C-11).
+    effect(() => {
+      const editable = this.editable();
+      for (const vnode of this.nodes()) vnode.draggable?.set(editable);
+    });
+
+    // The current run: a read sets it; the latest read wins, and a read answered after an event is read again.
+    this.reads
+      .pipe(
+        switchMap(() => {
+          const sent = this.eventSeq;
+          return this.api.get(RUN_CURRENT_PATH, currentRunCopy).pipe(
+            map((body) => ({ sent, run: body.run })),
+            catchError(() => of({ sent, run: undefined })),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(({ sent, run }) => {
+        if (sent !== this.eventSeq) {
+          this.reads.next();
+          return;
+        }
+        if (run !== undefined) this.run.set(run);
+        if (this.awaitingStartRead) {
+          this.awaitingStartRead = false;
+          this.starting.set(false);
+        }
+      });
+
+    // The run's events fold into the run state; a start reads the state again (C-2).
+    this.events
+      .stream('graph-runner')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((envelope) => {
+        this.eventSeq += 1;
+        if (envelope.type === 'node-status') {
+          const checked = nodeStatusDataCopy.safeParse(envelope.data);
+          if (checked.success) {
+            this.run.update((run) =>
+              run === null ? run : foldNodeStatus(run, checked.data),
+            );
+          }
+        } else if (envelope.type === 'run-ended') {
+          const checked = runEndedDataCopy.safeParse(envelope.data);
+          if (checked.success) {
+            this.run.update((run) =>
+              run === null ? run : foldRunEnded(run, checked.data),
+            );
+          }
+        } else if (envelope.type === 'run-started') {
+          this.reads.next();
+        }
+      });
+
+    // A reconcile tick re-reads the current run (the reconcile rule of C-2).
+    this.events.reconcile$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.reads.next());
+
     // The id comes from the child route; a new id loads a new graph. The project id is read from the route's
     // snapshot, not from ActiveProjectSignal, which is not yet current during load (C-16).
     const route = inject(ActivatedRoute);
@@ -805,7 +1058,7 @@ export class CanvasPage {
 
   protected onConnect(connection: Connection): void {
     const current = this.file();
-    if (current === undefined) return;
+    if (!this.editable() || current === undefined) return;
     const next = withConnection(current, connection);
     this.file.set(next);
     this.rebuildEdges(next);
@@ -815,7 +1068,7 @@ export class CanvasPage {
   /** A position change writes the file only where the point differs from the file's position (C4). */
   protected onMove(changes: readonly NodePositionChange[]): void {
     const before = this.file();
-    if (before === undefined) return;
+    if (!this.editable() || before === undefined) return;
     let current = before;
     for (const change of changes) {
       current = withPosition(current, change.id, change.point);
@@ -835,7 +1088,7 @@ export class CanvasPage {
 
   protected add(): void {
     const current = this.file();
-    if (current === undefined) return;
+    if (!this.editable() || current === undefined) return;
     const offset = 40 * (current.nodes.length + 1);
     const node = newNodeOf(
       current.view,
@@ -857,6 +1110,7 @@ export class CanvasPage {
    * views. The node has no params until the author sets a value (C-7, C-17).
    */
   protected addTool(name: string): void {
+    if (!this.editable()) return;
     this.api
       .get(toolPath(name), toolViewsCopy)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -868,7 +1122,7 @@ export class CanvasPage {
           }
           this.details.update((map) => new Map(map).set(name, views));
           const current = this.file();
-          if (current === undefined) return;
+          if (!this.editable() || current === undefined) return;
           const offset = 40 * (current.nodes.length + 1);
           const node: FileNode = {
             id: nextNodeId(current, 'tool'),
@@ -891,7 +1145,7 @@ export class CanvasPage {
   /** Removes the selected nodes with their wires and edges, and the selected edges. */
   protected deleteSelected(): void {
     const current = this.file();
-    if (current === undefined) return;
+    if (!this.editable() || current === undefined) return;
     const removed = this.selectedNodes();
     const next = withoutEdges(
       withoutNodes(current, removed),
@@ -978,9 +1232,12 @@ export class CanvasPage {
   /** Saves the whole file. The response's issues replace the panel's; a refusal is shown in it. */
   protected save(): void {
     const current = this.file();
-    if (current === undefined || this.graphId === undefined) return;
+    const graphId = this.currentGraphId();
+    if (!this.editable() || current === undefined || graphId === undefined) {
+      return;
+    }
     this.api
-      .post(graphSavePath(this.graphId), current, validationResultCopy)
+      .post(graphSavePath(graphId), current, validationResultCopy)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ issues }) => {
@@ -992,6 +1249,86 @@ export class CanvasPage {
             detail: error instanceof ApiError ? error.message : '',
           }),
       });
+  }
+
+  /** Run: opens the input-values dialog for the whole recipe (C-5, C-10). */
+  protected openRun(): void {
+    this.openDialog(undefined, 'Run the whole recipe');
+  }
+
+  /** Run to here: opens the dialog for the target and its upstream (D13). */
+  protected openRunTo(nodeId: string): void {
+    this.openDialog(nodeId, `Run to ${nodeId}`);
+  }
+
+  protected closeDialog(): void {
+    this.dialog.set(undefined);
+  }
+
+  /** The dialog's Start: posts the run (C-7). The dialog closes on success; a refusal is shown in it. */
+  protected onStart(values: DialogValues): void {
+    const open = this.dialog();
+    const graphId = this.currentGraphId();
+    if (open === undefined || graphId === undefined) return;
+    this.dialog.set({ ...open, busy: true, failure: '' });
+    this.starting.set(true);
+    this.api
+      .post(RUNS_PATH, runRequestOf(graphId, values, open.target), runStartCopy)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.dialog.set(undefined);
+          this.awaitingStartRead = true;
+          this.reads.next();
+        },
+        error: (error: unknown) => {
+          this.starting.set(false);
+          this.dialog.update(
+            (current) =>
+              current && {
+                ...current,
+                busy: false,
+                failure:
+                  error instanceof ApiError
+                    ? error.message
+                    : 'The run did not start.',
+              },
+          );
+        },
+      });
+  }
+
+  /** Stop posts the run id only; the page changes nothing until `run-ended` arrives (C-8). */
+  protected stop(): void {
+    const run = this.currentRun();
+    if (run === undefined) return;
+    this.api
+      .post(RUN_STOP_PATH, { runId: run.runId }, stopCopy)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ error: () => this.reads.next() });
+  }
+
+  /** The run's status line: its label and its reason, when it has one. */
+  protected runStatusOf(run: RunState): string {
+    const label = RUN_STATUS_LABELS[run.status];
+    return run.reason === undefined ? label : `${label} (${run.reason})`;
+  }
+
+  /** The dialog's fields for a run to `target`, or for the whole recipe (W3). */
+  private openDialog(target: string | undefined, title: string): void {
+    const current = this.file();
+    if (!this.editable() || current === undefined) return;
+    const forms = new Map<string, FormDescriptor['fields']>();
+    for (const [name, detail] of this.details()) {
+      if (typeof detail === 'object') forms.set(name, detail.form.fields);
+    }
+    this.dialog.set({
+      title,
+      target,
+      fields: dialogFieldsOf(current, scopeOfRecipe(current, target), forms),
+      busy: false,
+      failure: '',
+    });
   }
 
   /** The rows of a node: a tool node's rows exist only while it is ready. */
@@ -1036,7 +1373,12 @@ export class CanvasPage {
     const current = this.file();
     const node = current?.nodes.find((candidate) => candidate.id === nodeId);
     const views = this.readyViewsOf(nodeId);
-    if (current === undefined || node?.kind !== 'tool' || views === undefined) {
+    if (
+      !this.editable() ||
+      current === undefined ||
+      node?.kind !== 'tool' ||
+      views === undefined
+    ) {
       return;
     }
     this.formValues.update((map) => new Map(map).set(nodeId, emitted));
@@ -1138,10 +1480,11 @@ export class CanvasPage {
   }
 
   private load(id: string, projectId: string): Observable<void> {
-    this.graphId = id;
+    this.currentGraphId.set(id);
     this.projectId.set(projectId);
     this.loadFailed.set(false);
     this.refusal.set(undefined);
+    this.reads.next();
     return this.api.get(graphPath(id), graphDetailCopy).pipe(
       switchMap((detail) =>
         forkJoin({

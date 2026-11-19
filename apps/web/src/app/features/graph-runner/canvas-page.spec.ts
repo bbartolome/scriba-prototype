@@ -6,7 +6,11 @@ import {
   GRAPH_RUNNER_EXAMPLES,
   graphFileSchema,
 } from '@bbartolome/scriba-contracts/graph-runner';
-import { ACTIVE_PROJECT_ROUTE } from '@bbartolome/scriba-contracts/project-store';
+import {
+  ACTIVE_PROJECT_ROUTE,
+  PROJECT_ENTITIES_ROUTE,
+  PROJECT_FILE_ROUTE,
+} from '@bbartolome/scriba-contracts/project-store';
 import { afterAll, afterEach, beforeAll, expect, it, vi } from 'vitest';
 import { App } from '../../app';
 import { APP_ROUTES } from '../../app.routes';
@@ -18,6 +22,7 @@ import {
   createShellTestDoubles,
   type ShellTestDoubles,
 } from '../../shell/testing/test-doubles';
+import type { ApiPath } from '../../shell';
 import {
   entitiesPath,
   graphPath,
@@ -25,6 +30,8 @@ import {
   graphValidatePath,
   projectFilesPath,
   RUN_CURRENT_PATH,
+  RUN_STOP_PATH,
+  RUNS_PATH,
   TOOLS_PATH,
   toolPath,
 } from './graph-runner-contract';
@@ -893,6 +900,259 @@ it('No Run control appears on a story graph.', async () => {
   TestBed.resetTestingModule();
 });
 
+// Criteria 25 to 28 (unit lines 25 to 28): the run controls, the input-values dialog, the badges and the results of
+// a run. The fixture `dialog-run` has the input `chapter-notes` (text), `people` (entity, `person`), `look` (style),
+// the tool `cold-open` (cold_open) and the outputs `draft` (path set) and `spare` (no path).
+const DIALOG_GRAPH = {
+  schemaVersion: 1,
+  view: 'recipe',
+  name: 'Dialog run',
+  nodes: [
+    {
+      id: 'chapter-notes',
+      kind: 'input',
+      position: { x: 0, y: 0 },
+      params: { type: 'text', label: 'Chapter notes' },
+    },
+    {
+      id: 'people',
+      kind: 'input',
+      position: { x: 0, y: 120 },
+      params: { type: 'entity', label: 'People', entityKind: 'person' },
+    },
+    {
+      id: 'look',
+      kind: 'input',
+      position: { x: 0, y: 240 },
+      params: { type: 'style', label: 'Look' },
+    },
+    {
+      id: 'cold-open',
+      kind: 'tool',
+      position: { x: 320, y: 0 },
+      tool: 'cold_open',
+    },
+    {
+      id: 'draft',
+      kind: 'output',
+      position: { x: 640, y: 0 },
+      params: { path: 'drafts/ch02-opening.md' },
+    },
+    { id: 'spare', kind: 'output', position: { x: 640, y: 160 } },
+  ],
+  edges: [
+    { id: 'w1', from: 'chapter-notes.out', to: 'cold-open.coreIdea' },
+    { id: 'w2', from: 'people.out', to: 'cold-open.person' },
+    { id: 'w3', from: 'look.out', to: 'cold-open.styleProfile' },
+    { id: 'w4', from: 'cold-open.output', to: 'draft.in' },
+    { id: 'w5', from: 'cold-open.output', to: 'spare.in' },
+  ],
+};
+
+const HASH = `sha256:${'0'.repeat(64)}`;
+const MTIME = '2026-11-14T09:00:00Z';
+
+/** A path of the project-store routes, with the project id in place. */
+function projectRoute(template: string, projectId: string): ApiPath {
+  return template.replace(':projectId', projectId) as ApiPath;
+}
+
+/** The current run as the GET answers it. */
+function runOf(
+  nodes: Record<string, unknown>,
+  status = 'running',
+): Record<string, unknown> {
+  return {
+    runId: 'run-1',
+    graphId: 'dialog-run',
+    status,
+    startedAt: MTIME,
+    inputs: {},
+    targets: {},
+    nodes,
+    pendingChangeIds: [],
+  };
+}
+
+/** The canned reads of the dialog and its pickers: the project, its entities, project.yaml and the file list. */
+function respondProject(): void {
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  doubles.api.respond('GET', projectRoute(PROJECT_ENTITIES_ROUTE, 'p1'), {
+    entities: [
+      { id: 'anna', type: 'person', path: 'people/anna.md', title: 'Anna' },
+      { id: 'claim-1', type: 'claim', path: 'claims/claim-1.md' },
+      {
+        id: 'house-style',
+        type: 'style-profile',
+        path: 'style/house-style.md',
+      },
+    ],
+    invalid: [],
+  });
+  doubles.api.respond('GET', projectRoute(PROJECT_FILE_ROUTE, 'p1'), {
+    path: 'project.yaml',
+    content: 'name: Demo\nstyleProfile: house-style\n',
+    hash: HASH,
+    mtime: MTIME,
+  });
+  doubles.api.respond('GET', projectFilesPath('p1'), {
+    entries: [
+      { path: 'drafts', kind: 'dir', size: 0, mtime: MTIME },
+      { path: 'drafts/ch01.md', kind: 'file', size: 12, mtime: MTIME },
+    ],
+  });
+}
+
+/** The canned reads of the dialog-run fixture: the graph, the tools, the project and the current run. */
+function respondDialogRun(run: unknown): void {
+  doubles.api.respond('GET', graphPath('dialog-run'), {
+    graph: structuredClone(DIALOG_GRAPH),
+    issues: [],
+  });
+  doubles.api.respond('POST', graphValidatePath(), { issues: [] });
+  doubles.api.respond('GET', RUN_CURRENT_PATH, { run });
+  respondTools();
+  respondProject();
+}
+
+/** The field ids the dialog shows, in order. */
+function fieldIds(root: HTMLElement): string[] {
+  return Array.from(root.querySelectorAll('[data-run-field]')).map(
+    (field) => field.getAttribute('data-run-field') ?? '',
+  );
+}
+
+/** The controls that must be disabled while a run is active (criterion 3). */
+function lockableButtons(root: HTMLElement): HTMLButtonElement[] {
+  return [
+    ...Array.from(
+      root.querySelectorAll<HTMLButtonElement>(
+        'ul.palette button, [data-run-to-here], [data-run]',
+      ),
+    ),
+    buttonNamed(root, 'Add'),
+    buttonNamed(root, 'Delete selected'),
+    buttonNamed(root, 'Save'),
+  ];
+}
+
+it('Dialog tests (fakes): scope-aware fields for whole runs and Run to here, style default, target paths.', async () => {
+  doubles = createShellTestDoubles();
+  respondDialogRun(null);
+  doubles.api.respond('POST', RUNS_PATH, { runId: 'run-1' });
+
+  const { fixture, root } = await render('/projects/p1/graphs/dialog-run');
+  await until(fixture, () => {
+    expect(root.querySelector('h2')?.textContent?.trim()).toBe('Dialog run');
+  });
+
+  // (a) A whole run: every input and output node, the target paths, the picker's kinds and the style default.
+  buttonNamed(root, 'Run').click();
+  await until(fixture, () => {
+    expect(fieldIds(root)).toEqual([
+      'chapter-notes',
+      'people',
+      'look',
+      'draft',
+      'spare',
+    ]);
+  });
+  expect(
+    (
+      root.querySelector(
+        '[data-run-field="draft"] input[data-target]',
+      ) as HTMLInputElement
+    ).value,
+  ).toBe('drafts/ch02-opening.md');
+  expect(
+    (
+      root.querySelector(
+        '[data-run-field="spare"] input[data-target]',
+      ) as HTMLInputElement
+    ).value,
+  ).toBe('');
+  expect(
+    root.querySelector('[data-run-field="spare"] [data-target-hint]'),
+  ).not.toBeNull();
+
+  const addPeople = root.querySelector(
+    '[data-run-field="people"] select',
+  ) as HTMLSelectElement;
+  const look = root.querySelector(
+    '[data-run-field="look"] select',
+  ) as HTMLSelectElement;
+  await until(fixture, () => {
+    const offered = Array.from(addPeople.options).map((option) => option.value);
+    expect(offered).toContain('anna');
+    expect(offered).not.toContain('claim-1');
+    expect(offered).not.toContain('house-style');
+    expect(look.value).toBe('house-style');
+  });
+  const datalist = Array.from(
+    root.querySelectorAll<HTMLOptionElement>('datalist option'),
+  ).map((option) => option.value);
+  expect(datalist).toContain('drafts/ch01.md');
+  expect(datalist).not.toContain('drafts');
+
+  const notes = root.querySelector(
+    '[data-run-field="chapter-notes"] textarea',
+  ) as HTMLTextAreaElement;
+  notes.value = 'Notes';
+  notes.dispatchEvent(new Event('input'));
+  addPeople.value = 'anna';
+  addPeople.dispatchEvent(new Event('change'));
+  buttonNamed(root, 'Start').click();
+  await until(fixture, () => {
+    expect(postsTo(RUNS_PATH)).toHaveLength(1);
+  });
+  const whole = postsTo(RUNS_PATH)[0]?.body as Record<string, unknown>;
+  expect(whole).toEqual({
+    graphId: 'dialog-run',
+    inputs: {
+      'chapter-notes': { kind: 'text', text: 'Notes' },
+      people: { kind: 'entities', refs: ['anna'] },
+      look: { kind: 'style', ref: 'house-style' },
+    },
+    targets: { draft: 'drafts/ch02-opening.md' },
+  });
+  expect(whole).not.toHaveProperty('target');
+
+  // (b) Run to here on cold-open: its target and its upstream only, and a target and no targets key.
+  (
+    root.querySelector(
+      '[data-node="cold-open"] [data-run-to-here]',
+    ) as HTMLButtonElement
+  ).click();
+  await until(fixture, () => {
+    expect(fieldIds(root)).toEqual(['chapter-notes', 'people', 'look']);
+    expect(
+      (
+        root.querySelector(
+          '[data-run-field="look"] select',
+        ) as HTMLSelectElement
+      ).value,
+    ).toBe('house-style');
+  });
+  buttonNamed(root, 'Start').click();
+  await until(fixture, () => {
+    expect(postsTo(RUNS_PATH)).toHaveLength(2);
+  });
+  const toHere = postsTo(RUNS_PATH)[1]?.body as Record<string, unknown>;
+  expect(toHere).toMatchObject({
+    graphId: 'dialog-run',
+    target: { nodeId: 'cold-open' },
+    inputs: {
+      'chapter-notes': { kind: 'text', text: '' },
+      people: { kind: 'entities', refs: [] },
+      look: { kind: 'style', ref: 'house-style' },
+    },
+  });
+  expect(toHere).not.toHaveProperty('targets');
+
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
 // Criterion 27 (unit line 27), named as the criterion. Four overlapping story nodes: an order chain given against
 // the file order, and one unlinked node. Arrange moves nodes only, makes no save, and the save holds only positions.
 it('Arrange lays out overlapping nodes left to right without changing anything but `position`.', async () => {
@@ -1348,6 +1608,240 @@ it('Removing a pinned chip clears it from `params`.', async () => {
     position: { x: 400, y: 120 },
   });
   expect(Object.hasOwn(node ?? {}, 'params')).toBe(false);
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+it('Badges follow fake `node-status` events and show the correct state after a reload mid-run (reconcile).', async () => {
+  doubles = createShellTestDoubles();
+  respondDialogRun(
+    runOf({
+      'chapter-notes': { status: 'done' },
+      'cold-open': { status: 'running' },
+      draft: { status: 'queued' },
+    }),
+  );
+
+  const first = await render('/projects/p1/graphs/dialog-run');
+  await until(first.fixture, () => {
+    expect(
+      first.root.querySelector(
+        '[data-node="chapter-notes"] [data-status="done"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      first.root.querySelector(
+        '[data-node="cold-open"] [data-status="running"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      first.root.querySelector('[data-node="draft"] [data-status="queued"]'),
+    ).not.toBeNull();
+  });
+
+  // (b) A pushed node-status: the badge, the result text and the cited ids.
+  doubles.events.push({
+    module: 'graph-runner',
+    type: 'node-status',
+    data: {
+      runId: 'run-1',
+      nodeId: 'cold-open',
+      status: 'done',
+      result: {
+        output: { kind: 'draft', content: 'Opening text' },
+        sourcesUsed: ['anna'],
+      },
+    },
+  });
+  await until(first.fixture, () => {
+    expect(
+      first.root.querySelector('[data-node="cold-open"] [data-status="done"]'),
+    ).not.toBeNull();
+    expect(first.root.querySelector('[data-result-text]')?.textContent).toBe(
+      'Opening text',
+    );
+    expect(first.root.querySelector('[data-sources]')?.textContent).toContain(
+      'anna',
+    );
+  });
+
+  // (c) A pushed error: the badge and the message.
+  doubles.events.push({
+    module: 'graph-runner',
+    type: 'node-status',
+    data: {
+      runId: 'run-1',
+      nodeId: 'draft',
+      status: 'error',
+      error: {
+        code: 'PLATFORM_INTERNAL',
+        message: 'The model did not answer.',
+      },
+    },
+  });
+  await until(first.fixture, () => {
+    expect(
+      first.root.querySelector('[data-node="draft"] [data-status="error"]'),
+    ).not.toBeNull();
+    expect(first.root.querySelector('[data-node-error]')?.textContent).toBe(
+      'The model did not answer.',
+    );
+  });
+
+  // (d) A fresh render mid-run: the current run gives cold-open done and draft running.
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+  doubles = createShellTestDoubles();
+  respondDialogRun(
+    runOf({
+      'chapter-notes': { status: 'done' },
+      'cold-open': {
+        status: 'done',
+        result: {
+          output: { kind: 'draft', content: 'Opening text' },
+          sourcesUsed: ['anna'],
+        },
+      },
+      draft: { status: 'running' },
+    }),
+  );
+  const reloaded = await render('/projects/p1/graphs/dialog-run');
+  await until(reloaded.fixture, () => {
+    expect(
+      reloaded.root.querySelector(
+        '[data-node="cold-open"] [data-status="done"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      reloaded.root.querySelector(
+        '[data-node="draft"] [data-status="running"]',
+      ),
+    ).not.toBeNull();
+  });
+
+  // (e) Reconcile: the current run answers draft done, then the stream reopens.
+  doubles.api.respond('GET', RUN_CURRENT_PATH, {
+    run: runOf({
+      'chapter-notes': { status: 'done' },
+      'cold-open': { status: 'done' },
+      draft: { status: 'done' },
+    }),
+  });
+  doubles.events.reopen();
+  await until(reloaded.fixture, () => {
+    expect(
+      reloaded.root.querySelector('[data-node="draft"] [data-status="done"]'),
+    ).not.toBeNull();
+  });
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+it('Stop posts and the canvas returns to editable after `run-ended`.', async () => {
+  doubles = createShellTestDoubles();
+  respondDialogRun(
+    runOf({
+      'chapter-notes': { status: 'done' },
+      'cold-open': { status: 'running' },
+    }),
+  );
+  doubles.api.respond('POST', RUN_STOP_PATH, {});
+
+  const { fixture, root } = await render('/projects/p1/graphs/dialog-run');
+  await until(fixture, () => {
+    expect(root.querySelector('[data-stop]')).not.toBeNull();
+    expect(root.querySelector('[data-run-status]')?.textContent?.trim()).toBe(
+      'Running',
+    );
+  });
+  // (a) While running: every control is disabled and the node's form is in a disabled fieldset.
+  for (const button of lockableButtons(root)) {
+    expect(button.disabled).toBe(true);
+  }
+  expect(
+    root
+      .querySelector('[data-node="cold-open"] fieldset')
+      ?.hasAttribute('disabled'),
+  ).toBe(true);
+
+  // (b) Stop posts the run id; the page waits for the event.
+  (root.querySelector('[data-stop]') as HTMLButtonElement).click();
+  await until(fixture, () => {
+    expect(postsTo(RUN_STOP_PATH)).toHaveLength(1);
+  });
+  expect(postsTo(RUN_STOP_PATH)[0]?.body).toEqual({ runId: 'run-1' });
+  for (const button of lockableButtons(root)) {
+    expect(button.disabled).toBe(true);
+  }
+
+  // (c) The run ends: the stop control goes, the status shows the reason, and the canvas is editable again.
+  doubles.api.respond('GET', RUN_CURRENT_PATH, {
+    run: runOf(
+      {
+        'chapter-notes': { status: 'done' },
+        'cold-open': { status: 'stopped' },
+      },
+      'stopped',
+    ),
+  });
+  doubles.events.push({
+    module: 'graph-runner',
+    type: 'run-ended',
+    data: { runId: 'run-1', status: 'stopped', reason: 'author' },
+  });
+  await until(fixture, () => {
+    expect(root.querySelector('[data-stop]')).toBeNull();
+    const status = root.querySelector('[data-run-status]')?.textContent ?? '';
+    expect(status).toContain('Stopped');
+    expect(status).toContain('author');
+    for (const button of lockableButtons(root)) {
+      expect(button.disabled).toBe(false);
+    }
+    expect(root.querySelector('fieldset[disabled]')).toBeNull();
+  });
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+it('Output nodes show their pending-change link.', async () => {
+  doubles = createShellTestDoubles();
+  respondDialogRun(
+    runOf(
+      {
+        'chapter-notes': { status: 'done' },
+        'cold-open': {
+          status: 'done',
+          result: {
+            output: { kind: 'draft', content: 'Opening text' },
+            sourcesUsed: ['anna'],
+          },
+        },
+        draft: {
+          status: 'done',
+          result: {
+            pendingChangeId: 'pc-1',
+            path: 'drafts/ch02-opening.md',
+          },
+        },
+      },
+      'done',
+    ),
+  );
+
+  const { fixture, root } = await render('/projects/p1/graphs/dialog-run');
+  await until(fixture, () => {
+    expect(
+      root.querySelector('[data-node="draft"] a[data-review-link]'),
+    ).not.toBeNull();
+  });
+  expect(
+    root
+      .querySelector('[data-node="draft"] a[data-review-link]')
+      ?.getAttribute('href'),
+  ).toBe('/projects/p1/review?run=run-1');
+  expect(
+    root.querySelector('[data-node="cold-open"] a[data-review-link]'),
+  ).toBeNull();
   restoreMatchMedia();
   TestBed.resetTestingModule();
 });

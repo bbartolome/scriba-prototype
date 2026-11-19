@@ -270,36 +270,6 @@ function changeOf(value: unknown): PendingChange | undefined {
   return value as unknown as PendingChange;
 }
 
-/** One file entry, checked for the fields the story view reads (`path` and `kind`), as C-13 sets out. */
-function fileEntryOf(value: unknown): FileEntry | undefined {
-  if (!isRecord(value)) return undefined;
-  if (
-    typeof value['path'] !== 'string' ||
-    (value['kind'] !== 'file' && value['kind'] !== 'dir')
-  ) {
-    return undefined;
-  }
-  return value as unknown as FileEntry;
-}
-
-/** Response of GET .../files (`fileListSchema`): the entries, as received. The server's parse is the authority. */
-export const fileListCopy: ResponseSchema<FileList> = {
-  safeParse(data) {
-    if (!isRecord(data) || !Array.isArray(data['entries'])) {
-      return { success: false, error: 'entries is not a list' };
-    }
-    const entries: FileEntry[] = [];
-    for (const item of data['entries']) {
-      const entry = fileEntryOf(item);
-      if (entry === undefined) {
-        return { success: false, error: 'an entry is not valid' };
-      }
-      entries.push(entry);
-    }
-    return { success: true, data: { entries } };
-  },
-};
-
 /** Response of GET .../pending (`pendingListSchema`): the open changes. */
 export const pendingListCopy: ResponseSchema<PendingList> = {
   safeParse(data) {
