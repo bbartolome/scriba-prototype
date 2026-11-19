@@ -6470,3 +6470,14 @@ Part D (gates and commit):
 - **Orchestrator note:** the test names are not visible in the logs. Before the fast-forward, the tests are run again by name on the replayed tree (see the step 3 entry).
 - **Next:** step 3. Replay the two commits on main 1576d91 by cherry-pick in a fresh worktree (carried rule), recheck the patch id, run the gates on the replayed tip, then fast-forward main.
 - **Status:** `plans/CEX-06.md` stays `status: planned` until step 3 completes.
+
+## 2026-11-19 — CEX-06 — Merged to main (fast-forward to 4c70eb4); gates recorded on the replayed tip
+
+- **Code:** unit/CEX-06, commits e3378ff and e4ada34 (the accepted two-commit split), approved by Sonnet on patch id `87a3849224bb4edb20ba82415b0c865253e48226` (entry above, Parts A and B). Replayed onto main 8be5713 by cherry-pick in a fresh detached worktree (carried rule): the commits are 21facf6 and 343457d. The patch id is unchanged after the replay and after the docs commit.
+- **Backup:** `backup/CEX-06-pre-rebase` at e4ada34 (the tip before the replay).
+- **Gates on the replayed tip 343457d (Node v26.13.0, npm 11.20.0, load 1.7 to 4.5):** `npm ci` exit 0; root `npm run lint` exit 0; root `npm run build` exit 0; root `npm test` exit 0 on the first run, with no "Test timed out" line. The test summary shows API 143 of 143 files and 535 of 535 tests, and packs, e2e and the other suites passed. Logs `/tmp/cex06-gates-s3/`.
+- **Named tests:** `apps/api/test/compile-export-claims-orphans.test.ts` and `compile-export-preflight.test.ts`, run verbosely on the replayed tip: 9 of 9 passed. The names are: claims unsupported/weak/changed (criterion 1); orphans (a), (b), (c); label-only nodes produce nothing (criterion 2); the claims-artefact not-checked case; the placeholders, clean-fixture and no-model-call tests. This closes the reviewers' caveat that the logs did not show names.
+- **Criteria:** criterion 1 and criterion 2 ticked in `units/CEX-06-claims-orphans-checks.md` (commit 4c70eb4). Plan `status: done` in `plans/CEX-06.md` (commit 4c70eb4).
+- **Fast-forward:** `main` moved from 8be5713 to 4c70eb4 with `git merge --ff-only unit/CEX-06`. The history of main is linear.
+- **Kept (not deleted):** branch `unit/CEX-06` and worktree `scriba-prototype-wt/CEX-06` (at 4c70eb4); the scratch worktree `CEX-06-replay` is removed. The user decides about the branch and worktree.
+- **Follow-up:** the CEX-07 gate rework is next; CEX-09 is still blocked by CEX-07.
