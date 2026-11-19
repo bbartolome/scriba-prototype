@@ -1,6 +1,6 @@
 ---
 id: TRG-17
-status: planned
+status: done
 ---
 # TRG-17 plan — Editor-UI gate (closes Tool registry `phase:editor-ui`)
 
