@@ -25,6 +25,7 @@ import {
   MANUSCRIPT_STATUS_PATH,
   ORDER_CONFLICT_CODE,
 } from './manuscript-contract';
+import { SNAPSHOTS_PATH } from './snapshot-contract';
 
 const WAIT = { timeout: 5000 };
 const REV1 = `sha256:${'1'.repeat(64)}`;
@@ -86,6 +87,7 @@ let doubles: ShellTestDoubles;
 
 beforeEach(() => {
   doubles = createShellTestDoubles();
+  doubles.api.respond('GET', SNAPSHOTS_PATH, { snapshots: [] });
 });
 
 afterEach(() => {
@@ -463,8 +465,12 @@ describe('ManuscriptPage', () => {
     choose(selectNamed(root, 'Status of ch02.md'), 'final');
     await settle(harness);
 
-    expect(doubles.api.requests.map((request) => request.method)).toEqual([
-      'GET',
+    // The second read is the snapshots panel's list, which every device class sends (P13).
+    expect(
+      doubles.api.requests.map((request) => [request.method, request.path]),
+    ).toEqual([
+      ['GET', MANUSCRIPT_PATH],
+      ['GET', SNAPSHOTS_PATH],
     ]);
     expect(
       rowOf(root, 'drafts/ch02.md').querySelector('a')?.getAttribute('href'),

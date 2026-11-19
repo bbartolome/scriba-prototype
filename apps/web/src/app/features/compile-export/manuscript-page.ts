@@ -36,6 +36,7 @@ import {
   manuscriptViewCopy,
   ORDER_CONFLICT_CODE,
 } from './manuscript-contract';
+import { SnapshotsPanel } from './snapshots-panel';
 
 // The manuscript outline (CEX-17). It reads the view, shows it in three part sections, and refetches on
 // manuscript-updated and on the files-changed events that touch the manuscript or project.yaml.
@@ -140,7 +141,7 @@ function isPart(value: string): value is ManuscriptPart {
 
 @Component({
   selector: 'app-manuscript-page',
-  imports: [RouterLink, CdkDrag, CdkDragHandle, CdkDropList],
+  imports: [RouterLink, CdkDrag, CdkDragHandle, CdkDropList, SnapshotsPanel],
   template: `
     <h1>Manuscript</h1>
 
@@ -225,6 +226,8 @@ function isPart(value: string): value is ManuscriptPart {
         </section>
       }
     }
+
+    <app-snapshots-panel />
   `,
 })
 export class ManuscriptPage {
