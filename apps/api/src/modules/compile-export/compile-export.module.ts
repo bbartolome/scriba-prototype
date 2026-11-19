@@ -11,6 +11,11 @@ import { PreflightService } from './preflight.service';
 import { SnapshotController } from './snapshot.controller';
 import { SnapshotService } from './snapshot.service';
 
+// Modules outside compile-export import these from this entry file only.
+export { ManuscriptService } from './manuscript.service';
+export { AssemblyService } from './assembly.service';
+export { PreflightService } from './preflight.service';
+
 // Compile & export: the manuscript view model. It exports the services for the later units that consume it.
 @Module({
   imports: [PlatformModule, ProjectStoreModule, SetupAuthModule],
