@@ -6700,3 +6700,11 @@ Part D (gates and commit):
 - **Status:** `plans/CEX-11.md` is `status: done` on main (0eb35cc). The fast-forward moved the code, the checkboxes and the status together.
 - **Downstream:** CEX-14 now has CEX-11 as a blocker, which is done, so CEX-14 is available. CEX-12 and CEX-13 remain available (their blocker CEX-10 is done). CEX-15 still waits on CEX-12, CEX-13 and CEX-14.
 - **Kept (carried rule):** branch `unit/CEX-11` (at 0eb35cc) and worktree `scriba-prototype-wt/CEX-11` are not deleted; the user decides. Backup `backup/CEX-11-pre-rebase` is kept. Step 3.10 is not run for this unit.
+
+## 2026-11-19 — CEX-12 — Sonnet review of Part A on patch id 8f09a2c655cb7996e06a41eb5d23b24639b51743: APPROVED
+
+- **Patch id:** `8f09a2c655cb7996e06a41eb5d23b24639b51743` (`git diff main...unit/CEX-12 -- . ':!plans' ':!units' | git patch-id --stable`). Code on `unit/CEX-12` at 6dd8af7 and 0713e7c, based on e172361.
+- **Review:** one reviewer, for Part A (the only part of `plans/CEX-12.md` section 8). Steps 1 to 10 and tests C1, C2, C3, E1, E2, E3 were checked against the diff, and the file scope was checked against the plan. Result: APPROVED. The reviewer did not run the tests; it judged the output in the implementer's report.
+- **Implementer report (COMPLETE, same run):** under the local Pandoc 3.13 procedure (decision at DECISIONS line 6663, CEX-11 entry, and `plans/CEX-12.md` section 1 O2): C1, C2, C3, E1, E2 and E3 passed; `vitest run test/compile-export-epub.test.ts` 6 of 6; API suite with `SCRIBA_REQUIRE_EXPORT_TOOLS=1` 565 of 565; without Pandoc on PATH, E3 passed. Build and lint exit 0. CI was not observed; it stays a pending CI check (plan A1).
+- **Differences from the plan, accepted by the reviewer:** two commits instead of one; the new stylesheet was staged with `git add` before the commit (needed for a new file); prettier reformatted `epub.css` and the test file, as step 7 requires.
+- **Status:** the approval holds while the patch id is `8f09a2c6…`. Next: step 3 (rebase onto main, the three checks, the criteria, the fast-forward).
