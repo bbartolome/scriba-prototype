@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="120" viewBox="0 0 300 120">
+  <rect x="10" y="10" width="280" height="100" fill="none" stroke="black" stroke-width="3"/>
+  <line x1="10" y1="60" x2="290" y2="60" stroke="black" stroke-width="2"/>
+  <text x="150" y="50" font-size="18" text-anchor="middle" font-family="sans-serif">Test shape</text>
+</svg>
