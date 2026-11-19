@@ -1,6 +1,6 @@
 ---
 id: GNP-17
-status: planned
+status: done
 ---
 # GNP-17 plan — plot_manager check tool, golden test and eval case
 

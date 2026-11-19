@@ -17,5 +17,5 @@ unblocks: [GNP-19]
 - Prompt: list findings — each setup without a payoff, payoff without a setup, beat gaps and loose ends — citing story-node labels or entity IDs; no rewriting. (`check` results show inline and in logs; they're not written by output nodes in v1.)
 
 ## Acceptance criteria
-- [ ] Passes the validation suite; golden test passes with a story-graph JSON fixture as `outline`.
-- [ ] Manual eval case added.
+- [x] Passes the validation suite; golden test passes with a story-graph JSON fixture as `outline`.
+- [x] Manual eval case added.
