@@ -2,3 +2,15 @@
 schemaVersion: 1
 title: The Long Apprenticeship
 genrePack: nonfiction
+order:
+  - path: drafts/born-to-it.md
+    status: final
+  - path: drafts/what-counts-as-practice.md
+    status: revised
+  - path: drafts/the-ten-thousand-hour-idea.md
+    status: draft
+  - path: drafts/the-plateau-is-not-the-end.md
+    status: draft
+export:
+  author: Sample Author
+  dedication: For everyone who is still in the middle of learning something.
