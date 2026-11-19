@@ -1,12 +1,14 @@
 ---
 id: GNP-14
-status: draft
+status: planned
 ---
 # GNP-14 plan — character_builder and world_builder entity tools, golden cases and eval cases
 
 Batch: [GNP-14] (Genre packs, phase:fiction, M6), a batch of one. Draft by the planner at main `27ccbae` (HEAD when read; the working tree was clean). The unit file was read in full (lines 1 to 21). It has no change note: the file has 21 lines, and none of them records a move, a loosening, a rewording or a removal. `plans/DECISIONS.md` has no GNP-14 entry; its only hit for "GNP-14" is line 5155, an orchestrator check of unit line 15 inside the GNP-04 entry.
 
-The planner changed no file except this one, committed nothing, and ran no build, test, lint or npm command. Two points are open (section 8), so the status stays `draft`.
+The planner changed no file except this one, committed nothing, and ran no build, test, lint or npm command.
+
+Revised by the Opus reviser at main `544dddc` (the draft commit; `git diff 27ccbae 544dddc` changes only this file). The reviser settled both open points of section 8 from the sources (C10, C11), corrected the prompts, the scenarios, the eval cases, the eval test file, the update-run commands and one line citation, and made no unit change. The orchestrator sets the status.
 
 ## 1. Decisions this plan obeys
 
@@ -16,30 +18,33 @@ Labels: **U** = the unit; **M** = the module `modules/genre-packs.md`; **D** = a
 - **U2 character_builder inputs.** `seed` (text port, required), `role` (param), `coreIdea` (text port, required), `entityIds` (entity port list). No `styleProfile` and no `length`. Source: unit line 15.
 - **U3 world_builder inputs.** `ruleIds` (entity port list, kinds `place` and `world-rule`, required) and `coreIdea` (text port). The unit does not mark `coreIdea` as required, so it is optional here. Source: unit line 16. M1 below explains why the common-input row of the module does not override this.
 - **U4 Descriptions.** The two descriptions of the unit, verbatim (unit lines 15 and 16). Each must start with a verb of the content check's list and be under 120 characters: `DESCRIPTION_LIMIT` is 120 (`packages/packs/test/checks.ts` line 44), and `draft` (line 50) and `expand` (line 51) are in `VERBS` (line 48).
-- **U5 Prompt content.** character_builder returns a Markdown entity file with the front matter `name`, `want`, `need`, `flaw`, `voice` and `relationships` (to supplied characters only) and a backstory body. world_builder returns the expanded place or rule as an entity file and puts any contradictions with the other supplied rules under a fixed heading `Contradictions` in the body. Source: unit lines 15 and 16.
+- **U5 Prompt content.** character_builder returns a Markdown entity file with `character` front matter (`type: character`, then `name`, `want`, `need`, `flaw`, `voice` and `relationships` to supplied characters only) and a backstory body. world_builder returns the expanded place or rule as an entity file (`type: place` or `type: world-rule` and the keys of that kind) and puts any contradictions with the other supplied rules under the fixed heading `## Contradictions` in the body. Source: unit lines 15 and 16; the front-matter `type` is the entity kind (module line 69: "`kind` is the front-matter `type` value tools filter by").
 - **U6 Criteria.** The three criteria, copied word for word in section 5. Source: unit lines 19 to 21.
 - **M1 Common inputs apply to draft tools.** The common-input table (module lines 56 to 64) is for draft-producing narrative tools. The content check that compares common inputs looks at `draft` tools only (`packages/packs/test/checks.ts` lines 96 and 97). For tools whose output is `entity`, the module says that they "take only the subset that makes sense (listed per unit)" (module line 66). So neither tool carries the five common inputs.
 - **M2 Entity-kind hints.** An entity input carries `x-scriba-type: entity`, and carries `x-scriba-entity-kinds` only "where the input means a definite set of kinds" (module line 66, as reworded at commit `2e8eed0`; `plans/DECISIONS.md` entry of 2026-11-16 "GNP-04, GNP-07 — Navigator decisions", line 5144). So `ruleIds` takes `[place, world-rule]`, and `entityIds` of character_builder takes no hint, as `plans/GNP-07.md` C1 and N2 settled for the common `entityIds` (lines 24 and 23).
 - **M3 Output kinds.** `entity` is one of the five kinds (module line 52). The executor sends the fixed system message of the kind, `OUTPUT_SYSTEM_MESSAGES.entity` (`apps/api/src/modules/tool-registry/executor.service.ts` line 34): one Markdown file, YAML front matter, then the body. So each prompt names the front matter keys and the body, and no format rule beyond that.
-- **M4 Prompt skeleton.** Each template follows the skeleton of module lines 46 to 50: a role line; the material, each entity rendered with its ID (`{{entity this}}`); the steps; the constraints. Constraint 4 is open (section 8, point 1). The style-profile and length clauses are left out in either option, because neither tool has a `styleProfile` or a `length` input (unit line 15 for character_builder; unit line 16 for world_builder).
+- **M4 Prompt skeleton.** Each template follows the skeleton of module lines 46 to 50: a role line; the material, each entity rendered with its ID (`{{entity this}}`); the steps; the constraints. Constraint 4 keeps only "use only the material" (C10, section 8 point 1). The style-profile and length clauses are left out in either option, because neither tool has a `styleProfile` or a `length` input (unit line 15 for character_builder; unit line 16 for world_builder).
 - **M5 Template subset.** Only `{{field}}`, `{{#each}}`, `{{#if}}` and `{{entity id}}` (module line 46). Neither prompt uses `{{toolCatalog}}`.
 - **M6 Entity fields.** The keys of the front matter follow the fiction entity types of GNP-13 (module lines 78 to 80): `character` (`name`, `want`, `need`, `flaw`, `voice`, `relationships` as a list of `{character, note}`), `place` (`name`, `rules`) and `world-rule` (`statement`, `appliesTo`). The kinds `place` and `world-rule` are shipped by `packages/packs/fiction/entity-types/place.yaml` and `world-rule.yaml`, and `character` by `character.yaml` (GNP-13, status `done`).
 - **M7 Golden convention.** One scenario per tool at `e2e/fixtures/mock-openai/scenarios/pack-<tool>.json` (module line 87; `plans/GNP-02.md` D5); fixtures and goldens under `packages/packs/test/golden/<tool>/` (D6); the helper `goldenCase` of `apps/api/test/packs/golden.kit.ts` (D10); the update flag `--update-goldens` (D9). A golden changes only in the PR of the prompt edit (module line 87; unit line 20).
 - **M8 Catalogue.** `{{toolCatalog}}` renders every valid and enabled tool of the packs root (`plans/GNP-02.md` D18). So this PR changes the catalogue of the recipe golden of `propose_graph` (`plans/GNP-04.md` N1 and C9; `plans/GNP-07.md` G3 and C10). The story golden does not render the catalogue (`apps/api/test/packs/propose-graph.test.ts` line 45 onward asserts that the story prompt does not contain the catalogue heading).
 - **M9 Testing principles.** Behaviour, not wording, except the golden snapshots (module line 85). Content checks run through the pack-lint library (module line 86). The unit's criterion that the world_builder golden includes the Contradictions instruction is a check of the golden's rendered prompt, as the unit names it (unit line 20).
-- **M10 Eval cases.** Manual eval cases per tool go into the Agent loop's manual eval script (module line 90). Cases are data files, one per case (`units/AGL-25-manual-eval-script.md`, Decisions: "Cases are data files"). Nothing runs them in CI (module line 90; `units/README.md` line 138).
+- **M10 Eval cases.** Manual eval cases per tool go into the Agent loop's manual eval script (module line 90). Cases are data files, one per case (`units/AGL-25-manual-eval-script.md`, Decisions: "Cases are data files"). Nothing runs them in CI (module line 90; `units/README.md` line 139). The criterion "Manual eval cases added." is met by the case data and its data test (the Navigator's data-only reading, `plans/DECISIONS.md` entry "GNP-08, GNP-09, GNP-10 — Navigator decision: reading of the eval-data criterion", session 8a43a36b415949f89ef1d21f4ea58eca; applied in the same way by `plans/GNP-20.md` D9).
 - **D1 Blockers.** GNP-02 is `status: done` (`plans/GNP-02.md` line 9), and GNP-13 is `status: done` (`plans/GNP-13.md` line 4; its commit `6c3b363` is on main).
 - **D2 Entity-kind checks.** An undeclared kind in `x-scriba-entity-kinds` is a lint warning (`apps/api/src/modules/tool-registry/lint.ts` line 496). The content-check suite promotes that warning to an error (`packages/packs/test/checks.ts` lines 86 to 95), and `packages/packs/test/content-checks.test.ts` line 81 tests it. So a kind that no built-in entity type ships fails the suite.
 - **D3 Template check.** A required input that the prompt does not use is a lint warning (`lint.ts` line 817). So each prompt names every required input.
 - **D4 Loader.** A tool's `name` must equal its file stem (`apps/api/src/modules/tool-registry/packs.ts` line 156).
 - **C1 `role`.** A free-text string, optional, with no port and no enum. The unit gives neither a type nor values. This follows GNP-07 C2 for `tone`.
 - **C2 Textarea.** `seed` and `coreIdea` carry `x-scriba-control: textarea`, as GNP-07 C4 gives `coreIdea`.
-- **C3 Names.** The tool names are the unit's. Fixture cases `keeper-seed` (character_builder) and `skerry-rules` (world_builder). Scenarios `pack-character_builder.json` and `pack-world_builder.json`. Test file `apps/api/test/packs/character-world-builder.test.ts`. Eval case ids `character-builder` and `world-builder`.
+- **C3 Names.** The tool names are the unit's. Fixture cases `keeper-seed` (character_builder) and `skerry-rules` (world_builder). Scenarios `pack-character_builder.json` and `pack-world_builder.json`. Test file `apps/api/test/packs/character-world-builder.test.ts`. Eval case ids `character-builder` and `world-builder`. Eval data test: a new file `scripts/eval-case-character-world-builder.test.mjs`, in the form of `scripts/eval-case-throughline-check.test.mjs` (the practice of GNP-09, GNP-10 and GNP-20, `plans/GNP-20.md` D9: one file per unit, so the parallel fiction units GNP-15 to GNP-17 do not conflict in `scripts/eval-cases.test.mjs`). The root `npm test` runs it (`package.json` line 25, `node --test 'scripts/*.test.mjs'`).
 - **C4 `invalidWithout`.** `seed` for character_builder (a required input that only this tool has) and `ruleIds` for world_builder (its only required input).
 - **C5 One test for criterion 2.** `goldenCase` returns a body for one `it` (`apps/api/test/packs/golden.kit.ts` lines 241 to 259). The one test of criterion 2 awaits the two bodies in turn, so each criterion has one test.
 - **C6 Seam of criterion 1.** The existing test "the suite passes on the real packs" of `packages/packs/test/real-packs.test.ts` (line 9) is the test, as `plans/GNP-07.md` section 4 did for its criterion 1. A new test would only repeat it.
 - **C7 Catalogue placement.** The catalogue is sorted by plain `[...names].sort()` (`apps/api/src/modules/tool-registry/catalog.service.ts` line 467; `plans/GNP-20.md` line 187). So `character_builder` comes before `cold_open`, and `world_builder` after `throughline_check`. `plans/GNP-20.md` line 148 says the same.
-- **C8 Eval values.** `expect.reason` is `completed`, and `expect.tools` names the one tool of the case. The intents are plan choices. The sample and the citation value depend on section 8.
+- **C8 Eval values.** `expect.reason` is `completed`, and `expect.tools` names the one tool of the case. `sample` is `fiction` (C11). `expect.citations` is left out, because neither prompt asks for `[@id]` (C10); the report then shows it as `unchecked` (`scripts/eval-agent/README.md`, "Cases"; same as `plans/GNP-20.md` D9). The intents are plan choices; they name no entity id, because GNP-18 has not fixed its entity ids.
+- **C9 The entity that world_builder expands.** The first entry of `ruleIds` is the place or rule to expand; the other entries are the rules it is checked against. The unit says "Expand a place or world rule and flag contradictions with the others" (unit line 16) and gives no second input, so the order of the list is the simplest carrier. The prompt says so.
+- **C10 Constraint 4 for the entity prompts (section 8, point 1, settled by the reviser).** Option (a): `Use only the material above.` and nothing more. The citation, `TK`, style-profile and length clauses are left out. Sources: the Navigator's decision for the non-draft `propose_graph` (`plans/DECISIONS.md` entry of 2026-11-16 "GNP-04, GNP-07 — Navigator decisions", point 2, option (a)); `plans/GNP-04.md` C8 (line 64), which names `units/GNP-14-character-world-builder.md` line 15 as a non-draft unit that gives its own prompt rules; `plans/GNP-20.md` D5, which applied the same precedent to the `check` tool without a new Navigator decision (status done). The skeleton is stated for first-draft templates of draft tools (module line 46); an entity file is front matter plus invented fiction (backstory, consequences), so "cite each factual sentence" and `TK` have no object, and neither tool has a style or length input (unit lines 15 and 16). No other unit depends on the choice, and a prompt is cheap to change (module line 54), so it is not a decision for the Navigator (`prompt.md`, "Navigator").
+- **C11 Sample id of the eval cases (section 8, point 2, settled from the unit files).** `fiction`. Sources: `units/PST-11-nonfiction-sample-skeleton.md` line 17 ("Genre packs adds `fiction` at M6"); `units/PLT-20-examples-check-m1-layer.md` line 19 (`examples/fiction/` at M6; line 24: entries match folders one to one); `units/GNP-18-fiction-sample.md` line 3 (`examples/fiction`). No unit change is needed. No test checks a case's sample against `examples/samples.yaml` (`scripts/eval-cases.test.mjs`, `scripts/eval-agent/run.test.mjs`; `run.mjs` line 108 checks only a non-empty string), so the data test passes before GNP-18 lands; a manual run of the two cases waits for GNP-18 and is recorded as not run.
 
 ## 2. Facts checked and facts assumed
 
@@ -74,7 +79,9 @@ Eval and samples:
 - `scripts/eval-agent/cases/` holds six files: `cold-open.json`, `mystery-question.json`, `myth-buster.json`, `numbers-to-people.json`, `summarize-outline.json` and `throughline-check.json`.
 - `scripts/eval-cases.test.mjs` holds two tests, at lines 34 and 65 (the cold-open and the mystery-question cases). Its first test reads every case file and checks the keys and values.
 - `scripts/eval-agent/run.mjs`: `CASE_KEYS` line 36; `sample` must be a non-empty string (line 108); the runner starts a project from the sample id (line 436).
-- `examples/samples.yaml` holds one entry, `nonfiction`.
+- `scripts/eval-case-throughline-check.test.mjs` (GNP-20), `scripts/eval-case-myth-buster.test.mjs` and `scripts/eval-case-numbers-to-people.test.mjs`: one data test per unit, each reading one case file and asserting its exact keys and values. `scripts/eval-agent/cases/throughline-check.json` has no `citations` key.
+- `scripts/eval-agent/README.md` line 51 (`sample` is the id of a sample in `examples/samples.yaml`) and line 56 (`citations`: `present`, `absent` or `any`); line 73 (an unset expectation reports `unchecked`).
+- `examples/samples.yaml` holds one entry, `nonfiction`. The id of the fiction entry is `fiction` (C11).
 - `units/GNP-18-fiction-sample.md` line 7 (`blocked_by` includes GNP-16) and line 15 (the sample adds an entry to `examples/samples.yaml`). The unit does not name the entry's id.
 - `plans/QUEUE.md` line 18 lists GNP-14 with its blockers done (GNP-02 and GNP-13).
 
@@ -116,13 +123,13 @@ Only the paths below change, with the content of the two tool specs, the fixture
 | `apps/api/test/packs/character-world-builder.test.ts` | new | the test of criterion 2 (step 8) |
 | `scripts/eval-agent/cases/character-builder.json` | new | the eval case (step 13) |
 | `scripts/eval-agent/cases/world-builder.json` | new | the eval case (step 13) |
-| `scripts/eval-cases.test.mjs` | edit: one `test(...)` added at the end | the test of criterion 3 (step 13) |
+| `scripts/eval-case-character-world-builder.test.mjs` | new | the test of criterion 3 (step 13) |
 
-Not changed: `packages/packs/fiction/entity-types/**` (GNP-13); `packages/packs/core/**`; `packages/packs/nonfiction/**`; `packages/packs/test/*.ts` and `packages/packs/test/README.md` (GNP-01 and GNP-02); `packages/packs/test/golden/propose_graph/story.*` and its fixture; `packages/packs/test/golden/golden_probe/**`; `apps/api/src/**`; `apps/api/test/packs/golden.kit.ts`; `apps/api/vitest.config.mts`; `packages/contracts/**`; `e2e/fixtures/mock-openai/server.mjs`; `examples/**` (GNP-18 owns `examples/samples.yaml`); `scripts/eval-agent/run.mjs`, its `README.md` and `run.test.mjs`; `package.json`; `package-lock.json`; `.prettierignore`; `units/**`; `modules/**`; `plans/**` (except `plans/GNP-14.md`, by the orchestrator).
+Not changed: `packages/packs/fiction/entity-types/**` (GNP-13); `packages/packs/core/**`; `packages/packs/nonfiction/**`; `packages/packs/test/*.ts` and `packages/packs/test/README.md` (GNP-01 and GNP-02); `packages/packs/test/golden/propose_graph/story.*` and its fixture; `packages/packs/test/golden/golden_probe/**`; `apps/api/src/**`; `apps/api/test/packs/golden.kit.ts`; `apps/api/vitest.config.mts`; `packages/contracts/**`; `e2e/fixtures/mock-openai/server.mjs`; `examples/**` (GNP-18 owns `examples/samples.yaml`); `scripts/eval-agent/run.mjs`, its `README.md` and `run.test.mjs`; `scripts/eval-cases.test.mjs`; `package.json`; `package-lock.json`; `.prettierignore`; `units/**`; `modules/**`; `plans/**` (except `plans/GNP-14.md`, by the orchestrator).
 
 ### The tool spec `packages/packs/fiction/tools/character_builder.yaml`
 
-Prompt lines marked OPEN POINT 1 are replaced by the lines chosen there (section 8) before the file is written. Nothing else in the file depends on that choice.
+The Constraints block follows C10 (section 8, point 1, settled).
 
 ```yaml
 schemaVersion: 1
@@ -171,14 +178,13 @@ prompt: |
   Steps:
   1. Name the character, and give the want, the need and the flaw, so that together they show the core idea.
   2. Describe the voice in notes: how the character speaks.
-  3. List relationships only with the characters in the material, each with a short note.
+  3. List relationships only with the characters in the material, each with a short note. Use an empty list when the material has no character.
   4. Write the backstory in the body, from the seed and the material.
 
-  Return the file: front matter with the keys name, want, need, flaw, voice and relationships (a list of character and note), then the backstory.
+  Return the file: front matter with type: character and the keys name, want, need, flaw, voice and relationships (a list of entries with character, the ID of a character in the material, and note), then the backstory.
 
   Constraints:
   - Use only the material above.
-  OPEN POINT 1: the citation and TK lines, or none.
 ```
 
 Then `npx prettier --write` on the file. `prettier` must not change the prompt text; if it does, keep its form and record the change.
@@ -219,15 +225,14 @@ prompt: |
   {{/each}}
 
   Steps:
-  1. Name the place or rule, and state it in one sentence.
+  1. Take the first place or rule of the material: it is the one you expand. The others are the rules you check it against.
   2. Expand it: for a place, its description; for a rule, its consequences and exceptions.
-  3. Check it against each other rule in the material. Under a heading named Contradictions in the body, list each contradiction and the rule it conflicts with.
+  3. Check it against each other place or rule in the material. End the body with the heading ## Contradictions, and under it list each contradiction with the ID it conflicts with, or write None.
 
-  Return the file: front matter with the keys of its kind (for a place, name and rules; for a world rule, statement and appliesTo), then the body.
+  Return the file: front matter with type and the keys of its kind (for a place, type: place, name and rules; for a world rule, type: world-rule, statement and appliesTo), then the body.
 
   Constraints:
   - Use only the material above.
-  OPEN POINT 1: the citation and TK lines, or none.
 ```
 
 Then `npx prettier --write` on the file.
@@ -299,7 +304,7 @@ The text is original, and names no real person. The expected `sourcesUsed` are t
       "match": { "endpoint": "chat" },
       "reply": {
         "kind": "stream",
-        "deltas": ["---\nname: Tomas Reyes\n---\n\nTomas Reyes keeps the lamp."]
+        "deltas": ["---\ntype: character\nname: Ana Reyes\n---\n\nAna Reyes came to the rock as relief keeper."]
       }
     }
   ]
@@ -315,7 +320,7 @@ The text is original, and names no real person. The expected `sourcesUsed` are t
       "match": { "endpoint": "chat" },
       "reply": {
         "kind": "stream",
-        "deltas": ["---\ntype: world-rule\nstatement: The supply boat comes only on a spring tide.\n---\n\nContradictions\n\nNone."]
+        "deltas": ["---\ntype: place\nname: Skerry Light\nrules: [spring-tide-only]\n---\n\nA lamp on a bare rock.\n\n## Contradictions\n\nNone."]
       }
     }
   ]
@@ -328,12 +333,11 @@ The text is original, and names no real person. The expected `sourcesUsed` are t
 
 ```json
 {
-  "sample": "<the fiction sample id, OPEN POINT 2>",
-  "intent": "Draft a new character for my story from the seed in my notes.",
+  "sample": "fiction",
+  "intent": "Draft a new character for my lighthouse story from this seed: the skipper of the supply boat, who has to deal with both keepers.",
   "expect": {
     "reason": "completed",
-    "tools": ["character_builder"],
-    "citations": "<any or present, OPEN POINT 1>"
+    "tools": ["character_builder"]
   }
 }
 ```
@@ -342,35 +346,38 @@ The text is original, and names no real person. The expected `sourcesUsed` are t
 
 ```json
 {
-  "sample": "<the fiction sample id, OPEN POINT 2>",
-  "intent": "Expand the world rule I have written for my story and flag any contradictions with my other rules.",
+  "sample": "fiction",
+  "intent": "Expand the world rule about the supply boat in my story and flag any contradictions with my lighthouse island.",
   "expect": {
     "reason": "completed",
-    "tools": ["world_builder"],
-    "citations": "<any or present, OPEN POINT 1>"
+    "tools": ["world_builder"]
   }
 }
 ```
+
+### The eval data test `scripts/eval-case-character-world-builder.test.mjs`
+
+The imports and the path helper of `scripts/eval-case-throughline-check.test.mjs` (lines 1 to 13), with the folder `eval-agent/cases` and one function that reads a case by file name. One `test(...)` with the name of section 5. For each of `character-builder.json` and `world-builder.json`: the keys are exactly `expect`, `intent`, `sample`; the keys of `expect` are exactly `reason`, `tools`; `sample` is `fiction`; `intent` is a non-empty string; `expect.tools` is `["character_builder"]` and `["world_builder"]`; `expect.reason` is `completed`. It runs no model.
 
 ## 4. Procedure
 
 Run from `/Users/bbartolome/workspace/scriba-prototype`, on branch `unit/GNP-14` cut from `main` by the orchestrator (as for GNP-13: the branch and the worktree are made before the implementer starts; no `-b` when the branch exists). Record `node -v` and `npm -v` beside each result. Do not push. Do not use `git add -A` or `git commit -a`.
 
-0. **Base.** `git rev-parse --short HEAD` prints `27ccbae` or a later commit. `git diff --quiet 27ccbae HEAD -- packages/packs apps/api/test/packs scripts e2e/fixtures/mock-openai/scenarios` exits 0; if not, re-read the changed files before editing. `git status --short` prints nothing. `test ! -e packages/packs/fiction/tools/character_builder.yaml` and the same for `world_builder.yaml` exit 0. `git ls-files packages/packs/test/golden/character_builder packages/packs/test/golden/world_builder apps/api/test/packs/character-world-builder.test.ts scripts/eval-agent/cases/character-builder.json` prints nothing.
+0. **Base.** `git rev-parse --short HEAD` prints `544dddc` or a later commit. `git diff --quiet 544dddc HEAD -- packages/packs apps/api/test/packs scripts e2e/fixtures/mock-openai/scenarios examples/samples.yaml` exits 0; if not, re-read the changed files before editing. `git status --short` prints nothing. `test ! -e packages/packs/fiction/tools/character_builder.yaml` and the same for `world_builder.yaml` exit 0. `git ls-files packages/packs/test/golden/character_builder packages/packs/test/golden/world_builder apps/api/test/packs/character-world-builder.test.ts scripts/eval-agent/cases/character-builder.json scripts/eval-agent/cases/world-builder.json scripts/eval-case-character-world-builder.test.mjs` prints nothing.
 1. **Runtime and baseline.** `node -v` prints `v26.x` and `npm -v` prints `11.x` (A1). Run `npm ci` if the worktree has no `node_modules/`. Then `npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api && npm test -w @bbartolome/scriba-packs && (cd apps/api && npx vitest run test/packs)` exits 0 on the unchanged tree.
-2. **character_builder spec (U1 to U5, M2 to M6, C1, C2).** Create `packages/packs/fiction/tools/character_builder.yaml` with the text of section 3. Leave the OPEN POINT 1 line as the placeholder until section 8, point 1 is decided.
-3. **world_builder spec (U1 to U5, M2 to M6, C2).** Create `packages/packs/fiction/tools/world_builder.yaml` with the text of section 3, under the same rule for the OPEN POINT 1 line.
+2. **character_builder spec (U1 to U5, M2 to M6, C1, C2, C10).** Create `packages/packs/fiction/tools/character_builder.yaml` with the text of section 3.
+3. **world_builder spec (U1 to U5, M2 to M6, C2, C9, C10).** Create `packages/packs/fiction/tools/world_builder.yaml` with the text of section 3.
 4. **Folder and format.** `git rm -- packages/packs/fiction/tools/.gitkeep` if the file exists (it does on main; skip the step when it is gone). Then `npx prettier --write packages/packs/fiction/tools/character_builder.yaml packages/packs/fiction/tools/world_builder.yaml`.
 5. **Pack gate (criterion 1, D2, D3, A7).** `npm run lint:packs` exits 0 with no finding for the two files. Then `npm test -w @bbartolome/scriba-packs` exits 0, with the test "the suite passes on the real packs" passing. Note the output: the entity-kind rule must show no finding for `place` or `world-rule`.
 6. **Fixtures (C3, U5).** Create `packages/packs/test/golden/character_builder/keeper-seed.fixture.json` and `packages/packs/test/golden/world_builder/skerry-rules.fixture.json` with the text of section 3. Then `npx prettier --write` on both.
 7. **Scenarios (M7).** Create `e2e/fixtures/mock-openai/scenarios/pack-character_builder.json` and `pack-world_builder.json` with the text of section 3. Then `npx prettier --write` on both.
 8. **Golden test (criterion 2, C4, C5).** Create `apps/api/test/packs/character-world-builder.test.ts`. It imports `expect` and `it` from `vitest` and `goldenCase` and `type GoldenRunResult` from `./golden.kit`. It copies the `renderedPrompt` helper of `apps/api/test/packs/cold-open.test.ts` (lines 4 to 21). It builds two bodies with `goldenCase`: `character` (tool `character_builder`, name `keeper-seed`, `expect` `{ kind: 'entity', sourcesUsed: ['tomas-reyes', 'skerry-light'] }`, `invalidWithout: 'seed'`, and a `check` that asserts that the rendered prompt contains `tomas-reyes` and `skerry-light`) and `world` (tool `world_builder`, name `skerry-rules`, `expect` `{ kind: 'entity', sourcesUsed: ['skerry-light', 'spring-tide-only'] }`, `invalidWithout: 'ruleIds'`, and a `check` that asserts that the rendered prompt contains `skerry-light`, `spring-tide-only` and `Contradictions`). Then one `it` with the name of section 5, whose body awaits `character()` and then `world()`, with timeout 120000. The file has no `any` and does not contain the text `examples/`.
-9. **Update run (A2, A4, M7).** `cd apps/api && npx vitest run -- --update-goldens test/packs/character-world-builder.test.ts` exits 0 and creates `packages/packs/test/golden/character_builder/keeper-seed.golden.json` and `packages/packs/test/golden/world_builder/skerry-rules.golden.json`. Read both. In each, `messages[0].content` equals the entity system message (`OUTPUT_SYSTEM_MESSAGES.entity`, executor.service.ts line 34). In the character golden, `messages[1].content` contains `Seed: A keeper who has never once left the rock`, `Role: keeper`, `Core idea: Duty can outlast the reasons for it.` and both IDs. In the world golden, it contains `Core idea: The island keeps its own calendar.` and both IDs, and the word `Contradictions`.
+9. **Update run (A2, A4, M7).** `cd apps/api && npx vitest run test/packs/character-world-builder.test.ts -- --update-goldens` exits 0 (the file filter before `--`, as `plans/GNP-20.md` step 6; with `--` first, vitest runs the whole API suite, `plans/DECISIONS.md` GNP-04 review record) and creates `packages/packs/test/golden/character_builder/keeper-seed.golden.json` and `packages/packs/test/golden/world_builder/skerry-rules.golden.json`. Read both. In each, `messages[0].content` equals the entity system message (`OUTPUT_SYSTEM_MESSAGES.entity`, executor.service.ts line 34). In the character golden, `messages[1].content` contains `Seed: A keeper who has never once left the rock`, `Role: keeper`, `Core idea: Duty can outlast the reasons for it.` and both IDs. In the world golden, it contains `Core idea: The island keeps its own calendar.` and both IDs, and `## Contradictions`. Neither golden contains `[@` or `TK` (C10).
 10. **Compare run and format (M7).** `cd apps/api && npx vitest run test/packs/character-world-builder.test.ts` exits 0 with one test passed, and both goldens are `match` (the test asserts it). Then `npx prettier --write packages/packs/test/golden/character_builder packages/packs/test/golden/world_builder`, and run step 10 again: it still passes, because the comparison is by value.
-11. **Catalogue of the propose_graph recipe golden (M8, C7, A3, A5).** `cd apps/api && npx vitest run -- --update-goldens test/packs/propose-graph.test.ts` exits 0. Then `git diff --quiet -- packages/packs/test/golden/propose_graph/story.golden.json` exits 0, and `git diff --name-only -- packages/packs/test/golden/propose_graph` lists only `recipe.golden.json`. Parse the base and the working copy of the recipe golden as JSON (`git show HEAD:<path>` through `child_process` in `node -e`, without writing a file). `messages[0]` is equal in both. In `messages[1].content`, the two strings differ by exactly two inserted lines: `- character_builder: ...` before the `- cold_open:` line, and `- world_builder: ...` after the `- throughline_check:` line, with the text of A3. Everything else is equal. If anything else differs, stop and report it. Then `cd apps/api && npx vitest run test/packs/propose-graph.test.ts` exits 0.
+11. **Catalogue of the propose_graph recipe golden (M8, C7, A3, A5).** `cd apps/api && npx vitest run test/packs/propose-graph.test.ts -- --update-goldens` exits 0. Then `git diff --quiet -- packages/packs/test/golden/propose_graph/story.golden.json` exits 0, and `git diff --name-only -- packages/packs/test/golden/propose_graph` lists only `recipe.golden.json`. Parse the base and the working copy of the recipe golden as JSON (`git show HEAD:<path>` through `child_process` in `node -e`, without writing a file). `messages[0]` is equal in both. In `messages[1].content`, the two strings differ by exactly two inserted lines: `- character_builder: ...` before the `- cold_open:` line, and `- world_builder: ...` after the `- throughline_check:` line, with the text of A3. Everything else is equal. If anything else differs, stop and report it. Then `cd apps/api && npx vitest run test/packs/propose-graph.test.ts` exits 0.
 12. **API build and lint (A8).** `npm run build -w @bbartolome/scriba-api` and `npm run lint -w @bbartolome/scriba-api` exit 0. The build type-checks the new test file.
-13. **Eval data and its test (criterion 3, M10, C8, section 8 points 1 and 2).** Create `scripts/eval-agent/cases/character-builder.json` and `scripts/eval-agent/cases/world-builder.json` with the text of section 3, with the placeholders replaced by the values of section 8. Then add the test of section 5 to the end of `scripts/eval-cases.test.mjs`, after the mystery-question test, with the same helper `loadCases()`. Then `npx prettier --write` on the two JSON files and on `scripts/eval-cases.test.mjs`, and `node --test scripts/eval-cases.test.mjs` exits 0 with three tests passed.
-14. **Format check (A6).** `npx prettier --check packages/packs/fiction/tools packages/packs/test/golden apps/api/test/packs scripts/eval-agent/cases scripts/eval-cases.test.mjs e2e/fixtures/mock-openai/scenarios` exits 0. If a golden fails this check, stop and report it; the fix is a decision for the Navigator, not for this unit.
+13. **Eval data and its test (criterion 3, M10, C3, C8, C11).** Create `scripts/eval-agent/cases/character-builder.json` and `scripts/eval-agent/cases/world-builder.json` with the text of section 3. Create `scripts/eval-case-character-world-builder.test.mjs` as section 3 describes. Then `npx prettier --write` on the three files. `node --test scripts/eval-case-character-world-builder.test.mjs` exits 0 with one test passed, and `node --test scripts/eval-cases.test.mjs` still exits 0 with its two tests passed (its first test reads every case file).
+14. **Format check (A6).** `npx prettier --check packages/packs/fiction/tools packages/packs/test/golden apps/api/test/packs scripts/eval-agent/cases scripts/eval-case-character-world-builder.test.mjs e2e/fixtures/mock-openai/scenarios` exits 0. If a golden fails this check, stop and report it; the fix is a decision for the Navigator, not for this unit.
 15. **Root gates and e2e mock (A9, A10).** From the root: `npm run build`, `npm test`, `npm run lint` and `npx prettier --check .` exit 0. `npm test -w @bbartolome/scriba-e2e` exits 0, which shows that the mock still loads the new scenario files.
 16. **Tools preview in the running app (A9).** `npm run e2e -w @bbartolome/scriba-e2e -- tools-preview.e2e.ts` passes, as `plans/GNP-07.md` step 14 expects. If the browser cannot run here, record it as not run.
 17. **Commit.** `git add --` the paths of section 3 by name (the deletion of step 4 is already staged). `git diff --cached --stat` lists exactly those paths and the deletion, and no `plans/` or `units/` file. Commit with `feat(GNP-14): character_builder and world_builder entity tools with golden and eval cases`. Do not push.
@@ -384,7 +391,7 @@ The criteria text is copied from `units/GNP-14-character-world-builder.md` lines
 |---|---|---|---|
 | "Both pass the validation suite; every entity input names an existing entity type." (19) | `packages/packs/test/real-packs.test.ts`, "the suite passes on the real packs" (existing; C6) | `npm run lint:packs` and `npm test -w @bbartolome/scriba-packs` (step 5) | Both exit 0. The test asserts no error from `lintPacks` and an empty `contentChecks` on `packages/packs`. The entity-kind promotion of D2 makes an unknown kind in `x-scriba-entity-kinds` a finding, so each kind of the two tools (`place`, `world-rule`) must be shipped. The tools' presence is shown by criterion 2, where each execute returns status 200 on `PACKS_ROOT` (`golden.kit.ts` line 177). |
 | "Golden tests for both (rendered prompt with entities and IDs; output kind `entity`; `sourcesUsed`); world_builder's golden includes the Contradictions instruction." (20) | `apps/api/test/packs/character-world-builder.test.ts`, "AC 2: the character_builder and world_builder golden cases match, their prompts hold each entity with its ID, each output is an entity with the expected sourcesUsed, and the world_builder prompt holds the Contradictions instruction" | `cd apps/api && npx vitest run test/packs/character-world-builder.test.ts` (steps 9 and 10) | One `it` with timeout 120000, whose body awaits the two `goldenCase` bodies (C5). For each tool: the golden is `match` (`written` in update mode); the kind is `entity`; `sourcesUsed` is exactly as given; the call without `invalidWithout` returns 422 with code `TOOL_ARGS_INVALID` and a message that names the field; one model call. The `check` of character_builder: the rendered user message contains `tomas-reyes` and `skerry-light`. The `check` of world_builder: it contains `skerry-light`, `spring-tide-only` and `Contradictions`. |
-| "Manual eval cases added." (21) | `scripts/eval-cases.test.mjs`, "AC 3: the character-builder and world-builder eval cases are in the eval data and use the documented keys and values" | `node --test scripts/eval-cases.test.mjs` (step 13) | Both files exist in `scripts/eval-agent/cases/`. Each has a non-empty `intent`. `sample` is the fiction sample id that section 8, point 2 fixes. `expect.tools` is `["character_builder"]` and `["world_builder"]`. `expect.reason` is `completed`. `expect.citations` is one of `present`, `absent` and `any`, and is the value that section 8, point 1 selects. The first test of the file already checks the keys of every case. The manual run is not part of the criterion (`plans/GNP-07.md` C9). |
+| "Manual eval cases added." (21) | `scripts/eval-case-character-world-builder.test.mjs`, "AC 3: the character-builder and world-builder eval cases are in the eval data and use the documented keys and values" | `node --test scripts/eval-case-character-world-builder.test.mjs` (step 13) | Both files exist in `scripts/eval-agent/cases/`. For each: the keys are exactly `expect`, `intent`, `sample`; the keys of `expect` are exactly `reason`, `tools` (no `citations`, C8, C10); `sample` is `fiction` (C11); `intent` is non-empty; `expect.tools` is `["character_builder"]` and `["world_builder"]`; `expect.reason` is `completed`. The manual run is not part of the criterion (data-only reading, M10); it waits for GNP-18 and is recorded as not run. |
 
 ## 6. Downstream agreement
 
@@ -395,7 +402,7 @@ The criteria text is copied from `units/GNP-14-character-world-builder.md` lines
 - **GNP-04 and GNP-07 (done).** Their rule that a golden with the catalogue is regenerated in the PR that adds a tool (`plans/GNP-04.md` N1 and C9; `plans/GNP-07.md` G3 and C10) is followed in step 11. GNP-07's rebase rule is also followed: a later rebase onto a base that holds another fiction tool regenerates the golden again. Agrees.
 - **GNP-20 (done).** Its catalogue order (`plans/GNP-20.md` line 148: `character_builder` sorts before `throughline_check`, `world_builder` after it; line 187: the plain sort) matches C7. GNP-20's step 8 checks that one line is inserted; step 11 of this plan checks two lines, one for each new tool. Agrees.
 - **AGL-25 (done).** Its unit names "Genre packs per-tool manual eval cases" as an unblocked unit (`units/AGL-25-manual-eval-script.md` front matter, `unblocks`). Its case format is followed (step 13; `plans/GNP-07.md` section 3 step 6 uses the same keys). Agrees.
-- **GNP-12, GNP-15, GNP-16, GNP-17 and GNP-18 (`parallel_with` line 8 of each names GNP-14).** None of them is blocked by this unit, so none depends on its files. GNP-18 supplies the fiction sample that the eval cases need (section 8, point 2). GNP-15, GNP-16 and GNP-17 are fiction tools that also add a catalogue line; their PRs regenerate the same golden (section 7). Agrees.
+- **GNP-12, GNP-15, GNP-16, GNP-17 and GNP-18 (`parallel_with` line 8 of each names GNP-14).** None of them is blocked by this unit, so none depends on its files. GNP-18 supplies the fiction sample that the eval cases name; its id `fiction` is already fixed by `units/PST-11-nonfiction-sample-skeleton.md` line 17, `units/PLT-20-examples-check-m1-layer.md` line 19 and GNP-18's own title (`examples/fiction`), so GNP-18 needs no change (C11). GNP-15, GNP-16 and GNP-17 are fiction tools that also add a catalogue line; their PRs regenerate the same golden (section 7). Agrees.
 - **GNP-01 (done).** Its content checks read the new specs without a change (`packages/packs/test/checks.ts`). Agrees.
 
 ## 7. Other plans and units on the same files
@@ -409,13 +416,13 @@ Draft and planned plans (`grep -l '^status: *(draft|planned)' plans/*.md`): `pla
 Units without a plan that change the same files (their paths are not in any draft or planned plan):
 
 - **GNP-15 (`scene_builder`), GNP-16 (`dialogue`), GNP-17 (`plot_manager`).** Each adds a fiction tool, so each adds a catalogue line to the recipe golden, each deletes `packages/packs/fiction/tools/.gitkeep` if it is still there, and each adds a scenario, a fixture, a golden, a test and eval cases in its own paths. Their catalogue lines also sort among the six on main and the two new ones (`plans/GNP-20.md` line 148 gives the order of `dialogue`, `plot_manager` and `scene_builder` against `throughline_check`). Their PRs regenerate the recipe golden at rebase.
-- **GNP-18 (fiction sample).** It adds the entry to `examples/samples.yaml` (unit line 15). No file of this plan is in that path. Its id decides section 8, point 2.
+- **GNP-18 (fiction sample).** It adds the entry `fiction` to `examples/samples.yaml` (unit line 15; C11). No file of this plan is in that path.
 - **GNP-19 (fiction gate).** It changes no file of this plan.
 
 Done plans whose files this plan changes or extends:
 
 - **`plans/GNP-04.md`** (the recipe golden and the catalogue of `propose_graph`). Its golden is regenerated by step 11.
-- **`plans/GNP-07.md`** (`scripts/eval-cases.test.mjs`, `scripts/eval-agent/cases/`). This plan adds two case files and one test to the same file.
+- **`plans/GNP-07.md`** (`scripts/eval-cases.test.mjs`, `scripts/eval-agent/cases/`). This plan adds two case files to the same folder and does not edit `scripts/eval-cases.test.mjs`; its own data test is a new file (C3, as `plans/GNP-20.md` D9).
 - **`plans/GNP-20.md`** (the catalogue order of the recipe golden). Step 11 keeps its order.
 - **`plans/GNP-02.md`** (the helper, the scenario convention) and **`plans/GNP-13.md`** (the entity types). Used as they are.
 
@@ -424,24 +431,18 @@ Either order on main (the orchestrator merges the units separately):
 - If this unit merges first, GNP-15, GNP-16 and GNP-17 regenerate the recipe golden on their own PRs, and their step 11 equivalent is the same as step 11 here.
 - If one of them merges first, step 11 of this plan runs on the base that has its catalogue line, and the regenerated golden holds both sets of lines. The check of step 11 then compares the base with the working copy, so that only the lines of this PR are new.
 - `packages/packs/fiction/tools/.gitkeep`: whichever PR merges first deletes it. Step 4 deletes it only if present, so the rebase is clean. Two deletions of one file do not conflict.
-- `scripts/eval-cases.test.mjs`: a later eval test at the end of the file is a textual conflict. It is resolved by keeping both tests.
+- `scripts/eval-agent/cases/`: each fiction unit adds its own case files with distinct names, so no textual conflict.
 
 ## 8. Open points
 
-1. **The constraint lines of the entity prompts (M4).** Constraint 4 of the skeleton (module line 50) reads: "use only the material; cite each factual sentence with its entity or source ID in Pandoc citation form `[@id]`; where a needed fact is missing write `TK` with a short note ...; respect the style profile's tone, banned phrases and the requested length." The module states the skeleton for "every first-draft template" (module line 46). The unit gives no citation, `TK` or style instruction for either tool (unit lines 15 and 16). Both tools lack a `styleProfile` and a `length` input, so the style and length clauses are out in either option.
-   - The precedent is `plans/GNP-04.md` open point 2, which the Navigator settled for `propose_graph` (a graph output) as option (a): keep "use only the material" and leave out the citation, `TK` and style-profile and length clauses (`plans/GNP-04.md` line 216; `plans/DECISIONS.md` entry of 2026-11-16 at line 5144). That decision covers a graph output only.
-   - Option (a): as GNP-04, the constraints are `Use only the material above.` and nothing more. Option (b): keep `Use only the material above.` and also the citation and `TK` lines of module line 50, without the style and length clauses.
-   - The choice decides the constraint lines of both YAML files (section 3), the golden prompts (step 9) and the `citations` value of both eval cases (`present` under (b), `any` under (a)). The check of criterion 2 does not depend on it.
-   - The planner did not decide it.
-2. **The sample of the two eval cases (criterion 3).** The runner starts a project from the sample id of the case (`scripts/eval-agent/run.mjs` line 436), and it must be a non-empty string (line 108). The fiction tools are offered only in fiction projects (`catalog.service.ts` lines 64 to 72), so each case needs a fiction sample. On main, `examples/samples.yaml` holds only `nonfiction`. GNP-18 adds the fiction sample (unit line 15), but it has no plan, it is blocked by GNP-16 (unit line 7), and its unit does not name the id.
-   - Option (a): fix the id now (for example `fiction`, by analogy with `nonfiction`), write both cases with it, and have GNP-18 use that id. Criterion 3 can then merge before GNP-18, and the cases can run only after GNP-18 lands.
-   - Option (b): write the two cases in a later PR, after GNP-18 merges. Criterion 3 is then not met by this PR.
-   - The choice decides whether criterion 3 can merge before GNP-18. It needs the orchestrator's or the Navigator's decision.
-   - The planner did not decide it.
+None. Both points of the draft are settled by the reviser from the sources; neither is a Navigator decision.
+
+1. **The constraint lines of the entity prompts (M4).** Settled: option (a), `Use only the material above.` only (C10). The draft's option (b) (also the citation and `TK` lines) is rejected: the module states the skeleton for first-draft templates (module line 46); the Navigator's option (a) for the non-draft `propose_graph` and its use for the non-draft `throughline_check` (`plans/GNP-20.md` D5, done) are the precedent; `plans/GNP-04.md` C8 names GNP-14 line 15 as a non-draft unit with its own prompt rules. The `citations` key of the eval cases is left out (C8).
+2. **The sample of the two eval cases (criterion 3).** Settled: `fiction` (C11), from `units/PST-11-nonfiction-sample-skeleton.md` line 17, `units/PLT-20-examples-check-m1-layer.md` lines 19 and 24, and `units/GNP-18-fiction-sample.md` line 3. Criterion 3 is met by the data test before GNP-18 lands (data-only reading, M10). The draft's option (b) (defer the cases) is rejected: it would leave criterion 3 unmet with no cause.
 
 ## 9. Review parts
 
 The plan has two parts. Each step of section 4 and each test of section 5 is in exactly one part.
 
 - **Part 1 — the two tools, their golden test and the catalogue.** Steps 0 to 12. Tests: criterion 1 (`real-packs.test.ts`, "the suite passes on the real packs") and criterion 2 (`character-world-builder.test.ts`, "AC 2: ..."). Files: the two specs, the two fixtures, the two scenarios, the test file, the two goldens and `propose_graph/recipe.golden.json`, and the `.gitkeep` deletion. The reviewer of part 1 checks that step 11 adds exactly the two catalogue lines.
-- **Part 2 — the eval cases, the gates and the commit.** Steps 13 to 18. Test: criterion 3 (`scripts/eval-cases.test.mjs`, "AC 3: the character-builder and world-builder eval cases ..."). Files: the two eval case files and the test file, and the commit of step 17, which the reviewer of part 2 checks against section 3.
+- **Part 2 — the eval cases, the gates and the commit.** Steps 13 to 18. Test: criterion 3 (`scripts/eval-case-character-world-builder.test.mjs`, "AC 3: the character-builder and world-builder eval cases ..."). Files: the two eval case files and the new data test file, and the commit of step 17, which the reviewer of part 2 checks against section 3.
