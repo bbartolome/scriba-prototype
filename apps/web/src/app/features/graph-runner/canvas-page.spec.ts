@@ -1138,7 +1138,7 @@ it('Dialog tests (fakes): scope-aware fields for whole runs and Run to here, sty
     expect(postsTo(RUNS_PATH)).toHaveLength(2);
   });
   const toHere = postsTo(RUNS_PATH)[1]?.body as Record<string, unknown>;
-  expect(toHere).toMatchObject({
+  expect(toHere).toEqual({
     graphId: 'dialog-run',
     target: { nodeId: 'cold-open' },
     inputs: {
