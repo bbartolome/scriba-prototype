@@ -6460,3 +6460,13 @@ Part D (gates and commit):
 - **Orchestrator note:** the web timeouts of the earlier runs did not recur at load 2.9 to 4.4. This is one clean pass per gate, not a retry.
 - **Next:** Sonnet reviewers for Part A and Part B on patch id `87a3849224bb4edb20ba82415b0c865253e48226`, in parallel. Step 3 follows only if both approve.
 - **Status:** `plans/CEX-06.md` stays `status: planned`.
+
+## 2026-11-19 — CEX-06 — Sonnet review of Parts A and B on patch id 87a3849224bb4edb20ba82415b0c865253e48226 (rework run 3): Part A APPROVED; Part B APPROVED
+
+- **Branch and patch id:** unit/CEX-06, commits e3378ff and e4ada34 on f425e3f. Patch id `87a3849224bb4edb20ba82415b0c865253e48226`, recomputed by both reviewers and unchanged. The diff changes exactly the six section 3 paths.
+- **Gate evidence (rework run 3, entry above):** worktree exits all 0 on the first run; clone exits all 0 on the first run. Logs `/tmp/cex06-gates-r3/`. Log counts: API test 142 of 142 files, 529 of 529 tests; root test ends with e2e 12 of 12 passed; no "Test timed out" line in any log. The implementer's report gave the API count as 20 files and 253 tests; the logs show 142 and 529, and the record uses the logs.
+- **Part A (steps 0 to 10; tests K1, K2, C1 to C3): APPROVED.** The reviewer checked the storyGraphs path and hash plumbing, the unsupported-claims check (P3 to P9, with P6 holding), the K1 and K2 fixtures and assertions, and the C1 and C2 lookups by id. No import from `modules/agent-loop`. Caveat from the reviewer: the logs do not print test names, so K1, K2 and C1 to C3 pass as part of the file totals, not by name.
+- **Part B (steps 11 to 15; tests O1 to O4): APPROVED.** The reviewer checked `itemLine` (P10), the orphan check's three findings in the order of P14, the registry order (P15), the expected lines computed in the tests, and the no-graph case of O3. Caveat from the reviewer: O1 to O4 are not named in the logs; the evidence is the file totals with no failure text. The branch has two commits instead of the planned one; that is the accepted deviation recorded above, and it is not counted as a defect.
+- **Orchestrator note:** the test names are not visible in the logs. Before the fast-forward, the tests are run again by name on the replayed tree (see the step 3 entry).
+- **Next:** step 3. Replay the two commits on main 1576d91 by cherry-pick in a fresh worktree (carried rule), recheck the patch id, run the gates on the replayed tip, then fast-forward main.
+- **Status:** `plans/CEX-06.md` stays `status: planned` until step 3 completes.
