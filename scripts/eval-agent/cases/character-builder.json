@@ -1,0 +1,8 @@
+{
+  "sample": "fiction",
+  "intent": "Draft a new character for my lighthouse story from this seed: the skipper of the supply boat, who has to deal with both keepers.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["character_builder"]
+  }
+}

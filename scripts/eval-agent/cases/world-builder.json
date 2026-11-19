@@ -1,0 +1,8 @@
+{
+  "sample": "fiction",
+  "intent": "Expand the world rule about the supply boat in my story and flag any contradictions with my lighthouse island.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["world_builder"]
+  }
+}
