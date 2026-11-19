@@ -222,9 +222,11 @@ export class ManuscriptService {
       .sort();
   }
 
-  // The story graphs of graphs/ and the paths of the files that are not valid (P11).
-  private storyGraphs(projectId: string): {
+  // The story graphs of graphs/, the file of each (paths[i] is the file of graphs[i]), and the paths of the files
+  // that are not valid (P11).
+  storyGraphs(projectId: string): {
     graphs: StoryGraph[];
+    paths: string[];
     invalid: string[];
   } {
     const root = this.files.list(projectId, { path: '.' });
@@ -232,8 +234,9 @@ export class ManuscriptService {
       (entry) => entry.path === GRAPH_FOLDER && entry.kind === 'dir',
     );
     const graphs: StoryGraph[] = [];
+    const paths: string[] = [];
     const invalid: string[] = [];
-    if (folder === undefined) return { graphs, invalid };
+    if (folder === undefined) return { graphs, paths, invalid };
     const files = this.files
       .list(projectId, { path: GRAPH_FOLDER })
       .entries.filter(
@@ -252,9 +255,12 @@ export class ManuscriptService {
         invalid.push(entry.path);
         continue;
       }
-      if (parsed.data.view === 'story') graphs.push(parsed.data);
+      if (parsed.data.view === 'story') {
+        graphs.push(parsed.data);
+        paths.push(entry.path);
+      }
     }
-    return { graphs, invalid };
+    return { graphs, paths, invalid };
   }
 
   // The hash of the order value and the member list (P19); the form of the Project store's hashes.

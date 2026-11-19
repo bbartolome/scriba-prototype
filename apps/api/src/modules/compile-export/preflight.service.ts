@@ -14,16 +14,21 @@ import {
   ProjectStoreService,
 } from '../project-store/project-store.module';
 import { ManuscriptService } from './manuscript.service';
+import { unsupportedClaimsCheck } from './preflight-claims-orphans';
 import {
   placeholdersCheck,
   type PreflightFile,
+  type PreflightInput,
   type PreflightRunner,
 } from './preflight-checks';
 
 const NO_ACTIVE_MESSAGE = 'No project is active. Activate a project first.';
 
 // The registered checks, in the order `checks` lists them (P9). CEX-06 and CEX-07 append to it.
-const PREFLIGHT_RUNNERS: PreflightRunner[] = [placeholdersCheck];
+const PREFLIGHT_RUNNERS: PreflightRunner[] = [
+  placeholdersCheck,
+  unsupportedClaimsCheck,
+];
 
 // The status of a check (P8): any error fails it, else any warning warns it, else it passes.
 function statusOf(findings: PreflightFinding[]): PreflightCheck['status'] {
@@ -45,12 +50,34 @@ export class PreflightService {
   run(now: Date): PreflightResult {
     const projectId = this.activeProjectId();
     const view = this.manuscript.view();
-    const files: PreflightFile[] = view.entries.map((entry) => ({
-      path: entry.path,
-      part: entry.part,
-      content: this.files.read(projectId, entry.path).content,
+    const files: PreflightFile[] = view.entries.map((entry) => {
+      const read = this.files.read(projectId, entry.path);
+      return {
+        path: entry.path,
+        part: entry.part,
+        content: read.content,
+        hash: read.hash,
+      };
+    });
+    const { graphs, paths } = this.manuscript.storyGraphs(projectId);
+    const storyGraphs = graphs.map((graph, index) => ({
+      path: paths[index] ?? '',
+      graph,
     }));
-    const input = { projectId, view, files };
+    const readText = (path: string): string | undefined => {
+      try {
+        return this.files.read(projectId, path).content;
+      } catch {
+        return undefined;
+      }
+    };
+    const input: PreflightInput = {
+      projectId,
+      view,
+      files,
+      storyGraphs,
+      readText,
+    };
     const checks: PreflightCheck[] = PREFLIGHT_RUNNERS.map((runner) => {
       const findings: PreflightFinding[] = runner
         .run(input)

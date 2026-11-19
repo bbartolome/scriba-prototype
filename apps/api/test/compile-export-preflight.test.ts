@@ -67,13 +67,15 @@ it('placeholders: prose occurrences only, with file, line, offset and length', a
     const reply = await postPreflight(app, cookie);
     expect(reply.status).toBe(200);
     const result = preflightResultSchema.parse(JSON.parse(reply.body));
-    expect(result.checks).toHaveLength(1);
-    expect(result.checks[0]).toMatchObject({
+    const placeholders = result.checks.find(
+      (check) => check.id === 'placeholders',
+    );
+    expect(placeholders).toMatchObject({
       id: 'placeholders',
       status: 'fail',
     });
 
-    const findings = result.checks[0].findings;
+    const findings = placeholders?.findings ?? [];
     expect(findings.map((finding) => [finding.path, finding.line])).toEqual([
       ['drafts/a.md', 3],
       ['drafts/a.md', 5],
@@ -116,9 +118,12 @@ it("a clean fixture passes, the revision is the view's, and nothing is written",
 
       expect(reply.status).toBe(200);
       const result = preflightResultSchema.parse(JSON.parse(reply.body));
-      expect(result.checks).toEqual([
-        { id: 'placeholders', status: 'pass', findings: [] },
-      ]);
+      expect(
+        result.checks.find((check) => check.id === 'placeholders'),
+      ).toEqual({ id: 'placeholders', status: 'pass', findings: [] });
+      expect(result.checks.every((check) => check.status === 'pass')).toBe(
+        true,
+      );
       const view = manuscriptOf(await getManuscript(app, cookie));
       expect(result.revision).toBe(view.revision);
       expect(after).toEqual(before);
