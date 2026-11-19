@@ -6409,3 +6409,16 @@ Part D (gates and commit):
 - **Note:** the rework's rerun rule was written for web timeouts; the clone's failures were API timeouts. The implementer reran anyway and stopped at the first exit 0.
 - **Logs:** worktree `/tmp/cex06-gates/*.log` (root-test-run2.log, exit in root-test.exit); fresh clone `/tmp/cex06-logs/*.log` (test-run1.log, test-run2.log, exits.txt).
 - **Status:** CEX-06's reviewer items 1 and 3 of Part B (gates and the six exit codes) are now evidenced, but the worktree's root `npm test` is not exit 0, so step 14 of the plan is still not met. The Part B REWORK stands. `plans/CEX-06.md` stays `status: planned`.
+
+## 2026-11-19 — CEX-16 — Merged to main (fast-forward to b8bcb2f); gates recorded
+
+- **Code:** unit/CEX-16, commits e928b58 and 7defd25 on 2e7f9db, approved by Sonnet on patch id `eb7b407b857a102e84a39caf900f1ccf302a6147` (entry above, Parts A and B). Criteria 1 to 4 ticked on the branch (commit b8bcb2f); plan `status: done`.
+- **Rebase:** `git rebase main` stalled in the worktree twice (the carried rule). Each time the rebase was aborted (the branch ref was untouched), the tip was backed up, and the commits were replayed by cherry-pick in a fresh detached worktree at main. The patch id was rechecked after each replay and stayed `eb7b407b857a102e84a39caf900f1ccf302a6147`. Backups: `backup/CEX-16-pre-rebase` (df7e127) and `backup/CEX-16-pre-rebase-2` (a34c599).
+- **Gates on the replayed code (Node v26.13.0, npm 11.20.0; `npm ci` exit 0 before the gates):**
+  - Root `npm run lint` exit 0; root `npm run build` exit 0.
+  - Root `npm test`, run 1: exit 1. Web: `preferences-step.spec.ts` 7 of 8 tests "Test timed out in 5000ms" (the known cold-clone timeout flake, an open item of the handoff; the branch changes no web file). Contracts 253, API 529 and packs 14 passed.
+  - Root `npm test`, run 2 on a quiet machine (load about 2 to 4): exit 0. Contracts 253 of 253, API 529 of 529, web 559 of 559, packs 14 of 14, e2e 12 of 12.
+  - The first run's failure is recorded, and the second run's pass is the gate result. The second run is the first exit 0 on this code.
+- **Fast-forward:** `main` moved from 69d886e to b8bcb2f with `git merge --ff-only unit/CEX-16`. Between the rebased tip and main only docs commits differed (the CEX-06 gate report, 69d886e). The code the gates ran on is the code on main.
+- **Cleanup:** branch `unit/CEX-16` and worktree `scriba-prototype-wt/CEX-16` removed (both merged). Worktree `CEX-16-replay` and `CEX-16-replay2` removed (scratch).
+- **Status:** `plans/CEX-16.md` is `status: done` on main (b8bcb2f). Criteria 1 to 4 are ticked in `units/CEX-16-snapshot-api.md`.
