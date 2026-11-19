@@ -16,7 +16,10 @@ import {
   ProjectStoreService,
 } from '../project-store/project-store.module';
 import { ManuscriptService } from './manuscript.service';
-import { entityLinksCheck } from './preflight-links-phrases';
+import {
+  bannedPhrasesCheck,
+  entityLinksCheck,
+} from './preflight-links-phrases';
 import {
   orphanScenesCheck,
   unsupportedClaimsCheck,
@@ -37,6 +40,7 @@ const PREFLIGHT_RUNNERS: PreflightRunner[] = [
   unsupportedClaimsCheck,
   orphanScenesCheck,
   entityLinksCheck,
+  bannedPhrasesCheck,
 ];
 
 // The status of a check (P8): any error fails it, else any warning warns it, else it passes.

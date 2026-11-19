@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { expect, it } from 'vitest';
 import {
   PREFLIGHT_ROUTE,
@@ -7,6 +8,7 @@ import { type TestApp } from './create-test-app';
 import { send, type Reply } from './guard-request';
 import { LOOPBACK_HOST, LOOPBACK_ORIGIN } from './invariant-sweep';
 import { withManuscript } from './compile-export-manuscript.kit';
+import { putFile } from './project-store-files.kit';
 
 // One POST of the preflight route, with the loopback Host, the loopback Origin, the session cookie and no body.
 function postPreflight(app: TestApp, cookie: string): Promise<Reply> {
@@ -21,7 +23,6 @@ function postPreflight(app: TestApp, cookie: string): Promise<Reply> {
 
 const UNKNOWN = 'Entity reference names no entity.';
 const DUPLICATE = 'Entity reference names more than one entity.';
-const LINKS = 'The links in the front matter must be a list of entity IDs.';
 const MISSING = 'Link or image names no file in the project.';
 const REFUSED = 'Link or image does not name a file inside the project.';
 
@@ -93,4 +94,115 @@ it('entity links: unknown, duplicate and outside references, a bad links entry a
       ['drafts/ch01.md', 14, 'assets/gone.png', MISSING],
     ]);
   });
+});
+
+const BANNED_MESSAGE = 'Banned phrase left in the text.';
+const NO_PROFILE =
+  'No style profile is set in project.yaml, so banned phrases were not checked.';
+const UNUSABLE =
+  'The style profile gives no usable bannedPhrases list, so banned phrases were not checked.';
+
+// B1: the fixture of criterion 2. drafts/a.md has the split phrase in prose, and the phrases in code (lines 9, 11 to 13).
+const A_MD = [
+  '# Chapter one',
+  '',
+  'This is a game',
+  'changer, the editor said.',
+  '',
+  'Game Changer again.',
+  'You can unlock your potential.',
+  '',
+  'Inline `game changer` is code. Game changers and changer alone are not the phrase.',
+  '',
+  '```text',
+  'unlock your potential',
+  '```',
+  '',
+].join('\n');
+
+const DEFAULT_PROJECT =
+  'schemaVersion: 1\ntitle: Book\ngenrePack: nonfiction\n';
+const HOUSE_PROJECT = `${DEFAULT_PROJECT}styleProfile: house-style\n`;
+const GHOST_PROJECT = `${DEFAULT_PROJECT}styleProfile: ghost\n`;
+const HOUSE_STYLE = [
+  '---',
+  'type: style-profile',
+  'tone: Plain and direct',
+  'targetLength: 800',
+  'bannedPhrases: [game changer, unlock your potential]',
+  '---',
+  'Say what the evidence shows.',
+  '',
+].join('\n');
+
+it('banned phrases: a split phrase is found, code is not scanned, and no style profile is an info pass', async () => {
+  await withManuscript(
+    { 'drafts/a.md': A_MD },
+    async (app, cookie, library) => {
+      // (a) No styleProfile in project.yaml: an info note at line 1, and the check passes.
+      const none = preflightResultSchema.parse(
+        JSON.parse((await postPreflight(app, cookie)).body),
+      );
+      const noneCheck = none.checks.find(
+        (check) => check.id === 'banned-phrases',
+      );
+      expect(noneCheck?.status).toBe('pass');
+      expect(noneCheck?.findings).toEqual([
+        {
+          check: 'banned-phrases',
+          severity: 'info',
+          path: 'project.yaml',
+          line: 1,
+          message: NO_PROFILE,
+        },
+      ]);
+
+      // (b) The house style names its banned phrases: three occurrences, none in code.
+      putFile(library, join('book', 'entities', 'house-style.md'), HOUSE_STYLE);
+      putFile(library, join('book', 'project.yaml'), HOUSE_PROJECT);
+      const house = preflightResultSchema.parse(
+        JSON.parse((await postPreflight(app, cookie)).body),
+      );
+      const houseCheck = house.checks.find(
+        (check) => check.id === 'banned-phrases',
+      );
+      expect(houseCheck?.status).toBe('warn');
+      const warnings = houseCheck?.findings ?? [];
+      expect(
+        warnings.map((finding) => [
+          finding.severity,
+          finding.path,
+          finding.line,
+          A_MD.slice(
+            finding.offset ?? -1,
+            (finding.offset ?? 0) + (finding.length ?? 0),
+          ),
+          finding.message,
+        ]),
+      ).toEqual([
+        ['warning', 'drafts/a.md', 3, 'game\nchanger', BANNED_MESSAGE],
+        ['warning', 'drafts/a.md', 6, 'Game Changer', BANNED_MESSAGE],
+        ['warning', 'drafts/a.md', 7, 'unlock your potential', BANNED_MESSAGE],
+      ]);
+
+      // (c) A styleProfile that names no usable style profile: one warning at its line, and no phrase finding.
+      putFile(library, join('book', 'project.yaml'), GHOST_PROJECT);
+      const ghost = preflightResultSchema.parse(
+        JSON.parse((await postPreflight(app, cookie)).body),
+      );
+      const ghostCheck = ghost.checks.find(
+        (check) => check.id === 'banned-phrases',
+      );
+      expect(ghostCheck?.status).toBe('warn');
+      expect(ghostCheck?.findings).toEqual([
+        {
+          check: 'banned-phrases',
+          severity: 'warning',
+          path: 'project.yaml',
+          line: 4,
+          message: UNUSABLE,
+        },
+      ]);
+    },
+  );
 });

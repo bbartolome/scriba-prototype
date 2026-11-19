@@ -221,3 +221,113 @@ export const entityLinksCheck: PreflightRunner = {
     return findings;
   },
 };
+
+const BANNED_MESSAGE = 'Banned phrase left in the text.';
+const NO_PROFILE_MESSAGE =
+  'No style profile is set in project.yaml, so banned phrases were not checked.';
+const UNUSABLE_MESSAGE =
+  'The style profile gives no usable bannedPhrases list, so banned phrases were not checked.';
+// A letter, a number or an underscore: a phrase must not start or end inside a word (P10).
+const WORD_CHAR = '[\\p{L}\\p{N}_]';
+
+// The start of a YAML node in the file, or 0 when it has no source range.
+function rangeStart(value: unknown): number {
+  return (value as { range?: Range | null } | null)?.range?.[0] ?? 0;
+}
+
+// The banned phrases of the style profile the project names (P9): the phrases, or the one finding that says why
+// there are none. The profile is an entity of type style-profile, read through the Project store.
+function bannedPhrasesOf(
+  input: PreflightInput,
+): { phrases: string[] } | { finding: Finding } {
+  const noProfile: Finding = {
+    severity: 'info',
+    path: 'project.yaml',
+    line: 1,
+    message: NO_PROFILE_MESSAGE,
+  };
+  const text = input.readText('project.yaml');
+  if (text === undefined) return { finding: noProfile };
+  const doc = parseDocument(text);
+  if (doc.errors.length > 0) return { finding: noProfile };
+  const value: unknown = doc.get('styleProfile', true);
+  if (value === undefined || (isScalar(value) && value.value === null)) {
+    return { finding: noProfile };
+  }
+  const unusable: { finding: Finding } = {
+    finding: {
+      severity: 'warning',
+      path: 'project.yaml',
+      line: lineOf(text, rangeStart(value)),
+      message: UNUSABLE_MESSAGE,
+    },
+  };
+  if (!isScalar(value) || typeof value.value !== 'string') return unusable;
+  const id = value.value;
+  const resolution = input.resolveIds([id]);
+  const entity =
+    resolution.resolved.length === 1 ? resolution.resolved[0] : undefined;
+  if (entity?.type !== 'style-profile') return unusable;
+  const profileYaml = splitFrontMatter(entity.content).yaml;
+  if (profileYaml === undefined) return unusable;
+  const profile = parseDocument(profileYaml);
+  if (profile.errors.length > 0) return unusable;
+  const list: unknown = (profile.toJS() as { bannedPhrases?: unknown } | null)
+    ?.bannedPhrases;
+  if (!Array.isArray(list) || !list.every((item) => typeof item === 'string')) {
+    return unusable;
+  }
+  return {
+    phrases: list
+      .map((item: string) => item.trim())
+      .filter((item) => item !== ''),
+  };
+}
+
+// The pattern of one phrase (P10): case-insensitive, whole phrase, each word escaped, whitespace across a line break.
+function phrasePattern(phrase: string): RegExp {
+  const words = phrase
+    .split(/\s+/)
+    .map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(
+    `(?<!${WORD_CHAR})${words.join('\\s+')}(?!${WORD_CHAR})`,
+    'giu',
+  );
+}
+
+// Banned phrases in the body of each file, outside code, every occurrence reported (P9 to P11). Warnings only.
+export const bannedPhrasesCheck: PreflightRunner = {
+  id: 'banned-phrases',
+  run(input) {
+    const profile = bannedPhrasesOf(input);
+    if ('finding' in profile) return [profile.finding];
+    const patterns = profile.phrases.map((phrase) => ({
+      phrase,
+      pattern: phrasePattern(phrase),
+    }));
+    const findings: Finding[] = [];
+    for (const file of input.files) {
+      const { body } = splitFrontMatter(file.content);
+      const bodyStart = file.content.length - body.length;
+      // Code is blanked with NUL, so no phrase is joined across a removed code span (P3).
+      const masked = maskCode(body, '\u0000');
+      const hits: Finding[] = [];
+      for (const { phrase, pattern } of patterns) {
+        for (const match of masked.matchAll(pattern)) {
+          const offset = bodyStart + (match.index ?? 0);
+          hits.push({
+            severity: 'warning',
+            path: file.path,
+            line: lineOf(file.content, offset),
+            offset,
+            length: match[0].length,
+            message: BANNED_MESSAGE,
+            ref: { phrase },
+          });
+        }
+      }
+      findings.push(...hits.sort((a, b) => (a.offset ?? 0) - (b.offset ?? 0)));
+    }
+    return findings;
+  },
+};
