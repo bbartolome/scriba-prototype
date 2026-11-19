@@ -6018,3 +6018,13 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Not passed:** E1 and E2 are NOT run. Port 8080 is held by the user's `live` dev stack. Their test code matches plan section 5. No checkbox is marked. The unit cannot go to main as complete until E1 and E2 pass, or until a Navigator decision covers them.
 - **Gates:** on 8b73218, lint and build exit 0, web 510 of 510 when run alone. The root `npm test` did not exit 0 in the last run: timeouts in other files under load, each re-run alone passes.
 - **Minor, not a blocker (reviewer, part B):** after a failed active-project read, `activeFailed` stays set, so later Renders show the note without a retry.
+
+## 2026-11-19 — TRG-14 — e2e re-run on the rebased branch: PASSED (editor once, preview twice)
+
+- **Code:** `unit/TRG-14` at df6d474, the rebased branch that is on main (main 090ab32 then df6d474). Run in its worktree `scriba-prototype-wt/TRG-14`, which is clean and has its dependencies installed.
+- **Port 8080:** free before each run (checked with a `net` connect). The parent confirmed the `live` dev stack was stopped by the user.
+- **tools-editor.e2e.ts, one run** (`npm run e2e -w @bbartolome/scriba-e2e -- tools-editor.e2e.ts --trace off`): exit 0, 2 passed. E1 "New and Duplicate produce YAML that the real lint accepts, and Save writes it" (22.3 s). E2 "a save the real API refuses shows its diagnostics on the line, and the file on disk is unchanged" (10.2 s). Log: /tmp/trg14-r4-editor.log.
+- **tools-preview.e2e.ts, run 1:** exit 0, 2 passed. TRG-05 C1 "one tool response drives the form and the node body" (17.9 s). TRG-05 C2 "the picker offers person entities only and takes a dropped person chip" (2.6 s). Log: /tmp/trg14-r4-preview-1.log.
+- **tools-preview.e2e.ts, run 2:** exit 0, 2 passed. TRG-05 C1 (4.9 s), TRG-05 C2 (1.5 s). Log: /tmp/trg14-r4-preview-2.log.
+- **Result:** the earlier unrun re-run item (TRG-14 section 9, 6cd0c7b, "the e2e re-run on the rebased branch was NOT made") is now done. TRG-14 stays on main at df6d474. Nothing was reverted.
+- **Note, not a failure:** the main checkout's `node_modules` lacks `ngx-vflow` and `@codemirror/lang-yaml`, so an e2e run from the main working tree fails in the global-setup build. It needs `npm ci` there. The runs above used the TRG-14 worktree instead.
