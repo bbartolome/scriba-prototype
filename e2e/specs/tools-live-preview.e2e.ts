@@ -121,9 +121,7 @@ test('TRG-15 E1: editing a port and an entity kind in the source changes the nod
   await panel.locator('[data-live-tab="node"]').click();
   await expect(panel.locator('li[data-port="coreIdea"]')).toHaveCount(1);
   await panel.locator('[data-live-tab="form"]').click();
-  await expect
-    .poll(() => pickerIds(page, 'entityIds'))
-    .toEqual(['ada']);
+  await expect.poll(() => pickerIds(page, 'entityIds')).toEqual(['ada']);
 
   // The new text: the core idea is no port, and the entity list takes a source.
   const edited = before
