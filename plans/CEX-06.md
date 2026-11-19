@@ -1,6 +1,6 @@
 ---
 id: CEX-06
-status: planned
+status: done
 ---
 # CEX-06 plan — unsupported-claims and orphan-scenes checks
 

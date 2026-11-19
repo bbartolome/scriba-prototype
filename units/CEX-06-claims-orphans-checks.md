@@ -24,5 +24,5 @@ unblocks: [CEX-09]
 - Label-only story nodes are never orphans.
 
 ## Acceptance criteria
-- [ ] A claims-artefact fixture in the Agent loop's format yields `unsupported` → error, `weak` → warning, and a changed file → `info`.
-- [ ] Each orphan case (a), (b), (c) has a fixture producing the right severity; label-only nodes produce nothing.
+- [x] A claims-artefact fixture in the Agent loop's format yields `unsupported` → error, `weak` → warning, and a changed file → `info`.
+- [x] Each orphan case (a), (b), (c) has a fixture producing the right severity; label-only nodes produce nothing.
