@@ -1,6 +1,6 @@
 ---
 id: CEX-17
-status: planned
+status: done
 ---
 # CEX-17 plan — manuscript route: outline, drag reorder, status and part controls, totals, warnings, phone read-only
 

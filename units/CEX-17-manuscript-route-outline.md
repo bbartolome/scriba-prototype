@@ -22,7 +22,7 @@ Built against the Shell's fakes from contract types; merges once CEX-03 is in.
 - **Phone:** outline, counts and statuses read-only (download allowed in CEX-18).
 
 ## Acceptance criteria (Vitest + fakes)
-- [ ] A drag sends a reorder with the current `revision`; graph-ordered rows can't be dragged.
-- [ ] A conflict response shows the reload prompt; `manuscript-updated` refetches.
-- [ ] Status and part changes send their requests.
-- [ ] The phone viewport is read-only.
+- [x] A drag sends a reorder with the current `revision`; graph-ordered rows can't be dragged.
+- [x] A conflict response shows the reload prompt; `manuscript-updated` refetches.
+- [x] Status and part changes send their requests.
+- [x] The phone viewport is read-only.
