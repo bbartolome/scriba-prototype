@@ -7,7 +7,9 @@ import {
   validationResultSchema,
 } from '@bbartolome/scriba-contracts/graph-runner';
 import {
+  entityListSchema,
   fileListSchema,
+  PROJECT_ENTITIES_ROUTE,
   pendingListSchema,
 } from '@bbartolome/scriba-contracts/project-store';
 import {
@@ -17,6 +19,8 @@ import {
 import { describe, expect, it } from 'vitest';
 import {
   currentRunCopy,
+  entitiesPath,
+  entityListCopy,
   fileListCopy,
   graphDetailCopy,
   graphIdCopy,
@@ -387,5 +391,35 @@ describe('graph-runner-contract', () => {
     expect(toolPath('cold_open')).toBe('/api/tool-registry/tools/cold_open');
     expect(toolPath('a/b')).toBe('/api/tool-registry/tools/a%2Fb');
     expect(graphValidatePath()).toBe('/api/graph-runner/graphs/validate');
+  });
+
+  it('K5 entityListCopy agrees with entityListSchema on each sample, and entitiesPath equals PROJECT_ENTITIES_ROUTE', () => {
+    const OK = {
+      entities: [
+        { id: 'anna', type: 'person', path: 'entities/anna.md', title: 'Anna' },
+        { id: 'claim-1', type: 'claim', path: 'entities/claim-1.md' },
+      ],
+      invalid: [{ path: 'entities/bad.md', reason: 'no type' }],
+    };
+    const samples = [
+      OK,
+      { ...OK, extra: 1 },
+      { entities: OK.entities },
+      { entities: [{ id: 'Bad_ID', type: 'person', path: 'x' }], invalid: [] },
+    ];
+    for (const sample of samples) {
+      const schema = entityListSchema.safeParse(sample);
+      const copy = entityListCopy.safeParse(sample);
+      expect(copy.success).toBe(schema.success);
+      if (schema.success && copy.success) {
+        expect(copy.data).toEqual(schema.data);
+      }
+    }
+    expect(entitiesPath('p1')).toBe(
+      PROJECT_ENTITIES_ROUTE.replace(':projectId', 'p1'),
+    );
+    expect(entitiesPath('a/b')).toBe(
+      PROJECT_ENTITIES_ROUTE.replace(':projectId', 'a%2Fb'),
+    );
   });
 });

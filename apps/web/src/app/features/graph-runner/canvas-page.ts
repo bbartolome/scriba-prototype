@@ -5,6 +5,12 @@ import {
   type ActivatedRouteSnapshot,
   Router,
 } from '@angular/router';
+import {
+  CdkDrag,
+  type CdkDragDrop,
+  CdkDropList,
+  CdkDropListGroup,
+} from '@angular/cdk/drag-drop';
 import type {
   GraphFile,
   ValidationIssue,
@@ -44,6 +50,16 @@ import {
 import { API_CLIENT, ApiError } from '../../shell';
 import { ToolForm } from '../tool-registry/tool-registry.routes';
 import {
+  chipDropRefusalOf,
+  type EntityChip,
+  type EntityItem,
+  groupEntitiesOf,
+  pinnedParamsAfterDrop,
+  pinnedParamsAfterRemoval,
+} from './entity-chips';
+import {
+  entitiesPath,
+  entityListCopy,
   fileListCopy,
   graphDetailCopy,
   graphPath,
@@ -82,6 +98,7 @@ import {
   paramsAfterEdit,
   portRowsOf,
   type PortRow,
+  splitPort,
   toolStateOf,
   type ToolDetailRead,
   type ToolState,
@@ -213,7 +230,7 @@ function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
  * also lists the palette, draws its tool nodes from the registry, and shows the live validation.
  */
 @Component({
-  imports: [Vflow, ToolForm],
+  imports: [Vflow, ToolForm, CdkDrag, CdkDropList, CdkDropListGroup],
   selector: 'app-canvas-page',
   template: `
     @if (loadFailed()) {
@@ -373,81 +390,148 @@ function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
           </p>
         </section>
       }
-      <vflow
-        [view]="'auto'"
-        [nodes]="nodes()"
-        [edges]="edges()"
-        [connection]="connection()"
-        (connect)="onConnect($event)"
-        (nodesChanges.position)="onMove($event)"
-        (nodesChanges.select)="onNodeSelect($event)"
-        (edgesChanges.select)="onEdgeSelect($event)"
-      >
-        <ng-template nodeHtml let-ctx>
-          <div
-            class="vnode"
-            [attr.data-node]="ctx.node.id"
-            [class.issue]="issueNodes().has(ctx.node.id)"
-          >
-            <div class="vnode-head">
-              <span>{{ ctx.data().kind }}</span>
-              <span>{{ labelOf(ctx.data()) }}</span>
-            </div>
-            @if (isStory()) {
-              <handle type="target" position="left"></handle>
-              <handle type="source" position="right"></handle>
-              @if (pathMissing().has(ctx.node.id)) {
-                <span class="badge" data-badge="path-missing"
-                  >File missing</span
-                >
-              }
-            } @else {
-              @if (stateLineOf(ctx.node.id); as line) {
-                <p class="tool-state">{{ line }}</p>
-              }
-              @for (row of rowsOf(ctx.node.id, ctx.data()); track row.key) {
-                <div class="port-row">
-                  <handle
-                    [id]="portIdOf(ctx.node.id, row.key)"
-                    [type]="row.side === 'input' ? 'target' : 'source'"
-                    [position]="row.side === 'input' ? 'left' : 'right'"
-                    [template]="svgHandle"
-                  ></handle>
-                  <ng-template #svgHandle let-handle>
-                    <svg:circle
-                      r="5"
-                      [attr.data-port]="portIdOf(ctx.node.id, row.key)"
-                      [attr.cx]="handle.point().x"
-                      [attr.cy]="handle.point().y"
-                      [class.issue]="
-                        issuePorts().has(portIdOf(ctx.node.id, row.key))
-                      "
-                    />
-                  </ng-template>
-                  <span
-                    class="port-glyph"
-                    [class]="'port-glyph port-' + row.type"
-                    [attr.title]="row.type"
-                    >{{ glyphOf(row.type) }}</span
-                  >
-                  <span class="port-title">{{ row.title }}</span>
-                  @for (chip of row.chips; track $index) {
-                    <span class="chip">{{ chipTextOf(chip) }}</span>
-                  }
-                </div>
-              }
-              @if (readyViewsOf(ctx.node.id); as views) {
-                <app-tool-form
-                  [form]="views.form"
-                  layout="node-body"
-                  [value]="formValueFor(ctx.data(), views.form)"
-                  (valueChange)="onSettings(ctx.node.id, $event)"
-                />
-              }
+      <div class="canvas-row" cdkDropListGroup>
+        @if (!isStory()) {
+          <aside class="entities" aria-label="Project entities">
+            <p role="status" class="drop-reason" data-drop-reason>
+              {{ dropReason() }}
+            </p>
+            <input
+              type="search"
+              data-entity-search
+              aria-label="Search entities"
+              placeholder="Search entities"
+              [value]="entityQuery()"
+              (input)="entityQuery.set($any($event.target).value)"
+            />
+            @if (projectId() === '') {
+              <p>No active project</p>
+            } @else if (entities() === undefined) {
+              <p>Entities could not be read.</p>
             }
-          </div>
-        </ng-template>
-      </vflow>
+            @for (group of entityGroups(); track group.type) {
+              <section [attr.data-group]="group.type">
+                <h3>{{ group.type }}</h3>
+                @for (entity of group.entities; track entity.id) {
+                  <div
+                    cdkDropList
+                    class="chip-slot"
+                    [cdkDropListSortingDisabled]="true"
+                  >
+                    <span
+                      cdkDrag
+                      class="chip"
+                      [attr.data-entity]="entity.id"
+                      [cdkDragData]="{ id: entity.id, type: entity.type }"
+                      >{{ entity.id }}</span
+                    >
+                  </div>
+                }
+              </section>
+            }
+          </aside>
+        }
+        <vflow
+          [view]="'auto'"
+          [nodes]="nodes()"
+          [edges]="edges()"
+          [connection]="connection()"
+          (connect)="onConnect($event)"
+          (nodesChanges.position)="onMove($event)"
+          (nodesChanges.select)="onNodeSelect($event)"
+          (edgesChanges.select)="onEdgeSelect($event)"
+        >
+          <ng-template nodeHtml let-ctx>
+            <div
+              class="vnode"
+              [attr.data-node]="ctx.node.id"
+              [class.issue]="issueNodes().has(ctx.node.id)"
+            >
+              <div class="vnode-head">
+                <span>{{ ctx.data().kind }}</span>
+                <span>{{ labelOf(ctx.data()) }}</span>
+              </div>
+              @if (isStory()) {
+                <handle type="target" position="left"></handle>
+                <handle type="source" position="right"></handle>
+                @if (pathMissing().has(ctx.node.id)) {
+                  <span class="badge" data-badge="path-missing"
+                    >File missing</span
+                  >
+                }
+              } @else {
+                @if (stateLineOf(ctx.node.id); as line) {
+                  <p class="tool-state">{{ line }}</p>
+                }
+                @for (row of rowsOf(ctx.node.id, ctx.data()); track row.key) {
+                  <div
+                    class="port-row"
+                    cdkDropList
+                    [cdkDropListDisabled]="!isChipTarget(ctx.data(), row)"
+                    [attr.data-drop-port]="
+                      isChipTarget(ctx.data(), row)
+                        ? portIdOf(ctx.node.id, row.key)
+                        : null
+                    "
+                    (cdkDropListDropped)="
+                      onChipDrop(portIdOf(ctx.node.id, row.key), $event)
+                    "
+                  >
+                    <handle
+                      [id]="portIdOf(ctx.node.id, row.key)"
+                      [type]="row.side === 'input' ? 'target' : 'source'"
+                      [position]="row.side === 'input' ? 'left' : 'right'"
+                      [template]="svgHandle"
+                    ></handle>
+                    <ng-template #svgHandle let-handle>
+                      <svg:circle
+                        r="5"
+                        [attr.data-port]="portIdOf(ctx.node.id, row.key)"
+                        [attr.cx]="handle.point().x"
+                        [attr.cy]="handle.point().y"
+                        [class.issue]="
+                          issuePorts().has(portIdOf(ctx.node.id, row.key))
+                        "
+                      />
+                    </ng-template>
+                    <span
+                      class="port-glyph"
+                      [class]="'port-glyph port-' + row.type"
+                      [attr.title]="row.type"
+                      >{{ glyphOf(row.type) }}</span
+                    >
+                    <span class="port-title">{{ row.title }}</span>
+                    @for (chip of row.chips; track $index) {
+                      <span
+                        class="chip"
+                        [attr.data-pinned]="portIdOf(ctx.node.id, row.key)"
+                      >
+                        {{ chipTextOf(chip) }}
+                        <button
+                          type="button"
+                          data-remove
+                          [attr.aria-label]="'Remove ' + chipTextOf(chip)"
+                          (click)="removeChip(ctx.node.id, row.key, $index)"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    }
+                  </div>
+                }
+                @if (readyViewsOf(ctx.node.id); as views) {
+                  <app-tool-form
+                    [form]="views.form"
+                    layout="node-body"
+                    [value]="formValueFor(ctx.data(), views.form)"
+                    (valueChange)="onSettings(ctx.node.id, $event)"
+                  />
+                }
+              }
+            </div>
+          </ng-template>
+        </vflow>
+      </div>
     }
   `,
   styles: `
@@ -500,6 +584,31 @@ function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
       border: 1px solid currentColor;
       border-radius: 8px;
     }
+    .canvas-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .canvas-row vflow {
+      flex: 1;
+      min-width: 0;
+    }
+    .entities {
+      display: grid;
+      gap: 4px;
+      align-content: start;
+      width: 220px;
+      flex: none;
+    }
+    .drop-reason {
+      /* One line of height when empty, so writing a reason moves no row (C-11). */
+      min-height: 1.4em;
+      margin: 0;
+    }
+    /* The placeholder CDK appends into an entered row is hidden, so the row keeps its size (D14). */
+    :host ::ng-deep .port-row .cdk-drag-placeholder {
+      display: none;
+    }
   `,
 })
 export class CanvasPage {
@@ -522,8 +631,6 @@ export class CanvasPage {
   protected readonly loadFailed = signal(false);
   /** The project's files, read once per load of a story (C-6). */
   protected readonly files = signal<readonly FileEntry[]>([]);
-  /** The project id, from the route (C-16). */
-  private readonly projectId = signal('');
   protected readonly relationOptions = RELATION_OPTIONS;
 
   /** The vflow state, derived from the file. */
@@ -561,6 +668,19 @@ export class CanvasPage {
   protected readonly newType = signal<PortType>('text');
   protected readonly newEntityKind = signal('');
   protected readonly newPath = signal('');
+
+  /** The project of the canvas route, set by each load (C-2); '' when the route has none. */
+  protected readonly projectId = signal('');
+  /** The project's entities, read once per graph load; undefined for a story, no project or a failed read. */
+  protected readonly entities = signal<readonly EntityItem[] | undefined>(
+    undefined,
+  );
+  protected readonly entityQuery = signal('');
+  protected readonly entityGroups = computed(() =>
+    groupEntitiesOf(this.entities() ?? [], this.entityQuery()),
+  );
+  /** The one line of the last refused drop; empty after an accepted drop (C-11). */
+  protected readonly dropReason = signal('');
 
   protected readonly panelVisible = computed(
     () => this.issues().length > 0 || this.refusal() !== undefined,
@@ -606,6 +726,16 @@ export class CanvasPage {
     }
     return ports;
   });
+
+  /** The views of each ready tool node, by node id: what a chip drop is checked against (C-5). */
+  private readonly readyViews = computed(
+    () =>
+      new Map(
+        [...this.toolNodes()].flatMap(([id, view]) =>
+          view.views === undefined ? [] : [[id, view.views] as const],
+        ),
+      ),
+  );
 
   /** The issues' highlights: the nodes and the ports they name. */
   protected readonly issueNodes = computed(
@@ -873,6 +1003,11 @@ export class CanvasPage {
     return this.toolNodes().get(id)?.views;
   }
 
+  /** The input rows of a ready tool node take chips (D10); no other row does. */
+  protected isChipTarget(node: FileNode, row: PortRow): boolean {
+    return node.kind === 'tool' && row.side === 'input';
+  }
+
   /** The one line a tool node shows when it is not ready; empty when it is ready. */
   protected stateLineOf(id: string): string {
     const state = this.toolNodes().get(id)?.state;
@@ -910,6 +1045,63 @@ export class CanvasPage {
     this.file.set(replaceNode(current, next));
     this.nodes()
       .find((vnode) => vnode.id === nodeId)
+      ?.data?.set(next);
+    this.scheduleValidation();
+  }
+
+  /**
+   * A chip dropped on a port of a ready tool node (C-4 to C-6). A drop outside every row does nothing. A refusal
+   * shows its reason and writes nothing; an accepted drop clears the reason and pins the chip in the node's params.
+   */
+  protected onChipDrop(portId: string, event: CdkDragDrop<unknown>): void {
+    if (!event.isPointerOverContainer) return;
+    const current = this.file();
+    const { nodeId, key } = splitPort(portId);
+    const node = current?.nodes.find((candidate) => candidate.id === nodeId);
+    const views = this.readyViewsOf(nodeId);
+    if (current === undefined || node?.kind !== 'tool' || views === undefined) {
+      return;
+    }
+    const chip = event.item.data as EntityChip;
+    const reason = chipDropRefusalOf(current, portId, chip, this.readyViews());
+    this.dropReason.set(reason ?? '');
+    if (reason !== undefined) return;
+    const port = views.ports.inputs.find((candidate) => candidate.key === key);
+    if (port === undefined) return;
+    const params = pinnedParamsAfterDrop(node.params, port, chip);
+    if (params === node.params) return;
+    this.writeParams(current, node, params);
+  }
+
+  /** Removes one pinned chip: the item at its index of a list port, or the key of a scalar port (C-8). */
+  protected removeChip(nodeId: string, key: string, index: number): void {
+    const current = this.file();
+    const node = current?.nodes.find((candidate) => candidate.id === nodeId);
+    const port = this.readyPorts()
+      .get(nodeId)
+      ?.inputs.find((candidate) => candidate.key === key);
+    if (current === undefined || node?.kind !== 'tool' || port === undefined) {
+      return;
+    }
+    const params = pinnedParamsAfterRemoval(node.params, key, port.list, index);
+    this.writeParams(current, node, params);
+  }
+
+  /**
+   * Writes a node's params as a settings edit does (D9): the file, the vflow node's data in place, and one
+   * validation. Undefined params remove the key, so a node with nothing left has no params (D18).
+   */
+  private writeParams(
+    current: GraphFile,
+    node: Extract<FileNode, { kind: 'tool' }>,
+    params: Readonly<Record<string, unknown>> | undefined,
+  ): void {
+    const next = { ...node };
+    if (params === undefined) delete next.params;
+    else next.params = params;
+    this.file.set(replaceNode(current, next));
+    this.nodes()
+      .find((vnode) => vnode.id === node.id)
       ?.data?.set(next);
     this.scheduleValidation();
   }
@@ -954,12 +1146,16 @@ export class CanvasPage {
       switchMap((detail) =>
         forkJoin({
           reads: this.readTools(detail.graph),
+          reads: this.readTools(detail.graph),
           files: this.readFiles(detail.graph, projectId),
+          entities: this.readEntities(detail.graph, projectId),
         }).pipe(map((joined) => ({ detail, ...joined }))),
       ),
-      tap(({ detail, reads, files }) => {
+      tap(({ detail, reads, files, entities }) => {
         this.file.set(detail.graph);
         this.files.set(files);
+        this.entities.set(entities);
+        this.dropReason.set('');
         this.rows.set(reads.rows);
         this.details.set(reads.details);
         const values = new Map<string, ToolArguments>();
@@ -1041,6 +1237,21 @@ export class CanvasPage {
           ),
         ).pipe(map((entries) => ({ rows, details: new Map(entries) })));
       }),
+    );
+  }
+
+  /**
+   * The project's entity list for the side list. It is undefined for a story graph, for no active project, and
+   * for a failed read; the aside tells the last two apart.
+   */
+  private readEntities(
+    graph: GraphFile,
+    projectId: string,
+  ): Observable<readonly EntityItem[] | undefined> {
+    if (graph.view === 'story' || projectId === '') return of(undefined);
+    return this.api.get(entitiesPath(projectId), entityListCopy).pipe(
+      map((list) => list.entities),
+      catchError(() => of(undefined)),
     );
   }
 

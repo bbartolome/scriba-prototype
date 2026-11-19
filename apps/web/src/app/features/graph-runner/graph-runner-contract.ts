@@ -8,6 +8,7 @@ import type {
   ValidationResult,
 } from '@bbartolome/scriba-contracts/graph-runner';
 import type {
+  EntityList,
   FileEntry,
   FileList,
   PendingChange,
@@ -75,9 +76,65 @@ export function pendingPath(projectId: string): ApiPath {
   return `/api/project-store/projects/${encodeURIComponent(projectId)}/pending` as ApiPath;
 }
 
+/** The entity list of one project (`PROJECT_ENTITIES_ROUTE`), with its id encoded as one segment. */
+export function entitiesPath(projectId: string): ApiPath {
+  return `/api/project-store/projects/${encodeURIComponent(projectId)}/entities` as ApiPath;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
+
+// An entity id: lower-case letters, digits and hyphens (`ENTITY_ID_PATTERN` of the contract).
+const ENTITY_ID = /^[a-z0-9][a-z0-9-]*$/;
+
+/** One entry of the entity list, rebuilt with the keys `entityListSchema` names (the others are stripped). */
+function entityOf(value: unknown): EntityList['entities'][number] | undefined {
+  if (!isRecord(value)) return undefined;
+  const { id, type, path, title } = value;
+  if (
+    typeof id !== 'string' ||
+    !ENTITY_ID.test(id) ||
+    typeof type !== 'string' ||
+    type === '' ||
+    typeof path !== 'string' ||
+    (title !== undefined && typeof title !== 'string')
+  ) {
+    return undefined;
+  }
+  return title === undefined ? { id, type, path } : { id, type, path, title };
+}
+
+/** Response of GET .../entities (`entityListSchema`): `{entities, invalid}`. A body without `invalid` is refused. */
+export const entityListCopy: ResponseSchema<EntityList> = {
+  safeParse(data) {
+    const entities = isRecord(data) ? data['entities'] : undefined;
+    const invalid = isRecord(data) ? data['invalid'] : undefined;
+    if (!Array.isArray(entities) || !Array.isArray(invalid)) {
+      return { success: false, error: 'not an entity list' };
+    }
+    const parsed: EntityList['entities'][number][] = [];
+    for (const item of entities) {
+      const entity = entityOf(item);
+      if (entity === undefined) {
+        return { success: false, error: 'an entity is not valid' };
+      }
+      parsed.push(entity);
+    }
+    const reasons: EntityList['invalid'][number][] = [];
+    for (const item of invalid) {
+      if (
+        !isRecord(item) ||
+        typeof item['path'] !== 'string' ||
+        typeof item['reason'] !== 'string'
+      ) {
+        return { success: false, error: 'an invalid entry is not valid' };
+      }
+      reasons.push({ path: item['path'], reason: item['reason'] });
+    }
+    return { success: true, data: { entities: parsed, invalid: reasons } };
+  },
+};
 
 // A UTC timestamp with a Z, as z.iso.datetime() accepts it without an offset.
 const UTC_DATETIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;

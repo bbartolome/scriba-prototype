@@ -1,4 +1,6 @@
+import { getDebugNode } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { type CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { provideRouter, Router } from '@angular/router';
 import {
   GRAPH_RUNNER_EXAMPLES,
@@ -17,6 +19,7 @@ import {
   type ShellTestDoubles,
 } from '../../shell/testing/test-doubles';
 import {
+  entitiesPath,
   graphPath,
   graphSavePath,
   graphValidatePath,
@@ -164,7 +167,10 @@ const COLD_OPEN_VIEWS = {
       fieldOf('coreIdea', 'text', true, null, true),
       fieldOf('entityIds', 'entity-picker', true),
       fieldOf('styleProfile', 'style-picker', true),
-      fieldOf('person', 'entity-picker', true, null, true),
+      {
+        ...fieldOf('person', 'entity-picker', true, null, true),
+        entityKinds: ['person'],
+      },
       fieldOf('moment', 'text', true),
       fieldOf('length', 'number', false, 800),
       fieldOf('tone', 'text', false),
@@ -276,8 +282,29 @@ const MYSTERY_VIEWS = {
   },
 };
 
+/** The canned entity list of project p1: one entity of each kind the tests drop. */
+const ENTITY_LIST = {
+  entities: [
+    { id: 'anna', type: 'person', path: 'entities/anna.md', title: 'Anna' },
+    {
+      id: 'claim-1',
+      type: 'claim',
+      path: 'entities/claim-1.md',
+      title: 'A claim',
+    },
+    {
+      id: 'house-style',
+      type: 'style-profile',
+      path: 'entities/house-style.md',
+      title: 'House style',
+    },
+  ],
+  invalid: [],
+};
+
 /** The canned tool list and the two details the examples use: cold_open and mystery_question. */
 function respondTools(): void {
+  doubles.api.respond('GET', entitiesPath('p1'), ENTITY_LIST);
   doubles.api.respond('GET', TOOLS_PATH, {
     tools: [
       toolRow('cold_open'),
@@ -934,6 +961,329 @@ it('Arrange lays out overlapping nodes left to right without changing anything b
   expect(strip(body)).toEqual(strip(seed));
   expect(keysOf(body)).toEqual(keysOf(seed));
   expect(graphFileSchema.safeParse(body).success).toBe(true);
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+/**
+ * Drops a chip on a port by emitting its row's drop, as a real gesture emits it (C-9). jsdom has no layout, so the
+ * pointer gesture itself is checked in a browser (T4).
+ */
+function dropOn(
+  root: HTMLElement,
+  portId: string,
+  chip: { id: string; type: string },
+  pointerOver = true,
+): void {
+  const row = root.querySelector(`[data-drop-port="${portId}"]`);
+  if (!row) throw new Error(`No drop target ${portId}`);
+  const list = getDebugNode(row)!.injector.get(CdkDropList);
+  list.dropped.emit({
+    item: { data: chip },
+    isPointerOverContainer: pointerOver,
+  } as unknown as CdkDragDrop<unknown>);
+}
+
+/** Clicks the remove button of the first pinned chip of a port, and runs change detection. */
+function removeFirstOn(
+  fixture: { detectChanges(): void },
+  root: HTMLElement,
+  portId: string,
+): void {
+  const button = root.querySelector(
+    `[data-pinned="${portId}"] [data-remove]`,
+  ) as HTMLButtonElement | null;
+  if (!button) throw new Error(`No pinned chip on ${portId}`);
+  button.click();
+  fixture.detectChanges();
+}
+
+const ANNA = { id: 'anna', type: 'person' };
+const CLAIM = { id: 'claim-1', type: 'claim' };
+const HOUSE_STYLE = { id: 'house-style', type: 'style-profile' };
+
+// Criterion 1 of GRR-12, named as the criterion. A text input and cold_open, with no wire: three
+// drops pin a person, two entities and a style profile; a text-mode drop without the pointer over the container
+// pins nothing. Save posts cold-open's params with the three references and nothing typed.
+it('Dropping a matching chip pins it with no typing (saved `params` contain the reference).', async () => {
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  const graph = {
+    schemaVersion: 1,
+    view: 'recipe',
+    name: 'Chips',
+    nodes: [
+      {
+        id: 'chapter-notes',
+        kind: 'input',
+        position: { x: 40, y: 120 },
+        params: { type: 'text', label: 'Chapter notes' },
+      },
+      {
+        id: 'cold-open',
+        kind: 'tool',
+        tool: 'cold_open',
+        position: { x: 400, y: 120 },
+      },
+    ],
+    edges: [],
+  };
+  doubles.api.respond('GET', graphPath('chip-drop'), {
+    graph: structuredClone(graph),
+    issues: [],
+  });
+  doubles.api.respond('POST', graphSavePath('chip-drop'), { issues: [] });
+  doubles.api.respond('POST', graphValidatePath(), { issues: [] });
+  respondTools();
+
+  const { fixture, root } = await render('/projects/p1/graphs/chip-drop');
+  await until(fixture, () => {
+    expect(
+      Array.from(root.querySelectorAll('[data-group]')).map((group) =>
+        group.getAttribute('data-group'),
+      ),
+    ).toEqual(['claim', 'person', 'style-profile']);
+    expect(
+      root.querySelector('[data-drop-port="cold-open.person"]'),
+    ).not.toBeNull();
+  });
+
+  dropOn(root, 'cold-open.person', ANNA);
+  dropOn(root, 'cold-open.entityIds', ANNA);
+  dropOn(root, 'cold-open.entityIds', ANNA);
+  dropOn(root, 'cold-open.styleProfile', HOUSE_STYLE);
+  dropOn(root, 'cold-open.moment', ANNA, false);
+  await until(fixture, () => {
+    expect(
+      root.querySelector('[data-pinned="cold-open.person"]')?.textContent,
+    ).toContain('anna');
+    expect(
+      root.querySelectorAll('[data-pinned="cold-open.entityIds"]'),
+    ).toHaveLength(1);
+    expect(
+      root.querySelector('[data-pinned="cold-open.styleProfile"]')?.textContent,
+    ).toContain('house-style');
+    expect(root.querySelector('[data-pinned="cold-open.moment"]')).toBeNull();
+    expect(root.querySelector('[data-drop-reason]')?.textContent?.trim()).toBe(
+      '',
+    );
+  });
+
+  buttonNamed(root, 'Save').click();
+  await until(fixture, () => {
+    expect(postsTo(graphSavePath('chip-drop'))).toHaveLength(1);
+  });
+  const body = postsTo(graphSavePath('chip-drop'))[0]?.body;
+  expect(body).toEqual({
+    ...graph,
+    nodes: [
+      graph.nodes[0],
+      {
+        id: 'cold-open',
+        kind: 'tool',
+        tool: 'cold_open',
+        position: { x: 400, y: 120 },
+        params: {
+          person: 'anna',
+          entityIds: ['anna'],
+          styleProfile: 'house-style',
+        },
+      },
+    ],
+  });
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+// Criterion 2 of GRR-12, named as the criterion. A text port, a port filtered to person, and a wired
+// port each refuse a drop with its reason, and one refused drop after another leaves the file unchanged.
+it('Dropping on a text port, a port filtered to another kind, or a wired port is refused with a reason and the file is unchanged.', async () => {
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  const graph = {
+    schemaVersion: 1,
+    view: 'recipe',
+    name: 'Refusals',
+    nodes: [
+      {
+        id: 'chapter-notes',
+        kind: 'input',
+        position: { x: 40, y: 120 },
+        params: { type: 'text', label: 'Chapter notes' },
+      },
+      {
+        id: 'people',
+        kind: 'input',
+        position: { x: 40, y: 300 },
+        params: { type: 'entity', label: 'People', entityKind: 'person' },
+      },
+      {
+        id: 'cold-open',
+        kind: 'tool',
+        tool: 'cold_open',
+        position: { x: 400, y: 120 },
+      },
+    ],
+    edges: [{ id: 'w1', from: 'people.out', to: 'cold-open.entityIds' }],
+  };
+  doubles.api.respond('GET', graphPath('refusals'), {
+    graph: structuredClone(graph),
+    issues: [],
+  });
+  doubles.api.respond('POST', graphSavePath('refusals'), { issues: [] });
+  doubles.api.respond('POST', graphValidatePath(), { issues: [] });
+  respondTools();
+
+  const { fixture, root } = await render('/projects/p1/graphs/refusals');
+  await until(fixture, () => {
+    expect(
+      root.querySelector('[data-drop-port="cold-open.person"]'),
+    ).not.toBeNull();
+  });
+
+  const refusals: Array<[string, { id: string; type: string }, string]> = [
+    ['cold-open.coreIdea', ANNA, 'Text ports take no entities.'],
+    ['cold-open.person', CLAIM, 'This port takes person entities.'],
+    ['cold-open.entityIds', ANNA, 'This port is already wired.'],
+    ['cold-open.styleProfile', ANNA, 'Style ports take style profiles.'],
+  ];
+  for (const [portId, chip, reason] of refusals) {
+    dropOn(root, portId, chip);
+    await until(fixture, () => {
+      expect(
+        root.querySelector('[data-drop-reason]')?.textContent?.trim(),
+      ).toBe(reason);
+      expect(root.querySelector('[data-pinned]')).toBeNull();
+    });
+  }
+
+  buttonNamed(root, 'Save').click();
+  await until(fixture, () => {
+    expect(postsTo(graphSavePath('refusals'))).toHaveLength(1);
+  });
+  expect(postsTo(graphSavePath('refusals'))[0]?.body).toEqual(graph);
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+// Criterion 3 of GRR-12, named as the criterion. (a) A list chip and a scalar chip are removed and
+// the saved params keep the other keys; the list key goes with its last item. (b) A node whose only param is the
+// removed chip has no params key after the save.
+it('Removing a pinned chip clears it from `params`.', async () => {
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  const graph = {
+    schemaVersion: 1,
+    view: 'recipe',
+    name: 'Removals',
+    nodes: [
+      {
+        id: 'cold-open',
+        kind: 'tool',
+        tool: 'cold_open',
+        position: { x: 400, y: 120 },
+        params: {
+          person: 'anna',
+          entityIds: ['anna', 'claim-1'],
+          length: 500,
+        },
+      },
+    ],
+    edges: [],
+  };
+  doubles.api.respond('GET', graphPath('removals'), {
+    graph: structuredClone(graph),
+    issues: [],
+  });
+  doubles.api.respond('POST', graphSavePath('removals'), { issues: [] });
+  doubles.api.respond('POST', graphValidatePath(), { issues: [] });
+  respondTools();
+
+  const first = await render('/projects/p1/graphs/removals');
+  await until(first.fixture, () => {
+    expect(
+      first.root.querySelector(
+        '[data-pinned="cold-open.person"] [data-remove]',
+      ),
+    ).not.toBeNull();
+  });
+  removeFirstOn(first.fixture, first.root, 'cold-open.person');
+  buttonNamed(first.root, 'Save').click();
+  await until(first.fixture, () => {
+    expect(postsTo(graphSavePath('removals'))).toHaveLength(1);
+  });
+  expect(
+    (postsTo(graphSavePath('removals'))[0]?.body as { nodes: unknown[] }).nodes,
+  ).toEqual([
+    {
+      ...graph.nodes[0],
+      params: { entityIds: ['anna', 'claim-1'], length: 500 },
+    },
+  ]);
+
+  removeFirstOn(first.fixture, first.root, 'cold-open.entityIds');
+  removeFirstOn(first.fixture, first.root, 'cold-open.entityIds');
+  buttonNamed(first.root, 'Save').click();
+  await until(first.fixture, () => {
+    expect(postsTo(graphSavePath('removals'))).toHaveLength(2);
+  });
+  expect(
+    (postsTo(graphSavePath('removals'))[1]?.body as { nodes: unknown[] }).nodes,
+  ).toEqual([{ ...graph.nodes[0], params: { length: 500 } }]);
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+
+  // (b) The only param is the removed chip: the save has no params key.
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  const single = {
+    schemaVersion: 1,
+    view: 'recipe',
+    name: 'Single',
+    nodes: [
+      {
+        id: 'cold-open',
+        kind: 'tool',
+        tool: 'cold_open',
+        position: { x: 400, y: 120 },
+        params: { person: 'anna' },
+      },
+    ],
+    edges: [],
+  };
+  doubles.api.respond('GET', graphPath('single'), {
+    graph: structuredClone(single),
+    issues: [],
+  });
+  doubles.api.respond('POST', graphSavePath('single'), { issues: [] });
+  doubles.api.respond('POST', graphValidatePath(), { issues: [] });
+  respondTools();
+
+  const second = await render('/projects/p1/graphs/single');
+  await until(second.fixture, () => {
+    expect(
+      second.root.querySelector(
+        '[data-pinned="cold-open.person"] [data-remove]',
+      ),
+    ).not.toBeNull();
+  });
+  removeFirstOn(second.fixture, second.root, 'cold-open.person');
+  buttonNamed(second.root, 'Save').click();
+  await until(second.fixture, () => {
+    expect(postsTo(graphSavePath('single'))).toHaveLength(1);
+  });
+  const node = (
+    postsTo(graphSavePath('single'))[0]?.body as {
+      nodes: Array<Record<string, unknown>>;
+    }
+  ).nodes[0];
+  expect(node).toEqual({
+    id: 'cold-open',
+    kind: 'tool',
+    tool: 'cold_open',
+    position: { x: 400, y: 120 },
+  });
+  expect(Object.hasOwn(node ?? {}, 'params')).toBe(false);
   restoreMatchMedia();
   TestBed.resetTestingModule();
 });
