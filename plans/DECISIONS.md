@@ -6708,3 +6708,11 @@ Part D (gates and commit):
 - **Implementer report (COMPLETE, same run):** under the local Pandoc 3.13 procedure (decision at DECISIONS line 6663, CEX-11 entry, and `plans/CEX-12.md` section 1 O2): C1, C2, C3, E1, E2 and E3 passed; `vitest run test/compile-export-epub.test.ts` 6 of 6; API suite with `SCRIBA_REQUIRE_EXPORT_TOOLS=1` 565 of 565; without Pandoc on PATH, E3 passed. Build and lint exit 0. CI was not observed; it stays a pending CI check (plan A1).
 - **Differences from the plan, accepted by the reviewer:** two commits instead of one; the new stylesheet was staged with `git add` before the commit (needed for a new file); prettier reformatted `epub.css` and the test file, as step 7 requires.
 - **Status:** the approval holds while the patch id is `8f09a2c6…`. Next: step 3 (rebase onto main, the three checks, the criteria, the fast-forward).
+
+## 2026-11-19 — CEX-13 — Sonnet review of Parts A and B on patch id f2f075814425e7ebe6e2651ef4951fb2ac482de6: APPROVED
+
+- **Patch id:** `f2f075814425e7ebe6e2651ef4951fb2ac482de6` (`git diff main...unit/CEX-13 -- . ':!plans' ':!units' | git patch-id --stable`). Code on `unit/CEX-13` at 3fab88a (Part A) and 7f76b93 (Part B), based on 0619dc8.
+- **Review:** two reviewers, one for each part of `plans/CEX-13.md` section 8. Part A (steps 1 to 10; tests C1 and E1): APPROVED. Part B (steps 11 to 13; test C2): APPROVED. Both reviewers accepted the implementer's test output and did not rerun the tests. Both checked the file scope against section 3 of the plan.
+- **Implementer report (COMPLETE):** local procedure of P5 (pandoc 3.13 and typst 0.15.1 copied out of `bbartolome/scriba:dev`, `SCRIBA_REQUIRE_EXPORT_TOOLS=1`): C1 2 of 2 passed; E1 passed; compile-export regression 14 files, 59 tests, none skipped. Without the tools: 12 passed, 7 skipped; API suite 152 files, 555 tests, 12 skipped. `npm run lint` and the builds exit 0. Spike rows S1 to S13 recorded in `docs/adr/0003-typst-pdf-spike.md`, decision "Keep Typst". CI not observed.
+- **Differences accepted by the reviewers:** an extra compile of the stress source inside the image (not in the plan; no code change); the unit checkboxes and the plan status are left for the orchestrator (step 3.8).
+- **Next:** step 3 (rebase onto main, the three checks, patch id re-check, checkboxes, fast-forward).
