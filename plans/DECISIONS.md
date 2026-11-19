@@ -6439,3 +6439,13 @@ Part D (gates and commit):
 - **Orchestrator note:** the reviewer's approval is recorded as given. The step 2(b) gap stays in the record, not corrected.
 - **Next:** step 3. Replay the commit on main (cherry-pick, the carried rule), recheck the patch id, run the gates on the replayed commit, then fast-forward main.
 - **Status:** `plans/CEX-08.md` stays `status: planned` until step 3 completes.
+
+## 2026-11-19 — CEX-08 — Step 3: rebased, gates passed, fast-forward to main 7a3e61a
+
+- **Rebase:** `git rebase main` was not used. The tip e568c97 was backed up to `backup/CEX-08-pre-rebase`, then cherry-picked onto main 7c09659 in a fresh detached worktree (the carried rule). The new commit 704ca20 has patch id `8e52a8d4916f1197d857cbcc131d0df0acfea24d`, the same as the approval. `unit/CEX-08` was moved to 704ca20 with `git reset --hard` in its clean worktree. The scratch worktree was removed.
+- **Gates on 704ca20:** `npm ci` exit 0 (install-script warnings only). Root `npm run lint` exit 0 (Prettier clean). Root `npm run build` exit 0. Root `npm test` exit 0 (`/tmp/cex08-gate/rebased/npm-test.exit`; log `/tmp/cex08-gate/rebased/npm-test.log`), with no "Test timed out" lines: contracts 253 of 253, API 529 of 529 (142 files), web 559 of 559 (77 files), packs 14 of 14, e2e 12 of 12, root `scripts/*.test.mjs` 105 of 105. Load at start 2.29.
+- **Criteria:** criterion 1 (examples check) ticked on the C1 result. Criterion 2 (start from sample returns the authored order and statuses) ticked on the reviewed evidence of the step 7 throwaway test (`Tests 1 passed (1)`, deleted, not committed). The orchestrator did not rerun the throwaway. The rebased code has the approved patch id.
+- **Commit on the branch:** 7a3e61a `docs(CEX-08): criteria checked, plan status done` (unit file checkboxes and plan `status: done`). The patch id is still `8e52a8d4` after it.
+- **Fast-forward:** `main` moved from 7c09659 to 7a3e61a with `git merge --ff-only unit/CEX-08`. The history of main is linear.
+- **Kept (carried rule):** branch `unit/CEX-08`, worktree `scriba-prototype-wt/CEX-08` and `backup/CEX-08-pre-rebase` (e568c97) are not deleted. Step 3 item 10 (delete the branch and worktree) is not done for this reason. The user decides.
+- **Status:** `plans/CEX-08.md` is `status: done` on main (7a3e61a).
