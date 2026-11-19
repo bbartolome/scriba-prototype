@@ -58,12 +58,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {
-  ActiveProjectSignal,
-  API_CLIENT,
-  ApiError,
-  SSE_CLIENT,
-} from '../../shell';
+import { API_CLIENT, ApiError, SSE_CLIENT } from '../../shell';
 import { ToolForm } from '../tool-registry/tool-registry.routes';
 import {
   chipDropRefusalOf,
