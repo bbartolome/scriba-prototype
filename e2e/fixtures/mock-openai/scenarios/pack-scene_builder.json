@@ -1,0 +1,11 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": ["Mara Quill set the logbook down and lit the lamp herself."]
+      }
+    }
+  ]
+}

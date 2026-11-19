@@ -1,0 +1,40 @@
+{
+  "arguments": {
+    "coreIdea": "Waiting can be a way of hoping.",
+    "entityIds": ["ivo-renn", "skerry-light"],
+    "styleProfile": "plain-spoken",
+    "length": 600,
+    "tone": "spare",
+    "sceneNotes": "Night. The lamp has failed once already. Mara has to tell Ivo that the supply boat is late again.",
+    "pov": "mara-quill",
+    "goal": "Get Ivo to agree to light the lamp alone.",
+    "conflict": "Ivo insists that the boat will come.",
+    "outcome": "Mara lights the lamp herself."
+  },
+  "entities": [
+    {
+      "ref": "mara-quill",
+      "type": "character",
+      "path": "entities/mara-quill.md",
+      "content": "Mara Quill keeps the logbook and speaks in short sentences."
+    },
+    {
+      "ref": "ivo-renn",
+      "type": "character",
+      "path": "entities/ivo-renn.md",
+      "content": "Ivo Renn trusts the supply boat and believes in its timetable."
+    },
+    {
+      "ref": "skerry-light",
+      "type": "place",
+      "path": "entities/skerry-light.md",
+      "content": "Skerry Light is a lamp on a bare rock, reached only on a spring tide."
+    },
+    {
+      "ref": "plain-spoken",
+      "type": "style-profile",
+      "path": "entities/plain-spoken.md",
+      "content": "---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the scene shows, and let the silences do the rest."
+    }
+  ]
+}

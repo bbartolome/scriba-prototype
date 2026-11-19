@@ -1,0 +1,88 @@
+schemaVersion: 1
+name: scene_builder
+description: Draft a scene from its goal, conflict and outcome from one character's point of view.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    sceneNotes:
+      type: string
+      title: Scene notes
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    pov:
+      type: string
+      title: Point of view
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [character]
+    goal:
+      type: string
+      title: Goal
+    conflict:
+      type: string
+      title: Conflict
+    outcome:
+      type: string
+      title: Outcome
+  required: [coreIdea, pov]
+output: draft
+enabled: true
+prompt: |
+  You write one scene of a fiction story: a passage in the perception and voice of one character.
+
+  Core idea: {{coreIdea}}
+  {{#if goal}}Goal: {{goal}}
+  {{/if}}{{#if conflict}}Conflict: {{conflict}}
+  {{/if}}{{#if outcome}}Outcome: {{outcome}}
+  {{/if}}{{#if sceneNotes}}Scene notes: {{sceneNotes}}
+  {{/if}}Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}
+  Material:
+  {{entity pov}}
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. Establish the goal of the point-of-view character in this scene.
+  2. Escalate the conflict against that goal.
+  3. Turn to the outcome.
+  4. Stay in the point-of-view character's perception and voice throughout.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (the year the light was built). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

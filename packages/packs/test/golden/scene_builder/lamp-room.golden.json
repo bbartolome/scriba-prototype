@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Write the answer as Markdown prose. Return only the text of the answer, with no preface and no closing remarks."
+    },
+    {
+      "role": "user",
+      "content": "You write one scene of a fiction story: a passage in the perception and voice of one character.\n\nCore idea: Waiting can be a way of hoping.\nGoal: Get Ivo to agree to light the lamp alone.\nConflict: Ivo insists that the boat will come.\nOutcome: Mara lights the lamp herself.\nScene notes: Night. The lamp has failed once already. Mara has to tell Ivo that the supply boat is late again.\nLength: 600 words.\nTone: spare.\nMaterial:\ncharacter mara-quill (entities/mara-quill.md)\nMara Quill keeps the logbook and speaks in short sentences.\ncharacter ivo-renn (entities/ivo-renn.md)\nIvo Renn trusts the supply boat and believes in its timetable.\nplace skerry-light (entities/skerry-light.md)\nSkerry Light is a lamp on a bare rock, reached only on a spring tide.\nstyle-profile plain-spoken (entities/plain-spoken.md)\n---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the scene shows, and let the silences do the rest.\n\nSteps:\n1. Establish the goal of the point-of-view character in this scene.\n2. Escalate the conflict against that goal.\n3. Turn to the outcome.\n4. Stay in the point-of-view character's perception and voice throughout.\n\nConstraints:\n- Use only the material above.\n- Cite each factual sentence with its entity or source ID in the form [@id].\n- Where a needed fact is missing, write TK with a short note in brackets, for example TK (the year the light was built). Do not invent it.\n- Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.\n"
+    }
+  ]
+}
