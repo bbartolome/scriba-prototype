@@ -6400,3 +6400,12 @@ Part D (gates and commit):
 - **Items 1 and 2 are open.** They are the same gate condition as CEX-06 and CEX-08: `npm test` exit 0 in the worktree and in a fresh clone, under load. They are not closed by a retry alone. A clean exit 0 on a quiet machine, or a decision of the user about the web timeouts, is needed.
 - **Item 4:** the fresh clone at `/tmp/cex07-fresh-t2m9/repo` is kept; it is outside the repository and can be deleted by the user.
 - **Status:** `plans/CEX-07.md` stays `status: planned`.
+
+## 2026-11-19 — CEX-06 — Gate rework report (Haiku, medium) on unit/CEX-06 e4ada34: gates not clean; items 1 and 3 open
+
+- **Node v26.13.0, npm 11.20.0.** No file changed, nothing committed.
+- **Worktree (item 3):** API lint exit 0; API build exit 0; API test exit 0 ("Test Files 142 passed (142)", "Tests 529 passed (529)"); root lint exit 0 ("All matched files use Prettier code style!"); root build exit 0. Root `npm test` (run last): exit 1 in run 2 (API 529 passed; web "Tests 1 failed | 558 passed (559)", failing "tools-actions.spec.ts > ToolsListPage actions > T1d a refused save reads no list, and the row keeps its previous description", "Test timed out in 5000ms"). Run 1 (exit not captured): API "Tests 1 failed | 528 passed (529)", "graph-runner-run.test.ts > run engine, C4: a file input is read once at start", "The run did not end." Both failures are timeouts in files outside CEX-06. The worktree's earlier exit 0 is not reproduced: two runs, both exit 1.
+- **Fresh clone (item 1), clean after runs:** `npm ci` exit 0; `npm run build` exit 0; `npm test` run 1 exit 1 (API "Tests 4 failed | 525 passed (529)": agent-loop-current C2, agent-loop-search AC1, agent-loop-writes AC4, project-store-draft-versions V2, all "Test timed out in 20000ms"; web 559 of 559 passed); `npm test` run 2 exit 0 (contracts 253, API 529, web 559, packs 14, e2e 12, all passed); `npm run lint` exit 0.
+- **Note:** the rework's rerun rule was written for web timeouts; the clone's failures were API timeouts. The implementer reran anyway and stopped at the first exit 0.
+- **Logs:** worktree `/tmp/cex06-gates/*.log` (root-test-run2.log, exit in root-test.exit); fresh clone `/tmp/cex06-logs/*.log` (test-run1.log, test-run2.log, exits.txt).
+- **Status:** CEX-06's reviewer items 1 and 3 of Part B (gates and the six exit codes) are now evidenced, but the worktree's root `npm test` is not exit 0, so step 14 of the plan is still not met. The Part B REWORK stands. `plans/CEX-06.md` stays `status: planned`.
