@@ -1,6 +1,6 @@
 ---
 id: PST-24
-status: planned
+status: done
 title: Byte-safe file write — optional base64 bytes field on write, stored without the UTF-8 encode
 module: project-store
 ---

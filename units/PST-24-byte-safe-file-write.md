@@ -26,4 +26,4 @@ Other modules' copy operations (Compile & export copying a binary default templa
 - `content` is unchanged in the schema; when `contentBase64` is present, the plan settles how `content` is treated (ignored, or required empty).
 
 ## Acceptance criteria
-- [ ] A write with the byte-safe field stores the exact bytes (round-trip equality), and a subsequent read returns undefined (binary is not text).
+- [x] A write with the byte-safe field stores the exact bytes (round-trip equality), and a subsequent read returns undefined (binary is not text).
