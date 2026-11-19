@@ -33,7 +33,7 @@ describe('vflow adapter (V1)', () => {
     expect(node.type).toBe('html-template');
     expect(node.id).toBe('cold-open');
     expect(node.point()).toEqual({ x: 40, y: 80 });
-    expect(node.data()).toBe(FILE.nodes[0]);
+    expect(node.data?.()).toBe(FILE.nodes[0]);
   });
 
   it('builds a locked node whose draggable is false, with the same other values', () => {
@@ -44,7 +44,7 @@ describe('vflow adapter (V1)', () => {
     );
     expect(node.id).toBe('cold-open');
     expect(node.point()).toEqual({ x: 40, y: 80 });
-    expect(node.data()).toBe(FILE.nodes[0]);
+    expect(node.data?.()).toBe(FILE.nodes[0]);
   });
 
   it('vflowNodesOf(file) has no node with a draggable key', () => {
