@@ -66,7 +66,7 @@ PST-01 contract slice  ══> phase:contract
 - React, Fastify and a SQLite run-log index (Angular + Material, NestJS, `logs/` is the source of truth).
 - Vector/semantic search (the search contract allows it later); git integration (the image ships no git).
 - More than one active project, multi-user editing, cloud sync.
-- Folder delete/rename, delete/move from the files UI, binary files (single-file `delete`/`move` exist in the API for other modules' author actions).
+- Folder delete/rename, delete/move from the files UI, binary files (read and list remain text-only; a byte-safe write exists for other modules' copy operations, PST-24) (single-file `delete`/`move` exist in the API for other modules' author actions).
 - Stable draft IDs (renaming a draft orphans its versions; deferred).
 - Per-project `tools/`, the `snapshots/` mechanism, the meaning and writes of `order`, and the `logs/` transcript format (Compile & export, Agent loop).
 - Sample content owned by other modules: nonfiction entities (Genre packs, M2), the grounding-claims draft (Agent loop, M3), the recipe (Graph runner, M4), the order field (Compile & export, M5), the fiction sample (Genre packs, M6).
