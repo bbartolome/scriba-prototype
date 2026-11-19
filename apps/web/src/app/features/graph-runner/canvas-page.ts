@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
@@ -974,10 +975,15 @@ export class CanvasPage {
   private readonly changes = new Subject<void>();
 
   constructor() {
-    // Each node's drag follows `editable`, so no node moves while a run is active (C-11).
+    // No node moves while a run is active (C-11): the vnodes are rebuilt locked or unlocked from the file
+    // when the lock differs from their shape. The rebuilt set passes the check, so the effect stops.
     effect(() => {
-      const editable = this.editable();
-      for (const vnode of this.nodes()) vnode.draggable?.set(editable);
+      const locked = !this.editable();
+      const nodes = this.nodes();
+      if (nodes.every((node) => (node.draggable !== undefined) === locked))
+        return;
+      const file = untracked(() => this.file());
+      if (file !== undefined) this.nodes.set(vflowNodesOf(file, locked));
     });
 
     // The current run: a read sets it; the latest read wins, and a read answered after an event is read again.
