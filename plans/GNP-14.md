@@ -1,6 +1,6 @@
 ---
 id: GNP-14
-status: planned
+status: draft
 ---
 # GNP-14 plan — character_builder and world_builder entity tools, golden cases and eval cases
 
