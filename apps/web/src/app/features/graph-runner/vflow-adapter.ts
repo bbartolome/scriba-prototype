@@ -34,6 +34,8 @@ export function vflowNodeOf(node: FileNode): VflowNode {
     id: node.id,
     point: signal({ x: node.position.x, y: node.position.y }),
     data: signal<FileNode>(node),
+    // Read-only while a run is active: the page sets this from `editable` (C-11).
+    draggable: signal(true),
   };
 }
 
