@@ -1,6 +1,6 @@
 ---
 id: CEX-13
-status: planned
+status: done
 ---
 # CEX-13 plan — PDF via Typst, the built-in Typst template and the Typst quality spike ADR
 

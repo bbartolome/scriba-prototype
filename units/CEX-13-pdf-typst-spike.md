@@ -16,5 +16,5 @@ unblocks: [CEX-15]
 - **Typst quality spike:** render the nonfiction sample plus a typographic stress fixture (footnotes, block quotes, smart quotes, em and en dashes, accented and non-Latin text, long headings, a TOC, a page break per chapter, an image) and compare against a written checklist. Record the outcome as an ADR in `docs/adr/`: keep Typst, or recommend the TeX Live derived image (`FROM bbartolome/scriba`) as follow-up work (not in v1).
 
 ## Acceptance criteria
-- [ ] The PDF output starts with `%PDF-` and is produced via `--pdf-engine=typst`.
+- [x] The PDF output starts with `%PDF-` and is produced via `--pdf-engine=typst`.
 - [ ] The spike ADR is merged and states the decision.
