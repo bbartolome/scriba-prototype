@@ -17,8 +17,7 @@ PST-01 contract slice  ══> phase:contract
      ├─ PST-03 discovery, list, new, import ─┬─ PST-04 active project + switching
      │                                       └─ PST-05 start from sample + sample list
      ├─ PST-06 file API core (list/read/write/edit, atomic, too-new)   (needs 04)
-     │    ├─ PST-07 delete/move + in-process helpers (updateProjectYaml, appendLog, stateDir)
-     │    └─ PST-24 byte-safe write (optional base64 bytes on write; lands at M5, PST-12 does not wait)
+     │    └─ PST-07 delete/move + in-process helpers (updateProjectYaml, appendLog, stateDir)
      ├─ PST-08 entity resolution + entity list + manifest              (needs 04)
      ├─ PST-09 project picker UI + e2e "project from sample"           (needs 03,04,05,11 + Shell phase:core)
      └─ PST-10 files UI (tree, preview, editor, stale-base)            (needs 06 + Shell core/shared-components)
