@@ -17,4 +17,4 @@ unblocks: [CEX-15]
 
 ## Acceptance criteria
 - [x] The PDF output starts with `%PDF-` and is produced via `--pdf-engine=typst`.
-- [ ] The spike ADR is merged and states the decision.
+- [x] The spike ADR is merged and states the decision.
