@@ -25,7 +25,21 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint
+      - name: Install Pandoc 3.13 and Typst 0.15.1
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/pandoc.deb "https://github.com/jgm/pandoc/releases/download/3.13/pandoc-3.13-1-amd64.deb"
+          echo "7e3736f255090296ca5d1a14291a76b9b3c43cd385011b1621a4d0c16091a70f  /tmp/pandoc.deb" | sha256sum -c -
+          sudo apt-get install -y /tmp/pandoc.deb
+          test "$(pandoc --version | head -n 1)" = "pandoc 3.13"
+          curl -fsSL -o /tmp/typst.tar.xz "https://github.com/typst/typst/releases/download/v0.15.1/typst-x86_64-unknown-linux-musl.tar.xz"
+          echo "a6d077d0a95eed5a2eba715b2dae06be954f624ccbf85758a03f389ded33118c  /tmp/typst.tar.xz" | sha256sum -c -
+          tar -xJf /tmp/typst.tar.xz -C /tmp
+          sudo install -m 0755 /tmp/typst-x86_64-unknown-linux-musl/typst /usr/local/bin/typst
+          test "$(typst --version | cut -d ' ' -f 2)" = "0.15.1"
       - name: Test
+        env:
+          SCRIBA_REQUIRE_EXPORT_TOOLS: '1'
         run: npm test
       - name: Build
         run: npm run build
