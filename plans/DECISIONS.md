@@ -6430,3 +6430,12 @@ Part D (gates and commit):
 - **Note:** the branch is based on 1e7fbbf, which is an ancestor of main (0125246), but the branch is not rebased on main yet. The API count (523) differs from the CEX-16 run (529) because main has more API tests. The rebase and the gates on the rebased commit are step 3 of the pipeline, after the reviewers.
 - **Next:** Sonnet reviewer for Part 1 on patch id `8e52a8d4916f1197d857cbcc131d0df0acfea24d`, with the earlier REWORK items 2 to 4 also checked against the rework report.
 - **Status:** `plans/CEX-08.md` stays `status: planned`.
+
+## 2026-11-19 — CEX-08 — Sonnet review of Part 1 on patch id 8e52a8d4916f1197d857cbcc131d0df0acfea24d: APPROVED
+
+- **Branch and patch id:** unit/CEX-08, commit e568c97 on 1e7fbbf (examples/nonfiction/project.yaml, 12 insertions, no removed lines). Patch id `8e52a8d4916f1197d857cbcc131d0df0acfea24d`, recomputed by the reviewer and unchanged.
+- **Reviewer result (Sonnet, medium, fresh context):** APPROVED. The reviewer ran no command again. It judged C1, C2 and X1 to X7 from the rework report, and checked the diff and the `npm test` log itself. It confirmed the order is not alphabetical (born-to-it, what-counts-as-practice, the-ten-thousand-hour-idea, the-plateau-is-not-the-end), the statuses are final, revised, draft, draft, and no bibliography, styleProfile or other key was added.
+- **Earlier REWORK items:** item 1 evidenced (clean `npm test` exit 0, the entry dated 2026-11-19 above). Item 2 evidenced (X1 to X7 output). Item 3 evidenced apart from the step 2(b) pre-edit `<M>`, which the reviewer did not count as blocking: the diff adds no test file, so `<M>` cannot change; criterion 1 is carried by step 5(a), 5(b) and both controls of step 6; the count can be checked on main with `npm run lint:examples` (expected 260). Item 4 evidenced (the C2 assertions).
+- **Orchestrator note:** the reviewer's approval is recorded as given. The step 2(b) gap stays in the record, not corrected.
+- **Next:** step 3. Replay the commit on main (cherry-pick, the carried rule), recheck the patch id, run the gates on the replayed commit, then fast-forward main.
+- **Status:** `plans/CEX-08.md` stays `status: planned` until step 3 completes.
