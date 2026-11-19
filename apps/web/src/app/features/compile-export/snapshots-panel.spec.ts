@@ -216,12 +216,18 @@ describe('SnapshotsPanel', () => {
       body: { label: 'before-cut' },
     });
 
+    doubles.api.respond('GET', SNAPSHOTS_PATH, { snapshots: [NEW, READABLE] });
     push('compile-export', {
       type: 'snapshot-created',
       data: { projectId: 'p1', snapshot: NEW },
     });
     await settle(harness);
     expect(countOf(SNAPSHOTS_PATH)).toBe(2);
+    expect(
+      panelOf(root)
+        .querySelector('li[data-snapshot-id]')
+        ?.getAttribute('data-snapshot-id'),
+    ).toBe(NEW.id);
 
     push('compile-export', {
       type: 'snapshot-restored',
