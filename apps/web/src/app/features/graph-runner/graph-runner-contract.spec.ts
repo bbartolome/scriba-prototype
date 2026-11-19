@@ -6,7 +6,10 @@ import {
   graphListSchema,
   validationResultSchema,
 } from '@bbartolome/scriba-contracts/graph-runner';
-import { pendingListSchema } from '@bbartolome/scriba-contracts/project-store';
+import {
+  fileListSchema,
+  pendingListSchema,
+} from '@bbartolome/scriba-contracts/project-store';
 import {
   toolDetailSchema,
   toolListSchema,
@@ -14,6 +17,7 @@ import {
 import { describe, expect, it } from 'vitest';
 import {
   currentRunCopy,
+  fileListCopy,
   graphDetailCopy,
   graphIdCopy,
   graphListCopy,
@@ -26,6 +30,7 @@ import {
   GRAPH_CREATE_PATH,
   noBodyCopy,
   pendingListCopy,
+  projectFilesPath,
   pendingPath,
   RUN_CURRENT_PATH,
   toolListCopy,
@@ -336,6 +341,45 @@ describe('graph-runner-contract', () => {
     for (const sample of acceptedViews) {
       expect(toolViewsCopy.safeParse(sample).success).toBe(true);
     }
+  });
+
+  it('KS1 fileListCopy agrees with fileListSchema on each sample', () => {
+    const FILE = {
+      path: 'drafts/arrival.md',
+      kind: 'file',
+      size: 12,
+      mtime: '2026-11-14T09:00:00Z',
+    };
+    const DIR = {
+      path: 'drafts',
+      kind: 'dir',
+      size: 0,
+      mtime: '2026-11-14T09:00:00Z',
+    };
+    const acceptedFiles: unknown[] = [
+      { entries: [] },
+      { entries: [FILE, DIR] },
+    ];
+    const refusedFiles: unknown[] = [
+      {},
+      { entries: 'none' },
+      { entries: [{ ...FILE, kind: 'link' }] },
+      { entries: [{ ...FILE, path: undefined }] },
+    ];
+    for (const sample of [...acceptedFiles, ...refusedFiles]) {
+      expect(fileListCopy.safeParse(sample).success).toBe(
+        fileListSchema.safeParse(sample).success,
+      );
+    }
+    for (const sample of acceptedFiles) {
+      expect(fileListCopy.safeParse(sample).success).toBe(true);
+    }
+  });
+
+  it('KS2 projectFilesPath equals the contract route with the id encoded', () => {
+    expect(projectFilesPath('p 1')).toBe(
+      '/api/project-store/projects/p%201/files',
+    );
   });
 
   it('K4 toolPath and graphValidatePath equal the contract routes', () => {

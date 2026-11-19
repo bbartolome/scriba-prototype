@@ -20,6 +20,8 @@ import {
   graphPath,
   graphSavePath,
   graphValidatePath,
+  projectFilesPath,
+  RUN_CURRENT_PATH,
   TOOLS_PATH,
   toolPath,
 } from './graph-runner-contract';
@@ -530,6 +532,408 @@ it('Issues from validate highlight the concerned element and disable Run with th
       '',
     );
   });
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+/** One file entry of a canned file list. */
+function fileOf(path: string) {
+  return { path, kind: 'file', size: 1, mtime: '2026-11-14T09:00:00Z' };
+}
+
+/** One folder entry of a canned file list. */
+function dirOf(path: string) {
+  return { path, kind: 'dir', size: 0, mtime: '2026-11-14T09:00:00Z' };
+}
+
+/** The canned file list of project p1 (C-12). The params do not select an answer. */
+function respondFiles(entries: readonly unknown[]): void {
+  doubles.api.respond('GET', projectFilesPath('p1'), { entries });
+}
+
+/** The validate answer of a story test: no issues, so a change after an edit does not fail. */
+function respondValidate(): void {
+  doubles.api.respond('POST', graphValidatePath(), { issues: [] });
+}
+
+/** The current-run answer of a story test (C-12): no run. */
+function respondNoRun(): void {
+  doubles.api.respond('GET', RUN_CURRENT_PATH, { run: null });
+}
+
+/** Sets a control's value and fires the event the page listens to. */
+function setValue(
+  element: HTMLInputElement | HTMLSelectElement,
+  value: string,
+  event: 'input' | 'change',
+): void {
+  element.value = value;
+  element.dispatchEvent(new Event(event));
+}
+
+/** Adds a node from the controls: its kind, its label, then Add. */
+function addNode(root: HTMLElement, kind: string, label: string): void {
+  setValue(
+    root.querySelector('#new-kind') as HTMLSelectElement,
+    kind,
+    'change',
+  );
+  setValue(
+    root.querySelector('#new-label') as HTMLInputElement,
+    label,
+    'input',
+  );
+  buttonNamed(root, 'Add').click();
+}
+
+/** The keys of each node and each edge of a saved file, in the order the file has them. */
+function keysOf(body: unknown): { nodes: string[][]; edges: string[][] } {
+  const file = body as {
+    nodes: Record<string, unknown>[];
+    edges: Record<string, unknown>[];
+  };
+  return {
+    nodes: file.nodes.map((node) => Object.keys(node)),
+    edges: file.edges.map((edge) => Object.keys(edge)),
+  };
+}
+
+// Criterion 24 (unit line 24), named as the criterion. The story view adds a beat, a scene and an entity from the
+// controls, shares a file with a picker, sets two relations (one from the vocabulary, one free text), and saves a
+// file that parses against the contract with no recipe-only fields.
+it('The story view creates scene, beat and entity nodes and labelled relations, and saves a file that parses against the contract with no recipe-only fields.', async () => {
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  const seed = {
+    schemaVersion: 1,
+    view: 'story',
+    name: 'Story pickers',
+    nodes: [
+      {
+        id: 'scene-1',
+        kind: 'scene',
+        label: 'Arrival',
+        path: 'drafts/arrival.md',
+        position: { x: 40, y: 40 },
+      },
+      {
+        id: 'entity-1',
+        kind: 'entity',
+        label: 'Mara',
+        position: { x: 360, y: 40 },
+      },
+    ],
+    edges: [
+      { id: 'e1', from: 'entity-1', to: 'scene-1' },
+      { id: 'e2', from: 'scene-1', to: 'entity-1' },
+    ],
+  };
+  doubles.api.respond('GET', graphPath('story-pickers'), {
+    graph: structuredClone(seed),
+    issues: [],
+  });
+  doubles.api.respond('POST', graphSavePath('story-pickers'), { issues: [] });
+  respondFiles([
+    dirOf('drafts'),
+    fileOf('drafts/arrival.md'),
+    fileOf('entities/mara.yaml'),
+  ]);
+  respondValidate();
+  respondNoRun();
+  respondTools();
+
+  const { fixture, root } = await render('/projects/p1/graphs/story-pickers');
+  await until(fixture, () => {
+    expect(root.querySelector('h2')?.textContent?.trim()).toBe('Story pickers');
+  });
+
+  addNode(root, 'beat', 'Storm');
+  addNode(root, 'scene', 'Dock');
+  addNode(root, 'entity', 'Keeper');
+  await until(fixture, () => {
+    expect(root.querySelector('[data-node="entity-2"]')).not.toBeNull();
+  });
+
+  setValue(
+    root.querySelector(
+      '[data-story-node="beat-1"] select',
+    ) as HTMLSelectElement,
+    'drafts/arrival.md',
+    'change',
+  );
+  setValue(
+    root.querySelector('[data-story-edge="e1"] input') as HTMLInputElement,
+    'causality',
+    'change',
+  );
+  setValue(
+    root.querySelector('[data-story-edge="e2"] input') as HTMLInputElement,
+    'mentions',
+    'change',
+  );
+  await until(fixture, () => {
+    const text = root.querySelector('vflow')?.textContent ?? '';
+    expect(text).toContain('causality');
+    expect(text).toContain('mentions');
+  });
+
+  buttonNamed(root, 'Save').click();
+  await until(fixture, () => {
+    expect(postsTo(graphSavePath('story-pickers'))).toHaveLength(1);
+  });
+
+  const body = postsTo(graphSavePath('story-pickers'))[0]?.body as {
+    nodes: { kind: string; label: string; path?: string }[];
+    edges: { relation?: string }[];
+  };
+  expect(body.nodes.map((node) => node.kind)).toEqual([
+    'scene',
+    'entity',
+    'beat',
+    'scene',
+    'entity',
+  ]);
+  expect(body.nodes.map((node) => node.label)).toEqual([
+    'Arrival',
+    'Mara',
+    'Storm',
+    'Dock',
+    'Keeper',
+  ]);
+  expect(body.nodes[2]?.path).toBe('drafts/arrival.md');
+  expect(body.nodes[0]?.path).toBe('drafts/arrival.md');
+  expect(body.edges[0]?.relation).toBe('causality');
+  expect(body.edges[1]?.relation).toBe('mentions');
+  expect(graphFileSchema.safeParse(body).success).toBe(true);
+
+  const allowedNode = ['id', 'kind', 'label', 'path', 'position'];
+  const allowedEdge = ['id', 'from', 'to', 'relation'];
+  for (const keys of keysOf(body).nodes) {
+    expect(keys.every((key) => allowedNode.includes(key))).toBe(true);
+  }
+  for (const keys of keysOf(body).edges) {
+    expect(keys.every((key) => allowedEdge.includes(key))).toBe(true);
+  }
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+// Criterion 25 (unit line 25), named as the criterion. A node whose file is missing shows the badge from the
+// load's issues; Open file navigates to the files route with the path as its query.
+it('A node pointing at a deleted file shows the warning badge; Open file navigates to the files route.', async () => {
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  doubles.api.respond('GET', graphPath('story-missing'), {
+    graph: {
+      schemaVersion: 1,
+      view: 'story',
+      name: 'Story missing',
+      nodes: [
+        {
+          id: 'ch-1',
+          kind: 'scene',
+          label: 'Gone',
+          path: 'drafts/gone.md',
+          position: { x: 40, y: 40 },
+        },
+        {
+          id: 'ch-2',
+          kind: 'scene',
+          label: 'Here',
+          path: 'drafts/arrival.md',
+          position: { x: 360, y: 40 },
+        },
+      ],
+      edges: [],
+    },
+    issues: [
+      {
+        code: 'path-missing',
+        severity: 'warning',
+        message: 'A path does not point to a file in the project.',
+        nodeId: 'ch-1',
+      },
+    ],
+  });
+  respondFiles([dirOf('drafts'), fileOf('drafts/arrival.md')]);
+  respondNoRun();
+  respondTools();
+
+  const { fixture, router, root } = await render(
+    '/projects/p1/graphs/story-missing',
+  );
+  await until(fixture, () => {
+    expect(root.querySelector('h2')?.textContent?.trim()).toBe('Story missing');
+    expect(
+      root.querySelector('[data-node="ch-1"] [data-badge="path-missing"]'),
+    ).not.toBeNull();
+  });
+  expect(root.querySelector('[data-node="ch-2"] [data-badge]')).toBeNull();
+  expect(
+    (root.querySelector('[data-story-node="ch-1"] select') as HTMLSelectElement)
+      .value,
+  ).toBe('drafts/gone.md');
+
+  (
+    root.querySelector(
+      '[data-story-node="ch-1"] [data-open-file]',
+    ) as HTMLButtonElement
+  ).click();
+  await until(fixture, () => {
+    const tree = router.parseUrl(router.url);
+    expect(
+      tree.root.children['primary']?.segments.map((s) => s.path).join('/'),
+    ).toBe('projects/p1/files');
+    expect(tree.queryParams['path']).toBe('drafts/gone.md');
+  });
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+// Criterion 26 (unit line 26), named as the criterion. The story has no Run control; the recipe with the same
+// controls has one, so the selectors and the text rule are shown to find it.
+it('No Run control appears on a story graph.', async () => {
+  const runLike = (root: HTMLElement) =>
+    Array.from(root.querySelectorAll('button')).some((button) =>
+      (button.textContent ?? '').trim().startsWith('Run'),
+    );
+
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  doubles.api.respond('GET', graphPath('story-no-run'), {
+    graph: {
+      schemaVersion: 1,
+      view: 'story',
+      name: 'Story no run',
+      nodes: [
+        {
+          id: 'scene-1',
+          kind: 'scene',
+          label: 'Arrival',
+          position: { x: 40, y: 40 },
+        },
+      ],
+      edges: [],
+    },
+    issues: [],
+  });
+  respondNoRun();
+  respondTools();
+  const story = await render('/projects/p1/graphs/story-no-run');
+  await until(story.fixture, () => {
+    expect(story.root.querySelector('h2')?.textContent?.trim()).toBe(
+      'Story no run',
+    );
+  });
+  expect(
+    story.root.querySelector('[data-run], [data-run-to-here], [data-stop]'),
+  ).toBeNull();
+  expect(runLike(story.root)).toBe(false);
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  doubles.api.respond('GET', graphPath('recipe-run'), {
+    graph: {
+      schemaVersion: 1,
+      view: 'recipe',
+      name: 'Recipe run',
+      nodes: [
+        {
+          id: 'chapter-notes',
+          kind: 'input',
+          position: { x: 0, y: 0 },
+          params: { type: 'text', label: 'Chapter notes' },
+        },
+        { id: 'draft', kind: 'output', position: { x: 480, y: 0 } },
+      ],
+      edges: [],
+    },
+    issues: [],
+  });
+  respondNoRun();
+  respondTools();
+  const recipe = await render('/projects/p1/graphs/recipe-run');
+  await until(recipe.fixture, () => {
+    expect(recipe.root.querySelector('h2')?.textContent?.trim()).toBe(
+      'Recipe run',
+    );
+    expect(recipe.root.querySelector('[data-run]')).not.toBeNull();
+  });
+  expect(runLike(recipe.root)).toBe(true);
+  restoreMatchMedia();
+  TestBed.resetTestingModule();
+});
+
+// Criterion 27 (unit line 27), named as the criterion. Four overlapping story nodes: an order chain given against
+// the file order, and one unlinked node. Arrange moves nodes only, makes no save, and the save holds only positions.
+it('Arrange lays out overlapping nodes left to right without changing anything but `position`.', async () => {
+  doubles = createShellTestDoubles();
+  doubles.api.respond('GET', ACTIVE_PROJECT_ROUTE, { active: 'p1' });
+  const seed = {
+    schemaVersion: 1,
+    view: 'story',
+    name: 'Story arrange',
+    nodes: [
+      { id: 'c', kind: 'beat', label: 'C', position: { x: 40, y: 40 } },
+      { id: 'a', kind: 'scene', label: 'A', position: { x: 40, y: 40 } },
+      { id: 'b', kind: 'scene', label: 'B', position: { x: 40, y: 40 } },
+      { id: 'd', kind: 'entity', label: 'D', position: { x: 40, y: 40 } },
+    ],
+    edges: [
+      { id: 'e1', from: 'a', to: 'b', relation: 'order' },
+      { id: 'e2', from: 'b', to: 'c', relation: 'order' },
+      { id: 'e3', from: 'd', to: 'a', relation: 'containment' },
+    ],
+  };
+  doubles.api.respond('GET', graphPath('story-arrange'), {
+    graph: structuredClone(seed),
+    issues: [],
+  });
+  doubles.api.respond('POST', graphSavePath('story-arrange'), { issues: [] });
+  respondFiles([]);
+  respondValidate();
+  respondNoRun();
+  respondTools();
+
+  const { fixture, root } = await render('/projects/p1/graphs/story-arrange');
+  await until(fixture, () => {
+    expect(root.querySelector('h2')?.textContent?.trim()).toBe('Story arrange');
+  });
+
+  (root.querySelector('[data-arrange]') as HTMLButtonElement).click();
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  fixture.detectChanges();
+  expect(postsTo(graphSavePath('story-arrange'))).toHaveLength(0);
+
+  buttonNamed(root, 'Save').click();
+  await until(fixture, () => {
+    expect(postsTo(graphSavePath('story-arrange'))).toHaveLength(1);
+  });
+
+  const body = postsTo(graphSavePath('story-arrange'))[0]?.body as {
+    nodes: { id: string; position: { x: number; y: number } }[];
+  };
+  const x = (id: string) =>
+    body.nodes.find((node) => node.id === id)?.position.x ?? NaN;
+  expect(x('a')).toBeLessThan(x('b'));
+  expect(x('b')).toBeLessThan(x('c'));
+  expect(x('c')).toBeLessThan(x('d'));
+  expect(
+    new Set(body.nodes.map((node) => `${node.position.x},${node.position.y}`))
+      .size,
+  ).toBe(4);
+
+  const strip = (value: unknown) =>
+    JSON.parse(
+      JSON.stringify(value, (key, inner) =>
+        key === 'position' ? undefined : inner,
+      ),
+    );
+  expect(strip(body)).toEqual(strip(seed));
+  expect(keysOf(body)).toEqual(keysOf(seed));
+  expect(graphFileSchema.safeParse(body).success).toBe(true);
   restoreMatchMedia();
   TestBed.resetTestingModule();
 });

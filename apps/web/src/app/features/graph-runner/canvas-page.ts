@@ -1,11 +1,16 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import {
+  ActivatedRoute,
+  type ActivatedRouteSnapshot,
+  Router,
+} from '@angular/router';
 import type {
   GraphFile,
   ValidationIssue,
   ValidationResult,
 } from '@bbartolome/scriba-contracts/graph-runner';
+import type { FileEntry } from '@bbartolome/scriba-contracts/project-store';
 import type {
   FormDescriptor,
   PortDescriptor,
@@ -39,16 +44,19 @@ import {
 import { API_CLIENT, ApiError } from '../../shell';
 import { ToolForm } from '../tool-registry/tool-registry.routes';
 import {
+  fileListCopy,
   graphDetailCopy,
   graphPath,
   graphSavePath,
   graphValidatePath,
+  projectFilesPath,
   TOOLS_PATH,
   toolListCopy,
   toolPath,
   toolViewsCopy,
   validationResultCopy,
 } from './graph-runner-contract';
+import { arrangeOf } from './layout';
 import {
   type FileNode,
   labelWires,
@@ -80,6 +88,14 @@ import {
   TOOL_STATE_LINES,
   typeGlyphOf,
 } from './tool-nodes';
+import {
+  fileChoicesOf,
+  folderOfKind,
+  pathChoicesOf,
+  RELATION_OPTIONS,
+  withPath,
+  withRelation,
+} from './story-view';
 
 /** The kinds the controls offer, per view. */
 const STORY_KINDS: readonly string[] = ['entity', 'scene', 'beat'];
@@ -182,6 +198,15 @@ function failureOf(error: unknown): 'not-found' | 'failed' {
     : 'failed';
 }
 
+/** The project id of the route: the first `projectId` param from the root, or '' when there is none (C-16). */
+function projectIdOfRoute(snapshot: ActivatedRouteSnapshot): string {
+  for (const part of snapshot.pathFromRoot) {
+    const id = part.paramMap.get('projectId');
+    if (id !== null) return id;
+  }
+  return '';
+}
+
 /**
  * The canvas of one graph (`:graphId`): the view is story or recipe, from the file. Nodes can be moved,
  * added and removed, wires and edges can be connected and removed, and the whole file is saved. A recipe
@@ -282,6 +307,7 @@ function failureOf(error: unknown): 'not-found' | 'failed' {
           Delete selected
         </button>
         <button type="button" (click)="save()">Save</button>
+        <button type="button" data-arrange (click)="arrange()">Arrange</button>
         @if (!isStory()) {
           <button type="button" data-run [disabled]="runBlocked()">Run</button>
           <ul data-run-reasons class="run-reasons">
@@ -291,6 +317,62 @@ function failureOf(error: unknown): 'not-found' | 'failed' {
           </ul>
         }
       </div>
+      @if (isStory()) {
+        <section class="story-panel" aria-label="Story details">
+          <h3>Files</h3>
+          <ul>
+            @for (node of storyNodes(); track node.id) {
+              <li [attr.data-story-node]="node.id">
+                <span>{{ node.label }}</span>
+                <select
+                  data-path-picker
+                  (change)="setPath(node.id, $any($event.target).value)"
+                >
+                  <option value="" [selected]="!node.path">No file</option>
+                  @for (choice of choicesOf(node); track choice) {
+                    <option [value]="choice" [selected]="choice === node.path">
+                      {{ choice }}
+                    </option>
+                  }
+                </select>
+                @if (node.path) {
+                  <button
+                    type="button"
+                    data-open-file
+                    (click)="openFile(node.path)"
+                  >
+                    Open file
+                  </button>
+                }
+              </li>
+            }
+          </ul>
+          <h3>Relations</h3>
+          <ul>
+            @for (edge of storyEdges(); track edge.id) {
+              <li [attr.data-story-edge]="edge.id">
+                <span>{{ edge.from }} -> {{ edge.to }}</span>
+                <input
+                  type="text"
+                  list="relation-options"
+                  [value]="edge.relation ?? ''"
+                  (change)="setRelation(edge.id, $any($event.target).value)"
+                />
+              </li>
+            }
+          </ul>
+          <datalist id="relation-options">
+            @for (option of relationOptions; track option.value) {
+              <option [value]="option.value"></option>
+            }
+          </datalist>
+          <p class="relation-meanings">
+            @for (option of relationOptions; track option.value) {
+              <span>{{ option.value }}: {{ option.meaning }}. </span>
+            }
+          </p>
+        </section>
+      }
       <vflow
         [view]="'auto'"
         [nodes]="nodes()"
@@ -314,6 +396,11 @@ function failureOf(error: unknown): 'not-found' | 'failed' {
             @if (isStory()) {
               <handle type="target" position="left"></handle>
               <handle type="source" position="right"></handle>
+              @if (pathMissing().has(ctx.node.id)) {
+                <span class="badge" data-badge="path-missing"
+                  >File missing</span
+                >
+              }
             } @else {
               @if (stateLineOf(ctx.node.id); as line) {
                 <p class="tool-state">{{ line }}</p>
@@ -395,6 +482,17 @@ function failureOf(error: unknown): 'not-found' | 'failed' {
       stroke: crimson;
       stroke-width: 3px;
     }
+    .story-panel {
+      border-top: 1px solid currentColor;
+      padding: 4px 0;
+    }
+    [data-badge] {
+      margin-left: 4px;
+      padding: 0 4px;
+      border: 1px solid crimson;
+      border-radius: 8px;
+      color: crimson;
+    }
     .chip {
       display: inline-block;
       margin-left: 4px;
@@ -407,6 +505,7 @@ function failureOf(error: unknown): 'not-found' | 'failed' {
 export class CanvasPage {
   private readonly api = inject(API_CLIENT);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
 
   protected readonly loadFailure = LOAD_FAILURE;
   protected readonly saveFailure = SAVE_FAILURE;
@@ -421,6 +520,11 @@ export class CanvasPage {
   protected readonly issues = signal<readonly ValidationIssue[]>([]);
   protected readonly refusal = signal<Refusal | undefined>(undefined);
   protected readonly loadFailed = signal(false);
+  /** The project's files, read once per load of a story (C-6). */
+  protected readonly files = signal<readonly FileEntry[]>([]);
+  /** The project id, from the route (C-16). */
+  private readonly projectId = signal('');
+  protected readonly relationOptions = RELATION_OPTIONS;
 
   /** The vflow state, derived from the file. */
   protected readonly nodes = signal<VflowNode[]>([]);
@@ -430,6 +534,25 @@ export class CanvasPage {
   protected readonly selectedEdges = signal<readonly string[]>([]);
 
   protected readonly isStory = computed(() => this.file()?.view === 'story');
+  protected readonly storyNodes = computed(() => {
+    const current = this.file();
+    return current?.view === 'story' ? current.nodes : [];
+  });
+  protected readonly storyEdges = computed(() => {
+    const current = this.file();
+    return current?.view === 'story' ? current.edges : [];
+  });
+  /** The nodes whose file is missing, from the issues of the load or of the latest validation. */
+  protected readonly pathMissing = computed(
+    () =>
+      new Set(
+        this.issues().flatMap((issue) =>
+          issue.code === 'path-missing' && issue.nodeId !== undefined
+            ? [issue.nodeId]
+            : [],
+        ),
+      ),
+  );
   protected readonly kindOptions = computed(() =>
     this.isStory() ? STORY_KINDS : RECIPE_KINDS,
   );
@@ -528,12 +651,14 @@ export class CanvasPage {
   private readonly changes = new Subject<void>();
 
   constructor() {
-    // The id comes from the child route; a new id loads a new graph.
-    inject(ActivatedRoute)
-      .paramMap.pipe(
+    // The id comes from the child route; a new id loads a new graph. The project id is read from the route's
+    // snapshot, not from ActiveProjectSignal, which is not yet current during load (C-16).
+    const route = inject(ActivatedRoute);
+    route.paramMap
+      .pipe(
         map((params) => params.get('graphId') ?? ''),
         distinctUntilChanged(),
-        switchMap((id) => this.load(id)),
+        switchMap((id) => this.load(id, projectIdOfRoute(route.snapshot))),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
@@ -655,6 +780,71 @@ export class CanvasPage {
     this.scheduleValidation();
   }
 
+  /** Sets a story node's file. An empty path removes it; the vflow node's data follows (C-10). */
+  protected setPath(nodeId: string, path: string): void {
+    const current = this.file();
+    if (current === undefined) return;
+    const next = withPath(current, nodeId, path);
+    if (next === current) return;
+    this.file.set(next);
+    const node = next.nodes.find((candidate) => candidate.id === nodeId);
+    if (node !== undefined) {
+      this.nodes()
+        .find((vnode) => vnode.id === nodeId)
+        ?.data?.set(node);
+    }
+    this.scheduleValidation();
+  }
+
+  /** Sets an edge's relation from the picker's text, trimmed; the edges are rebuilt so the label shows (C-10). */
+  protected setRelation(edgeId: string, relation: string): void {
+    const current = this.file();
+    if (current === undefined) return;
+    const next = withRelation(current, edgeId, relation.trim());
+    if (next === current) return;
+    this.file.set(next);
+    this.rebuildEdges(next);
+    this.scheduleValidation();
+  }
+
+  /** Opens a story node's file in the files page, in the project of the route (D4, C-4). */
+  protected openFile(path: string): void {
+    const projectId = this.projectId();
+    if (projectId === '') return;
+    void this.router.navigate(['/projects', projectId, 'files'], {
+      queryParams: { path },
+    });
+  }
+
+  /** The file choices of a node's picker: its folder's files, and its current path (C-3). */
+  protected choicesOf(node: {
+    readonly kind: string;
+    readonly path?: string;
+  }): string[] {
+    return pathChoicesOf(
+      fileChoicesOf(this.files(), folderOfKind(node.kind)),
+      node.path,
+    );
+  }
+
+  /**
+   * Lays the file out (C-9). The vflow nodes' points and data are set in place, so tool forms stay mounted.
+   * Nothing is saved: the author saves the result like any edit.
+   */
+  protected arrange(): void {
+    const current = this.file();
+    if (current === undefined) return;
+    const next = arrangeOf(current);
+    this.file.set(next);
+    for (const vnode of this.nodes()) {
+      const node = next.nodes.find((candidate) => candidate.id === vnode.id);
+      if (node === undefined) continue;
+      vnode.point.set({ x: node.position.x, y: node.position.y });
+      vnode.data?.set(node);
+    }
+    this.scheduleValidation();
+  }
+
   /** Saves the whole file. The response's issues replace the panel's; a refusal is shown in it. */
   protected save(): void {
     const current = this.file();
@@ -755,16 +945,21 @@ export class CanvasPage {
     labelWires(this.edges(), this.issues());
   }
 
-  private load(id: string): Observable<void> {
+  private load(id: string, projectId: string): Observable<void> {
     this.graphId = id;
+    this.projectId.set(projectId);
     this.loadFailed.set(false);
     this.refusal.set(undefined);
     return this.api.get(graphPath(id), graphDetailCopy).pipe(
       switchMap((detail) =>
-        this.readTools(detail.graph).pipe(map((reads) => ({ detail, reads }))),
+        forkJoin({
+          reads: this.readTools(detail.graph),
+          files: this.readFiles(detail.graph, projectId),
+        }).pipe(map((joined) => ({ detail, ...joined }))),
       ),
-      tap(({ detail, reads }) => {
+      tap(({ detail, reads, files }) => {
         this.file.set(detail.graph);
+        this.files.set(files);
         this.rows.set(reads.rows);
         this.details.set(reads.details);
         const values = new Map<string, ToolArguments>();
@@ -792,6 +987,23 @@ export class CanvasPage {
         return EMPTY;
       }),
     );
+  }
+
+  /** The project's files, one recursive read, for a story in a known project (C-6). A failed read gives no choices. */
+  private readFiles(
+    graph: GraphFile,
+    projectId: string,
+  ): Observable<readonly FileEntry[]> {
+    if (graph.view !== 'story' || projectId === '') return of([]);
+    return this.api
+      .get(projectFilesPath(projectId), fileListCopy, {
+        path: '.',
+        recursive: 'true',
+      })
+      .pipe(
+        map((list) => list.entries),
+        catchError(() => of([])),
+      );
   }
 
   /**
