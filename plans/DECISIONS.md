@@ -6422,3 +6422,11 @@ Part D (gates and commit):
 - **Fast-forward:** `main` moved from 69d886e to b8bcb2f with `git merge --ff-only unit/CEX-16`. Between the rebased tip and main only docs commits differed (the CEX-06 gate report, 69d886e). The code the gates ran on is the code on main.
 - **Cleanup:** branch `unit/CEX-16` and worktree `scriba-prototype-wt/CEX-16` removed (both merged). Worktree `CEX-16-replay` and `CEX-16-replay2` removed (scratch).
 - **Status:** `plans/CEX-16.md` is `status: done` on main (b8bcb2f). Criteria 1 to 4 are ticked in `units/CEX-16-snapshot-api.md`.
+
+## 2026-11-19 — CEX-08 — Clean root `npm test` on unit/CEX-08 e568c97: exit 0 (item 1 of the REWORK list closed)
+
+- **Run:** worktree `scriba-prototype-wt/CEX-08` at e568c97, `npm test` (root, with `node --test 'scripts/*.test.mjs'`). Exit 0 in `/tmp/cex08-gate/npm-test-1.exit`. Log `/tmp/cex08-gate/npm-test-1.log`. Start load 1.91, end load 4.86 (`/tmp/cex08-gate/start.txt`). Node v26.13.0, npm 11.20.0.
+- **Summaries:** contracts 253 of 253 (20 files); API 523 of 523 (141 files); web 559 of 559 (77 files); packs 14 of 14 (4 files); e2e 12 of 12 (1 file); root `scripts/*.test.mjs` 105 of 105 (`ℹ fail 0`). No "Test timed out" lines in this run.
+- **Note:** the branch is based on 1e7fbbf, which is an ancestor of main (0125246), but the branch is not rebased on main yet. The API count (523) differs from the CEX-16 run (529) because main has more API tests. The rebase and the gates on the rebased commit are step 3 of the pipeline, after the reviewers.
+- **Next:** Sonnet reviewer for Part 1 on patch id `8e52a8d4916f1197d857cbcc131d0df0acfea24d`, with the earlier REWORK items 2 to 4 also checked against the rework report.
+- **Status:** `plans/CEX-08.md` stays `status: planned`.
