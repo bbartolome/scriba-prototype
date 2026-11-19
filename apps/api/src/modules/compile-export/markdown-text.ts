@@ -54,21 +54,23 @@ export function splitFrontMatter(text: string): {
   return { yaml: undefined, body: source };
 }
 
-// Removes fenced code (P17): from an opening fence of three or more backticks or tildes through the closing fence of
-// the same character and at least the same length. An unclosed fence runs to the end of the text.
-export function withoutFences(text: string): string {
-  const kept: string[] = [];
+// One flag per line (P2): the opening fence of three or more backticks or tildes, the lines inside it and the closing
+// fence of the same character and at least the same length are flagged. An unclosed fence flags every line to the end.
+export function fencedLines(lines: string[]): boolean[] {
+  const flags: boolean[] = [];
   let open: { char: string; length: number } | undefined;
-  for (const line of text.split(/\r\n|\n|\r/)) {
+  for (const line of lines) {
     if (open === undefined) {
       const match = FENCE_OPEN.exec(line);
       if (match?.[1] !== undefined) {
         open = { char: match[1][0], length: match[1].length };
+        flags.push(true);
       } else {
-        kept.push(line);
+        flags.push(false);
       }
       continue;
     }
+    flags.push(true);
     const close = FENCE_CLOSE.exec(line);
     if (
       close?.[1] !== undefined &&
@@ -78,7 +80,28 @@ export function withoutFences(text: string): string {
       open = undefined;
     }
   }
-  return kept.join('\n');
+  return flags;
+}
+
+// Removes fenced code (P17): the lines that fencedLines flags.
+export function withoutFences(text: string): string {
+  const lines = text.split(/\r\n|\n|\r/);
+  const flags = fencedLines(lines);
+  return lines.filter((_, i) => !flags[i]).join('\n');
+}
+
+// The text with its code blanked (P3): same length, same line terminators. Fenced lines and inline code become spaces,
+// so offsets and line numbers of the input hold in the output.
+export function maskCode(text: string): string {
+  const parts = text.split(/(\r\n|\n|\r)/);
+  const flags = fencedLines(parts.filter((_, i) => i % 2 === 0));
+  const masked = parts
+    .map((part, i) => {
+      if (i % 2 === 1) return part;
+      return flags[i / 2] ? part.replace(/[^\r\n]/g, ' ') : part;
+    })
+    .join('');
+  return masked.replace(INLINE_CODE, (code) => code.replace(/[^\r\n]/g, ' '));
 }
 
 // The ids cited in a file's body (P10): front matter, fenced code and inline code are removed first, then every

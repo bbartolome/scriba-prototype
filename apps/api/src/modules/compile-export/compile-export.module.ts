@@ -6,12 +6,19 @@ import { AssemblyService } from './assembly.service';
 import { ManuscriptController } from './manuscript.controller';
 import { ManuscriptService } from './manuscript.service';
 import { ManuscriptWriteService } from './manuscript-write.service';
+import { PreflightController } from './preflight.controller';
+import { PreflightService } from './preflight.service';
 
-// Compile & export: the manuscript view model. It exports the service for the later units that consume it.
+// Compile & export: the manuscript view model. It exports the services for the later units that consume it.
 @Module({
   imports: [PlatformModule, ProjectStoreModule, SetupAuthModule],
-  controllers: [ManuscriptController],
-  providers: [ManuscriptService, ManuscriptWriteService, AssemblyService],
-  exports: [ManuscriptService, AssemblyService],
+  controllers: [ManuscriptController, PreflightController],
+  providers: [
+    ManuscriptService,
+    ManuscriptWriteService,
+    AssemblyService,
+    PreflightService,
+  ],
+  exports: [ManuscriptService, AssemblyService, PreflightService],
 })
 export class CompileExportModule {}
