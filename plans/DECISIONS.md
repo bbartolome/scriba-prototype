@@ -6760,3 +6760,9 @@ Part D (gates and commit):
 - **Decision (user):** option (b) of the entry "GRR-15 — Step 13 failures verified on main cc82fb0": the two full-suite failures on main (journey "project from sample"; tools-preview TRG-05 C2) are fixed on main first, as a separate unit or fix, and then step 13 of `plans/GRR-15.md` is rerun.
 - **Consequence:** GRR-15 stays `status: planned`, not merged. Its branch `unit/GRR-15` (ec6293d) and worktree `scriba-prototype-wt/GRR-15` are kept. The Haiku rework for the review's REWORK list still waits, because step 13 is unchanged and its scope is unchanged until the fix lands.
 - **Next:** the fix for the two full-suite failures has no unit yet. The orchestrator creates it, with its own plan, before any code change.
+
+## 2026-11-19 — GRR-15 — instruction to revisit after PLT-23 (relayed by the parent session of cycle 1)
+
+- **Decision (user, relayed):** revisit GRR-15 once PLT-23 is on main: rerun step 13 of `plans/GRR-15.md` on `unit/GRR-15` (full e2e, zero failures). This carries out the user decision of this date, option (b), above.
+- **Consequence:** GRR-15 stays `status: planned`, not merged. Its hold stays. The Haiku rework for the REWORK list is not started. Step 13 state: not yet run (PLT-23 is not on main).
+- **Reason:** option (b) needs the two full-suite failures fixed on main before step 13 can pass.
