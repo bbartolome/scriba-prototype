@@ -94,7 +94,8 @@ A phase **closes when its gate unit is merged** (the gate is the phase's last un
 | Model providers | `phase:settings-ui` | M2 | MPR-09 … MPR-11 | MPR-11 | |
 | Model providers | `phase:project-override` | M2 | MPR-12, MPR-13 | MPR-13 | |
 | Project store | `phase:contract` | M1 | PST-01 | PST-01 | |
-| Project store | `phase:files` | M1 | PST-02 … PST-12, PST-24, PST-34 | PST-12 | PST-12 (the gate) does not wait on PST-24 or PST-34; PST-34 lands when Shell phase:editor closes (M3); PST-24 (byte-safe write) lands at M5 for Compile & export. |
+| Project store | `phase:files` | M1 | PST-02 … PST-12, PST-34 | PST-12 | PST-12 (the gate) does not wait on PST-24 or PST-34; PST-34 lands when Shell phase:editor closes (M3). |
+| Project store | `phase:files` | M5 | PST-24 | PST-24 | PST-24 (byte-safe write) is needed by Compile & export's copy operations (CEX-14). |
 | Project store | `phase:search` | M2 | PST-13, PST-14 | PST-14 | |
 | Project store | `phase:pending-review` | M3 | PST-15 … PST-22 | PST-22 | |
 | Project store | `phase:migrations` | M7 | PST-23 | PST-23 | Required before any file kind ships `schemaVersion` 2 |

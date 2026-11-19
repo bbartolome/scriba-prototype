@@ -3,7 +3,7 @@ id: PST-24
 title: Byte-safe file write — optional base64 bytes field on write, stored without the UTF-8 encode
 module: project-store
 phase: phase:files
-milestone: M1 (lands at M5, for Compile & export's copy operations)
+milestone: M5 (for Compile & export's copy operations)
 blocked_by: [PST-06]
 parallel_with: []
 unblocks: []
