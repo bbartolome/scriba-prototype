@@ -1,6 +1,6 @@
 ---
 id: CEX-03
-status: planned
+status: done
 ---
 # CEX-03 plan — reorder, status and part writes with revision checks and full materialisation
 
