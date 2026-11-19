@@ -6271,3 +6271,8 @@ Result: NOT APPROVED. The item is an error of method; one Opus subagent writes r
 - **Review:** Sonnet, medium, one part (Part A, steps 0 to 15; tests C1 to C3). APPROVED. The reviewer checked steps 4 to 9 against the code, the three criteria against their tests, and the file list against section 2. Steps 0 to 3 and 10 to 15 are process steps and rest on the implementer's report.
 - **Patch id:** 08c23e7ab75d5f2c46d74462b2cf29bf10fb0a03 (`git diff main...unit/CEX-05 -- . ':!plans' ':!units' | git patch-id --stable`).
 - **Next:** step 3 (rebase onto main, the three gates, the same patch id, status done, fast-forward).
+- **Rebase:** `git rebase main` in the worktree stalled ("interactive rebase in progress"). Replayed by cherry-pick after a backup: `backup/CEX-05-pre-rebase` (4b42ef4). The patch id is unchanged (08c23e7a).
+- **Checks after the replay, on the last code commit** (`npm ci` 0, then): root lint 0; root test 0 (contracts 253; api 141 files and 523 tests; web 77 files and 559 tests; packs 14; e2e 12); root build 0. The build warnings are the known bundle budget (initial bundle, pre-existing).
+- **Criteria ticked** (C1 to C3 pass): unit file lines 24 to 26; `plans/CEX-05.md` `status: done`, commit dd7f524.
+- **On main:** fast-forward from b3657bf to dd7f524. Code commit 51d9271 (`feat(CEX-05)`). Patch id 08c23e7a.
+- **Removed:** worktree `scriba-prototype-wt/CEX-05` and branch `unit/CEX-05` (merged, `git branch -d`). Kept: `backup/CEX-05-pre-rebase`.
