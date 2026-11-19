@@ -60,6 +60,19 @@ export const PROJECT_ROUTES: Routes = [
         (feature) => feature.graphsRoutes,
       ),
   },
+  {
+    path: 'manuscript',
+    pathMatch: 'full',
+    data: {
+      scope: 'project',
+      minDeviceClass: 'phone',
+      nav: { label: 'Manuscript', icon: 'article', order: 32 },
+    } satisfies ShellRouteData,
+    loadChildren: () =>
+      import('./features/compile-export/compile-export.routes').then(
+        (feature) => feature.manuscriptRoutes,
+      ),
+  },
 ];
 
 /**
