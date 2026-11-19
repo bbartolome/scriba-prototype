@@ -6772,3 +6772,8 @@ Part D (gates and commit):
 - **Review:** two Sonnet reviewers, one per part of "Review parts" in `plans/GNP-16.md` (Part 1: steps 0 to 9; Part 2: steps 10 to 16). Both replied APPROVED for the same patch id `61e10af2d20f183722196daa15d2a0f10c5cb350`, on `unit/GNP-16` at `7d5a247` (`git diff main...unit/GNP-16 -- . :!plans :!units | git patch-id --stable`).
 - **Note (Part 2 reviewer):** the code is in two commits (ab6a7e2, 7d5a247), not the one commit that step 15 names. Approved as a note, not a condition; the tree equals one commit.
 - **Not run:** the real-model eval run with a small and a larger local model (plan open point 7). GNP-19 carries it.
+
+## 2026-11-19 — PST-24 — review: APPROVED for patch id 6c13ca9245f2f42c7f3189cf5befb115b3a9a975
+
+- **Review:** one Sonnet reviewer (the plan has one part, steps 1 to 9 with tests B1 to B5). APPROVED for patch id `6c13ca9245f2f42c7f3189cf5befb115b3a9a975`, on `unit/PST-24` at `bd33152` (`git diff main...unit/PST-24 -- . :!plans :!units | git patch-id --stable`).
+- **Implementer note:** `writeFileOrRefuse` takes the parameter name `data`, not `text`; the plan allows a rename. The implementer ran `npm ci` at the worktree root; per-workspace install does not work with npm workspaces.
