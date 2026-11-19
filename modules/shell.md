@@ -35,6 +35,7 @@ SHL-01 composition root, route table + registration pattern, dev proxy, not-foun
  SHL-18 about panel, shortcuts, skeletons, empty states (needs 09)
  SHL-19 polish gate: a11y pass, e2e phone check, M7 demo (needs editor phase, 17, 18, PST-22)  ══> phase:polish
  SHL-20 phone toolbar: fits 390 px with the connection label showing (needs 09)  ══> phase:phone-toolbar
+ SHL-23 phone bottom nav: fits ten items at 390 px (needs 05)
 ```
 
 ### Parallelism

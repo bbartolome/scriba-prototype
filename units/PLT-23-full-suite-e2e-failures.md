@@ -4,7 +4,7 @@ title: Fix the two e2e tests that fail only in the full suite on main
 module: platform
 phase: none
 milestone: M4 (needed before GRR-15 step 13 is rerun)
-blocked_by: []
+blocked_by: [SHL-23]
 parallel_with: []
 unblocks: []
 ---
@@ -20,6 +20,8 @@ On main at cc82fb0, `npm run e2e -w @bbartolome/scriba-e2e -- --trace off` exits
 - `e2e/specs/tools-preview.e2e.ts` "TRG-05 C2: the picker offers person entities only and takes a dropped person chip": `expect(locator).toHaveValue(expected)`.
 
 Each spec passes when run alone. The full run has one worker, one API on port 8080 and one temp library (`SCRIBA_E2E_LIBRARY`) that `global-setup.ts` creates once for every spec, so specs that write to the library or change server state (active project, settings, user packs) can affect specs that run after them. The cause is order or shared state in the full run, not the code of any unit.
+
+Criterion 3 also needs SHL-23 on main (the Navigator decision of 2026-11-19; plans/DECISIONS.md).
 
 ## Decisions
 - Find the actual cause first (which earlier spec, and which state it leaves behind), and record it in the plan before any change.

@@ -84,6 +84,7 @@ A phase **closes when its gate unit is merged** (the gate is the phase's last un
 | Frontend shell | `phase:phone-toolbar` | M1 | SHL-20 | SHL-20 | The toolbar fits 390 px with the connection label showing; Setup & auth's phone unit (SAU-06) waits for it |
 | Frontend shell | none (ungated) | M1 | SHL-21 | — | The Shell's contract loader reads the CommonJS default export; Setup & auth's gate (SAU-08) waits for it |
 | Frontend shell | none (ungated) | M1 | SHL-22 | — | Explicit wait timeouts in the specs that wait on a lazy load or an async settle; test-only, nothing waits for it |
+| Frontend shell | none (ungated) | M4 | SHL-23 | — | The phone bottom nav fits its ten items at 390 px (links shrink, labels truncate); blocked by SHL-05; Platform's PLT-23 waits for it |
 | Setup & auth | `phase:contract` | M1 | SAU-01 | SAU-01 | |
 | Setup & auth | `phase:token-guard` | M1 | SAU-02 … SAU-08 | SAU-08 | "Setup & auth minimal token" |
 | Setup & auth | `phase:setup-flow` | M2 | SAU-09 … SAU-16 | SAU-16 | |
