@@ -9,6 +9,8 @@ Draft by the planner (Haiku, effort xhigh). Revised by Opus on 2026-11-19 agains
 
 Revision notes (Opus): T2 now runs on a detached worktree at cc82fb0, where the failure was seen, because on main the tools list has two more built-in rows (4e7fba6, GNP-14) and the 2100 px check of the draft would fail even alone; A3 is now checked; open point 3 has the switch-hook facts and a contingency that the API allows (there is no clear-active operation); the T7 file-list command and the T8 rerun rule are explicit; section 10 "Review parts" is added. No unit file changed.
 
+Revision notes (Opus, 2026-11-19, after PLAN DOES NOT WORK at step 1b): section 2.3 records the cause of the three 390 px phone failures (a product regression at 6deb543, CEX-17's tenth phone nav item; the overflow is the bottom nav of SHL-05), with the runs. Step 1b answered open point 2 for main (C2 passes). Open point 8 is for the Navigator; the procedure, the tests and section 10 are unchanged until it is decided. No unit file changed.
+
 ## 1. Decisions this plan follows
 
 - **Fix the isolation, not the assertion.** Every `expect(...)`, every test title, every `test.use`, every timeout and the retry setting stay as they are. The fix is in the setup and teardown of the specs that leave state behind. Source: unit "Decisions" (lines 25 to 27) and "Acceptance criteria" 4 (line 37); `prompt.md` line 189 (no weaker test to get a pass).
@@ -47,6 +49,17 @@ Revision notes (Opus): T2 now runs on a detached worktree at cc82fb0, where the 
 - The spec's own comment (lines 20 to 22 on main, added by 6e0071a) names this leftover: "the user tools that tools-editor.e2e.ts leaves in the shared library".
 - Alone, the test passes (`/tmp/verify-main-tools.log`, "2 passed"; DECISIONS line 6328, run 3).
 - **Open:** on main the viewport is now 3200 px (6e0071a). C2 may already pass in the full run. The full run of step 1b, before any change, decides this. The cause is the same either way, so the fix below is applied in both cases. The picker's y in the full run is not measured yet (test T2).
+- **Step 1b result (2026-11-19, implementer, c52b2b4):** C2 passes in the full run on main (`/tmp/plt23-1b-full-before.log`, test 20 not in the failed list). Open point 2 is answered for main.
+
+### 2.3 The three 390 px phone specs (found at step 1b; not an order or state cause; a product regression)
+
+- Failing on main in the full run (`/tmp/plt23-1b-full-before.log`) and alone: `history-phone.e2e.ts:17` at line 88, `review-phone.e2e.ts:47` at line 193, `search-phone.e2e.ts:17` at line 80. Each is the check `document.documentElement.scrollWidth <= window.innerWidth`, received false.
+- Not order or state: each fails alone on main (reviser run, the three files only, exit 1, 3 failed; `/tmp/plt23-hp-alone.log` for history-phone alone). At cc82fb0 the same three files pass (exit 0, 3 passed), and in the cc82fb0 full run they passed (`/tmp/verify-main-full.log`, only journey and C2 failed).
+- The regression is 6deb543 `feat(CEX-17): manuscript route entry and contract copies`. At 6deb543^ (84e25db) the three files pass (exit 0, 3 passed); at 6deb543 they fail at the same three lines (exit 1, 3 failed). The lockfile is the same at both commits. The commit adds to `apps/web/src/app/app.routes.ts` (on main lines 63 to 75, `path: 'manuscript'` at line 64) a project route `manuscript` with `minDeviceClass: 'phone'` and `nav: { label: 'Manuscript', icon: 'article', order: 32 }`. It is the tenth item of the phone bottom nav.
+- The overflow is the bottom nav itself. Measured at 6deb543 at 390 px in history-phone: document `scrollWidth` 431, the `nav[aria-label="Bottom navigation"]` `scrollWidth` 431, the ten links 32, 50, 45, 32, 63 (Manuscript), 43, 35, 54, 47, 32 px. Without Manuscript the sum is 368 px, which fits. The nav is `apps/web/src/app/shell/app-nav.ts` (SHL-05, done): `nav.bottom a { flex: 1 1 0; }` (lines 132 to 136) with the default `min-width: auto`, so each link keeps the width of its label and the row cannot shrink below 431 px.
+- Check: on main 25578b3, with only `minDeviceClass: 'tablet'` for the Manuscript entry (a temporary edit in a scratch worktree, reverted), the three files pass (exit 0, 3 passed). Without the edit they fail (exit 1, 3 failed). No other element overflows.
+- The module route table (`modules/shell.md`, "Route table") settles `/projects/:projectId/manuscript` as min class `phone`, nav `yes`, and `/core-gate` as phone and nav `yes`. So ten phone nav items are settled, and the bottom nav of SHL-05 does not fit them at 390 px.
+- Where the fix goes: product code outside this unit's scope (unit "Scope": the specs in `e2e/specs/`, `global-setup.ts`, `playwright.config.ts`). The place is either `apps/web/src/app/shell/app-nav.ts` (Shell, SHL-05's nav) or the route data of CEX-17 in `apps/web/src/app/app.routes.ts` (against the module route table). Which one, and the design of a bottom nav with ten items, is open point 8, for the Navigator. Until it is settled, criteria 3 and 5's full run (and GRR-15 step 13) cannot exit 0, and this plan's section 4 does not change.
 
 ## 3. Facts checked and assumed
 
@@ -202,6 +215,7 @@ Plans that name the same files, found by search in `plans/` and `units/`. Done p
 5. **Playwright file order (A1) and `afterAll` on failure (A2).** Both are assumed. If the order differs, the list of writers in section 2 is still the same, but the claim "before journey" needs a check. If `afterAll` does not run after a failed test, the cleanup would miss the folders of a failing spec; step 5 would show it as a leftover.
 6. **Other producers of user-pack files.** `tools-try.e2e.ts` (line 41) also leaves `cold_open.yaml` in the user pack, and `tools-live-preview` leaves its tools project `tools-live` (line 16). Neither breaks a test today. They are not changed by this unit, because they are not in the failures. If they cause a failure later, the same rule applies.
 7. **The rule for future specs.** A spec that writes a project folder into the shared library, or a file into the user pack, removes it in `test.afterAll`. This plan states the rule; it is not a settled decision of a module file. The Navigator may add it to the platform module, if a later unit needs it.
+8. **The phone bottom nav overflows at 390 px since 6deb543 (section 2.3). For the Navigator; blocks criterion 3 (full run exit 0).** The fix is product code outside the unit's scope, and it needs a design choice for the bottom nav with ten items (or a change of the module route table). The reviser replied NAVIGATOR on 2026-11-19. The plan's procedure, tests and review parts are revised after the decision.
 
 ## 10. Review parts
 
