@@ -21,7 +21,7 @@ Add scene, beat and entity nodes with labels (41), point them at files and get w
 - **Arrange:** a simple layered layout — recipes by topological depth, story graphs by `order` edges then insertion order — that rewrites `position`; the author saves the result like any edit.
 
 ## Acceptance criteria
-- [ ] The story view creates scene, beat and entity nodes and labelled relations, and saves a file that parses against the contract with no recipe-only fields.
-- [ ] A node pointing at a deleted file shows the warning badge; Open file navigates to the files route.
-- [ ] No Run control appears on a story graph.
-- [ ] Arrange lays out overlapping nodes left to right without changing anything but `position`.
+- [x] The story view creates scene, beat and entity nodes and labelled relations, and saves a file that parses against the contract with no recipe-only fields.
+- [x] A node pointing at a deleted file shows the warning badge; Open file navigates to the files route.
+- [x] No Run control appears on a story graph.
+- [x] Arrange lays out overlapping nodes left to right without changing anything but `position`.

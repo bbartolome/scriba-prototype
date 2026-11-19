@@ -1,6 +1,6 @@
 ---
 id: GRR-14
-status: planned
+status: done
 ---
 # GRR-14 plan — story view pickers (relation, file, missing-file badge, Open file) and Arrange
 
