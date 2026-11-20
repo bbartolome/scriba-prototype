@@ -6916,3 +6916,14 @@ Part D (gates and commit):
 - **Fast-forward:** main moved from 03d1e94 to 4e7e8ce.
 - **Cleanup:** the worktree `scriba-prototype-wt/SHL-23` was removed without `--force` (it was clean). The branch `unit/SHL-23` was deleted (merged).
 - **Still open for the next session:** `journey.e2e.ts:204` remains the known failure, owned by PLT-23. The e2e suite is not part of the root `npm test` gate.
+
+## 2026-11-20 — GNP-22 — Implementer COMPLETE on unit/GNP-22 (1efdf03); not reviewed in this run (limit reached); branch kept
+
+- **Commits on `unit/GNP-22`:** 9758d0f, bf7d6c8, 5ca387c, ed9a27e, f270600 (the earlier commits, base a12af54), then 1efdf03 `test(GNP-22): raise the tools-preview viewport to 6000 px for the nine new rows` (the reviser's correction: line 23 of `e2e/specs/tools-preview.e2e.ts`, 3200 to 6000; no other e2e change). Step 12a is in the same run. The branch is not rebased onto main (main is at 513a3cb).
+- **Gates (on HEAD, with the 6000 change):** root `npm run build`, `npm test`, `npm run lint` and `npx prettier --check .` exit 0. `npm run lint -w @bbartolome/scriba-e2e` exit 0. `apps/api` `vitest run test/packs` 27 passed. `npm test -w @bbartolome/scriba-packs` 15 passed. Build of contracts and api exit 0.
+- **E2E:** `tools-preview.e2e.ts` alone: 2 passed (logged C2 target y 3787.4, x 346, viewport 1280 by 6000). Four-spec run (`tools-editor`, `tools-live-preview`, `tools-preview`, `tools-try`): 7 passed, 0 failed (logged C2 target y 4057.4). TRG-05 C2 passes in both runs. Margin kept: both targets are below 5000 (the plan's PLAN DOES NOT WORK threshold).
+- **Temporary log line:** added and removed in each run; the tree is clean (grep count 0).
+- **Criteria (the implementer's report):** AC 1 and AC 4 are in the root gates (`npm test`). AC 2 and AC 3 are in `apps/api` `test/packs` (27 passed). The real-model eval run (AC 4, open point 4) is not run, as the plan says.
+- **Differences from the plan (the implementer's report):** the step 13 "baseline plus two" count in `apps/api` packs could not be checked against a pre-change count, because the baseline was taken on HEAD; the count is 27 before and after step 12a. The commands ran in the worktree `scriba-prototype-wt/GNP-22`.
+- **Review:** not started. The limit of this run was reached, so no Sonnet reviewers were started. The next run must review `unit/GNP-22` (1efdf03) with the two review parts of plan section 8 (part 1: steps 0 to 10, 12, 12a, 13 and 14 with AC 1 to 3; part 2: step 11 with AC 4), then rebase onto main, run the gates, and fast-forward.
+- **Status:** `plans/GNP-22.md` stays `status: planned`.
