@@ -7508,3 +7508,10 @@ Part A (criterion 2, theme tokens):
   - Contrast ratios (WCAG, relative luminance), against the dark canvas #121316 / the dark node #1f2022 / the white graph canvas #fff: edge #b1b1b7 8.71 / 7.64 / **2.13**; selected edge #0f4c75 2.04 / 1.79 / 9.09; node border #1b262c 1.20 / 1.06 / 15.44; resizer #2e414c 1.75 / 1.53 / 10.62.
   - Clash, judged by the implementer: the grey edge #b1b1b7 is below 3:1 on the white canvas that dark mode shows. This is the clash that open point 7 expects to be recorded. Open point 7 settles that the library colours are not overridden, so no colour is changed and no Navigator decision is needed.
 - **Status:** `plans/GRR-15.md` stays `status: planned`. The Part A reviewer checks the new evidence next, on patch id e5225361808196b85195c911df0f5ba54d762af8.
+
+## 2026-11-20 — GRR-15 — Code approval, patch id e5225361808196b85195c911df0f5ba54d762af8: Parts A to E APPROVED (Part A after its rework); step 3 starts
+
+- **Part A (criterion 2):** the first review's REWORK (items 1 and 2) is answered by the rework evidence (entry "Part A rework evidence", commit cac6a8c). The re-review APPROVED on e5225361808196b85195c911df0f5ba54d762af8 (tip 6f27cc5): the six PNGs exist; the graph-theme run has 3 passed; the dark contrast is recorded against the dark canvas and the dark node, and the clash is written down, as open point 7 allows.
+- **Part B (criterion 1), Part C (criterion 3), Part D (gates and commit), Part E (chunked render):** APPROVED on the same patch id (the entry of 2026-11-20, Sonnet review of Parts A to E).
+- **Consequence:** the code approval holds for e5225361808196b85195c911df0f5ba54d762af8. The unit goes to step 3 (rebase onto the current main, the three checks, the patch id again, the criteria checkboxes, `status: done`, the fast-forward of main).
+- **Acceptance criteria:** 1 (touch, T1 to T4 and T8) passed 5 of 5 on the final code, twice; 2 (theme, T5, T6 and T9) passed; 3 (large graph, T7) passed three counted runs (step 12, entry of 2026-11-20). The PR items are for the merge decision, as recorded.
