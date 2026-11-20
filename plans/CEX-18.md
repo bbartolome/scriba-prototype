@@ -1,6 +1,6 @@
 ---
 id: CEX-18
-status: planned
+status: done
 ---
 # CEX-18 plan — preflight panel, export buttons with confirm, export settings panel
 

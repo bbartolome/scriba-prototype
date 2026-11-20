@@ -17,6 +17,6 @@ unblocks: [CEX-20]
 - **Export settings panel:** metadata (author, pen name, contact, subtitle, language, rights), dedication, bibliography mode, per-format template overrides with "copy default into project"; writes with `revision`.
 
 ## Acceptance criteria (Vitest + fakes)
-- [ ] Preflight errors open the confirm dialog before export; cancelling sends no export.
-- [ ] Findings link to their file and line.
-- [ ] The settings panel sends only changed fields with the current revision; copy-default posts the chosen path.
+- [x] Preflight errors open the confirm dialog before export; cancelling sends no export.
+- [x] Findings link to their file and line.
+- [x] The settings panel sends only changed fields with the current revision; copy-default posts the chosen path.
