@@ -6879,3 +6879,12 @@ Part D (gates and commit):
 - **Acceptance criteria checked:** all three (validation suite and disabled ship; one golden test per tool; manual eval cases).
 - **Cleanup:** worktree `scriba-prototype-wt/GNP-21` removed (not forced; it was clean). Branch `unit/GNP-21` deleted (merged).
 - **Known gap:** the implementer's full COMPLETE report of the earlier session is not available. The real-model eval run is not run (plan C12).
+
+## 2026-11-20 — SHL-23 — Implementer COMPLETE on unit/SHL-23 (0ac5d24); not reviewed in this run (limit reached); branch kept
+
+- **Commits on `unit/SHL-23`:** e4c0223 `test(SHL-23)`: the nav-phone spec, red before the fix. 0ac5d24 `feat(SHL-23)`: the `app-nav.ts` fix (`min-width: 0` on `nav.bottom a` and label truncation), with `e2e/specs/nav-phone.e2e.ts` green. The branch base is main 13ba93a. Main has since moved to 531e97a (GNP-21 and the records); the branch has not been rebased.
+- **Criteria (the implementer's report):** criterion 1 passed (N1: the ten bottom nav items show at 390 by 844 and the page does not scroll sideways; scrollWidth 390; red before the fix at 432). Criterion 2 passed (N2: each of the ten links stays visible, shrunk, with its label truncated, none overlaps the title). Criterion 3 passed (`history-phone`, `review-phone`, `search-phone`: 3 of 3).
+- **Other gates:** step 1 and step 11 web unit suites pass (577 tests in 81 files). Step 10 full e2e: 25 passed, 1 failed (`journey.e2e.ts:204`, "project from sample"), the known main failure owned by PLT-23; 26 tests in total, as the plan expects. Lint (web and e2e) and `prettier --check .` pass.
+- **Differences from the plan (the implementer's report):** (1) `npm run build -w @bbartolome/scriba-contracts` and `-w @bbartolome/scriba-api` were run in the worktree before the web tests (the repo's own root build step; no tracked file changed). (2) `lsof` is not installed here; port 8080 was checked with a TCP connect before each e2e run. (3) N2 failed first at its shrink check, not at a style check (red for the criterion's own reason). (4) The spec's `openProject` clicks Switch only when the row has one (a setup fix in the new file, not a plan change).
+- **Review:** not started. The limit of this run was reached, so no Sonnet reviewers were started. The next run must review `unit/SHL-23` (0ac5d24) with the plan's review parts, rebase it onto main, and run the gates.
+- **Status:** `plans/SHL-23.md` stays `status: planned`.
