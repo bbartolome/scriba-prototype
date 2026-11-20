@@ -24,6 +24,15 @@ export class ToolArgumentError extends Error {
   }
 }
 
+// Thrown by a handler when the call is fine but the tool cannot answer, for example a page that is too large or too
+// slow (AGL-22). The message is shown to the model as it is. It is not an invalid call: it neither counts nor resets.
+export class ToolFailure extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ToolFailure';
+  }
+}
+
 export interface ToolSchemaProperty {
   type: 'string' | 'boolean' | 'number' | 'integer' | 'array';
   description: string;

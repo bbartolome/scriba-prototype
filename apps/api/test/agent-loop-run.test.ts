@@ -391,6 +391,7 @@ it('C6: the request has the system prompt, the project summary and the enabled t
       expect(toolNamesOf(records[1])).toEqual([
         'check_grounding',
         'edit_file',
+        'fetch_page',
         'list_files',
         'read_file',
         'search_notes',

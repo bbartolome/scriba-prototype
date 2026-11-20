@@ -12,6 +12,11 @@ import {
   SearchService,
   type ResolvedProjectPath,
 } from '../../project-store/project-store.module';
+import {
+  DEFAULT_FETCH_POLICY,
+  fetchPageDefinition,
+  type FetchPolicy,
+} from './fetch-page';
 import type { ToolRun } from './tool-run';
 import { ToolArgumentError, type ToolDefinition } from './tool-types';
 
@@ -127,6 +132,7 @@ export function builtinTools(
   search: SearchService,
   store: ProjectStoreService,
   projects: ProjectsService,
+  fetchPolicy: FetchPolicy = DEFAULT_FETCH_POLICY,
 ): ToolDefinition[] {
   const listFiles: ToolDefinition = {
     name: 'list_files',
@@ -411,5 +417,6 @@ export function builtinTools(
     writeFile,
     editFile,
     checkGrounding,
+    fetchPageDefinition(fetchPolicy),
   ];
 }

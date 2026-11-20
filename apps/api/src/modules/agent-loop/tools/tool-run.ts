@@ -12,6 +12,7 @@ import {
 import { WriteOverlay } from './write-overlay';
 import {
   ToolArgumentError,
+  ToolFailure,
   type CompiledTool,
   type DispatchResult,
   type ToolCallInput,
@@ -174,6 +175,20 @@ export class ToolRun {
       // A grounding check that gave no result is answered to the model with its readable text. It is not an invalid
       // call, so it neither counts nor resets (AGL-17).
       if (error instanceof GroundingFailure) {
+        const count = this.invalidCounts.get(name) ?? 0;
+        return {
+          arguments: parsed.value,
+          valid: true,
+          outcome: {
+            kind: 'error',
+            message: error.message,
+            attempt: Math.max(1, count),
+          },
+        };
+      }
+      // A fetch that could not answer is told to the model with its own text. It is not an invalid call, so it neither
+      // counts nor resets (AGL-22, plan P10).
+      if (error instanceof ToolFailure) {
         const count = this.invalidCounts.get(name) ?? 0;
         return {
           arguments: parsed.value,
