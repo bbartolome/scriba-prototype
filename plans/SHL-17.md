@@ -1,6 +1,6 @@
 ---
 id: SHL-17
-status: planned
+status: draft
 ---
 # SHL-17 plan — PWA: manifest, icons, app-shell service worker with exclusions, reload prompt
 
