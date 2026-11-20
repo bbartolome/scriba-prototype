@@ -19,6 +19,8 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:8080',
     trace: ci ? 'retain-on-failure' : 'off',
+    // Specs run without a service worker; pwa.e2e.ts allows it. page.route does not see requests a worker handles.
+    serviceWorkers: 'block',
     // The CI step sets SCRIBA_E2E_CHROMIUM. Locally the default lookup finds the cached build.
     launchOptions: {
       executablePath: process.env.SCRIBA_E2E_CHROMIUM ?? undefined,
