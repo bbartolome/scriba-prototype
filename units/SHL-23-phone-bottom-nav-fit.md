@@ -22,8 +22,8 @@ Since commit 6deb543 (CEX-17) the Manuscript route is a phone nav item, so the p
 - The module route table in `modules/shell.md` is not changed, and neither are the rail and side forms or the route data of CEX-17.
 
 ## Scope
-- `apps/web/src/app/shell/app-nav.ts` only: the phone bottom nav form (`nav.bottom`) and its links.
-- Not: the route table, the route data of any feature, the tablet and desktop forms, and the e2e specs.
+- `apps/web/src/app/shell/app-nav.ts` (the production change, in this file only): the phone bottom nav form (`nav.bottom`) and its links. One new e2e spec, `e2e/specs/nav-phone.e2e.ts`, that tests criteria 1 and 2.
+- Not: the route table, the route data of any feature, the tablet and desktop forms, and the existing e2e specs.
 
 ## Acceptance criteria
 - [ ] With the ten phone route-table items shown, at 390 px the document has no horizontal overflow: `document.documentElement.scrollWidth <= window.innerWidth`.
