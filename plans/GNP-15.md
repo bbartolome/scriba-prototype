@@ -1,6 +1,6 @@
 ---
 id: GNP-15
-status: planned
+status: done
 ---
 # GNP-15 plan — scene_builder tool, golden case and eval case
 
