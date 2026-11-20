@@ -7478,3 +7478,12 @@ Part D (gates and commit):
 - **REWORK list of 2026-11-19 (Sonnet review of 6b829738):** A1 done (baseline of graph-theme on the old code fails T5, T6, T9, exit 1); A2 done (feature suite 81 of 81 includes lines 539, 544 and 1399 to 1417); A3 done for light only (contrast vs white: edge 2.13:1, selected 9.09:1, node border 15.44:1, resizer 10.62:1; dark background not sampled; the six screenshots stay in e2e/test-results, not committed; attachment deferred to the merge decision, no PR); B1 done (262bad9); D1 done (step 13 zero failures); D2 to D5 done; D6 done (seven commits kept, the plan's single-commit message is not used); D7 done (no PR body, no PR in this pipeline).
 - **Not yet done:** criterion 3 (plan step 12, the verdict on the final code). Its measurement is started in a separate stage. The reviews of Parts A to E start after that stage, on patch id e5225361808196b85195c911df0f5ba54d762af8.
 - **Status:** `plans/GRR-15.md` stays `status: planned`. Not merged.
+
+## 2026-11-20 — GRR-15 — Step 12 (criterion 3) on the final code 6f27cc5: PASS, three counted runs, none discarded
+
+- **Command:** `SCRIBA_E2E_MEASURE=1 npm run e2e -w @bbartolome/scriba-e2e -- graph-large --trace off`. Node v26.13.0, npm 11.20.0, Chromium 158.0.8127.18 (chromium-1254, `node_modules/playwright-core/browsers.json`). Port 8080 free before each run; no other build, test or e2e run during the measured runs.
+- **Run 1:** load 1.51 before the run, counted, exit 0. openMs 940; open longest long task 51 ms, 1 task of 50 ms or more; pan 0 ms, 0 tasks. Log /tmp/orch-grr15-r2/step12-run1.log.
+- **Run 2:** load 1.40, counted, exit 0. openMs 962; open longest 51 ms, 1 task; pan 0 ms, 0 tasks. Log step12-run2.log.
+- **Run 3:** load 1.46, counted, exit 0. openMs 953; open longest 51 ms, 1 task; pan 0 ms, 0 tasks. Log step12-run3.log.
+- **Result:** criterion 3 holds on the final code: no long task over 200 ms during the open or the pan, in all three counted runs. The first session (pre-chunk code, recorded on 2026-11-19 at line 6249) had open longest 184, 200 and 212 ms; the chunked render of 0c344ca (step 11a) brings the longest open task to 51 ms.
+- **Status:** `plans/GRR-15.md` stays `status: planned`. Not merged. The Sonnet reviews of Parts A to E start next on patch id e5225361808196b85195c911df0f5ba54d762af8.
