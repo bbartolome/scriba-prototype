@@ -7244,3 +7244,14 @@ Part D (gates and commit):
   2. Step 12 was not run in full. The plan requires `npm test -w @bbartolome/scriba-api` and says each gate must exit 0. If it fails for load reasons, record that and rerun the API workspace. Run it and report the result.
 - **Checked by the reviewer and accepted (not rework):** the `diff --git` lines are exactly the seven paths of the section 2 table; the `agent-loop-tools.test.ts` edits are only the D18 helper changes, with no `it(` line, body or assertion changed; the `agent-loop-run.test.ts` edits add the three compile names to the two lists only; steps 5 to 8 are met; AC1 to AC3 exist with the names and assertions of section 4.
 - **Status:** the branch is kept. A new Haiku implementer runs steps 14 and 12 on the committed tree; the plan stays `planned`.
+
+## 2026-11-20 — AGL-24 — Implementer rework of the REWORK list: mutations M1 to M4 and the full API suite run, COMPLETE
+
+- **Code:** unchanged. `unit/AGL-24` at `44eb64c`, no new commit; the patch id is still dff58905a1ca95d0130f2c2688f9594c1701bb19.
+- **Step 14, mutations (each restored with `git checkout --`; `git status --short` empty after each restore):**
+  - M1 (drop `compile` from `agent-runs.service.ts`): AC1, AC2 and AC3 fail in `agent-loop-compile.test.ts`; C6 fails in `agent-loop-run.test.ts`. C6 fails at the first list, so the second list (research on) is not reached. The plan expected both lists to fail; only the first is reached.
+  - M2 (export not awaited): AC2 fails with a TypeError (`The "path" argument must be of type string. Received undefined`) at `agent-loop-compile.test.ts` line 181, because the test reads the file name before comparing. The plan predicted the summary assertion (`Exported undefined`) instead. AC2 still fails.
+  - M3 (preflight keeps four checks): AC1 fails with an AssertionError (`[ 'placeholders', …(3) ]` against five checks).
+  - M4 (graph-runner import in `compile-tools.ts`): `npm run lint` exits 1 with `1:8 error agent-loop and graph-runner never import each other, not even their module files  boundaries/dependencies` on `compile-tools.ts`. AC3 still passes under M4, as the plan's step 14 expects for a lint-only check.
+- **Step 12, gates on the committed tree (Node v26.13.0, npm 11.20.0):** `npm run lint` exit 0; `npm run build -w @bbartolome/scriba-api` exit 0; prettier check on the four plan paths exit 0; `npm test -w @bbartolome/scriba-api` exit 0 on the first run: 161 files passed and 1 skipped; 584 tests passed and 14 skipped.
+- **Status:** the rework is complete. The approval holds only for a new reviewer's APPROVED on the same patch id; a new Sonnet reviewer runs on part 1. The plan stays `planned`.
