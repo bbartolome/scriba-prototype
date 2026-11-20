@@ -5,6 +5,8 @@ import { SetupAuthModule } from '../setup-auth/setup-auth.module';
 import { AssemblyService } from './assembly.service';
 import { ExportController } from './export.controller';
 import { ExportService } from './export.service';
+import { ExportSettingsController } from './export-settings.controller';
+import { ExportSettingsService } from './export-settings.service';
 import { ManuscriptController } from './manuscript.controller';
 import { ManuscriptService } from './manuscript.service';
 import { ManuscriptWriteService } from './manuscript-write.service';
@@ -27,6 +29,7 @@ export { ExportService } from './export.service';
     PreflightController,
     SnapshotController,
     ExportController,
+    ExportSettingsController,
   ],
   providers: [
     ManuscriptService,
@@ -35,6 +38,7 @@ export { ExportService } from './export.service';
     PreflightService,
     SnapshotService,
     ExportService,
+    ExportSettingsService,
   ],
   exports: [
     ManuscriptService,

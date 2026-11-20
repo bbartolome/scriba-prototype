@@ -1,5 +1,11 @@
 import { randomBytes } from 'node:crypto';
-import { lstatSync, readdirSync, realpathSync, statSync } from 'node:fs';
+import {
+  lstatSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+} from 'node:fs';
 import { mkdir, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
@@ -9,7 +15,9 @@ import {
   Optional,
 } from '@nestjs/common';
 import {
+  COMPILE_ERROR_CODES,
   COMPILE_ERROR_STATUS,
+  type CopyDefaultRequest,
   EXPORT_DOWNLOAD_ROUTE,
   type ExportFormat,
   type ExportResult,
@@ -17,6 +25,7 @@ import {
   type PreflightSummary,
 } from '@bbartolome/scriba-contracts/compile-export';
 import {
+  type FileWriteResult,
   PROJECT_ERROR_CODES,
   PROJECT_ERROR_STATUS,
 } from '@bbartolome/scriba-contracts/project-store';
@@ -37,6 +46,7 @@ import {
   PANDOC_TUNING,
   type PandocTuning,
 } from './export-tuning';
+import { ExportSettingsService } from './export-settings.service';
 import { ManuscriptService } from './manuscript.service';
 import { PreflightService } from './preflight.service';
 import { runPandoc, type PandocFormat } from './pandoc-runner';
@@ -48,6 +58,31 @@ const BUSY_MESSAGE = 'An export of this project is already running.';
 const EMPTY_MESSAGE = 'The manuscript has no files to export.';
 const NOT_EXPORTED_MESSAGE = 'No export of this format exists yet.';
 const OUTSIDE_MESSAGE = 'The export folder is outside the project.';
+const TEMPLATE_MESSAGE =
+  'The project template is missing or not allowed. Check its path in the export settings.';
+const COPY_NO_BUILTIN_MESSAGE =
+  'This format has no built-in template in this build.';
+const COPY_PROJECT_YAML_MESSAGE = 'project.yaml is not a template path.';
+const COPY_EXISTS_MESSAGE =
+  'A file already exists at this path. Choose another path.';
+
+// The export settings key that overrides the template of each Pandoc format (D5).
+const OVERRIDE_KEY: Record<
+  PandocFormat,
+  'docxReferenceDoc' | 'epubCss' | 'typstTemplate'
+> = {
+  docx: 'docxReferenceDoc',
+  epub: 'epubCss',
+  pdf: 'typstTemplate',
+};
+
+function templateInvalid(): ModuleError {
+  return new ModuleError(
+    COMPILE_ERROR_CODES.TEMPLATE_INVALID,
+    COMPILE_ERROR_STATUS.COMPILE_TEMPLATE_INVALID,
+    TEMPLATE_MESSAGE,
+  );
+}
 
 // The content type of each format (D21).
 const CONTENT_TYPES: Record<ExportFormat, string> = {
@@ -97,6 +132,7 @@ export class ExportService {
     private readonly assembly: AssemblyService,
     private readonly preflight: PreflightService,
     private readonly events: EventsPublisher,
+    private readonly settings: ExportSettingsService,
     @Optional() @Inject(PANDOC_TUNING) tuning?: Partial<PandocTuning>,
   ) {
     this.tuning = { ...DEFAULT_PANDOC_TUNING, ...tuning };
@@ -129,6 +165,11 @@ export class ExportService {
       const markdown = this.assembly.assemble(now, format === 'docx');
       const project = this.projectOf(projectId);
       const root = project.root;
+      // The template check runs before the exports folder exists and before Pandoc starts (U2, D6).
+      const template =
+        format === 'md'
+          ? undefined
+          : this.templateOf(format, this.overrideOf(projectId, root, format));
       // An unset title gives the empty slug, which slugOf turns into `snapshot`. The assembly has already read it.
       const title = project.summary.title ?? '';
       const stamp = stampOf(now);
@@ -152,7 +193,7 @@ export class ExportService {
           markdown,
           root,
           partial,
-          this.templateOf(format),
+          template,
         );
         bytes = (await stat(partial)).size;
       }
@@ -207,9 +248,48 @@ export class ExportService {
     };
   }
 
+  // Copies the built-in template of a format to a path the author chooses in the project (U3, D7). The file API
+  // stores the exact bytes (PST-24). An existing file is never replaced.
+  copyDefault(request: CopyDefaultRequest): FileWriteResult {
+    const projectId = this.activeProjectId();
+    const project = this.projectOf(projectId);
+    const target = this.store.resolvePath(project.root, request.path);
+    if (target.relativePath === 'project.yaml') {
+      throw new ModuleError(
+        PROJECT_ERROR_CODES.PATH_RESERVED,
+        PROJECT_ERROR_STATUS.PROJECT_PATH_RESERVED,
+        COPY_PROJECT_YAML_MESSAGE,
+      );
+    }
+    if (target.exists) {
+      throw new ModuleError(
+        PROJECT_ERROR_CODES.FILE_EXISTS,
+        PROJECT_ERROR_STATUS.PROJECT_FILE_EXISTS,
+        COPY_EXISTS_MESSAGE,
+      );
+    }
+    const source = this.templateOf(request.format);
+    if (source === undefined) {
+      throw new ModuleError(
+        COMPILE_ERROR_CODES.TEMPLATE_INVALID,
+        COMPILE_ERROR_STATUS.COMPILE_TEMPLATE_INVALID,
+        COPY_NO_BUILTIN_MESSAGE,
+      );
+    }
+    return this.files.write(projectId, {
+      path: target.relativePath,
+      content: '',
+      contentBase64: readFileSync(source).toString('base64'),
+    });
+  }
+
   // The reference or template file that a Pandoc format takes for this run. CEX-14 puts the project override first,
   // before the built-in path.
-  private templateOf(format: PandocFormat): string | undefined {
+  private templateOf(
+    format: PandocFormat,
+    override?: string,
+  ): string | undefined {
+    if (override !== undefined) return override;
     switch (format) {
       case 'docx':
         return BUILTIN_REFERENCE_DOCX;
@@ -220,6 +300,29 @@ export class ExportService {
       default:
         return undefined;
     }
+  }
+
+  // The project override of the format's template, checked by path safety and required to be a regular file (D5).
+  // Any refusal, a missing file or a folder becomes COMPILE_TEMPLATE_INVALID. The result is never returned to the
+  // client.
+  private overrideOf(
+    projectId: string,
+    root: string,
+    format: PandocFormat,
+  ): string | undefined {
+    const value =
+      this.settings.storedOf(projectId).stored[OVERRIDE_KEY[format]];
+    if (value === undefined || value === '') return undefined;
+    let target: ReturnType<ProjectStoreService['resolvePath']>;
+    try {
+      target = this.store.resolvePath(root, value);
+    } catch (error) {
+      if (error instanceof ModuleError) throw templateInvalid();
+      throw error;
+    }
+    if (target.isRoot || !target.exists) throw templateInvalid();
+    if (!statSync(target.realPath).isFile()) throw templateInvalid();
+    return target.realPath;
   }
 
   // The exports folder of the project. The module folder is created by the file API's stateDir (D11, step 6).
