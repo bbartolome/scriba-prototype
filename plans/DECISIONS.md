@@ -7073,3 +7073,10 @@ Part D (gates and commit):
 - **Test output used (the implementer's run on a44fc25):** `npm run e2e -w @bbartolome/scriba-e2e -- specs/pwa.e2e.ts --trace off` exit 0, 4 passed; `npm test -w @bbartolome/scriba-web` exit 0, 582 tests; the two named Vitest files exit 0, 8 tests.
 - **Non-blocking notes (recorded, not rework):** the mutation checks M1 and M2 were not repeated on this round; check (h) of test 2 matches `/setup` by exact equality only.
 - **Next:** rebase onto main (cherry-pick method), the three gates on the last commit, the patch id check, then the checkboxes, the status done commit and the fast-forward of `main`.
+
+## 2026-11-20 — GNP-18 — Navigator decision (session `0a264e4d466b46ddac42a383d5900933`, point 1): the module lines name GNP-18's blockers
+
+- **Decision:** option A. `modules/genre-packs.md` line 23 now shows GNP-18 after GNP-03, GNP-13 and GNP-16 (plus GRR-01, PST-05), and line 33 names GNP-18 after GNP-03, GNP-13 and GNP-16, with the four fiction tool units in parallel after GNP-13. The text of the unit is the authority: `units/GNP-18-fiction-sample.md` line 7 lists `blocked_by: [GNP-03, GNP-13, GNP-16, ...]`.
+- **Reason:** GNP-18 uses a `style-profile` entity (GNP-03, unit line 17) and the `dialogue` tool node (GNP-16, unit line 20). The module's graph and parallelism lines were stale. Module line 7 ("content units wait only on what they use") supports the unit.
+- **Scope:** a documentation correction of the module summary. No criterion, contract or decision changes. Commit `(see git log: docs(GNP-18): module lines name GNP-18's blockers)`.
+- **Still open for the Navigator, not asked in this cycle:** point 2 (GNP-18 and GNP-21 criterion 2 covered by a recorded run, not a committed test), point 3 (GNP-21 real-model eval C12 not run), point 4 (PLT-23 vs GRR-15 conflict to confirm).
