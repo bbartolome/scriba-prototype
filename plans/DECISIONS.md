@@ -6936,3 +6936,11 @@ Part D (gates and commit):
 - **Part 2 checks:** only the nine case files and the data test changed; the real-model run is recorded as not run (open point 4).
 - **Evidence notes (not reworks):** the report gives aggregate counts, not per-test output. The "baseline plus two" count was not checked (a documented deviation).
 - **Next:** rebase onto main, run the gates, check the patch id again, fast-forward.
+
+## 2026-11-20 — GNP-22 — Sonnet re-review after the rebase (2 parts): APPROVED, patch id d08332ddf39ae800e9e897b58a92ddcb316577e1
+
+- **Why again:** the rebase of `unit/GNP-22` onto main f9f097a skipped the first unit commit 9758d0f (the `enable` option). Its two changes, `apps/api/test/packs/golden.kit.ts` and `packages/packs/test/README.md`, are already on main through GNP-21, so the cherry-pick was empty. The patch id therefore changed from f750cdebc60ee9f15f8e05540e26372677ec43bd to d08332ddf39ae800e9e897b58a92ddcb316577e1. Step 3.5 of the prompt says a changed patch id means new reviewers.
+- **Rebase check (reviewers):** the unit-touched files equal the approved tip 1efdf03 byte for byte; the two skipped files are identical to main. No code changed.
+- **Reviewers:** Sonnet, medium. Part 1 (AC 1 to 3) APPROVED; Part 2 (AC 4) APPROVED. Both for d08332ddf39ae800e9e897b58a92ddcb316577e1.
+- **Branch:** `unit/GNP-22` at 2c7969f: five commits (5cb5f00, ace6643, 5405bab, d28c47f, 2c7969f) on main f9f097a. The hashes change at the next rebase; the patch id does not, since plans and units are excluded.
+- **Next:** rebase onto the current main, run the gates on the last commit, mark the criteria, fast-forward.
