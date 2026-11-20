@@ -7235,3 +7235,12 @@ Part D (gates and commit):
 - **Reviewers (Sonnet, medium):** part 1 (steps 1 to 8 and 10; AC1 literal rows, D1, D4) APPROVED; part 2 (steps 9 and 11 to 16; AC1 redirect row, AC2, AC3, D2, D3, D5) APPROVED. Both for the same patch id.
 - **Accepted deviations:** two commits, following the review parts of section 8; prettier and one lint fix; the three redirect error texts (open in the plan); the M10 variant is a test mutation that is wider than the plan's text, not shipped code, and still fails D5 row (b).
 - **Next:** rebase onto the current main by detaching and cherry-picking, check the patch id, run the gates on the rebased head, tick the checked criteria, then fast-forward `main`.
+
+## 2026-11-20 — AGL-24 — Sonnet review (1 part): REWORK, patch id dff58905a1ca95d0130f2c2688f9594c1701bb19
+
+- **Code:** `unit/AGL-24`, commit `44eb64c` on the base 3d66dc3. The patch id is from `git diff main...unit/AGL-24 -- . ':!plans' ':!units' | git patch-id --stable`.
+- **REWORK list (the reviewer's items, unchanged):**
+  1. Step 14 was not run. The plan says: "On the committed tree, make each change below, run the named check, record the failing test, and restore with `git checkout -- <path>`." This covers M1 (drop 'compile' from agent-runs.service.ts), M2 (export not awaited), M3 (preflight keeps four checks) and M4 (graph-runner import, which `npm run lint` must reject). Step 15 needs these results recorded. Run all four, record the failing test or lint error for each, restore after each, and confirm `git status --short` is empty after each restore.
+  2. Step 12 was not run in full. The plan requires `npm test -w @bbartolome/scriba-api` and says each gate must exit 0. If it fails for load reasons, record that and rerun the API workspace. Run it and report the result.
+- **Checked by the reviewer and accepted (not rework):** the `diff --git` lines are exactly the seven paths of the section 2 table; the `agent-loop-tools.test.ts` edits are only the D18 helper changes, with no `it(` line, body or assertion changed; the `agent-loop-run.test.ts` edits add the three compile names to the two lists only; steps 5 to 8 are met; AC1 to AC3 exist with the names and assertions of section 4.
+- **Status:** the branch is kept. A new Haiku implementer runs steps 14 and 12 on the committed tree; the plan stays `planned`.
