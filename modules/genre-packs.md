@@ -20,7 +20,7 @@ GNP-02 golden-test harness (TRG-12 execute, PLT-12 mock server)
  GNP-12 workhorses gate  ══> phase:nonfiction-workhorses
  GNP-13 fiction entity types: character, place, world-rule
   ├─ GNP-14 character_builder + world_builder │ GNP-15 scene_builder │ GNP-16 dialogue │ GNP-17 plot_manager
-  └─ GNP-18 fiction sample project (GRR-01, PST-05)
+  └─ GNP-18 fiction sample project (after GNP-03, GNP-13, GNP-16; GRR-01, PST-05)
  GNP-19 fiction gate (Compile & export assembly order, Graph runner phase:canvas)  ══> phase:fiction
  GNP-20 throughline_check │ GNP-21 named_concept, comparison_set, objection_handler │ GNP-22 nine tier 2–3 shapes
  GNP-23 remix + shape-list consistency check (needs all draft tools)
@@ -30,7 +30,7 @@ GNP-02 golden-test harness (TRG-12 execute, PLT-12 mock server)
 ### Parallelism
 - After GNP-01 + GNP-02: GNP-03, GNP-04, GNP-13 in parallel; GNP-06 after GNP-03.
 - After GNP-06: the four workhorses and the sample entities in parallel.
-- After GNP-13: the four fiction tool units and the fiction sample in parallel.
+- After GNP-13: the four fiction tool units in parallel; the fiction sample (GNP-18) after GNP-03, GNP-13 and GNP-16.
 - GNP-20, GNP-21, GNP-22 in parallel once GNP-12 closes.
 
 ### Pack layout and shipping
