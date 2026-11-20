@@ -18,9 +18,9 @@ Merging this **closes Frontend shell `phase:polish`**.
 - **Extend Platform's e2e:** a phone-viewport check that the bottom nav is shown and the review step works there.
 
 ## Acceptance criteria
-- [ ] An automated accessibility check (e.g. axe via Playwright) of the Shell (nav, landing, notices, editor, diff, card) reports no serious violations in either theme.
-- [ ] The e2e phone-viewport check passes.
-- [ ] SHL-17 installability and cache-exclusion criteria pass on `main`.
+- [x] An automated accessibility check (e.g. axe via Playwright) of the Shell (nav, landing, notices, editor, diff, card) reports no serious violations in either theme.
+- [x] The e2e phone-viewport check passes.
+- [x] SHL-17 installability and cache-exclusion criteria pass on `main`.
 
 **M7 "done when" for the Shell:** *the author installs Scriba on an iPad over the tailnet, drafts and saves a scene, and the file is byte-identical on disk to what was typed; a phone reviews and accepts a pending change from the installed app.*
 

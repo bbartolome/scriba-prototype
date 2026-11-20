@@ -1,6 +1,6 @@
 ---
 id: SHL-19
-status: planned
+status: done
 ---
 # SHL-19 plan — polish gate: accessibility pass, phone e2e check, M7 checks
 
