@@ -7333,3 +7333,10 @@ Part D (gates and commit):
 - **Not fixed (moderate, not serious):** heading order and landmark uniqueness in the tool-call card.
 - **Not run:** the manual demo steps 1, 3 and 5 and the iPad install (D21), which are not merge conditions by the plan's settled OP-1.
 - **Status:** not merged. Review (two parts) and rebase onto main are for the next cycle; the rebase must follow the main movement since 3611904.
+
+## 2026-11-20 — AGL-23 — Sonnet review, one part: APPROVED for patch id 34c15af0d0ba63ead6e9738f10aaedb5ec57bdb9
+
+- **Reviewer (Sonnet, medium), one part (plan section "Review parts"):** APPROVED. The orchestrator recomputed the patch id with `git diff main...unit/AGL-23 -- . ':!plans' ':!units' | git patch-id --stable`: 34c15af0d0ba63ead6e9738f10aaedb5ec57bdb9. Branch at bc5f6b5, base c40edbba1, one file (apps/api/test/agent-loop-research-gate.test.ts, 541 insertions).
+- **Checked by the reviewer:** scope is the one file the plan lists; the four criterion tests AC1 to AC4 exist as plan section 8 gives them; the kit is used unchanged; no apps/api/src change.
+- **Minor, not a blocker:** the implementer report does not record the node and npm versions for the step 3 gates. The gate run records them.
+- **Status:** the rebase onto main (692756f), the gates and the fast-forward follow in this cycle. The patch id must still be 34c15af0 after the rebase.
