@@ -7603,3 +7603,10 @@ REWORK list:
 
 - **Reviewer's judgement on the other differences (for the record, not part of the list):** difference 2 (reading of the stop rule for the pre-drag checks) is not supported by the plan's text; checks b and c are correct. The reviewer's minor note (on a failed hit check the code does not release the mouse; Playwright closes the page) is not a defect and is not in the list.
 - **Action (orchestrator, per prompt.md):** a new Haiku implementer corrects item 1 on unit/GRR-17, commits with the unit id, and reports. After a new COMPLETE report, new Sonnet reviewers review Part A again, because the code changed.
+
+## 2026-11-20 — GRR-17 — Sonnet review of Part A: APPROVED (patch id 8f0ade712928e07fa8fcca74607d64b8ed95a7f8; unit/GRR-17 at 5ade8a7 on eff2cf5)
+
+- **History:** the first review gave patch id c7dda384d02ee91b1c85022dbf18cab34944fa81 (eff2cf5) and REWORK item 1 (the two pre-drag hit checks lacked the message of the stop rule); the list is in the entry above. The rework commit 5ade8a7 changes only those two checks, through the new helpers `expectHitBeforeDrag` and `describeHit`; the logic of `hitsAtCentre` is unchanged. The second review gave APPROVED.
+- **What the approval covers:** Part A of the plan (steps 1 to 12; tests T1, S1, T2, T3 and T4). The code diff `main...unit/GRR-17`, excluding plans and units, touches only e2e/specs/graph-recipe.e2e.ts. The reviewer judged these differences acceptable: the `waitForURL` before the review URL is read (test side; every assertion kept, no fixed wait); the reading of the stop rule for the pre-drag checks, now carried out; two code commits instead of one (the rework commit).
+- **Not run:** criteria 3 and 4, and T3 and T4 (Navigator option (a), entry of 2026-11-20 above).
+- **Action (orchestrator, per prompt.md):** unit/GRR-17 is rebased onto main by cherry-pick (the patch id is checked after the rebase); the gates run on the rebased branch; then the checkboxes and the status are committed on the branch and main is fast-forwarded.
