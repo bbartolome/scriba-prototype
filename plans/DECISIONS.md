@@ -6944,3 +6944,26 @@ Part D (gates and commit):
 - **Reviewers:** Sonnet, medium. Part 1 (AC 1 to 3) APPROVED; Part 2 (AC 4) APPROVED. Both for d08332ddf39ae800e9e897b58a92ddcb316577e1.
 - **Branch:** `unit/GNP-22` at 2c7969f: five commits (5cb5f00, ace6643, 5405bab, d28c47f, 2c7969f) on main f9f097a. The hashes change at the next rebase; the patch id does not, since plans and units are excluded.
 - **Next:** rebase onto the current main, run the gates on the last commit, mark the criteria, fast-forward.
+
+## 2026-11-20 — GNP-22 — On main at 6939e66 (fast-forward from 8b3fa7c); gates passed on the last code commit; branch and worktree removed
+
+- **Rebase:** onto main f9f097a by cherry-pick (the first unit commit 9758d0f was empty, because GNP-21 put the same two changes on main), then onto main 8b3fa7c (the re-review record). The patch id changed once, from f750cdebc60ee9f15f8e05540e26372677ec43bd to d08332ddf39ae800e9e897b58a92ddcb316577e1, for the reason in the entry above. It was re-reviewed and approved for d08332ddf39ae800e9e897b58a92ddcb316577e1, and the patch id at merge is the same.
+- **Gates on the last code commit aee3cd4 (the code of 6939e66):** `npm run lint` exit 0; `npm run build` exit 0; `npm test` exit 0 (contracts 253, api 567, web 577, packs 16, e2e 12 and scripts 114 passed; 0 failed).
+- **Criteria:** all four ticked in `units/GNP-22-tier2-3-draft-shapes.md` on 6939e66. The real-model eval run (AC 4) is not run, as plan open point 4 records.
+- **Fast-forward:** main moved from 8b3fa7c to 6939e66.
+- **Cleanup:** `unit/GNP-22` deleted (merged); worktree `scriba-prototype-wt/GNP-22` removed, not forced.
+- **Still open after this:** `plans/PLT-23.md` line 23 says keep the tools-preview viewport at 3200 px. Main now has 6000 px (GNP-22). The PLT-23 plan must be revised before its implementer runs. The PLT-23 implementer was not started in this run. See the GNP-15 entry below for the same line.
+
+## 2026-11-20 — CEX-14 — Opus revision (READY reply) committed as draft: the Navigator's blocked_by question is still open
+
+- **Reviser's reply:** READY. Corrections in `plans/CEX-14.md` (committed at bf90542, status draft): O1 settled by the Navigator's option (a), the PST-24 byte path (D7 (6), P9, F25 to F27); step 2 checks PST-24 on main; CEX-13 is done, so open point 2 is resolved; the line numbers of export, files, builtin-assets and the test kit are updated; step 10 copies `pandoc` and `typst` from the image; E4 covers the pdf copy; the Review parts are Part 1 (steps 1, 2, 3, 4, 6, 7; C3, E1) and Part 2 (steps 5, 8 to 13; C1, C2, E2 to E4).
+- **Not applied, and held:** the reviser did not add PST-24 to `units/CEX-14-template-overrides-settings.md` line 7. The Navigator's decision O1 (2026-11-19, two entries above) asks for that change. Its answer to the question whether that change may apply while `plans/CEX-14.md` is in the pipeline is still open: the Navigator server was unreachable. The reviser's reason (PST-24 is done, so no availability changes; a blocker is not one of the reviser's four actions) is not a Navigator decision.
+- **Point for the Navigator:** whether `units/CEX-14-template-overrides-settings.md` line 7 gets PST-24 in `blocked_by`, with `unblocks: []` on PST-24 kept as its exact inverse. No availability changes either way.
+- **Status:** `plans/CEX-14.md` stays `status: draft` until the Navigator answers. CEX-14 is not planned, so no implementer starts.
+
+## 2026-11-20 — GNP-15 — Opus revision 2 (READY reply) committed as draft: the reviser settled the root `npm test` gate itself
+
+- **Reviser's reply:** READY (revision 2 of `plans/GNP-15.md`, committed at 708c16a, status draft). Changes: step 13 (now step 14, open point 3) takes option (b) of the Navigator question at DECISIONS lines 6752 to 6756: a rerun of the same unchanged commit that exits 0 counts, with at most two reruns and the load average recorded; step 0 rebases `unit/GNP-15` onto main (the recipe golden is the only expected conflict); viewport choice C10 sets `tools-preview.e2e.ts` line 23 to `height: 6000`, the same line as GNP-22 on main; eval intent C8 names the keeper of the fiction sample correctly; the Review parts are Part 1 (steps 0 to 9, criterion 1 and 2) and Part 2 (steps 10 to 17, criterion 3).
+- **Not accepted by the orchestrator:** the gate rule is open with the Navigator (entry of 2026-11-19, "the reviser's NAVIGATOR reply", above). The reviser settled it itself, citing repository precedents (DECISIONS lines 4543, 5077 to 5081, 5919, 6209, 6219). A gate policy is not a reviser's decision. The Navigator is unreachable, so the question stays open.
+- **Point for the Navigator:** the root `npm test` gate after an unrelated intermittent apps/api failure. Options (a) to (d) are in the entry of 2026-11-19, and the reviser's option (b) is the rerun rule above.
+- **Status:** `plans/GNP-15.md` stays `status: draft` until the Navigator answers. Branch `unit/GNP-15` (f3ccbf2) and its dirty worktree are kept.
