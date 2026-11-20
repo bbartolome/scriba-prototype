@@ -1,0 +1,171 @@
+---
+id: CEX-20
+status: draft
+---
+# CEX-20 plan — milestone gate: manuscript step in the e2e journey, Word and EPUB check, M5 demo
+
+Unit: `units/CEX-20-milestone-gate.md` (module compile-export, phase:manuscript-snapshots, M5), read in full, lines 1 to 32. Base: main at `76f4463` (HEAD when planned). `git diff --stat cba7e4e 76f4463` lists `plans/QUEUE.md` only, so the unit, the module and the code are as at `cba7e4e`. Revision 1, by the planner.
+
+The planner changed no file except this one, ran no build, test or lint command, and ran one read-only Node count (section 7, A5).
+
+## 1. Decisions this plan follows
+
+Each decision names its source. "Unit" is `units/CEX-20-milestone-gate.md`; "module" is `modules/compile-export.md`; "journey" is `e2e/specs/journey.e2e.ts` at main `76f4463`.
+
+- **D1. Scope.** The code change is the e2e manuscript step only, in `e2e/specs/journey.e2e.ts`. Source: unit line 17.
+- **D2. No export in the e2e.** Source: unit line 17 ("No export step in the e2e."); module line 72 (export in the Playwright e2e is out of scope).
+- **D3. Four chapters, in the authored order, which is not alphabetical.** The sample's order field lists four drafts: `drafts/born-to-it.md` (final), `drafts/what-counts-as-practice.md` (revised), `drafts/the-ten-thousand-hour-idea.md` (draft), `drafts/the-plateau-is-not-the-end.md` (draft). Source: unit line 22 (done when: "four-chapter sample") and line 25 (demo step 1: "four chapters … not alphabetical"); DECISIONS 2026-11-14 entry, line 3058 (option B: four chapters); `examples/nonfiction/project.yaml` lines 5 to 13 (the order field, from commit `704ca20`).
+- **D4. The expected order comes from the library copy, never from `examples/`.** The step reads `demo-book/project.yaml` under `SCRIBA_E2E_LIBRARY`, as the journey already does (journey lines 146 to 148). Source: module line 59 and `units/README.md` line 141 (unit tests never read `examples/`; the e2e is external).
+- **D5. The expected order is read from the file, and it must differ from alphabetical.** The authored paths come from the `- path:` lines. The step asserts four entries and asserts that the list is not sorted, so an alphabetical view cannot pass by accident. Source: unit line 17 ("assert the sample's files are in their project.yaml order").
+- **D6. The body rows are exactly the authored list.** The accept step creates `drafts/.versions/born-to-it.md/` (journey lines 290 to 296, 403 to 408). It must not show as a row, because subfolders and dot-names are not members. Source: module line 43 (membership); `apps/api/src/modules/compile-export/manuscript.service.ts` lines 284 to 292 (`isManuscriptFile`: top-level, no dot, `.md`).
+- **D7. The view's body order is the order field's order for this sample.** The sample has no front or back entries, and its graph has no order relation, so there is no graph block. Source: module line 47 (the graph block is a leading block; empty here); `apps/api/src/modules/compile-export/effective-order.ts` lines 111 to 113 (order-field order, then unlisted files) and 134 to 139 (`orderSource` `project`); `examples/nonfiction/graphs/chapter-opening.json` contains no `order` text (checked, section 7).
+- **D8. The word count is checked against the file on disk.** The displayed count of `drafts/born-to-it.md` must equal the count of its current text under the module's rule, and must differ from the count of its pre-accept text (the version file). Source: unit line 17 ("the accepted file's word count changed"); the rule is `apps/api/src/modules/compile-export/word-count.ts` lines 4 to 21 (remove front matter, HTML comments, fences, URLs and link targets, then count the word-like segments of `Intl.Segmenter('en', { granularity: 'word' })`).
+- **D9. The step carries its own counter, with a precondition.** The e2e cannot import the module (module line 58: external behaviour only; the e2e is a separate workspace). The step counts word-like segments with the same segmenter and first asserts that the texts hold none of the constructs that the module strips. All four drafts hold none of them (section 7). Source: module line 58; D8.
+- **D10. The manuscript view is reached by `page.goto`.** `page.goto('/projects/demo-book/manuscript')`, as the review step does (journey line 383). The route is `apps/web/src/app/app.routes.ts` lines 64 to 75 (path `manuscript`; nav label "Manuscript" at line 69). Source: unit line 17 ("open the manuscript view").
+- **D11. The page structure the step uses.** The body section heading is `<h2>` (`manuscript-page.ts` lines 184 to 186); the body list is `<ul data-part="body">` (lines 187 to 190); each row is `<li data-path="…">` (lines 197 to 200); the word count is the text `N words` in a `<span>` (line 232). Source: those lines of `apps/web/src/app/features/compile-export/manuscript-page.ts`.
+- **D12. The `pending` helper and its import go.** After this step the journey has no placeholder. The `pending` helper (journey lines 6 to 10) and the `TestInfo` type import (line 4) would be unused, and the root lint fails on unused variables (`eslint.config.mjs` lines 17 to 18 extend typescript-eslint's recommended set; assumption A4). `testInfo` stays (lines 22 to 25 and 283). No check reads the pending count: a grep of `scripts/`, `e2e/harness`, `e2e/fixtures` and `apps/api/test` for `annotations` or `journey` finds nothing. Source: the simplest option; `units/PLT-13-playwright-harness-e2e.md` lines 22 and 32 describe the placeholders as PLT-13's deliverable, and that unit is done.
+- **D13. No new dependency.** The authored paths are read with a regular expression over the file's text, as the journey reads the title (line 148). `e2e/package.json` declares no `yaml` package; the root `package.json` does (devDependencies), so importing it from the e2e would rely on hoisting. Source: `e2e/package.json`; root `package.json`.
+- **D14. Owner comment, step name and test title stay.** Journey line 412 (the owner comment), line 413 (the step name `manuscript`) and line 12 (the test title) are kept. `plans/PLT-13.md` line 238 counts the `// Owner:` comments (five); the count stays five. Source: `plans/PLT-13.md` line 238; `plans/PST-22.md` line 54 (the precedent for replacing a placeholder in place).
+- **D15. The timeout is not changed.** The accept step's `testInfo.setTimeout(testInfo.timeout + 30_000)` (journey line 283) raises the limit of the whole test to 60 s. The Playwright default is 30 s (`plans/PST-22.md` line 224). The new step must fit inside the 60 s (assumption A2).
+- **D16. Test seam per criterion.** Criterion 1 is checked by the test files that the four units name. Criterion 2 is checked by the Playwright journey, which the module names as the e2e (module lines 58 to 59 and 61). Criterion 3 is manual (module line 62). The unit's criteria heading has no seam parenthetical (unit line 19), so the module's default applies (`units/README.md` line 57).
+- **D17. A criterion that needs a human record stays unticked until the record exists.** Criterion 3 is manual. The precedent is CEX-15 criterion 2: its phase closed with the box unticked, by the Navigator's option A (DECISIONS 2026-11-20 entry, line 7144; reason at line 7147; `units/CEX-15-export-gate-image-smoke.md` line 21). Who performs and records criterion 3 is open point OP1.
+- **D18. The demo is a script for the milestone, not a criterion, and it is not gating.** The acceptance list is unit lines 20 to 22; the demo is unit lines 25 to 32. Precedent: `plans/PST-22.md` line 89 (step 10: the demo is manual, recorded in the PR, not gating).
+- **D19. The docs commit.** After the code commit and the gates, the implementer ticks the criteria in the unit file and sets the plan status to `done`. Precedent: DECISIONS line 6448 (`docs(CEX-08): criteria checked, plan status done`).
+- **D20. Branch and worktree.** Branch `unit/CEX-20` and worktree `/Users/bbartolome/workspace/scriba-prototype-wt/CEX-20`, as in the pipeline entries (for example DECISIONS line 6443 for CEX-08).
+- **D21. Phase.** Merging CEX-20 closes Compile & export `phase:manuscript-snapshots` (`units/README.md` line 125; the phase closes when its gate unit merges, line 69). The unit line 14 says the same.
+- **D22. What this plan changes.** Only `plans/CEX-20.md` (the planner's commit). The units and the module are not changed here. The implementer's docs commit ticks boxes in `units/CEX-20-milestone-gate.md` only (D19).
+
+## 2. Files to create or change
+
+- `e2e/specs/journey.e2e.ts` (code commit): (a) line 4, drop `type TestInfo` from the import; (b) delete the `pending` comment and helper (lines 6 to 10 at main, and the blank line after them); (c) add the `wordsOf` function at file scope in the place of the helper; (d) replace the line `await test.step('manuscript', () => pending(testInfo, 'manuscript'));` (line 413 at main, anchored by its text) with the live step of section 3, step 4. Line 412, the owner comment, stays. Nothing else in the file changes.
+- `units/CEX-20-milestone-gate.md` (docs commit only): tick criteria 1 and 2 (`- [x]`). Criterion 3 stays `- [ ]` until the record exists (D17).
+- `plans/CEX-20.md` (docs commit only): `status: draft` becomes `status: done`.
+- `plans/CEX-20.md` (this plan, planner's commit only): `git commit -m "docs(CEX-20): draft plan" -- plans/CEX-20.md`.
+
+Not changed by any step: `apps/`, `packages/`, `examples/`, `modules/`, other `e2e/` files, `e2e/fixtures/`, `e2e/harness/`, `e2e/playwright.config.ts`, `e2e/package.json`, `package.json`, `package-lock.json`.
+
+## 3. Method
+
+Run from the worktree of D20 unless a step says otherwise.
+
+0. **Worktree.** `git worktree add -b unit/CEX-20 /Users/bbartolome/workspace/scriba-prototype-wt/CEX-20 main`. Expected: `git -C <path> status --short` prints nothing, and `git -C <path> log --oneline -1` shows the main head at the start.
+1. **Install and build.** `npm ci`, then `npm run build -w @bbartolome/scriba-contracts`. Expected: both exit 0.
+2. **Baseline on main.** `npm run e2e -w @bbartolome/scriba-e2e -- journey`. Expected: exit 0; the list reporter shows the test as passed; `e2e/test-results/report.json` holds one `pending` annotation, `manuscript` (`plans/PST-22.md` line 81 has the same expectation). Record the duration.
+3. **Criterion 1, on the base.** (a) From `apps/api`: `npx vitest run test/compile-export-snapshots.test.ts`, exit 0. (b) `npm test -w @bbartolome/scriba-web` (`apps/web/package.json` line 8, `ng test --watch=false`), exit 0. (c) `grep -c '^- \[ \]' units/CEX-16-snapshot-api.md units/CEX-17-manuscript-route-outline.md units/CEX-18-preflight-export-panels.md units/CEX-19-snapshots-panel.md` prints 0 for each file; `grep -m1 '^status:' plans/CEX-16.md plans/CEX-17.md plans/CEX-18.md plans/CEX-19.md` prints `status: done` for each. Record the three results.
+4. **The live step.** Edit `e2e/specs/journey.e2e.ts` as in section 2. Inside `test.step('manuscript', async () => { … })`, in this order, after the owner comment:
+   - (i) An `errors` array and a `pageerror` listener, as the other steps have.
+   - (ii) `const project = join(process.env.SCRIBA_E2E_LIBRARY!, 'demo-book');`
+   - (iii) The authored order: `const yaml = await readFile(join(project, 'project.yaml'), 'utf8');`, then `const authored = [...yaml.matchAll(/^\s+- path: (\S+)$/gm)].map((match) => match[1]!);`, then `expect(authored).toHaveLength(4);` and `expect(authored).not.toEqual([...authored].sort());`.
+   - (iv) The two texts: `const versionDir = join(project, 'drafts', '.versions', 'born-to-it.md');`, `const [version] = await readdir(versionDir);`, `const before = await readFile(join(versionDir, version!), 'utf8');`, and `const after = await readFile(join(project, 'drafts', 'born-to-it.md'), 'utf8');`. The accept step has already asserted one version file (journey line 404).
+   - (v) The precondition: `expect(before + after).not.toMatch(/^---|<!--|\x60\x60\x60|\]\(|https?:\/\/|www\./m);` (front matter at the start, HTML comments, code fences, link targets, URLs, `www.`).
+   - (vi) `wordsOf(text)`, at file scope: `let count = 0; for (const segment of new Intl.Segmenter('en', { granularity: 'word' }).segment(text)) if (segment.isWordLike) count += 1; return count;`
+   - (vii) `await page.goto('/projects/demo-book/manuscript');` then `await expect(page.getByRole('heading', { name: 'Manuscript', exact: true })).toBeVisible();`
+   - (viii) The order, which is test T-C2a: `await expect.poll(() => page.locator('ul[data-part="body"] > li').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-path'))), { timeout: 15_000 }).toEqual(authored);`
+   - (ix) The count, which is test T-C2b: `const expected = wordsOf(after);` then `expect(wordsOf(before)).not.toBe(expected);` then `await expect(page.locator('li[data-path="drafts/born-to-it.md"]').getByText(expected + ' words', { exact: true })).toBeVisible({ timeout: 15_000 });`
+   - (x) `expect(errors).toEqual([]);`
+   Expected values, from section 7 (A5): `expected` is 301 and `wordsOf(before)` is 304.
+5. **Format and lint.** `npx prettier --write e2e/specs/journey.e2e.ts`. Then `git diff` must show only the import line, the helper removal, the `wordsOf` function and the step. `npm run lint -w @bbartolome/scriba-e2e` (runs `eslint .`), exit 0. `npm run build -w @bbartolome/scriba-e2e` (`tsc --noEmit`), exit 0; this is the check of A3.
+6. **Sensitivity runs.** Before the runs, copy the step-5 file to `/tmp/cex20-journey.e2e.ts`, outside the repository.
+   - Mutation A: in (viii), replace `.toEqual(authored)` with `.toEqual([authored[1], authored[0], ...authored.slice(2)])`. Run `npm run e2e -w @bbartolome/scriba-e2e -- journey`. Expected: exit 1, with the failure in the manuscript step at the order poll.
+   - Mutation B: restore the copy, then in (ix) replace `expected + ' words'` with `wordsOf(before) + ' words'`. Run the journey again. Expected: exit 1, with the failure in the manuscript step at the visibility check.
+   - Restore the copy with `cp /tmp/cex20-journey.e2e.ts e2e/specs/journey.e2e.ts` and check it with `cmp` against the copy. Expected: no difference. Record both failure messages.
+7. **Journey on the real change.** `npm run e2e -w @bbartolome/scriba-e2e -- journey`. Expected: exit 0; the test passes; `grep -o '"type": *"pending"' e2e/test-results/report.json | wc -l` prints 0 (T-C2c). Record the duration (A2).
+8. **Full e2e.** `npm run e2e -w @bbartolome/scriba-e2e` (all specs, one run). Expected: exit 0 (T-C2d). Record the passed and failed counts. A failure in a spec other than the journey is not fixed in this unit: record the spec name and line, and stop (OP3, OP4).
+9. **Gates.** From the root: `npm run lint`, `npm run build`, `npm test`. Expected: exit 0 each. Record each.
+10. **Code commit.** `git add -- e2e/specs/journey.e2e.ts`, then `git commit -m "feat(CEX-20): check the manuscript order and the accepted word count in the e2e journey" -- e2e/specs/journey.e2e.ts`. Check with `git show --stat HEAD` that the commit holds one file.
+11. **Criterion 3, the manual check.** Performed by a person, not by the implementer (OP1). Export the four-chapter sample (a project started from the nonfiction sample) to DOCX and to EPUB with the export buttons (CEX-18). Open the DOCX in Word and the EPUB in Apple Books or Calibre. The done-when asks that both open cleanly (unit line 22). The demo steps 5 and 6 (unit lines 29 and 30) give the checks to make: standard manuscript layout, title page, dedication, chapters in the order of step 4(iii), bibliography. Record in the PR: the app build, the Word and reader versions, what was seen, and any repair or error prompt. The automated tests of CEX-11 and CEX-12 do not replace this record.
+12. **Docs commit.** When steps 3, 7 and 8 have passed, tick criteria 1 and 2 in `units/CEX-20-milestone-gate.md`, set `status: done` in `plans/CEX-20.md`, and commit by path: `git commit -m "docs(CEX-20): criteria checked, plan status done" -- units/CEX-20-milestone-gate.md plans/CEX-20.md`. Tick criterion 3 only when the step-11 record exists (D17).
+13. **Merge and verify (run by the orchestrator).** Rebase `unit/CEX-20` onto the current main. Re-run the step-5 lint and build and the step-7 journey on the rebased head; if the rebase changed code, re-run the step-9 gates. Fast-forward main with `git merge --ff-only unit/CEX-20`. Verify on the merged main: the journey alone (step 7). Record the merge and the gates, as the done units do.
+
+## 4. Acceptance criteria and tests
+
+### 4.1 The criteria (unit lines 20 to 22)
+
+| Criterion | Test | Seam | Pass condition |
+|---|---|---|---|
+| 1. "CEX-16…CEX-19 criteria pass on `main`" (unit line 20) | T-C1, run in step 3 | The test files that the four units' criteria tables name | (a) `apps/api/test/compile-export-snapshots.test.ts` exit 0: CEX-16 criteria S1 to S4 (`plans/CEX-16.md` lines 163 to 166). (b) `npm test -w @bbartolome/scriba-web` exit 0: it includes CEX-17 criteria M1 to M4 in `manuscript-page.spec.ts` (`plans/CEX-17.md` lines 195 to 198); CEX-18 criteria R1, R2 in `preflight-panel.spec.ts` and G1 in `export-settings-panel.spec.ts` (`plans/CEX-18.md` lines 100 to 102); CEX-19 criteria S1, S2 in `snapshots-panel.spec.ts` (`plans/CEX-19.md` lines 129 to 130). (c) No open box in the four unit files, and `status: done` in the four plans. |
+| 2. "The e2e passes with the manuscript step." (unit line 21) | T-C2a (order), T-C2b (count): the assertions (viii) and (ix) of step 4. T-C2c: the journey alone, exit 0, no pending annotation (step 7). T-C2d: the full run, exit 0 (step 8). | The Playwright journey, `journey: setup, project from sample, agent run, accept change, manuscript` (journey line 12), on the real stack and the mock server (module lines 59 to 60). | T-C2a: the `data-path` list of the body rows equals the authored four paths, and the list is not alphabetical. T-C2b: the displayed count of `drafts/born-to-it.md` equals the count of its current file and differs from the count of its version. T-C2c: exit 0 and zero pending annotations. T-C2d: exit 0. Sensitivity: mutations A and B of step 6 each fail in the manuscript step. |
+| 3. "Done when: a four-chapter sample exports and opens cleanly in Word and an EPUB reader (manual, recorded in the PR)." (unit line 22) | No automated test. The record of step 11. | The PR record (module line 62 names the check as manual). | A recorded check by a person, as step 11 describes. The box is ticked only after the record exists (D17). |
+
+The expected counts (301 and 304) are not hard-coded as the pass condition. The step computes them from the files, and the planner's values are a cross-check for the run (section 7, A5).
+
+### 4.2 The demo (unit lines 25 to 32, not a criterion, not gating)
+
+| Demo step | Automated cover (the unit that owns the check; not re-run here) | What is manual |
+|---|---|---|
+| 1. Start from the nonfiction sample; Manuscript shows four chapters in authored order, with statuses and word counts | T-C2a (order) and T-C2b (count); CEX-17 | Looking at statuses |
+| 2. Drag chapter 3 above chapter 2; `project.yaml` updated; chapter 2 set to `final` | CEX-17 criteria M1, M3; CEX-03 | Opening `project.yaml` on the host |
+| 3. Type `TK`; Preflight shows the placeholder error with a link, and the unsupported-claims finding | CEX-05, CEX-06 (their criteria); CEX-18 criteria R1, R2 | The finding needs a recorded grounding result (OP2) |
+| 4. Snapshot labelled `before-cut` | CEX-16 criterion S1; CEX-19 | Only the click |
+| 5. Export DOCX past the preflight dialog; open in Word | CEX-11 (its criteria); CEX-18 criterion R1 | Opening in Word (criterion 3) |
+| 6. Export EPUB; TOC lists the chapters in order | CEX-12 (its criteria) | Opening in Apple Books or Calibre (criterion 3) |
+| 7. Export PDF; open it | CEX-13 (its criteria) | Opening the PDF |
+| 8. Delete chapter 3's file; restore `before-cut`; `pre-restore` listed | CEX-16 criteria S2, S3; CEX-19 criterion S1 | The steps on the page |
+
+The demo is recorded in the PR once and is not gating (D18).
+
+## 5. Downstream agreement
+
+- **Nothing waits for CEX-20.** `unblocks: []` (unit line 9). No unit file names CEX-20 in `blocked_by`. The units that name it in `unblocks` are CEX-08 (line 9), CEX-15 (line 9), CEX-16 (line 9), CEX-17 (line 9), CEX-18 (line 9), CEX-19 (line 9) and PST-22 (line 9). This agrees with `units/README.md` line 64 (`unblocks` is the exact inverse of `blocked_by`).
+- **Agreement with the module.** Module line 7 says the gate "still waits on `phase:export`". The unit adds CEX-08, CEX-16 to CEX-19 and PST-22. Module line 20 (CEX-17) and lines 26 to 29 (CEX-16, CEX-18, CEX-19, and CEX-20 with PST-22) name the same blockers, so they agree. CEX-08 is not in the module's graph for this gate; the unit adds it, and it is a real source: the sample's order field comes from CEX-08 (commit `704ca20`). The unit's CEX-15 is the `phase:export` gate (module line 7).
+- **What CEX-20 relies on from others.** CEX-08's order field (`examples/nonfiction/project.yaml` lines 5 to 13). CEX-17's page structure (D11): if its rows, sections or `data-part` change, T-C2a breaks. PST-22's accept step (journey lines 282 to 410), which writes `drafts/born-to-it.md` and its version. CEX-15 merged (DECISIONS line 7152).
+- **What depends on the journey file after CEX-20.** AGL-15 (unit only, no plan) has an accept-change block in the same file; its edit must be anchored by text, because the manuscript block sits below it (section 6). GRR-15 adds three specs (OP3). No unit needs an output of the manuscript step.
+
+## 6. Other plans on the same files
+
+- `e2e/specs/journey.e2e.ts`: the done plans PLT-13 (created the file), SAU-08 and SAU-16 (setup block), PST-09 (project block), AGL-08 (agent-run block, journey lines 209 to 279), PST-22 (accept block, journey line 282; `plans/PST-22.md` line 185 names CEX-20's manuscript block as the other unit that touches the file, and PST-22 edits only the accept block). AGL-19 (D-ORDER, `plans/AGL-19.md` line 28) constrains the spec order. None of them is planned or draft. The unit with no plan that touches the file is AGL-15 (`units/AGL-15-pending-writes-gate.md`, its accept step; `plans/PST-22.md` lines 172 and 191). Overlap with this plan: none on the manuscript block; the edit is anchored by text.
+- `e2e/specs/` new files of GRR-15 (planned; `plans/GRR-15.md` lines 91 to 93: `graph-touch`, `graph-theme`, `graph-large`). They sort before `journey` and leave library projects with no cleanup (grep for `afterAll` finds none in the plan). See OP3.
+- GNP-15 (planned): files under `packages/packs/`, `scripts/` and one new scenario `e2e/fixtures/mock-openai/scenarios/pack-scene_builder.json` (`plans/GNP-15.md` lines 146 to 153). No overlap with the journey, the sample or the manuscript page.
+- AGL-22 (draft): agent-loop files under `apps/api` (`plans/AGL-22.md` lines 53 to 60). No overlap.
+- `examples/nonfiction/`: changed by CEX-08 (done). No planned or draft plan changes it (the three candidate plans above, by their file lists).
+- `apps/web/src/app/features/compile-export/manuscript-page.ts`: changed by CEX-17, CEX-18 and CEX-19 (done). No planned or draft plan touches it. This plan does not change it.
+- `apps/api/src/modules/compile-export/`: no planned or draft plan touches it. This plan does not change it.
+
+## 7. Facts checked and facts assumed
+
+### 7.1 Facts checked (file and line, at main `76f4463`)
+
+- Unit `units/CEX-20-milestone-gate.md`: line 7 (`blocked_by`: CEX-08, CEX-15, CEX-16, CEX-17, CEX-18, CEX-19, and "Project store phase:pending-review (PST-22; e2e accept-change step)"); line 9 (`unblocks: []`); line 14 (merging closes the phase); line 17 (scope); lines 20 to 22 (criteria); lines 25 to 32 (demo steps 1 to 8).
+- Module `modules/compile-export.md`: line 7 (the gate waits on `phase:export`); lines 43, 47, 58, 59, 61, 62, 72 (as cited in section 1).
+- `units/README.md`: lines 56 and 57 (demo and acceptance conventions), 64 (`unblocks` as inverse), 69 (a phase closes when its gate merges), 125 (the phase row), 141 (testing rule).
+- Blockers are done: `status: done` at line 3 of `plans/CEX-08.md`, `plans/CEX-15.md`, `plans/CEX-16.md`, `plans/CEX-17.md`, `plans/CEX-18.md`, `plans/CEX-19.md`, `plans/PST-22.md`. The unit files of CEX-16 to CEX-19 have no `- [ ]` (grep count 0 each). CEX-15 criterion 2 is unticked (`units/CEX-15-export-gate-image-smoke.md` line 21); CEX-20 does not list it.
+- Merges on main: DECISIONS line 6413 (CEX-16), 6567 (CEX-17), 6639 (CEX-19), 7110 (CEX-18), 6443 (CEX-08), 7152 (CEX-15).
+- Journey `e2e/specs/journey.e2e.ts` at main: line 4 (import with `TestInfo`); lines 6 to 10 (`pending`); line 12 (test title); lines 22 to 25 (browser annotation); line 142 ("Demo book: ok (active)"); lines 143 to 145 (Finish, URL `/projects/demo-book/chat`); lines 146 to 148 (library read); line 282 (accept step); line 283 (`setTimeout`); lines 290 to 296 (versions path); line 383 (`goto` review); line 398 (`after` equals the proposed text); lines 403 to 408 (version assertions); lines 412 to 413 (the manuscript step).
+- `e2e/playwright.config.ts` lines 10, 11 and 13: `testDir './specs'`, `testMatch '**/*.e2e.ts'`, `workers: 1`. `e2e/test-results/` is git-ignored (`.gitignore` line 8).
+- `e2e/package.json`: no `yaml` dependency. Root `package.json`: `yaml` in devDependencies. `apps/web/package.json` line 8: `ng test --watch=false`. `apps/api/package.json` line 7: `npm run build && vitest run`.
+- `eslint.config.mjs` lines 17 to 18: `**/*.ts` extends `js.configs.recommended` and `tseslint.configs.recommended`.
+- Sample: `examples/nonfiction/project.yaml` lines 5 to 13 (order: four entries, `status` on each, no `part` keys) and lines 14 to 16 (export). `examples/nonfiction/graphs/chapter-opening.json` contains no `order` text (grep count 0; the graph is a recipe view). `examples/nonfiction` has no `logs/` folder.
+- Draft texts: none of the four drafts contains an HTML comment, a code fence, a link target, a URL or front matter (grep, all zero).
+- Mock edit: `e2e/fixtures/mock-openai/scenarios/edit-chapter-one.json` line 24 replaces "The rest of this chapter sets up the harder question." with "This chapter sets up the harder question." in `drafts/born-to-it.md`.
+- Word rule: `apps/api/src/modules/compile-export/word-count.ts` lines 4 to 21.
+- Membership: `manuscript.service.ts` lines 284 to 292 (`isManuscriptFile`), line 220 (members filter). Active project: `manuscript.service.ts` lines 86, 93, 177 to 178; the view reads the active project, not a route parameter.
+- Order: `effective-order.ts` lines 111 to 113, 134 to 139.
+- Route: `apps/web/src/app/app.routes.ts` lines 64 to 75 (path, `scope: 'project'`, `minDeviceClass: 'phone'`, nav label "Manuscript" at line 69). Contract constant: `packages/contracts/src/compile-export/routes.ts` line 4 (`/api/compile-export/manuscript`).
+- Page: `manuscript-page.ts` lines 184 to 186, 187 to 190, 197 to 200, 232 (as in D11).
+- Grounding: `apps/api/src/modules/compile-export/preflight-claims-orphans.ts` lines 19 to 21 (the "Not grounding-checked" and "Changed since grounding check" messages), 60 to 65 (the artefact read and the undefined branch). Artefact path: `packages/contracts/src/agent-loop/constants.ts` lines 82 to 83 (`logs/grounding/<path>.json`).
+- Grounding draft: `drafts/the-plateau-is-not-the-end.md` (`plans/AGL-19.md` line 29). A grounding check needs an active project, a provider and no active run (`plans/AGL-19.md` line 24).
+- Full-run history: DECISIONS line 7006 (PLT-23 complete on main at 898ef38; its full run reported 26 passed). DECISIONS lines 7050 to 7056 (GRR-15 on `ec6293d` fails the journey's line-204 check and `tools-preview` line 167; not merged). `plans/PLT-23.md` lines 199 to 200 (GRR-15 must add the same `afterAll`). `plans/GRR-15.md` lines 91 to 93 (three new specs); grep for `afterAll` finds nothing in that plan.
+- Candidate plans named by the orchestrator: GNP-15 (planned, file list lines 146 to 153), GRR-15 (planned, see above), AGL-22 (draft, file list lines 53 to 60). No other planned or draft plan names the journey or the manuscript page (grep of `plans/`).
+- `plans/QUEUE.md` line 3 lists CEX-20 as available, "all blockers done", which agrees with the checks above.
+- Dependency sanity: `units/CEX-08-nonfiction-sample-order.md` line 17 says "four chapters", and line 9 names CEX-20 in `unblocks`.
+- Planner's read-only count (Node v26.13.0, `Intl.Segmenter('en', {granularity:'word'})`, word-like segments of the raw text, which is the module's rule for these files): `born-to-it.md` 304; with the mock sentence replaced, 301; `what-counts-as-practice.md` 299; `the-ten-thousand-hour-idea.md` 264; `the-plateau-is-not-the-end.md` 254.
+
+### 7.2 Facts assumed (not checked; each one has a check where it matters)
+
+- **A1.** The full e2e suite is green on the base except for the journey's manuscript step. Last full green run on main: DECISIONS line 7006 (26 passed, at 898ef38). Main has moved since. Step 8 checks it.
+- **A2.** The journey, with the new step, finishes inside 60 s (30 s default, plus the 30 s of journey line 283). Not measured. Steps 2 and 7 record the duration.
+- **A3.** `Intl.Segmenter` and `isWordLike` are typed in the e2e build (the root `tsconfig.base.json` sets target ES2022). Step 5 checks it.
+- **A4.** The root lint flags an unused function and an unused import under the recommended set. Step 5 checks the file is clean after the removal (D12).
+- **A5.** The app's displayed counts are 301 for `born-to-it.md` after the accept and 304 before, as the planner computed them. The planner used the module's rule on the file text, which equals the module's count because no stripped construct is present (section 7.1). The app has not been observed. Step 4 computes the expected value itself; step 7 confirms it passes.
+- **A6.** At Playwright's default viewport the manuscript rows render (the rows render on every device class; editing is what the class limits). Not run. Step 7 confirms it.
+- **A7.** The mock's only change to `drafts/born-to-it.md` is the sentence at line 24 of the scenario. The planner read the matching line, not the whole scenario. Steps 4 and 7 check the count against the file on disk, not against this assumption.
+- **A8.** The unit tests that C1 names pass on the base. Step 3 checks it.
+
+## 8. Open points
+
+These are not decided by the planner. The orchestrator decides them.
+
+- **OP1. Who performs and records criterion 3, and whether it gates the phase.** Criterion 3 (unit line 22) is in the phase checklist (unit line 19), so it gates the phase close. The sources do not say who runs the Word and EPUB check, which versions to use, or whether the implementer may record it. The plan's default is D17 (the box stays unticked until a record exists).
+- **OP2. Demo step 3 needs a grounding result that the sample does not ship.** The unsupported-claims finding comes from `logs/grounding/<path>.json` (section 7.1, `preflight-claims-orphans.ts` lines 19 to 21 and 60 to 65). The sample has no `logs/` folder. Without a check, Preflight says "Not grounding-checked" for `drafts/the-plateau-is-not-the-end.md`. The unit's demo does not mention a grounding check. Question for the orchestrator: should demo step 3 include a grounding check of that draft before Preflight, or is the expected result the "Not grounding-checked" line?
+- **OP3. Merge order with GRR-15 for the full run (T-C2d).** GRR-15 is planned and not merged (DECISIONS lines 7050 to 7056: its branch fails the journey's line-204 check). Its three new specs sort before `journey`, leave library projects behind, and its plan has no `afterAll` (`plans/PLT-23.md` lines 199 to 200 say it must add one). Question for the orchestrator: should GRR-15's cleanup land before CEX-20's full run is taken, or is a failure of that kind recorded and accepted for the gate?
+- **OP4. Scope of criterion 2.** The plan reads "The e2e passes" as both the journey test (T-C2c) and the full suite (T-C2d). If the orchestrator reads it as the journey test only, step 8 becomes a record. Also not decided here: whether a failure of another spec in step 8 (for example a known flake) blocks criterion 2.
