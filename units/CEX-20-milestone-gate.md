@@ -17,8 +17,8 @@ Merging this **closes Compile & export `phase:manuscript-snapshots`** (the M5 mi
 - **Extend Platform's e2e:** after "accept change", open the manuscript view and assert the sample's files are in their `project.yaml` order and the accepted file's word count changed. **No export step in the e2e.**
 
 ## Acceptance criteria (the phase checklist)
-- [ ] CEX-16…CEX-19 criteria pass on `main`.
-- [ ] The e2e passes with the manuscript step.
+- [x] CEX-16…CEX-19 criteria pass on `main`.
+- [x] The e2e passes with the manuscript step.
 - [ ] **Done when:** a four-chapter sample exports and opens cleanly in Word and an EPUB reader (manual, recorded in the PR).
 
 ## Demo (under 5 min)
