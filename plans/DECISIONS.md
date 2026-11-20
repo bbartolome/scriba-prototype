@@ -7097,3 +7097,12 @@ Part D (gates and commit):
 - **YAGNI:** nothing inside AGL-21 needs the criterion; AGL-23 relies only on AGL-21's AC1 and AC3. The criterion is kept (moved, not removed).
 - **Other:** no criterion text and no module file changed. The AGL-21 plan revision (revision 2, status planned, commit 7d6799c) settles the two open points: a decision test D1 replaces the moved criterion in the plan, and search results are not marked untrusted (module line 83 concerns fetched pages).
 - **Note for the AGL-22 planner and reviser:** AGL-22 now `unblocks` AGL-26. Its plan must not block AGL-21.
+
+## 2026-11-20 — CEX-18 — Sonnet review: APPROVED for patch id f7cc870c8bfdb77c429469518a606d62c22814d1
+
+- **Code:** `unit/CEX-18` at e0d9dfc, two commits on main 84987e8 (`eebbcd6` part 1, `e0d9dfc` part 2). Patch id from `git diff main...unit/CEX-18 -- . ':!plans' ':!units' | git patch-id --stable`: `f7cc870c8bfdb77c429469518a606d62c22814d1`.
+- **Implementer report:** COMPLETE. Criteria 1 and 2 (R1, R2), criterion 3 (G1) and the test folder pass: web suite `npm test -w @bbartolome/scriba-web` exit 0, 599 tests. Lint and prettier exit 0; build exit 0. Mutations (a) to (d) went red and were restored.
+- **Part 1 reviewer (steps 1 to 10, criteria 1 and 2):** APPROVED. Only the five part 1 paths changed; R1 and R2 re-run, exit 0, 8 passed.
+- **Part 2 reviewer (steps 11 to 20, criterion 3):** APPROVED. G1 to G6 and M4 re-run, exit 0, 6 passed; the scriba-contracts imports in the new files are type-only.
+- **Differences accepted by both reviewers:** the no-active-project guard in preflight-panel.ts; the copy-default message uses the server's path; the bibliography absent case shows "off"; the three copy rows (docx, epub, pdf); the files-changed reload of the settings panel; the stale comment in manuscript-page.spec.ts M4.
+- **Next:** rebase `unit/CEX-18` onto main, run the three gates, then step 3 of prompt.md item 8 onward.
