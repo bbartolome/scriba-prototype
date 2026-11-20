@@ -6870,3 +6870,12 @@ Part D (gates and commit):
 - **E2E gate:** the root `npm test` does not run the e2e suite (the e2e workspace's `test` script is `vitest run`). Step 13 runs the four `/tools` specs explicitly. A browser is available here (the 2026-11-20 GNP-18 run had 20 passed and 4 failed; the 4 are the main baseline, owned by PLT-23 and SHL-23).
 - **Review parts:** two (Part 1: steps 0 to 10, 12 to 14 with AC 1 to 3; Part 2: step 11 with AC 4).
 - **Status:** `plans/GNP-22.md` set to `status: planned`.
+
+## 2026-11-20 — GNP-21 — on main at 4178985 (fast-forward); gates passed; branch and worktree removed
+
+- **Patch id at merge:** a8127a188bf367f150dec28fac47a7ad6837ee9a, the same id the Part 1 and Part 2 reviewers approved. Replays onto main were cherry-picks with no conflict; the patch id did not change.
+- **Gates (step 3.3) on the final code (commits c7f2ef6, 6c43383; code identical to the replayed tree tested at c89de5d):** `npm run lint` exit 0; `npm test` exit 0 (scripts, api, web, packs and e2e all pass; root test count 113 in the scripts run); `npm run build` exit 0. The two tests that mention `plans/` or `units/` (`apps/api/test/agent-loop-grounding-gate.test.ts`, `scripts/publish-workflow.test.mjs`) do not read the files that changed on main after the tested base.
+- **Last rebase:** onto main a12af54 (by cherry-pick). The commit with the checkboxes and `status: done` (4178985) was made on the unit branch after the rebase, and main was then fast-forwarded to it.
+- **Acceptance criteria checked:** all three (validation suite and disabled ship; one golden test per tool; manual eval cases).
+- **Cleanup:** worktree `scriba-prototype-wt/GNP-21` removed (not forced; it was clean). Branch `unit/GNP-21` deleted (merged).
+- **Known gap:** the implementer's full COMPLETE report of the earlier session is not available. The real-model eval run is not run (plan C12).
