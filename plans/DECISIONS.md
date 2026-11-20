@@ -7106,3 +7106,23 @@ Part D (gates and commit):
 - **Part 2 reviewer (steps 11 to 20, criterion 3):** APPROVED. G1 to G6 and M4 re-run, exit 0, 6 passed; the scriba-contracts imports in the new files are type-only.
 - **Differences accepted by both reviewers:** the no-active-project guard in preflight-panel.ts; the copy-default message uses the server's path; the bibliography absent case shows "off"; the three copy rows (docx, epub, pdf); the files-changed reload of the settings panel; the stale comment in manuscript-page.spec.ts M4.
 - **Next:** rebase `unit/CEX-18` onto main, run the three gates, then step 3 of prompt.md item 8 onward.
+
+## 2026-11-20 — CEX-18 — Merged to main at 51dbeae (fast-forward, three commits rebased twice onto main)
+
+- **Gates on the last code commit (51dbeae, docs only on top of the code):** `npm ci` exit 0; `npm run lint` exit 0; `npm run build` exit 0; `npm test` exit 0. Patch id unchanged at f7cc870c8bfdb77c429469518a606d62c22814d1 after each rebase.
+- **Criteria ticked (unit lines 20 to 22):** preflight confirm (R1), finding link (R2), settings panel and copy-default (G1), each with its named test passing. The plan's status is `done`.
+- **Rebase note:** `git rebase main` stopped in an interactive state once on this branch; the picks were redone one at a time by cherry-pick, and the patch id was checked each time. The old commits (eebbcd6, e0d9dfc, 1ee5e6e, then af4ad07, 9437a7a, 61b8fe3) were superseded by the final ones.
+
+## 2026-11-20 — CEX-15 — Sonnet review: APPROVED for patch id 9d7282bc4143e289d6cdfa6c4d7c26316bd593f4
+
+- **Code:** `unit/CEX-15` at 4fcea94, three commits on c46fcb1: `646a2d3` (part 1, the C1 export test), `9a142b3` (the smoke wrapper, client, workflow step), `4fcea94` (cookie fix in the smoke client). Patch id from `git diff c46fcb1...unit/CEX-15 -- . ':!plans' ':!units' | git patch-id --stable`. The range is from the branch point because main has moved; step 3 recomputes it after the rebase.
+- **Implementer report:** COMPLETE. C1 passed (1 passed, 0 skipped). C3 stand-ins passed on both arches, T3a and T3b 6 of 6; the CI leg and a native amd64 run were not tested (no runner here; cause recorded). C4 passed on main. C2 is a record check (run 44659727464).
+- **Reviewers:** Part 1 (steps 1 to 7, C1): APPROVED. Part 2 (steps 8 to 16, C3): APPROVED. Part 3 (steps 17 to 18, C2 and C4): APPROVED. Part 3 confirmed C4 on main itself (grep counts 1 and 1; `00f212d` is an ancestor of `origin/main`) and the C2 commit ancestry (`3b859d4`) and the workflow flag; the run result itself was read from the record only.
+- **Differences accepted:** the cookie fix is a separate commit; the wrapper is not formatted by prettier (`.sh`); the stand-ins were built from 4fcea94.
+
+## 2026-11-20 — AGL-21 — Sonnet review: APPROVED for patch id ddf8a94b7fab7cfd0cd419a36e55efc8f794dcee
+
+- **Code:** `unit/AGL-21` at 826fa40, one commit on 6d7d709: `feat(AGL-21): web_search against a SearXNG-compatible endpoint`. Patch id from `git diff main...unit/AGL-21 -- . ':!plans' ':!units' | git patch-id --stable`, taken before the rebase to the current main.
+- **Implementer report:** COMPLETE. AC1, D1 and AC3 passed (3 of 3). The agent-loop suite is 68 passed; full api suite exit 0; lint exit 0; prettier fixed one line in agent-tools.service.ts before the commit. Mutations M1 (D1 fails), M2 (AC1 fails), M3 (AC3 fails) went red and were restored.
+- **Reviewer (Part A, steps 1 to 15):** APPROVED. Five files, each in the plan's list; `narrative` block unchanged; `web_search` offered only with research on and an endpoint (D1).
+- **Differences accepted:** the prettier formatting line; the narrative block folded under one `extra` array with the same behaviour; the AC1 test name uses the plan's apostrophe.
