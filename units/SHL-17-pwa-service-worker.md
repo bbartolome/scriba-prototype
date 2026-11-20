@@ -21,6 +21,6 @@ Install to the home screen and open full screen (32); the installed app loads fr
 - The service worker checks for a new bundle and **prompts a reload** when the server was updated. This is not an "update available" check against Docker Hub (out of v1).
 
 ## Acceptance criteria
-- [ ] Passes the browser's installability checks on the tailnet HTTPS URL and on loopback; opens full screen.
-- [ ] With the service worker active, no request to `/api`, `/healthz`, `/events` or `/setup` is served from cache; streaming still works after install.
-- [ ] After the server is updated to a new build, an open installed app prompts a reload and then runs the new bundle.
+- [x] Passes the browser's installability checks on the tailnet HTTPS URL and on loopback; opens full screen.
+- [x] With the service worker active, no request to `/api`, `/healthz`, `/events` or `/setup` is served from cache; streaming still works after install.
+- [x] After the server is updated to a new build, an open installed app prompts a reload and then runs the new bundle.
