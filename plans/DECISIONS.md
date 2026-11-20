@@ -7645,3 +7645,10 @@ REWORK list:
 - **REWORK list:**
   1. Step 4 of the plan gives the C4 `it` a timeout of 120000 ms. The C4 `it` in `apps/api/test/packs/remaining-shapes-gate.test.ts` has no timeout argument, so it gets the vitest default of 20000 ms (apps/api vitest config, line 9). C4 does 12 enables and about 60 HTTP calls, then an agent run, so it can fail under load. Correction: add `, 120000` as the third argument of the C4 `it(...)`, re-run that file, and run `prettier --check` on it.
 - **Checked and correct:** the diff changes only the one new test file the plan lists. C1 and C4 match step 4 (the 14 names, valid rows with no error, `enabled` equal to `ENABLED.includes(name)`, `PACKS_ROOT` used). C4 covers clauses (i) to (v) and one agent run that checks all 12 names in the chat request `tools`. Criteria 2 and 3 are the existing tests the plan names; the reviewer did not re-run them.
+
+## 2026-11-20 — GNP-24 — Review (Sonnet, medium), Part 1 (the whole plan): APPROVED
+
+- **Result:** APPROVED, one reviewer on the re-review after the REWORK of the entry above. The branch `unit/GNP-24` has two commits above main: 391ec9a (the implementation) and b4f65d3 (the rework: the C4 `it` gets `, 120000` as its timeout, the one line the REWORK item asked for).
+- **Patch id:** ca10b60b445cbaf987c902b77f4687ec580bd9b3 (`git diff main...unit/GNP-24 -- . ':!plans' ':!units' | git patch-id --stable`). The reviewer checked it against the code.
+- **Checks by the implementer on b4f65d3 (Node v26.13.0):** the single test file exit 0, 2 tests passed; prettier --check exit 0; `npm run lint` exit 0; `npm test` exit 0, 0 failed; `npm run build` exit 0.
+- **Criteria:** 1 (test C1), 2 (the 14 existing per-tool golden cases), 3 (the existing remix enum test), 4 (test C4). The Demo of the unit is manual and is not run here.
