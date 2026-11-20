@@ -6899,3 +6899,11 @@ Part D (gates and commit):
 - **Differences from the plan (the implementer's report):** step 3a was applied because GNP-21 was not on main when the implementer ran. The nine goldens were checked by a script, not by eye. The nine untracked spec files were staged by name before the commit.
 - **Consequence:** the e2e step is not met. The e2e spec and the viewport are unchanged, as the plan requires, so the unit is not reviewed and not merged. A new Opus reviser must correct the plan for this cause, using the measured numbers above.
 - **Status:** `plans/GNP-22.md` set to `status: draft`. Branch `unit/GNP-22` (f270600) and worktree `scriba-prototype-wt/GNP-22` are kept.
+
+## 2026-11-20 — SHL-23 — Sonnet review (1 part): APPROVED, patch id b5c343884bc3cc56ef8754f8e422edf1a802539d
+
+- **Reviewer:** Sonnet, medium, part 1 (the only part, plan section 9). Code on `unit/SHL-23` at 0ac5d24 (base main 13ba93a), before the rebase.
+- **Result:** APPROVED. The diff of `apps/web/src/app/shell/app-nav.ts` matches plan section 4. `e2e/specs/nav-phone.e2e.ts` matches N1 and N2 of section 6. The changed files are only `apps/web/src/app/shell/app-nav.ts` and `e2e/specs/nav-phone.e2e.ts` (no existing e2e spec changed, step 13). The outputs of the report agree with section 6 for criteria 1 to 3.
+- **Minor, not a rework:** the report gives no separate output for step 2 (baseline red) or step 9 (the four phone regression specs). The full run of step 10 covers step 9.
+- **Known failure (not this unit):** `journey.e2e.ts:204` ("project from sample"), owned by PLT-23.
+- **Next:** rebase onto main, run the gates, check the patch id again, fast-forward.
