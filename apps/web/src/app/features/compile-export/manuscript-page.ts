@@ -36,6 +36,7 @@ import {
   manuscriptViewCopy,
   ORDER_CONFLICT_CODE,
 } from './manuscript-contract';
+import { ExportSettingsPanel } from './export-settings-panel';
 import { PreflightPanel } from './preflight-panel';
 import { SnapshotsPanel } from './snapshots-panel';
 
@@ -148,6 +149,7 @@ function isPart(value: string): value is ManuscriptPart {
     CdkDragHandle,
     CdkDropList,
     PreflightPanel,
+    ExportSettingsPanel,
     SnapshotsPanel,
   ],
   template: `
@@ -177,6 +179,7 @@ function isPart(value: string): value is ManuscriptPart {
       }
 
       <app-preflight-panel />
+      <app-export-settings-panel />
 
       @for (section of sections(); track section.part) {
         <section>

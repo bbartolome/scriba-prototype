@@ -25,6 +25,7 @@ import {
   MANUSCRIPT_STATUS_PATH,
   ORDER_CONFLICT_CODE,
 } from './manuscript-contract';
+import { EXPORT_SETTINGS_PATH } from './export-contract';
 import { SNAPSHOTS_PATH } from './snapshot-contract';
 
 const WAIT = { timeout: 5000 };
@@ -83,11 +84,18 @@ const VIEW_WARNED = {
 
 const ACTIVE = ACTIVE_PROJECT_ROUTE as ApiPath;
 
+/** The export settings the page's settings panel reads. */
+const SETTINGS_VIEW = {
+  revision: `sha256:${'4'.repeat(64)}`,
+  settings: { bibliography: 'all', lang: 'en' },
+};
+
 let doubles: ShellTestDoubles;
 
 beforeEach(() => {
   doubles = createShellTestDoubles();
   doubles.api.respond('GET', SNAPSHOTS_PATH, { snapshots: [] });
+  doubles.api.respond('GET', EXPORT_SETTINGS_PATH, SETTINGS_VIEW);
 });
 
 afterEach(() => {
@@ -467,11 +475,16 @@ describe('ManuscriptPage', () => {
 
     // The second read is the snapshots panel's list, which every device class sends (P13).
     expect(
-      doubles.api.requests.map((request) => [request.method, request.path]),
-    ).toEqual([
-      ['GET', MANUSCRIPT_PATH],
-      ['GET', SNAPSHOTS_PATH],
-    ]);
+      doubles.api.requests
+        .map((request) => `${request.method} ${request.path}`)
+        .sort(),
+    ).toEqual(
+      [
+        `GET ${MANUSCRIPT_PATH}`,
+        `GET ${SNAPSHOTS_PATH}`,
+        `GET ${EXPORT_SETTINGS_PATH}`,
+      ].sort(),
+    );
     expect(
       rowOf(root, 'drafts/ch02.md').querySelector('a')?.getAttribute('href'),
     ).toContain('/projects/p1/files');
