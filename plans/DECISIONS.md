@@ -6927,3 +6927,12 @@ Part D (gates and commit):
 - **Differences from the plan (the implementer's report):** the step 13 "baseline plus two" count in `apps/api` packs could not be checked against a pre-change count, because the baseline was taken on HEAD; the count is 27 before and after step 12a. The commands ran in the worktree `scriba-prototype-wt/GNP-22`.
 - **Review:** not started. The limit of this run was reached, so no Sonnet reviewers were started. The next run must review `unit/GNP-22` (1efdf03) with the two review parts of plan section 8 (part 1: steps 0 to 10, 12, 12a, 13 and 14 with AC 1 to 3; part 2: step 11 with AC 4), then rebase onto main, run the gates, and fast-forward.
 - **Status:** `plans/GNP-22.md` stays `status: planned`.
+
+## 2026-11-20 — GNP-22 — Sonnet review (2 parts): APPROVED, patch id f750cdebc60ee9f15f8e05540e26372677ec43bd
+
+- **Reviewers:** Sonnet, medium. Part 1 (steps 0 to 10, 12, 12a, 13, 14; AC 1 to 3) and Part 2 (step 11; AC 4). Code on `unit/GNP-22` at 1efdf03 (base a12af54), before the rebase.
+- **Result:** both APPROVED for the same patch id f750cdebc60ee9f15f8e05540e26372677ec43bd.
+- **Part 1 checks:** the diff changes only the files of plan section 3 (51 files); G2 (`golden.kit.ts` is GNP-21's C2 text); G3 (`propose_graph/*` and `checks.ts` unchanged); the five common blocks; C6 (only line 23 of `e2e/specs/tools-preview.e2e.ts`, 3200 to 6000); no temporary log line.
+- **Part 2 checks:** only the nine case files and the data test changed; the real-model run is recorded as not run (open point 4).
+- **Evidence notes (not reworks):** the report gives aggregate counts, not per-test output. The "baseline plus two" count was not checked (a documented deviation).
+- **Next:** rebase onto main, run the gates, check the patch id again, fast-forward.
