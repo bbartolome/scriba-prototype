@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, ElementRef, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIcon } from '@angular/material/icon';
 import {
@@ -45,6 +45,19 @@ function navItem(route: Route, href: string): NavItem | undefined {
   };
 }
 
+/**
+ * True when the event target is a field or an editable area, where the shortcuts must not act. The
+ * editors use CodeMirror, whose content is `contenteditable`.
+ */
+function isEditable(target: EventTarget | null): boolean {
+  return (
+    target instanceof Element &&
+    target.closest(
+      'input, textarea, select, [contenteditable]:not([contenteditable="false"])',
+    ) !== null
+  );
+}
+
 /** True when any route, at any depth, has a `data.nav` entry. */
 function hasNavEntry(routes: Routes): boolean {
   return routes.some((route) => {
@@ -88,6 +101,7 @@ function navItems(routes: Routes, projectId: string | undefined): NavItem[] {
  */
 @Component({
   imports: [MatIcon, RouterLink, RouterLinkActive],
+  host: { '(document:keydown)': 'onKeydown($event)' },
   selector: 'app-nav',
   styles: `
     :host {
@@ -190,6 +204,7 @@ function navItems(routes: Routes, projectId: string | undefined): NavItem[] {
 export class AppNav {
   private readonly devices = inject(DeviceClassService);
   private readonly router = inject(Router);
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   // Emits at each navigation, so the project items follow the URL.
   private readonly navigated = toSignal(
@@ -209,4 +224,38 @@ export class AppNav {
       .filter((item) => isAtLeast(device, item.min))
       .sort((a, b) => a.order - b.order);
   });
+
+  /**
+   * Alt+[ opens the previous nav entry and Alt+] the next, wrapping at both ends. It needs Alt and no
+   * other modifier, matches the key by `event.code` (so Option+[ works on a Mac), and does nothing
+   * while the event comes from a field or an editor.
+   */
+  protected onKeydown(event: KeyboardEvent): void {
+    if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+      return;
+    }
+    const step =
+      event.code === 'BracketLeft' ? -1 : event.code === 'BracketRight' ? 1 : 0;
+    if (step === 0 || isEditable(event.target)) return;
+    const items = this.items();
+    if (items.length === 0) return;
+
+    const path = this.router.url.split(/[?#]/)[0] ?? '';
+    const current = items.findIndex((item) => item.href === path);
+    let target: number;
+    if (current === -1) {
+      target = step > 0 ? 0 : items.length - 1;
+    } else {
+      target = (current + step + items.length) % items.length;
+    }
+    const item = items[target];
+    if (item === undefined) return;
+
+    event.preventDefault();
+    void this.router.navigateByUrl(item.href).then(() => {
+      const links =
+        this.elementRef.nativeElement.querySelectorAll<HTMLElement>('.items a');
+      links[target]?.focus();
+    });
+  }
 }

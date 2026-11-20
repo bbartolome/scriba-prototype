@@ -1,7 +1,7 @@
 import { Component, type Type } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../app';
 import { APP_ROUTES } from '../app.routes';
 import { AppNav } from './app-nav';
@@ -222,4 +222,86 @@ describe('app nav', () => {
       expect(rootOf(fixture).querySelector('[nav-project]')).toBeNull();
     }
   });
+
+  it('N10 moves between the nav entries with Alt+[ and Alt+], wrapping, and focuses the entry it opens', async () => {
+    resize(1280, 800);
+    const fixture = await renderProbeNav();
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/plain-view');
+    await settle(fixture);
+
+    press(document, { code: 'BracketRight', altKey: true });
+    await vi.waitFor(() => expect(router.url).toBe('/phone-view'));
+    await settle(fixture);
+    expect(document.activeElement?.getAttribute('href')).toBe('/phone-view');
+
+    // The first entry wraps back to the last one.
+    press(document, { code: 'BracketLeft', altKey: true });
+    await vi.waitFor(() => expect(router.url).toBe('/plain-view'));
+  });
+
+  it('N11 does not act from a field, an editable area, or with another modifier', async () => {
+    resize(1280, 800);
+    const fixture = await renderProbeNav();
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/plain-view');
+    await settle(fixture);
+
+    const field = document.createElement('textarea');
+    const editable = document.createElement('div');
+    editable.setAttribute('contenteditable', 'true');
+    fixture.nativeElement.append(field, editable);
+    for (const target of [field, editable]) {
+      const event = press(target, { code: 'BracketRight', altKey: true });
+      expect(event.defaultPrevented).toBe(false);
+    }
+
+    const others: KeyboardEventInit[] = [
+      { code: 'BracketRight' },
+      { code: 'BracketRight', altKey: true, ctrlKey: true },
+      { code: 'BracketRight', altKey: true, metaKey: true },
+      { code: 'BracketRight', altKey: true, shiftKey: true },
+    ];
+    for (const init of others) {
+      const event = press(document, init);
+      expect(event.defaultPrevented).toBe(false);
+    }
+
+    await settle(fixture);
+    expect(router.url).toBe('/plain-view');
+  });
 });
+
+/** Dispatches a cancelable keydown and returns it, so the test can read `defaultPrevented`. */
+function press(target: EventTarget, init: KeyboardEventInit): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    ...init,
+  });
+  target.dispatchEvent(event);
+  return event;
+}
+
+@Component({
+  imports: [AppNav],
+  template: `<app-nav />`,
+})
+class NavHost {}
+
+/** Renders the nav with the probe routes only, so its entries are the three probes at desktop. */
+async function renderProbeNav(): Promise<ComponentFixture<NavHost>> {
+  TestBed.configureTestingModule({
+    imports: [NavHost],
+    providers: [
+      { provide: SSE_CLIENT, useClass: SseClient },
+      { provide: API_CLIENT, useValue: new FakeApiClient() },
+      provideRouter(probes),
+    ],
+  });
+  await TestBed.compileComponents();
+  const fixture = TestBed.createComponent(NavHost);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  return fixture;
+}
