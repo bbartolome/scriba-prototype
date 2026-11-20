@@ -1,16 +1,18 @@
 import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
+import { AboutPanel } from '../about-panel';
 import { EditorLayout } from '../editor-layout';
 
 @Component({
   selector: 'app-core-gate',
-  imports: [EditorLayout],
+  imports: [EditorLayout, AboutPanel],
   template: `
     <h2>Core gate</h2>
     <p>
       A dummy lazy feature. It shows the registration pattern and its own chunk.
     </p>
+    <app-about-panel />
     @if (reference(); as ref) {
       <app-editor-layout [reference]="ref" />
     }
