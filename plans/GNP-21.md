@@ -1,6 +1,6 @@
 ---
 id: GNP-21
-status: draft
+status: planned
 module: genre-packs
 milestone: M7
 blocked_by: [GNP-02, GNP-06, GNP-12]
@@ -9,6 +9,8 @@ unblocks: [GNP-23, GNP-24]
 # GNP-21 plan — named_concept, comparison_set and objection_handler (shipped disabled)
 
 Batch: [GNP-21] (Genre packs, phase:remaining-shapes, M7), a batch of one. Planner draft at main `fd51cd9` (HEAD when read). The unit file (25 lines) was read in full. It has no notes section and no change note, so no unit change is recorded. The planner changed no file except this plan, committed nothing, and ran no build, install, test or npm command. Only read-only git and file reads were used.
+
+Revised by the Opus reviser at main `5d7e0e3` (the draft commit; the working tree was clean). No `unit/GNP-21`, `unit/GNP-22`, `unit/GNP-23` or `unit/GNP-24` branch exists, and there is no `plans/GNP-22.md`, `plans/GNP-23.md` or `plans/GNP-24.md`. `plans/DECISIONS.md` has no entry that names GNP-21 except the GNP-12 record (G8), so there is no PLAN DOES NOT WORK report for it. The reviser made no unit change and changed no file except this plan. Corrections: open points 1 to 8 are all settled (section 7); C3 is the decision, not a default, with the evidence that it changes no other unit's result; C2 now fixes the exact contract of the `enable` option, so that GNP-22 uses it as written, and step 0 handles either merge order; criterion 2 has one test (one `it` that awaits the three golden bodies, the GNP-14 rule C5), not three; the claim fixture carries `evidence`, a required field of the shipped `claim` type; A9 is a checked fact; A10 (the `/tools` list height in `tools-preview.e2e.ts`) is new; step 15 names the failure route of the e2e gate; section 8, the review parts, is new.
 
 Two findings change the unit's plan as written. (1) Two of the three descriptions start with words that the content suite's verb list does not contain, so AC 1 fails on the code as it stands (open point 1). (2) A shipped-disabled tool cannot be executed, so the golden helper needs an enable step, and the eval runner cannot call the tools until they are enabled (open points 2 and 3).
 
@@ -36,9 +38,9 @@ Labels: **U** = the unit file (line numbers); **M** = `modules/genre-packs.md`; 
 - **G6 GNP-14 (done): eval keys for entity outputs.** The eval cases of the two entity tools have no `citations` key (`scripts/eval-agent/cases/character-builder.json`, `world-builder.json`, checked by grep).
 - **G7 Navigator reading of the eval criterion (DECISIONS entry "2026-11-16 — GNP-08, GNP-09, GNP-10 — Navigator decision: reading of the eval-data criterion").** A criterion "eval case is added" is met by the case in the eval data, with a passing data test. The real-model run is recorded as not run. This plan applies the same reading to AC 3 (open point 3).
 - **G8 GNP-12 (done) and the unblocking record (DECISIONS entry "2026-11-16 — GNP-12 — Navigator decision (session `a2095714b1104371933fd5b36dd705e1`, option a)").** GNP-20, GNP-21, GNP-22, AGL-11 and TRG-17 are unblocked when GNP-12 closes. GNP-12 criterion 4 carries the real-model runs of the four workhorses, not of these three tools.
-- **C1 Names.** Tools `named_concept`, `comparison_set` and `objection_handler` (U lines 17 to 19). File `packages/packs/nonfiction/tools/<name>.yaml` (M line 37). Golden folders `packages/packs/test/golden/<tool>/`. Case names `pattern-examples`, `winners-cases` and `claim-objections`. Scenarios `pack-<tool>.json`. Eval ids `named-concept`, `comparison-set` and `objection-handler`. Test files: `apps/api/test/packs/tier2-shapes.test.ts` (AC 2, three tests, G4), `packages/packs/test/tier2-shapes.test.ts` (AC 1) and `scripts/eval-case-tier2-shapes.test.mjs` (AC 3, G4). `tier2-shapes` is the short form of the unit slug `tier2-entity-and-argument-shapes`. GNP-22 must not use this name.
-- **C2 The shipped-disabled golden: an `enable` option.** A new optional `enable` on `goldenCase` and `runGoldenCase` calls the public route `POST /api/tool-registry/tools/:name/enabled` (`TOOL_ENABLED_ROUTE`, `packages/contracts/src/tool-registry/routes.ts`; body `toolEnabledRequestSchema`, `{enabled: boolean}`, `catalog.ts` line 80). The route writes the author's switch into the test's temporary library only (`tools.controller.ts` line 98; `catalog.service.ts` `setEnabled`). The shipped `enabled: false` stays. Rejected: a `userTool` copy, which would test a copy of the spec and not the shipped prompt; a second helper, which would duplicate `goldenCase`.
-- **C3 The verb list.** Add `'coin'`, `'contrast'` and `'raise'` to `VERBS`, after `'face'` (checks.ts line 66). This is the one-line-per-verb rule of G1. Alternative in open point 1.
+- **C1 Names.** Tools `named_concept`, `comparison_set` and `objection_handler` (U lines 17 to 19). File `packages/packs/nonfiction/tools/<name>.yaml` (M line 37). Golden folders `packages/packs/test/golden/<tool>/`. Case names `pattern-examples`, `winners-cases` and `claim-objections`. Scenarios `pack-<tool>.json`. Eval ids `named-concept`, `comparison-set` and `objection-handler`. Test files: `apps/api/test/packs/tier2-shapes.test.ts` (AC 2, one test that awaits three golden bodies, G4 and C11), `packages/packs/test/tier2-shapes.test.ts` (AC 1) and `scripts/eval-case-tier2-shapes.test.mjs` (AC 3, G4). `tier2-shapes` is the short form of the unit slug `tier2-entity-and-argument-shapes`. GNP-22 must not use this name.
+- **C2 The shipped-disabled golden: an `enable` option.** A new optional `enable` on `goldenCase` and `runGoldenCase` calls the public route `POST /api/tool-registry/tools/:name/enabled` (`TOOL_ENABLED_ROUTE`, `packages/contracts/src/tool-registry/routes.ts`; body `toolEnabledRequestSchema`, `{enabled: boolean}`, `catalog.ts` line 80). The route writes the author's switch into the test's temporary library only (`tools.controller.ts` line 98; `catalog.service.ts` `setEnabled`). The shipped `enabled: false` stays. Rejected: a `userTool` copy, which would test a copy of the spec and not the shipped prompt; a second helper, which would duplicate `goldenCase`. **The contract, shared with GNP-22 (open point 2):** `enable?: boolean` on both `GoldenRunOptions` and `GoldenCaseOptions`; absent or `false` changes nothing (every existing case is unchanged); `true` makes `runGoldenCase`, after the session cookie and before the valid execute call, post `{enabled: true}` to `TOOL_ENABLED_ROUTE` with `:name` replaced by `options.tool`, and assert status 200. The switch lives in the case's temporary library (settings section `tools`, `tool-switches.service.ts` lines 11 to 26), which is deleted in the `finally` block, so no other case and no shipped file sees it. The invalid call runs in the same app and library, so it also sees the tool enabled. The option works with `userTool` too (the switch is keyed by name). The README bullet of step 8 documents it. GNP-22's golden tests pass `enable: true` and add no enable step of their own.
+- **C3 The verb list.** Add `'coin'`, `'contrast'` and `'raise'` to `VERBS`, after `'face'` (checks.ts line 66). This is the one-line-per-verb rule of G1. Settled by the reviser (open point 1): option (a). Evidence that it changes no other result: `VERBS` is read only by `isVerb` (checks.ts lines 228 to 233), which is called only by `checkDescription` (line 236), and no other file in the repository names `VERBS` or `checkDescription` (grep over `apps`, `packages`, `scripts`, `e2e`). Adding a word only widens what passes. The only test of a failing first word, `content-checks.test.ts` "a description whose first word is not a verb is a finding", uses "The", which stays out of the list; no fixture of `packages/packs/test/fixtures` starts with `coin`, `contrast` or `raise` (grep). No other draft or planned plan changes `checks.ts` (GNP-15 reads it only; GNP-22, GNP-23 and GNP-24 have no plan), and every description of GNP-22 and GNP-23 (`Rewrite`) starts with a word already in the list, so their results are the same in either merge order. GNP-01's list was meant to hold "the 18 distinct first words that the units use" (`plans/GNP-01.md` line 131); `coin`, `contrast` and `raise` are first words of GNP-21's unit descriptions that it missed. The list is a small plan choice of GNP-01, not a Navigator decision, and its own text names the change ("a new verb is one line in a reviewed file"). Option (b) would change the Specs text of the unit, which is not a Decisions section, so no reviser action covers it, and it is not needed because (a) gives a correct plan.
 - **C4 The catalogue golden does not change.** `{{toolCatalog}}` renders only valid and enabled tools (`executor.service.ts` line 173: `.filter((row) => row.valid && row.enabled)`). The three tools ship disabled, so `packages/packs/test/golden/propose_graph/recipe.golden.json` and `story.golden.json` stay as they are. No step regenerates them (checked in step 14).
 - **C5 Prompts.** The unit gives descriptions and inputs but no prompt steps, so this plan writes the first drafts. Drafts use the M4 skeleton. `named_concept` uses the G5 rule. The author may tune them through copy-on-write (M line 54).
 - **C6 Kinds.** `examples` and `cases`: no `x-scriba-entity-kinds` (the unit names none; M line 66). `claimIds`: `[claim]`.
@@ -46,6 +48,8 @@ Labels: **U** = the unit file (line numbers); **M** = `modules/genre-packs.md`; 
 - **C8 Eval values.** `named-concept`: no `citations` key (G6). `comparison-set` and `objection-handler`: `citations: present`. Intents use the sample: chapters 2 to 4 (`examples/nonfiction/sources/outline.md`), the claim `hours-figure-is-average` and the concept `deliberate-practice` (`examples/nonfiction/entities/`). The sample is read here for planning; no test reads it.
 - **C9 Fixtures.** Entity IDs `person-a`, `person-b`, `notes-a`, `claim-a` and `style-a` (each matches `^[a-z0-9][a-z0-9-]*$`). Each fixture passes the argument that the invalid call drops (`invalidWithout`), as the `goldenCase` helper requires.
 - **C10 Update command.** `cd apps/api && npx vitest run test/packs/tier2-shapes.test.ts -- --update-goldens`. The file filter goes before `--`, so the update run rewrites only this file's goldens (`plans/GNP-10.md` C10).
+- **C11 One test for criterion 2.** `goldenCase` returns the body of one `it` (`golden.kit.ts` lines 241 to 259). The one test of criterion 2 awaits the three bodies in turn, so each criterion has exactly one test. This is the GNP-14 rule (`plans/GNP-14.md` C5, line 43; `apps/api/test/packs/character-world-builder.test.ts` line 55).
+- **C12 The real-model run of the three eval cases.** Not run, and no unit carries it; recorded in the implementer report as "not run: the three tools ship disabled, and the eval runner boots a fresh temporary library (`scripts/eval-agent/run.mjs` lines 534 to 537) with no enable step and no per-case enable key (lines 100 to 134), so the agent is not offered the tools (`catalog.service.ts` line 359)". Who and when: a person with a local model server, once the runner can turn a tool on in its library or once the author ships a tool enabled; neither is in the scope of this unit. Open point 3 gives the reasons.
 
 ## 2. Facts checked and facts assumed
 
@@ -88,6 +92,21 @@ Code and data (read-only):
 - The sample (`examples/nonfiction/`): entities `deliberate-practice` (type concept), `hours-figure-is-average` (type claim), `k-anders-ericsson` (person), `plateau-is-reorganising` (claim), `book-style` (style-profile); sources `deliberate-practice-notes.md`, `ten-thousand-hours-notes.md`, `learning-plateaus-notes.md`; outline chapters 2 to 4.
 - Commit history: `fd51cd9` is HEAD on `main`; `git status` is clean.
 
+### Checked by the reviser (read-only, at main `5d7e0e3`)
+- `VERBS` (checks.ts lines 48 to 67) has the 18 words listed above and no `coin`, `contrast` or `raise`. Its only reader is `isVerb` (lines 228 to 233), called only by `checkDescription` (lines 236 to 257); a grep for `VERBS` and `checkDescription` over the repository (without `node_modules` and `dist`) finds only `checks.ts`. `apps/api/src/modules/tool-registry/checks.ts` does not exist; no API code checks a description's verb. `content-checks.test.ts` lines 155 to 171 test a failing first word with "The". The broken-spec fixtures all start with "Draft".
+- `golden.kit.ts`: imports at lines 14 to 20 (`TOOL_EXECUTE_ROUTE` at 15); `GoldenRunOptions` lines 70 to 78; `GoldenCaseOptions` lines 90 to 97; `post` lines 101 to 114 (passes the loopback host and origin); `runGoldenCase` from line 126, `sessionCookie` line 173, `path` line 174; `goldenCase` lines 241 to 259, which passes `userTool` and no other option to `runGoldenCase`. The text `enable` does not occur in `golden.kit.ts` or (outside line 33, which says "enabled") in `packages/packs/test/README.md`. `README_TERMS` (line 44) lists terms that the README must hold; step 8 removes none.
+- `tools.controller.ts` lines 98 to 106: `@Post(TOOL_ENABLED_ROUTE)`, `@HttpCode(200)`, body `toolEnabledRequestSchema`, returns `catalog.setEnabled(name, body.enabled)`. `catalog.service.ts` `setEnabled` (lines 229 to 245) writes the override through `toolSwitches.save`, which writes the `tools` section of the library's `settings.yaml` (`tool-switches.service.ts` lines 11 to 26). Existing tests already post this route with a session cookie (`apps/api/test/tool-registry-executor.test.ts` line 300; `tool-registry-save.test.ts` line 335).
+- `executor.service.ts` line 119 refuses a disabled tool with `TOOL_DISABLED` (no inline source in a golden call); lines 145 to 156 check only an entity's `type` against `x-scriba-entity-kinds`, not its front matter; lines 172 to 179 build `toolCatalog` from `list().tools.filter((row) => row.valid && row.enabled)`. So the propose_graph goldens, which run in their own temporary library with no switch, do not list the three disabled tools, and a golden case of this unit that enables its own tool does so in a separate library. C4 holds.
+- `catalog.service.ts` `functions()` lines 351 to 365 offers only valid and enabled tools.
+- `scripts/eval-agent/run.mjs`: `parseCase` lines 100 to 134 (no enable key); `loadCases` lines 137 to 175; a fresh library at lines 534 to 537. `scripts/eval-agent/README.md` lines 81 to 86: a failed expectation does not change the exit code. So the three cases fail their `tools` expectation in a run of every case until the tools can be enabled there, and the exit code stays 0.
+- `packages/packs/nonfiction/entity-types/claim.yaml`: `required: [statement, evidence, status]`; `concept.yaml`: `required: [name, definition]`. The claim fixture of step 5 carries all three.
+- `cold_open.yaml` lines 7 to 33 are the five common blocks as copied in step 4 (compared line by line). `packages/packs/core/tools/` holds `propose_graph.yaml` and `throughline_check.yaml`, neither `output: draft`, so the first draft tool in pack order is `cold_open`.
+- `real-packs.test.ts` uses `__dirname` (A9 checked); `packages/packs/package.json` has `yaml` 2.9.1 and runs `vitest run` with no config file.
+- `plans/DECISIONS.md`: GNP-01 entries at lines 4903 and 4910; GNP-02 line 5083; GNP-08/09/10 Navigator reading lines 5217 to 5222; GNP-12 lines 5255, 5263 and 5269; GNP-14 lines 6540 to 6598. None names GNP-22. None makes `VERBS` a Navigator decision.
+- In-flight plans: `CEX-14`, `GNP-15` (draft, branch `unit/GNP-15`), `GNP-18` (planned, branch `unit/GNP-18`), `GRR-15`, `PLT-23` and `SHL-23`. Grep for `golden.kit.ts`, `packages/packs/test/checks.ts`, `packages/packs/test/README.md`, `propose_graph/*.golden.json`, `eval-agent/cases`, `mock-openai/scenarios`, `packages/packs/nonfiction` and `eval-cases.test.mjs`: GNP-15 names `golden.kit.ts`, `checks.ts` and the README only as read or "Not changed" (its C7 and section 3), and changes `propose_graph/recipe.golden.json` (its M7), which this plan does not change; GNP-18 adds fiction eval cases in other files; GRR-15 reads `cold_open.yaml`. No path of section 3 is changed by another plan.
+- `units/GNP-22-tier2-3-draft-shapes.md`: nine draft tools, descriptions starting with set, paint, move, ask, turn, explain, tell, break and face (all in `VERBS`); criterion 3 needs an enabled tool to be callable via execute and in the function list. One of its tools is named `contrast`; a tool name and a verb of the list do not interact.
+- `e2e/specs/tools-preview.e2e.ts` line 23: viewport height 3200, raised from 2100 by GNP-14 (C12 there) because two new rows moved the person picker below the viewport.
+
 ### Assumed (each one is checked by the step named)
 - **A1** Node v26.x and npm 11.x are on the PATH (step 1).
 - **A2** `{{length}}` renders `800` for the default, because Ajv applies defaults (step 10; the same as GNP-10 A3).
@@ -97,7 +116,8 @@ Code and data (read-only):
 - **A6** The entity golden's system message is `OUTPUT_SYSTEM_MESSAGES.entity` (step 10; the draft one is checked by GNP-10).
 - **A7** The `examples/` rule of `scripts/examples-check/m1.mjs` still scans test files only for the text `examples/` (step 15).
 - **A8** Prettier keeps the prompt text. If it changes the text, keep its form and record the change (step 4).
-- **A9** Vitest provides `__dirname` in the packs and API test files, as `real-packs.test.ts` and `golden.kit.ts` already use it (step 12).
+- **A9** (now checked, see the reviser's list) Vitest provides `__dirname` in the packs and API test files, as `real-packs.test.ts` and `golden.kit.ts` already use it.
+- **A10** The three new rows of the `/tools` list (and the one of GNP-15, if it is on main first) leave the person picker of `tools-preview.e2e.ts` inside its 3200-pixel viewport (step 15). GNP-14 measured two rows moving the picker from inside 2100 to y=2290, so about 1000 pixels are left. If the spec fails on the picker being off screen, this is the GNP-14 cause: stop and report PLAN DOES NOT WORK with the measured position; do not change the spec.
 
 ## 3. Files to change
 
@@ -117,7 +137,7 @@ Code and data (read-only):
 | `e2e/fixtures/mock-openai/scenarios/pack-comparison_set.json` | new | (step 6) |
 | `e2e/fixtures/mock-openai/scenarios/pack-objection_handler.json` | new | (step 6) |
 | `apps/api/test/packs/golden.kit.ts` | changed: the optional `enable` option (C2) | step 7; shared with GNP-22 (open point 2) |
-| `apps/api/test/packs/tier2-shapes.test.ts` | new | AC 2, three tests (step 9) |
+| `apps/api/test/packs/tier2-shapes.test.ts` | new | AC 2, one test over three golden bodies (step 9; C11) |
 | `packages/packs/test/tier2-shapes.test.ts` | new | AC 1 (step 12) |
 | `packages/packs/test/README.md` | changed: one bullet for `enable` | the convention is documented here (step 8) |
 | `scripts/eval-agent/cases/named-concept.json` | new | eval case (step 13) |
@@ -131,10 +151,10 @@ Not changed, and why: `packages/packs/test/golden/propose_graph/*` (C4); `script
 
 Run from `/Users/bbartolome/workspace/scriba-prototype`. The implementer works on the branch `unit/GNP-21` created from `main`, records `node -v` and `npm -v` with each result, does not push, and does not use `git add -A` or `git commit -a`.
 
-0. **Base.** Seam: read-only git and the filesystem. `git rev-parse --short HEAD` (expected `fd51cd9` or a later main). `test ! -e packages/packs/nonfiction/tools/named_concept.yaml`, and the same for `comparison_set.yaml` and `objection_handler.yaml`, and `test ! -e scripts/eval-case-tier2-shapes.test.mjs`, all exit 0. `grep -c "'coin'" packages/packs/test/checks.ts` prints `0` (open point 1; if it prints `1`, the verb change of step 3 is already in). `grep -c "enable" apps/api/test/packs/golden.kit.ts` prints `0`. If a check fails, re-read the changed file before editing.
+0. **Base.** Seam: read-only git and the filesystem. `git rev-parse --short HEAD` (expected `fd51cd9` or a later main). `test ! -e packages/packs/nonfiction/tools/named_concept.yaml`, and the same for `comparison_set.yaml` and `objection_handler.yaml`, and `test ! -e scripts/eval-case-tier2-shapes.test.mjs`, all exit 0. `grep -c "'coin'" packages/packs/test/checks.ts` prints `0` (open point 1; if it prints `1`, the verb change of step 3 is already in). `grep -c "enable" apps/api/test/packs/golden.kit.ts` prints `0`. If it prints more, GNP-22 merged first with the option of C2: check that `GoldenRunOptions` and `GoldenCaseOptions` each have `enable?: boolean`, that `goldenCase` passes it on, and that `runGoldenCase` posts `TOOL_ENABLED_ROUTE` with `{ enabled: true }` before the execute call; if so, skip steps 7 and 8 (and check that the README bullet is there); if the option differs from C2, stop and report PLAN DOES NOT WORK. If another check fails, re-read the changed file before editing.
 1. **Runtime and baseline.** Seam: the build and the packs API tests. `node -v` prints `v26.x` and `npm -v` prints `11.x` (A1). `npm ci` only if `node_modules/` is absent. `npm run build -w @bbartolome/scriba-contracts && npm run build -w @bbartolome/scriba-api` exits 0. `cd apps/api && npx vitest run test/packs` exits 0 before any change. Record its test count.
 2. **Branch.** `git switch -c unit/GNP-21` on a clean tree from `main`.
-3. **Verb list (C3, G1).** Seam: the content suite, checked in step 12. In `packages/packs/test/checks.ts`, after `'face',` (line 66), add three lines: `'coin',`, `'contrast',` and `'raise',`. Expected: `grep -c "'coin'\|'contrast'\|'raise'" packages/packs/test/checks.ts` prints `3`. Do this only if open point 1 is settled as option (a).
+3. **Verb list (C3, G1).** Seam: the content suite, checked in step 12. In `packages/packs/test/checks.ts`, after `'face',` (line 66), add three lines: `'coin',`, `'contrast',` and `'raise',`. Expected: `grep -c "'coin'\|'contrast'\|'raise'" packages/packs/test/checks.ts` prints `3`. Open point 1 is settled as option (a). `npm test -w @bbartolome/scriba-packs` still passes the existing content-check tests (run in step 12).
 4. **Tool specs (C1, C5 to C7, M1 to M9).** Seam: pack lint, checked in step 12. Create the three files below, then `npx prettier --write` on each. The five common-input blocks of `comparison_set` and `objection_handler` are copied verbatim from `cold_open.yaml` (lines 7 to 33). Their `required` lists differ from `cold_open`'s only in the non-common key (`cases` or `claimIds`); the common keys' membership in `required` is the same (`coreIdea` required, the rest not), which the check of M1 requires.
 
 `packages/packs/nonfiction/tools/named_concept.yaml`:
@@ -429,7 +449,7 @@ prompt: |
       "ref": "claim-a",
       "type": "claim",
       "path": "entities/claim-a.md",
-      "content": "---\ntype: claim\nstatement: The practice hours in the study were estimates made from memory.\nstatus: weak\n---\n\nClaim A is the strongest objection to the hours figure."
+      "content": "---\ntype: claim\nstatement: The practice hours in the study were estimates made from memory.\nevidence: [notes-a]\nstatus: weak\n---\n\nClaim A is the strongest objection to the hours figure."
     },
     {
       "ref": "style-a",
@@ -539,73 +559,67 @@ function renderedPrompt(result: GoldenRunResult): string {
   return user.content;
 }
 
-// AC 2 of GNP-21: one golden test per tool. The three tools ship disabled, so each case turns its own tool on in
-// its temporary library first (the `enable` option of golden.kit.ts).
+// AC 2 of GNP-21: one golden test per tool, as one test that awaits the three golden bodies in turn (C11, the GNP-14
+// rule). The three tools ship disabled, so each case turns its own tool on in its temporary library first (the
+// `enable` option of golden.kit.ts).
+const namedConcept = goldenCase({
+  tool: 'named_concept',
+  name: 'pattern-examples',
+  enable: true,
+  expect: { kind: 'entity', sourcesUsed: ['person-a', 'notes-a'] },
+  invalidWithout: 'pattern',
+  check: (result) => {
+    const prompt = renderedPrompt(result);
+    expect(prompt).toContain('Practice planned in advance');
+    for (const id of ['person-a', 'notes-a']) {
+      expect(prompt, id).toContain(id);
+    }
+  },
+});
 
-it(
-  'AC 2: the named_concept golden matches, its prompt holds the pattern and each example with its ID, sourcesUsed is the example IDs, and invalid arguments return a readable Ajv error',
-  goldenCase({
-    tool: 'named_concept',
-    name: 'pattern-examples',
-    enable: true,
-    expect: { kind: 'entity', sourcesUsed: ['person-a', 'notes-a'] },
-    invalidWithout: 'pattern',
-    check: (result) => {
-      const prompt = renderedPrompt(result);
-      expect(prompt).toContain('Practice planned in advance');
-      for (const id of ['person-a', 'notes-a']) {
-        expect(prompt, id).toContain(id);
-      }
-    },
-  }),
-  60000,
-);
+const comparisonSet = goldenCase({
+  tool: 'comparison_set',
+  name: 'winners-cases',
+  enable: true,
+  expect: {
+    kind: 'draft',
+    sourcesUsed: ['person-a', 'notes-a', 'person-b'],
+  },
+  invalidWithout: 'cases',
+  check: (result) => {
+    const prompt = renderedPrompt(result);
+    for (const id of ['person-a', 'notes-a', 'person-b']) {
+      expect(prompt, id).toContain(id);
+    }
+    expect(prompt).toContain('hours of planned practice');
+    expect(prompt).toContain('game-changer');
+  },
+});
 
-it(
-  'AC 2: the comparison_set golden matches, its prompt holds the winners, the matched case, the variables and the style rules, sourcesUsed leaves out the style profile, and invalid arguments return a readable Ajv error',
-  goldenCase({
-    tool: 'comparison_set',
-    name: 'winners-cases',
-    enable: true,
-    expect: {
-      kind: 'draft',
-      sourcesUsed: ['person-a', 'notes-a', 'person-b'],
-    },
-    invalidWithout: 'cases',
-    check: (result) => {
-      const prompt = renderedPrompt(result);
-      for (const id of ['person-a', 'notes-a', 'person-b']) {
-        expect(prompt, id).toContain(id);
-      }
-      expect(prompt).toContain('hours of planned practice');
-      expect(prompt).toContain('game-changer');
-    },
-  }),
-  60000,
-);
+const objectionHandler = goldenCase({
+  tool: 'objection_handler',
+  name: 'claim-objections',
+  enable: true,
+  expect: { kind: 'draft', sourcesUsed: ['notes-a', 'claim-a'] },
+  invalidWithout: 'claimIds',
+  check: (result) => {
+    const prompt = renderedPrompt(result);
+    for (const id of ['notes-a', 'claim-a']) {
+      expect(prompt, id).toContain(id);
+    }
+    expect(prompt).toContain('game-changer');
+  },
+});
 
-it(
-  'AC 2: the objection_handler golden matches, its prompt holds the claim and the other entities with their IDs, sourcesUsed leaves out the style profile, and invalid arguments return a readable Ajv error',
-  goldenCase({
-    tool: 'objection_handler',
-    name: 'claim-objections',
-    enable: true,
-    expect: { kind: 'draft', sourcesUsed: ['notes-a', 'claim-a'] },
-    invalidWithout: 'claimIds',
-    check: (result) => {
-      const prompt = renderedPrompt(result);
-      for (const id of ['notes-a', 'claim-a']) {
-        expect(prompt, id).toContain(id);
-      }
-      expect(prompt).toContain('game-changer');
-    },
-  }),
-  60000,
-);
+it('AC 2: the named_concept, comparison_set and objection_handler goldens match once each tool is enabled in its temporary library, each prompt holds its arguments and entity IDs, each output has its kind and sourcesUsed without the style profile, and invalid arguments return a readable Ajv error', async () => {
+  await namedConcept();
+  await comparisonSet();
+  await objectionHandler();
+}, 180000);
 ```
 
 10. **Update run (D9 of the golden convention, C10).** Seam: the golden helper's update mode. `cd apps/api && npx vitest run test/packs/tier2-shapes.test.ts -- --update-goldens` exits 0 and writes the three `*.golden.json` files. Read each one. The `messages[0].content` of `named_concept` equals `OUTPUT_SYSTEM_MESSAGES.entity` (A6), and that of the two drafts equals `OUTPUT_SYSTEM_MESSAGES.draft`. The user message holds each argument value and each entity ID, and the style profile's banned phrase; it holds no line `Tools for a recipe`. Then `npx prettier --write packages/packs/test/golden/named_concept packages/packs/test/golden/comparison_set packages/packs/test/golden/objection_handler`. `git status --short` shows no other golden changed.
-11. **Compare run (D1).** Seam: golden comparison by value. `cd apps/api && npx vitest run test/packs/tier2-shapes.test.ts` exits 0 with three tests passed, and each golden status is `match`.
+11. **Compare run (D1).** Seam: golden comparison by value. `cd apps/api && npx vitest run test/packs/tier2-shapes.test.ts` exits 0 with one test passed; `goldenCase` asserts the golden status `match` for each of the three bodies.
 12. **Pack checks (AC 1, C3).** Seam: `lintPacks` and `contentChecks` on the real packs. Create `packages/packs/test/tier2-shapes.test.ts` with the content of section 5 (AC 1), then `npx prettier --write` on it. `npm run lint:packs` exits 0 and prints no finding that names the three tools. `npm test -w @bbartolome/scriba-packs` exits 0, and the new test passes; the count rises by one from the baseline. If the description check fails for a verb, the verb of step 3 is missing.
 13. **Eval data (AC 3, C8).** Seam: the eval data folder, read by the data test; no model. Create the three case files below, then `npx prettier --write` on each. Then create `scripts/eval-case-tier2-shapes.test.mjs` with the content of section 5 (AC 3), and `npx prettier --write` on it. `node --test scripts/eval-case-tier2-shapes.test.mjs` exits 0 with one test passed. `node --test scripts/eval-cases.test.mjs` exits 0 with two tests passed; its first test also checks the three new case files.
 
@@ -651,12 +665,12 @@ it(
 ```
 
 14. **Catalogue unchanged (C4).** Seam: git and the propose_graph golden. `git diff --stat -- packages/packs/test/golden/propose_graph` prints nothing. `cd apps/api && npx vitest run test/packs/propose-graph.test.ts` exits 0 without `--update-goldens`.
-15. **Format and root gates.** Seam: Prettier, the root scripts and the API build. `npx prettier --check` on every new and changed file of section 3 exits 0. `npm run build -w @bbartolome/scriba-api` exits 0, since it type-checks the test files. From the root, `npm run build`, `npm test`, `npm run lint` and `npx prettier --check .` exit 0; a failure already on the base is reported, not fixed. `cd apps/api && npx vitest run test/packs` exits 0, with the baseline count of step 1 plus three.
+15. **Format and root gates.** Seam: Prettier, the root scripts and the API build. `npx prettier --check` on every new and changed file of section 3 exits 0. `npm run build -w @bbartolome/scriba-api` exits 0, since it type-checks the test files. From the root, `npm run build`, `npm test`, `npm run lint` and `npx prettier --check .` exit 0; a failure already on the base is reported, not fixed. `cd apps/api && npx vitest run test/packs` exits 0, with the baseline count of step 1 plus one. The root `npm test` includes the e2e suite; if `tools-preview.e2e.ts` fails with the person picker off screen, follow A10 (stop, report PLAN DOES NOT WORK, do not change the spec).
 16. **Commit (the orchestrator asks).** Seam: the git index. `git add` each path of section 3 by name; `git diff --cached --stat` lists only those paths and no `plans/` or `units/` file. Commit with `feat(GNP-21): named_concept, comparison_set and objection_handler, shipped disabled`. Do not push.
 
 ## 5. Acceptance criteria and tests
 
-Each criterion has one test. AC 2 is one criterion whose text asks for one golden test per tool, so its test is the three `it`s of one file. Nothing is marked passed in this plan.
+Each criterion has one test. AC 2 is one criterion whose text asks for one golden test per tool; its one test awaits the three golden bodies (C11), so each tool has its golden case and the criterion has one test. Nothing is marked passed in this plan.
 
 **AC 1: All three pass the validation suite and ship disabled; the two draft tools carry the identical common inputs.** (unit line 22)
 - Test file: `packages/packs/test/tier2-shapes.test.ts` (new). Test name: `AC 1: the three Tier 2 tools pass the suite on the real packs, ship with enabled false, and have their output kinds`.
@@ -702,9 +716,9 @@ describe('Tier 2 shapes', () => {
 - Pass: both exit 0; the test passes. `contentChecks` covers the identity of the common inputs (`checkCommonInputs`, checks.ts line 192) and the descriptions (`checkDescription`, line 236). The test fails until the verb list holds `coin`, `contrast` and `raise` (open point 1).
 
 **AC 2: One golden test per tool (GNP-02).** (unit line 23)
-- Test file: `apps/api/test/packs/tier2-shapes.test.ts` (new), three tests: `AC 2: the named_concept golden ...`, `AC 2: the comparison_set golden ...`, `AC 2: the objection_handler golden ...`, with the names and content of step 9.
+- Test file: `apps/api/test/packs/tier2-shapes.test.ts` (new), one test: `AC 2: the named_concept, comparison_set and objection_handler goldens match once each tool is enabled in its temporary library, ...`, with the name and content of step 9.
 - Command: `cd apps/api && npx vitest run test/packs/tier2-shapes.test.ts` (steps 10 and 11).
-- Pass: each test passes. The golden status is `match`; the kind is `entity`, `draft` and `draft`; `sourcesUsed` is `['person-a', 'notes-a']`, `['person-a', 'notes-a', 'person-b']` and `['notes-a', 'claim-a']`; the call without `invalidWithout` returns 422 with `TOOL_ARGS_INVALID` and a message that contains that name; one model call; the `check` passes.
+- Pass: the test passes. For each of the three bodies, the golden status is `match`; the kind is `entity`, `draft` and `draft`; `sourcesUsed` is `['person-a', 'notes-a']`, `['person-a', 'notes-a', 'person-b']` and `['notes-a', 'claim-a']`; the call without `invalidWithout` returns 422 with `TOOL_ARGS_INVALID` and a message that contains that name; one model call; the `check` passes.
 
 **AC 3: Manual eval cases added.** (unit line 24)
 - Test file: `scripts/eval-case-tier2-shapes.test.mjs` (new). Test name: `AC 3: the three Tier 2 eval cases are in the eval data and use the documented keys and values`.
@@ -755,7 +769,7 @@ test('AC 3: the three Tier 2 eval cases are in the eval data and use the documen
 
 - **GNP-23 (remix; `blocked_by` names GNP-21, `units/GNP-23-remix.md` line 7).** It needs the enum of `targetShape` to list every shipped draft tool except `remix`. Of this unit's tools, the enum needs `comparison_set` and `objection_handler`, both `output: draft` and shipped disabled. The check `checkRemix` reads all loaded draft tools with no enabled filter (`packages/packs/test/checks.ts` line 97), so disabled tools count. `named_concept` is not in the enum (output `entity`). Agreed. GNP-23 is not changed.
 - **GNP-24 (remaining-shapes gate; `blocked_by` names GNP-21, `units/GNP-24-remaining-shapes-gate.md` line 7).** Its criterion 1 needs "the twelve nonfiction shapes" shipped disabled; this unit supplies three of them, GNP-22 the other nine. Its criterion 2 needs one golden test per tool through the mock server; section 5, AC 2 provides it. Its criterion 4 (enabling a disabled shape makes it callable and a canvas node) needs the disabled spec and the enable path, both present; this unit does not test it. Agreed.
-- **GNP-22 (not planned; `parallel_with` names GNP-21, `units/GNP-22-tier2-3-draft-shapes.md` line 8).** It is the same shape as this unit and needs the same test helper. (1) Its golden tests must use the `enable: true` option that step 7 adds to `golden.kit.ts`; it must not add its own enable step. (2) Whichever unit merges second rebases onto the first and keeps one copy of the option; a textual conflict on `golden.kit.ts` is resolved by taking the merged version. (3) Its test file name must not be `tier2-shapes`. (4) Its descriptions start with verbs already in `VERBS` (set, paint, move, ask, turn, explain, tell, break, face), so it needs no verb change. (5) Its draft tools carry the five common inputs verbatim, as this unit's do.
+- **GNP-22 (not planned; `parallel_with` names GNP-21, `units/GNP-22-tier2-3-draft-shapes.md` line 8).** It is the same shape as this unit and needs the same test helper. (1) Its golden tests must use the `enable: true` option that step 7 adds to `golden.kit.ts`, with the contract of C2 (`enable?: boolean` on `GoldenRunOptions` and `GoldenCaseOptions`; `true` posts `{ enabled: true }` to `TOOL_ENABLED_ROUTE` for `options.tool` after the session and before the execute call, and asserts 200); it must not add its own enable step or a second helper. Its criterion 3 (an enabled tool is callable via execute and in the function list) is its own test; the option gives it the enable step for execute, and the function list is read from the Tool registry's functions route. (2) Whichever unit merges second rebases onto the first and keeps one copy of the option; if GNP-22 merges first with this contract, step 0 of this plan skips steps 7 and 8. (3) Its test file name must not be `tier2-shapes`. (4) Its descriptions start with verbs already in `VERBS` (set, paint, move, ask, turn, explain, tell, break, face), so it needs no verb change. (5) Its draft tools carry the five common inputs verbatim, as this unit's do.
 - **GNP-19 and GNP-20 (`parallel_with` names GNP-21, both sides symmetric).** No file is shared. GNP-20 is done.
 - **GNP-15 (draft; `scene_builder` enabled).** It changes the catalogue golden (`propose_graph/recipe.golden.json`); this unit does not (C4). It uses `scripts/eval-case-scene-builder.test.mjs` and does not edit `golden.kit.ts` (its C7). No conflict in either merge order.
 - **GNP-02, GNP-06 and GNP-12 (done; `blocked_by` of GNP-21).** Their `unblocks` lists name GNP-21 (their line 9). The inverse holds. Their facts are used as they are: the golden harness (GNP-02), the `concept` and `claim` kinds (GNP-06), the gate (GNP-12). No change to them.
@@ -764,13 +778,22 @@ test('AC 3: the three Tier 2 eval cases are in the eval data and use the documen
 
 ## 7. Open points
 
-1. **The verb list (blocks AC 1 as written).** The unit's descriptions of `named_concept` ("Coin"), `comparison_set` ("Contrast") and `objection_handler` ("Raise") start with words that `VERBS` does not contain (checks.ts lines 48 to 67). The description check fails for all three as the code stands. The plan's default is option (a): add `coin`, `contrast` and `raise` to `VERBS` (C3). This is the one-line rule of GNP-01 open point 2, and no other unit or fixture is affected (grep: no fixture starts with these words, and the GNP-22 descriptions are already covered). Option (b): reword the three descriptions to start with a listed verb. That changes the unit's text (lines 17 to 19), which only the orchestrator may do. Decision needed before step 3. Blocking for AC 1.
-2. **The `enable` option is shared with GNP-22 (not planned).** GNP-21 adds it (C2); GNP-22 must use it (section 6). Plan default: GNP-21 adds it. The orchestrator should pass this to GNP-22's planner. Non-blocking.
-3. **The three eval cases cannot be run until their tools are enabled.** The agent offers only enabled tools (`catalog.service.ts` line 359), and the eval runner has no per-case enable key (`run.mjs` lines 108 to 134). A run before enabling records `tools` as failed. The plan's reading (G7): AC 3 is met by the data and the data test; the real-model run is recorded as not run in the implementer report. No gate carries that run: GNP-12 criterion 4 covers the four workhorses only, and GNP-24's demo does not run the eval. Decision needed: who runs these three cases, and when (for example, the author after enabling the tools, or GNP-24's gate). Non-blocking for the merge.
-4. **No kind hints for `examples` and `cases`.** The unit names no kinds for them. The plan's default is no hint (C6), so any entity kind is accepted. If the author wants a set, that is an expand-only change to the spec and needs no golden change. Non-blocking.
-5. **The prompt steps are the planner's first drafts (C5).** The unit gives none. They follow the M4 skeleton (drafts) and the G5 rule (`named_concept`). The author may tune them through copy-on-write (M line 54). Non-blocking.
-6. **The entity-output constraint (G5).** The plan uses the GNP-14 rule (`Use only the material above.`) for `named_concept`, which the Navigator's decision of 2026-11-16 (for `propose_graph`) and GNP-14 both follow. The orchestrator may confirm that it applies to a `concept` output. Non-blocking.
-7. **The entity output is not validated by the executor.** `finish` returns the trimmed text (`executor.service.ts`). Whether a reply is a valid `concept` file is checked later, when the Agent loop routes the output (AGL-13 and the Project store), not in this unit. The golden test checks the request only. Non-blocking; recorded for the reviewer.
-8. **Assumed facts A1 to A9** (section 2) are each checked by the step named there. None is blocking unless a step fails.
+All eight are settled by the reviser; none is open for the Navigator, and none changes a unit, a criterion or a settled decision.
 
-Unit change: none is required if open point 1 takes option (a). If option (b) is chosen, the orchestrator changes the three descriptions in `units/GNP-21-tier2-entity-and-argument-shapes.md` (lines 17 to 19) to start with listed verbs, and this plan's step 3 is then not run. The planner has changed no unit.
+1. **The verb list. Settled: option (a), add `coin`, `contrast` and `raise` to `VERBS` (C3, step 3).** The unit's descriptions of `named_concept` ("Coin"), `comparison_set` ("Contrast") and `objection_handler` ("Raise") start with words that `VERBS` does not contain (checks.ts lines 48 to 67), so the description check fails for all three as the code stands. Option (a) is safe: `VERBS` is read only by `checkDescription`, adding words only widens what passes, the one negative test uses "The", and no other unit's result changes in either merge order (evidence in C3 and in the reviser's list of section 2). Option (b), rewording the three descriptions of the unit's Specs section, is rejected: the unit text is right (the words are verbs, as module line 45 asks), (a) gives a correct plan, so the first YAGNI condition fails and no unit change is allowed.
+2. **The `enable` option is shared with GNP-22. Settled: GNP-21 adds it with the contract of C2; GNP-22 uses it as written.** GNP-22 has no plan and no branch. Its golden tests pass `enable: true` and add no other enable step (section 6). If GNP-22 merges first with the same option, step 0 of this plan skips steps 7 and 8. The orchestrator passes C2 to GNP-22's planner.
+3. **The real-model run of the three eval cases. Settled: AC 3 is met by the data and the data test; the real-model run is recorded as not run, and no unit carries it (C12).** The Navigator's data-only reading of the eval criterion (DECISIONS lines 5217 to 5222, G7) applies to "Manual eval cases added", whose main clause is the same data operation. GNP-14 (DECISIONS line 6602) and GNP-15 (its open point 1) recorded "not run" for the same criterion with no carrier. GNP-12 criterion 4 covers the four workhorses only (G8), and no criterion of GNP-22, GNP-23 or GNP-24 runs the eval script. Module line 90 and `units/README.md` line 141 put real models in the manual script, never in CI, and neither makes a unit run each case. The cases cannot pass a real run today: the runner boots a fresh library with no enable step (`run.mjs` lines 534 to 537) and no per-case enable key (lines 100 to 134), and the agent is offered only enabled tools (`catalog.service.ts` line 359). They do not break a run of every case: a failed expectation does not change the exit code (`scripts/eval-agent/README.md` lines 81 to 86). Who and when: a person with a local model server, after the runner can enable a tool or the author ships one enabled; adding that to the runner is outside this unit (no criterion needs it; the runner belongs to the Agent loop). No criterion or settled decision changes, so this is not a Navigator matter.
+4. **No kind hints for `examples` and `cases`. Settled: no hint (C6), the simplest option.** The unit names no kinds for them, and module line 66 asks for a hint only where the input means a definite set of kinds. If the author wants a set later, it is an expand-only spec change. No unit requirement is added.
+5. **The prompt steps are first drafts (C5). Settled: kept as written.** The unit gives none. They follow the M4 skeleton (drafts) and the G5 rule (`named_concept`); the author may tune them through copy-on-write (M line 54). No unit requirement is added.
+6. **The entity-output constraint (G5). Settled: the GNP-14 rule applies.** `named_concept` has output `entity`, as `character_builder` and `world_builder` do, so constraint 4 is `Use only the material above.` and nothing more (`plans/GNP-14.md` C10; the Navigator decision for `propose_graph`, 2026-11-16, point 2, option (a)).
+7. **The entity output is not validated by the executor. Settled: recorded, no step.** `finish` returns the trimmed text. Whether a reply is a valid `concept` file is checked when the Agent loop routes the output, not in this unit; the golden test checks the request, as module line 85 asks.
+8. **Assumed facts A1 to A8 and A10** (section 2) are each checked by the step named there; A9 is now checked. None is blocking unless a step fails; A10 has its own failure route.
+
+Unit change: none. The reviser changed no unit.
+
+## 8. Review parts
+
+The plan has two parts. Each step of section 4 and each test of section 5 is in exactly one part.
+
+- **Part 1 — the three specs, the verb list, the enable option and the golden test.** Steps 0 to 12, 14, 15 and 16. Tests: AC 1 (`packages/packs/test/tier2-shapes.test.ts`, "AC 1: the three Tier 2 tools pass the suite on the real packs, ship with enabled false, and have their output kinds") and AC 2 (`apps/api/test/packs/tier2-shapes.test.ts`, "AC 2: the named_concept, comparison_set and objection_handler goldens match ..."). Files: the three specs, `packages/packs/test/checks.ts`, the three fixtures and three goldens, the three scenarios, `apps/api/test/packs/golden.kit.ts`, `packages/packs/test/README.md` and the two test files. The reviewer checks that the `enable` option matches C2 word for word (it is the contract GNP-22 uses), that the `VERBS` diff is three added lines, that `propose_graph/*` is unchanged (step 14), and that no existing golden changed.
+- **Part 2 — the eval cases.** Step 13. Test: AC 3 (`scripts/eval-case-tier2-shapes.test.mjs`, "AC 3: the three Tier 2 eval cases are in the eval data and use the documented keys and values"). Files: the three case files in `scripts/eval-agent/cases/` and the data test. The reviewer checks that the implementer report records the real-model run as not run, with the reason of C12.
