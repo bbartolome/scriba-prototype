@@ -7261,3 +7261,10 @@ Part D (gates and commit):
 - **Code:** `unit/AGL-24` at `44eb64c`, unchanged by the rework. The patch id recomputed from `git diff main...unit/AGL-24 -- . ':!plans' ':!units' | git patch-id --stable` is the same.
 - **Reviewer (Sonnet, medium):** the rework entry of the same date records M1 to M4 with a failing test or lint error each, and a restore with an empty `git status --short`; step 12 records exit 0 on the first run. M2 differs from the plan's prediction (TypeError at line 181, not the summary assertion), and the record says so; AC2 still fails. The `diff --git` lines are the seven paths of the section 2 table. The test-file edits were checked in the first review and are covered by the same patch id.
 - **Next:** AGL-22 is on main first, then AGL-24 is rebased. If the rebase changes the patch id, a new review is needed.
+
+## 2026-11-20 — AGL-22 — On main at 025ab14 (fast-forward from 636890a); gates passed on the rebased code head 766479c; branch and worktree removed
+
+- **Code:** the code is two commits, `839c39a` (part 1) and `766479c` (part 2), rebased onto main by cherry-pick. The patch id is unchanged, 4c343e24d5b44d48e8042cb848c78b0a31920948, and the approval holds.
+- **Gates on the rebased head (Node v26.13.0):** `npm run lint` exit 0; `npm test` exit 0; `npm run build` exit 0.
+- **Commit on the branch before the fast-forward:** `025ab14` ticks criteria 1 to 3 of `units/AGL-22-fetch-page.md` (the checkboxes at lines 24 to 26) and sets `plans/AGL-22.md` to `status: done`.
+- **Units now available:** AGL-23 and AGL-26 (their blockers are on main). The scout runs again.
