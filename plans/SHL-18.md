@@ -1,6 +1,6 @@
 ---
 id: SHL-18
-status: planned
+status: done
 ---
 # SHL-18 plan — About panel, desktop keyboard shortcuts, loading skeletons, Shell empty states
 

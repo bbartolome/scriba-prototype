@@ -17,6 +17,6 @@ unblocks: [SHL-19]
 - **Loading skeletons** for Shell-owned loading states; **empty states** the Shell owns (no project, no features registered, not found).
 
 ## Acceptance criteria
-- [ ] The about panel shows version, revision and health.
-- [ ] Documented shortcuts navigate between nav entries and trigger save in the editor.
-- [ ] Component tests cover skeletons and empty states.
+- [x] The about panel shows version, revision and health.
+- [x] Documented shortcuts navigate between nav entries and trigger save in the editor.
+- [x] Component tests cover skeletons and empty states.
