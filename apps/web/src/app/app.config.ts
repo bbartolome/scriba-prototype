@@ -12,6 +12,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter } from '@angular/router';
 import { provideMarkdown, SANITIZE } from 'ngx-markdown';
 import { APP_ROUTES } from './app.routes';
+import { PwaUpdate } from './shell/pwa-update';
 import { SseClient } from './shell/sse-client';
 import { SSE_CLIENT } from './shell/tokens';
 
@@ -31,6 +32,9 @@ export const appConfig: ApplicationConfig = {
     }),
     provideAppInitializer(() => {
       inject(SSE_CLIENT).start();
+    }),
+    provideAppInitializer(() => {
+      inject(PwaUpdate).start();
     }),
   ],
 };

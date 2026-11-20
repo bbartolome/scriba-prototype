@@ -1,11 +1,17 @@
 import { execFileSync } from 'node:child_process';
 import { createHash, X509Certificate } from 'node:crypto';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { request as httpRequest } from 'node:http';
+import { existsSync } from 'node:fs';
+import { cp, mkdtemp, readFile, rm, unlink, writeFile } from 'node:fs/promises';
+import {
+  createServer as createHttpServer,
+  request as httpRequest,
+  type Server,
+} from 'node:http';
 import { createServer as createHttpsServer } from 'node:https';
-import { tmpdir } from 'node:os';
 import type { AddressInfo } from 'node:net';
-import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { extname, join, normalize, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   chromium,
   expect,
@@ -28,6 +34,16 @@ import {
 // Specs in this file run with a service worker. Every other spec blocks it (playwright.config.ts).
 test.use({ serviceWorkers: 'allow' });
 
+const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+const shellDir = join(repoRoot, 'apps', 'web', 'dist', 'scriba-web', 'browser');
+const serviceWorkerConfig = join(repoRoot, 'apps', 'web', 'ngsw-config.json');
+const ngswConfigCli = join(
+  repoRoot,
+  'node_modules',
+  '@angular',
+  'service-worker',
+  'ngsw-config.js',
+);
 const apiPort = 8080;
 const excludedPrefixes = ['/api/', '/healthz', '/events', '/setup'];
 
@@ -87,6 +103,87 @@ function recordResponses(page: Page, records: ResponseRecord[]): Promise<void> {
         },
       );
     });
+}
+
+const contentTypes: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
+  '.png': 'image/png',
+  '.ico': 'image/x-icon',
+  '.svg': 'image/svg+xml',
+};
+
+// A static server for the app shell, so a test can swap the root for a second build.
+type StaticServer = {
+  url: string;
+  setRoot(root: string): void;
+  close(): Promise<void>;
+  setDown(down: boolean): void;
+};
+
+async function startStaticServer(initialRoot: string): Promise<StaticServer> {
+  let root = initialRoot;
+  let down = false;
+  const sockets = new Set<import('node:net').Socket>();
+  const server: Server = createHttpServer((req, res) => {
+    const url = new URL(req.url ?? '/', 'http://127.0.0.1');
+    if (url.pathname === HEALTHZ_ROUTE) {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ status: 'ok' }));
+      return;
+    }
+    const relative = decodeURIComponent(url.pathname);
+    const file = normalize(join(root, relative));
+    if (!file.startsWith(root + sep) && file !== root) {
+      res.writeHead(404).end();
+      return;
+    }
+    // A path with no dot is a client route, so it answers the shell.
+    const target = extname(relative) !== '' ? file : join(root, 'index.html');
+    if (!existsSync(target)) {
+      res.writeHead(404).end();
+      return;
+    }
+    readFile(target).then(
+      (body) => {
+        res.writeHead(200, {
+          'content-type':
+            contentTypes[extname(target)] ?? 'application/octet-stream',
+          'cache-control': 'no-cache',
+        });
+        res.end(body);
+      },
+      () => res.writeHead(500).end(),
+    );
+  });
+  server.on('connection', (socket) => {
+    sockets.add(socket);
+    socket.on('close', () => sockets.delete(socket));
+    if (down) socket.destroy();
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const port = (server.address() as AddressInfo).port;
+  return {
+    url: `http://127.0.0.1:${port}`,
+    setRoot(next) {
+      root = next;
+    },
+    setDown(next) {
+      down = next;
+      if (next) {
+        for (const socket of sockets) socket.destroy();
+      }
+    },
+    close() {
+      return new Promise<void>((resolve) => {
+        for (const socket of sockets) socket.destroy();
+        server.close(() => resolve());
+      });
+    },
+  };
 }
 
 test.describe('pwa', () => {
@@ -359,5 +456,110 @@ test.describe('pwa', () => {
     }
     expect(cached).toContain('/index.html');
     expect(cached.some((path) => /\/main-[^/]+\.js$/.test(path))).toBe(true);
+  });
+
+  test('criterion 3: an open installed app prompts a reload after a server update and runs the new bundle', async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    const workRoot = await mkdtemp(join(tmpdir(), 'scriba-shl17-update-'));
+    const buildA = join(workRoot, 'a');
+    const buildB = join(workRoot, 'b');
+    const server = await startStaticServer(buildA);
+    try {
+      if (!existsSync(shellDir)) {
+        throw new Error(`no production build at ${shellDir}`);
+      }
+      await cp(shellDir, buildA, { recursive: true });
+      await cp(shellDir, buildB, { recursive: true });
+
+      // Build B is made from build A (F32): A's main bundle plus one statement, and a new worker manifest.
+      const indexB = await readFile(join(buildB, 'index.html'), 'utf8');
+      const oldMain = /src="(main-[^"]+\.js)"/.exec(indexB)?.[1];
+      if (!oldMain) throw new Error('build A has no main bundle');
+      const mainText = await readFile(join(buildB, oldMain), 'utf8');
+      await writeFile(
+        join(buildB, 'main-shl17b.js'),
+        `${mainText}\nconsole.info('scriba build B');\n`,
+      );
+      await unlink(join(buildB, oldMain));
+      await writeFile(
+        join(buildB, 'index.html'),
+        indexB.split(oldMain).join('main-shl17b.js'),
+      );
+      execFileSync(
+        process.execPath,
+        [ngswConfigCli, buildB, serviceWorkerConfig],
+        {
+          cwd: '/',
+          stdio: 'ignore',
+        },
+      );
+      const manifestA = await readFile(join(buildA, 'ngsw.json'), 'utf8');
+      const manifestB = await readFile(join(buildB, 'ngsw.json'), 'utf8');
+      expect(manifestB).not.toBe(manifestA);
+
+      const logs: string[] = [];
+      page.on('console', (message) => logs.push(message.text()));
+      await page.goto(`${server.url}/`);
+      await waitForController(page);
+      // The page must load through the worker, so the worker maps this client to version A.
+      await page.reload();
+      await waitForController(page);
+      const before = await page
+        .locator('script[src^="main-"]')
+        .getAttribute('src');
+      expect(before).toBe(oldMain);
+
+      // Point the server at build B and fire the update trigger of the page (P9).
+      server.setRoot(buildB);
+      await page.evaluate(() =>
+        document.dispatchEvent(new Event('visibilitychange')),
+      );
+      await expect(
+        page.getByText('A new version of Scriba is ready.'),
+      ).toBeVisible({ timeout: 60_000 });
+
+      await Promise.all([
+        page.waitForEvent('load', { timeout: 60_000 }),
+        page.getByRole('button', { name: 'Reload' }).click(),
+      ]);
+      await expect
+        .poll(() => page.locator('script[src^="main-"]').getAttribute('src'), {
+          timeout: 30_000,
+        })
+        .toBe('main-shl17b.js');
+      expect(logs).toContain('scriba build B');
+    } finally {
+      await server.close();
+      await rm(workRoot, { recursive: true, force: true });
+    }
+  });
+
+  test('offline: with the server down, the cached shell loads and shows Server unreachable', async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    const workRoot = await mkdtemp(join(tmpdir(), 'scriba-shl17-offline-'));
+    const buildA = join(workRoot, 'a');
+    const server = await startStaticServer(buildA);
+    try {
+      await cp(shellDir, buildA, { recursive: true });
+      await page.goto(`${server.url}/`);
+      await waitForController(page);
+
+      // The server destroys every new socket, as a network failure does.
+      server.setDown(true);
+      await page.reload();
+      await expect(page.getByRole('heading', { name: 'Scriba' })).toBeVisible({
+        timeout: 30_000,
+      });
+      await expect(page.getByText('Server unreachable')).toBeVisible({
+        timeout: 30_000,
+      });
+    } finally {
+      await server.close();
+      await rm(workRoot, { recursive: true, force: true });
+    }
   });
 });

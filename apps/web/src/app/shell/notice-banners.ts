@@ -20,6 +20,9 @@ import { NoticesService } from './notices';
     @for (banner of notices.banners(); track banner.key) {
       <div class="banner" role="status">
         <span>{{ banner.message }}</span>
+        @if (banner.action; as action) {
+          <button matButton (click)="action.run()">{{ action.label }}</button>
+        }
         @if (banner.dismissible) {
           <button matButton (click)="notices.clearBanner(banner.key)">
             Dismiss

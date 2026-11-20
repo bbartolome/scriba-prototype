@@ -73,6 +73,29 @@ describe('notices', () => {
     expect(bannerArea(fixture).textContent).not.toContain('Server unreachable');
   });
 
+  it('shows a banner action before Dismiss, and the action calls run once', async () => {
+    const fixture = await render();
+    const run = vi.fn();
+    TestBed.inject(NoticesService).postBanner({
+      key: 'action',
+      message: 'Update ready',
+      dismissible: true,
+      action: { label: 'Reload', run },
+    });
+    fixture.detectChanges();
+
+    const buttons = [
+      ...bannerArea(fixture).querySelectorAll<HTMLButtonElement>('button'),
+    ];
+    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
+      'Reload',
+      'Dismiss',
+    ]);
+    buttons[0]!.click();
+
+    expect(run).toHaveBeenCalledTimes(1);
+  });
+
   it('shows a snackbar in the overlay, and its Dismiss action closes it within 1 s', async () => {
     const fixture = await render();
     TestBed.inject(NoticesService).postSnackbar('Settings saved');

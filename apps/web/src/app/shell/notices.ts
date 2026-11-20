@@ -7,6 +7,8 @@ export interface BannerNotice {
   message: string;
   /** A Dismiss button is shown when this is true. Defaults to false. */
   dismissible?: boolean;
+  /** An optional button shown before Dismiss. */
+  action?: { label: string; run: () => void };
 }
 
 /** Banners and snackbars that features post. Root-provided, so any feature can inject it. */
