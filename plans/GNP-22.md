@@ -1,6 +1,6 @@
 ---
 id: GNP-22
-status: planned
+status: draft
 module: genre-packs
 milestone: M7
 blocked_by: [GNP-02, GNP-06, GNP-12]
