@@ -20,6 +20,6 @@ Merging this **closes Agent loop `phase:compile-tools`**.
 - Offered only once this unit lands.
 
 ## Acceptance criteria
-- [ ] "Run the preflight" returns the five checks as a card.
-- [ ] An export started by the agent produces the same result as one started from the manuscript view.
-- [ ] No agent tool starts a recipe run or calls the Graph runner (lint and a request-log assertion).
+- [x] "Run the preflight" returns the five checks as a card.
+- [x] An export started by the agent produces the same result as one started from the manuscript view.
+- [x] No agent tool starts a recipe run or calls the Graph runner (lint and a request-log assertion).
