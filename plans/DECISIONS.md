@@ -7304,3 +7304,11 @@ Part D (gates and commit):
 - **Workflow at `3b859d4`:** the job has an `Install` step (`npm ci`), an install step for Pandoc 3.13 and Typst 0.15.1, and a `Test` step with `SCRIBA_REQUIRE_EXPORT_TOOLS: '1'` running `npm test`.
 - **Not visible:** the step results, and whether the export steps were skipped. The step logs need sign-in ("Sign in to view logs"), and the summary shows no skipped status. The job-level result is success.
 - **Status:** the Navigator's tick conditions are met except the step-level log check. The box stays unticked. It is ticked after the `Test` step log of this run is seen, showing that the export tests ran and were not skipped. The unit's status and merge are unchanged.
+
+## 2026-11-20 — CEX-15 — Criterion 2 checked: CI run 44659727464 (push to main, headSha 3b859d4), the Test step log supplied by the user; the box is ticked
+
+- **Run (summary page, read earlier this date):** workflow `ci`, event `push`, branch `main`, headSha `3b859d4`, status Success.
+- **Ancestry (checked locally):** `3b859d4` is on `main`; the CEX-10 to CEX-14 tip commits are its ancestors.
+- **Test step (log supplied by the user, the step output of this run):** the step runs `npm test` with `SCRIBA_REQUIRE_EXPORT_TOOLS: 1`. `@bbartolome/scriba-contracts` 20 files, 253 tests passed. `@bbartolome/scriba-api` 158 files, 586 tests passed, none skipped; the compile-export files (DOCX, EPUB, PDF, export runner, preflight, templates, assembly, claims orphans, gate, export tools) ran and passed. `@bbartolome/scriba-web` 81 files, 577 tests passed. `@bbartolome/scriba-packs` 6 files, 16 tests passed. The scripts suite (`node --test scripts/*.test.mjs`) passed 114 tests, including the CI-workflow checks for the Pandoc 3.13 and Typst 0.15.1 install steps and for `SCRIBA_REQUIRE_EXPORT_TOOLS` on the Test step.
+- **Result against the Navigator's conditions (this date, CEX-15, option A):** event push, branch main, headSha 3b859d4, conclusion success, the CEX-10 to CEX-14 commits as ancestors, the install steps before the Test step, the Test step with `SCRIBA_REQUIRE_EXPORT_TOOLS=1`, and no skipped export tests. All met.
+- **Action:** `units/CEX-15-export-gate-image-smoke.md` line 21 is ticked. The unit's status (done) and merge are unchanged.
