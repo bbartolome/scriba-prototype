@@ -7414,3 +7414,20 @@ Part D (gates and commit):
 - **Not judged here:** M-C3 (criterion 3, the owner's Word and EPUB check, OP1 decision above). Step 12 (the docs commit that ticks criteria 1 and 2 in `units/CEX-20-milestone-gate.md`) was denied by a permission check during implementation and is not on the branch. The status stays `planned` on the branch.
 - **Code approval:** holds for ca2ef0b226de6b59f994a4809a4852f89df8d0b7.
 - **Next:** step 3 cannot complete. Its item 8 needs the box ticks and `status: done` on the unit branch, which the permission check refused, and CEX-20 stays in the pipeline until the owner's check is recorded (OP1). The branch `unit/CEX-20` and its worktree `scriba-prototype-wt/CEX-20` are kept. Nothing is merged to main for CEX-20 this cycle.
+
+## 2026-11-20 — GRR-15 — The owner's choice: fix (relayed by the parent session)
+
+- **Decision (owner):** fix. The four failures of the step 13 rerun on `be174d2` (35 passed, 4 failed, 1 skipped) are fixed inside GRR-15's REWORK rules: the two graph-touch failures (pin and pan) in GRR-15's own new spec; the journey "project from sample" failure through the open PLT-23 vs GRR-15 point; and the pwa offline failure, whose cause is not yet known and needs diagnosis. Then step 13 is rerun until it has zero failures, and GRR-15 goes through the normal review and merge stages. The new patch id is recorded in this file.
+- **PLT-23 vs GRR-15 point:** not decided by the owner. The pipeline decides it through its own process (a subagent or the Navigator). `plans/PLT-23.md` recommends option (a), an `afterAll` cleanup in GRR-15's rework.
+- **Reason:** the owner's answer to the GRR-15 open question.
+
+## 2026-11-20 — GNP-15 — The owner approves one temporary edit (relayed by the parent session)
+
+- **Decision (owner):** "I approve" for the option "Approve that edit explicitly". The approval covers one temporary `console.log` edit to `e2e/specs/tools-preview.e2e.ts`, which step 15 needs. It must be reverted before any commit and must not be committed. The approval does not extend to other edits. If port 8080 is still in use at step 15, that is a blocker for the step; the approval is not changed to work around it. After step 15, GNP-15 continues under the normal rules.
+- **Reason:** the owner's answer to the GNP-15 step 15 classifier refusal.
+
+## 2026-11-20 — CEX-20 — The owner cannot run the criterion 3 check: fallback of D17 (relayed by the parent session)
+
+- **Decision (owner):** "I approve and I cant check". The owner approves the docs commit that ticks criteria 1 and 2 in `units/CEX-20-milestone-gate.md`. The owner cannot run the Word and EPUB check for criterion 3. The fallback of D17 and step 13 (c) applies: CEX-20 completes with criterion 3 unticked, and the cause is recorded in `plans/CEX-20.md` section 8, OP1.
+- **Cause (for the record of step 11):** the owner could not run the manual Word and EPUB check (criterion 3, demo steps 5 and 6). No record of that check exists, so criterion 3 stays unticked.
+- **Reason:** the owner's answer to OP1 of `plans/CEX-20.md`.
