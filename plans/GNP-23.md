@@ -1,6 +1,6 @@
 ---
 id: GNP-23
-status: planned
+status: done
 module: genre-packs
 ---
 # GNP-23 plan — core/tools/remix and the shape-list consistency check

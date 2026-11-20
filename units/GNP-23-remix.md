@@ -19,6 +19,6 @@ unblocks: [GNP-24]
 - Activates the content suite's **Remix consistency check** (GNP-01): CI fails if a draft tool is added or renamed without updating `targetShape`.
 
 ## Acceptance criteria
-- [ ] Passes the validation suite; the enum equals the set of shipped draft tools minus `remix`.
-- [ ] Adding a fixture draft tool without updating the enum fails the content suite.
-- [ ] Golden test passes; manual eval case added.
+- [x] Passes the validation suite; the enum equals the set of shipped draft tools minus `remix`.
+- [x] Adding a fixture draft tool without updating the enum fails the content suite.
+- [x] Golden test passes; manual eval case added.
