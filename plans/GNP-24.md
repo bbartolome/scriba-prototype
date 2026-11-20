@@ -1,6 +1,6 @@
 ---
 id: GNP-24
-status: planned
+status: done
 ---
 # GNP-24 plan — remaining-shapes gate: the phase checklist
 

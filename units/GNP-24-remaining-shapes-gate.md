@@ -14,10 +14,10 @@ unblocks: []
 Merging this **closes Genre packs `phase:remaining-shapes`**.
 
 ## Acceptance criteria (the phase checklist)
-- [ ] All fourteen tools pass the validation suite. The twelve nonfiction shapes ship disabled; Throughline check and Remix ship enabled.
-- [ ] One golden test per tool through the mock OpenAI server.
-- [ ] Remix's `targetShape` enum matches the shipped draft tools.
-- [ ] Enabling a disabled shape through the Tool registry makes it callable by the agent and available as a canvas node.
+- [x] All fourteen tools pass the validation suite. The twelve nonfiction shapes ship disabled; Throughline check and Remix ship enabled.
+- [x] One golden test per tool through the mock OpenAI server.
+- [x] Remix's `targetShape` enum matches the shipped draft tools.
+- [x] Enabling a disabled shape through the Tool registry makes it callable by the agent and available as a canvas node.
 
 ## Demo (under 5 min)
 1. Run Throughline check on a sample chapter with one drifting paragraph and see it flagged.
