@@ -15,7 +15,13 @@ import {
   CatalogService,
   ExecutorService,
 } from '../tool-registry/tool-registry.module';
+import {
+  ExportService,
+  ManuscriptService,
+  PreflightService,
+} from '../compile-export/compile-export.module';
 import { builtinTools } from './tools/builtin-tools';
+import { compileDefinitions } from './tools/compile-tools';
 import {
   DEFAULT_FETCH_POLICY,
   FETCH_POLICY,
@@ -52,19 +58,19 @@ export class AgentToolsService {
     private readonly entities: EntitiesService,
     private readonly store: ProjectStoreService,
     private readonly projects: ProjectsService,
+    manuscript: ManuscriptService,
+    preflight: PreflightService,
+    exporter: ExportService,
     // The fetch limits and the test allowance (AGL-22, plan P17). The composed app binds none, so production uses the
     // default policy, which has no allowance.
     @Optional() @Inject(FETCH_POLICY) fetchPolicy?: FetchPolicy,
   ) {
     // No coercion and no defaults: a string "yes" for a boolean is refused, and nothing is filled in (S1, D14).
     const ajv = new Ajv({ allErrors: true, strict: true });
-    this.tools = builtinTools(
-      files,
-      search,
-      store,
-      projects,
-      fetchPolicy ?? DEFAULT_FETCH_POLICY,
-    ).map((definition) => ({
+    this.tools = [
+      ...builtinTools(files, search, store, projects, fetchPolicy ?? DEFAULT_FETCH_POLICY),
+      ...compileDefinitions({ store, manuscript, preflight, exporter }),
+    ].map((definition) => ({
       definition,
       validate: ajv.compile(definition.schema),
     }));

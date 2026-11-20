@@ -8,8 +8,8 @@ import {
 import { PlatformModule } from '../src/modules/platform/platform.module';
 import { agentLoopToolsKitModule } from './agent-loop-tools.kit';
 import { createTestApp, type TestApp } from './create-test-app';
-import { send, type Reply } from './guard-request';
-import { LOOPBACK_HOST } from './invariant-sweep';
+import { send, sessionCookie, type Reply } from './guard-request';
+import { LOOPBACK_HOST, LOOPBACK_ORIGIN } from './invariant-sweep';
 import { bookLibrary } from './project-store-files.kit';
 import type { ProjectsLibrary } from './project-store-projects.kit';
 
@@ -24,6 +24,8 @@ const LIST_SUMMARY =
 const WITHDRAWN = 'This tool is unavailable for the rest of this agent run.';
 
 let callSeq = 0;
+// The session cookie of the current app (D18): the module graph has Setup & auth's guard.
+let cookie = '';
 
 // Boots the kit on the fixture library, and closes the app in every case. The library is removed by the caller.
 async function withToolsApp<T>(
@@ -35,6 +37,7 @@ async function withToolsApp<T>(
     modules: [PlatformModule, AgentLoopModule, agentLoopToolsKitModule()],
   });
   try {
+    cookie = await sessionCookie(app, fixture.library);
     return await run(app);
   } finally {
     await app.close();
@@ -44,6 +47,8 @@ async function withToolsApp<T>(
 function post(app: TestApp, path: string, body: unknown): Promise<Reply> {
   return send(app.baseUrl, {
     host: LOOPBACK_HOST,
+    origin: LOOPBACK_ORIGIN,
+    cookie,
     method: 'POST',
     path,
     body: JSON.stringify(body),
@@ -87,6 +92,7 @@ async function callResult(
 async function offeredTools(app: TestApp, runId: string): Promise<string[]> {
   const reply = await send(app.baseUrl, {
     host: LOOPBACK_HOST,
+    cookie,
     path: `${RUNS}/${runId}/tools`,
   });
   expect(reply.status).toBe(200);

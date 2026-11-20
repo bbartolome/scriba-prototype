@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CompileExportModule } from '../compile-export/compile-export.module';
 import { PlatformModule, SettingsService } from '../platform/platform.module';
 import { ProjectStoreModule } from '../project-store/project-store.module';
 import { ProvidersModule } from '../providers/providers.module';
@@ -39,6 +40,7 @@ const AGENT_SETTINGS_REGISTRATION = 'AGENT_SETTINGS_REGISTRATION';
     ProjectStoreModule,
     ProvidersModule,
     ToolRegistryModule,
+    CompileExportModule,
   ],
   controllers: [
     AgentSettingsController,

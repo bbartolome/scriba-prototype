@@ -75,8 +75,8 @@ export class AgentRunsService {
     const projectId = this.admit();
     const settings = this.settings.current();
     const enabledFamilies: AgentToolFamily[] = settings.research.enabled
-      ? ['project', 'narrative', 'grounding', 'research']
-      : ['project', 'narrative', 'grounding'];
+      ? ['project', 'narrative', 'grounding', 'research', 'compile']
+      : ['project', 'narrative', 'grounding', 'compile'];
     return this.launch({
       projectId,
       intent: body.intent,
