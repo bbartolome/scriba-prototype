@@ -26,6 +26,6 @@ Since commit 6deb543 (CEX-17) the Manuscript route is a phone nav item, so the p
 - Not: the route table, the route data of any feature, the tablet and desktop forms, and the existing e2e specs.
 
 ## Acceptance criteria
-- [ ] With the ten phone route-table items shown, at 390 px the document has no horizontal overflow: `document.documentElement.scrollWidth <= window.innerWidth`.
-- [ ] At 390 px all ten phone nav links stay visible: each is shrunk with its label truncated, none is hidden, and the nav does not scroll sideways.
-- [ ] The three phone specs pass: `npm run e2e -w @bbartolome/scriba-e2e -- specs/history-phone.e2e.ts specs/review-phone.e2e.ts specs/search-phone.e2e.ts --trace off` exits 0.
+- [x] With the ten phone route-table items shown, at 390 px the document has no horizontal overflow: `document.documentElement.scrollWidth <= window.innerWidth`.
+- [x] At 390 px all ten phone nav links stay visible: each is shrunk with its label truncated, none is hidden, and the nav does not scroll sideways.
+- [x] The three phone specs pass: `npm run e2e -w @bbartolome/scriba-e2e -- specs/history-phone.e2e.ts specs/review-phone.e2e.ts specs/search-phone.e2e.ts --trace off` exits 0.

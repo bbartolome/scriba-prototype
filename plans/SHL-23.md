@@ -1,6 +1,6 @@
 ---
 id: SHL-23
-status: planned
+status: done
 ---
 # SHL-23 plan — phone bottom nav fits ten items at 390 px
 
