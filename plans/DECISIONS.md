@@ -7431,3 +7431,13 @@ Part D (gates and commit):
 - **Decision (owner):** "I approve and I cant check". The owner approves the docs commit that ticks criteria 1 and 2 in `units/CEX-20-milestone-gate.md`. The owner cannot run the Word and EPUB check for criterion 3. The fallback of D17 and step 13 (c) applies: CEX-20 completes with criterion 3 unticked, and the cause is recorded in `plans/CEX-20.md` section 8, OP1.
 - **Cause (for the record of step 11):** the owner could not run the manual Word and EPUB check (criterion 3, demo steps 5 and 6). No record of that check exists, so criterion 3 stays unticked.
 - **Reason:** the owner's answer to OP1 of `plans/CEX-20.md`.
+
+## 2026-11-20 — CEX-20 — Merged to main with criterion 3 unticked (fallback of D17); plan status done
+
+- **Merge:** `unit/CEX-20` fast-forwarded to main at `71965da` (code `5a80486`, docs `6874eb5` criteria 1 and 2 checked, docs `71965da` criterion 3 unticked by fallback, plan status done). Closes `phase:manuscript-snapshots` (D21).
+- **Patch id:** `ca2ef0b226de6b59f994a4809a4852f89df8d0b7`, unchanged from the code approval of this file (rebased by cherry-pick onto `d43150f`, no conflict).
+- **Gates on the rebased head (`71965da` tree at the code commit):** root `npm run lint` exit 0; root `npm test` exit 0 (api 598 passed, 14 skipped; web and scripts passed); root `npm run build` exit 0. Journey: `npm run e2e -w @bbartolome/scriba-e2e -- journey` exit 0, 1 passed, 0 pending. Full e2e (step 8, record only): 34 passed, 0 failed, exit 0.
+- **Criterion 1:** CEX-16 to CEX-19 have no open boxes and `status: done`; the api and web suites pass. Ticked.
+- **Criterion 2:** the journey step passes. Ticked.
+- **Criterion 3 (owner's Word and EPUB check):** not run; the owner could not run it (entry above, line 7429). Unticked. Cause in `plans/CEX-20.md` section 8, OP1.
+- **Not run after the merge:** the journey on `main` (plan step 14). The tree of `main` at `71965da` is the tree that passed the gates above, so no second run was made.
