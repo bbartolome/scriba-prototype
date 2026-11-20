@@ -7208,3 +7208,12 @@ Part D (gates and commit):
 - **Carry-forward lines checked against the sources by the orchestrator:** unit line 23; module lines 61, 62 and 64; `create-test-app.ts` lines 11, 13 and 86; no `overrideProvider` in `apps/api`; DECISIONS lines 4283, 5412, 5424 and 5425. All five lines are kept.
 - **Placement:** the point itself is the entry at line 7137. The log is append-only, so the decision is recorded here at the end and not inside that entry.
 - **Status:** `plans/AGL-22.md` stays `draft` until a reviser replies READY. The reviser applies the conditions above and writes the plan's open point 1 as settled.
+
+## 2026-11-20 — AGL-22 — Unit change: heading of the acceptance criteria (applies condition 5 of the Navigator decision above)
+
+- **Change:** `units/AGL-22-fetch-page.md` line 23, the heading parenthetical.
+- **Old text:** `## Acceptance criteria (local test HTTP server, never the internet)`
+- **New text:** `## Acceptance criteria (local test HTTP server, never the internet; the successful fetches reach it through a test-only allowance for its own address and port)`
+- **Criteria:** lines 24 to 26 are byte-identical (checked by the orchestrator, md5 of the lines before and after).
+- **Result of the YAGNI test:** not a scope, decision or split action. It is the heading change that the Navigator decision directs (condition 5, following the AGL-16 precedent at line 5412).
+- **Downstream:** AGL-23 and AGL-26 are unchanged. AGL-23's heading names no kit, so its planner must cover the AGL-10 rule through condition 4 of the Navigator decision.
