@@ -20,7 +20,7 @@ const PROJECT = 'tools-spike';
 // The person picker sits below the tools list and the chips, so a tall viewport keeps the chip and the picker on
 // screen for the drag. The list grows with each built-in tool and with the user tools that tools-editor.e2e.ts
 // leaves in the shared library, so the height leaves room for both.
-test.use({ viewport: { width: 1280, height: 3200 } });
+test.use({ viewport: { width: 1280, height: 6000 } });
 
 /** Signs in, puts the fixture into the user pack, and activates a project of three entities. */
 async function setUp(page: Page): Promise<void> {
