@@ -1,6 +1,6 @@
 ---
 id: GRR-15
-status: planned
+status: done
 ---
 # GRR-15 plan — touch checks, theme tokens on the canvas, large-graph measurement
 

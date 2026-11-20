@@ -17,6 +17,6 @@ unblocks: [GRR-17]
 - **Large graphs:** measure a 150-node generated recipe once on desktop and record it.
 
 ## Acceptance criteria
-- [ ] Touch: connect, move a node and drop a chip pass in Playwright's touch emulation at a tablet viewport.
-- [ ] Nodes, chips, dialogs and badges render with theme tokens in both themes (visual check recorded in the PR).
-- [ ] A 150-node generated recipe opens and pans without the main thread blocking more than 200 ms (measured once and recorded).
+- [x] Touch: connect, move a node and drop a chip pass in Playwright's touch emulation at a tablet viewport.
+- [x] Nodes, chips, dialogs and badges render with theme tokens in both themes (visual check recorded in the PR).
+- [x] A 150-node generated recipe opens and pans without the main thread blocking more than 200 ms (measured once and recorded).
