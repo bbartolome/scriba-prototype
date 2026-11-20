@@ -172,7 +172,7 @@ async function checkFormat(format, headers) {
   if (!result.fileName.endsWith(`.${format}`)) return `the file name ${result.fileName} does not end with .${format}`;
   const afterPost = snapshot(root);
 
-  const first = await fetch(`${BASE}/api/compile-export/exports/${format}`, { headers: { cookie } });
+  const first = await fetch(`${BASE}/api/compile-export/exports/${format}`, { headers: { cookie: headers.cookie } });
   if (first.status !== 200) return `GET download gave ${first.status}, expected 200`;
   if (first.headers.get('content-type') !== CONTENT_TYPES[format]) {
     return `content-type is ${first.headers.get('content-type')}, expected ${CONTENT_TYPES[format]}`;
@@ -187,7 +187,7 @@ async function checkFormat(format, headers) {
   const afterGet = snapshot(root);
   if (!sameSnapshot(afterPost, afterGet)) return 'the download GET changed the library';
 
-  const second = await fetch(`${BASE}/api/compile-export/exports/${format}`, { headers: { cookie } });
+  const second = await fetch(`${BASE}/api/compile-export/exports/${format}`, { headers: { cookie: headers.cookie } });
   if (second.status !== 200) return `second GET gave ${second.status}, expected 200`;
   if (!Buffer.from(await second.arrayBuffer()).equals(bytes)) return 'the second GET gave other bytes';
 
