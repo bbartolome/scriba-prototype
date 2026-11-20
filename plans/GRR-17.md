@@ -1,6 +1,6 @@
 ---
 id: GRR-17
-status: planned
+status: done
 unit: units/GRR-17-canvas-gate.md
 module: graph-runner
 ---

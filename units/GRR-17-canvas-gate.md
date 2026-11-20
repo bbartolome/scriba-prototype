@@ -18,8 +18,8 @@ Merging this **closes Graph runner `phase:canvas`**.
 - **Manual:** connect, move and chip drop checked by hand on a real iPad in Safari; result noted in this PR.
 
 ## Acceptance criteria (the `phase:canvas` checklist)
-- [ ] On desktop, the author builds a recipe from an empty canvas with input, tool and output nodes using only mouse gestures, form fields and the input-values dialog, runs it end to end, and sees a pending change in the review queue.
-- [ ] GRR-09…GRR-16 criteria pass on `main`.
+- [x] On desktop, the author builds a recipe from an empty canvas with input, tool and output nodes using only mouse gestures, form fields and the input-values dialog, runs it end to end, and sees a pending change in the review queue.
+- [x] GRR-09…GRR-16 criteria pass on `main`.
 - [ ] The e2e extension passes in CI.
 - [ ] The real-iPad check is recorded.
 
