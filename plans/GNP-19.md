@@ -1,6 +1,6 @@
 ---
 id: GNP-19
-status: planned
+status: done
 ---
 # GNP-19 plan — fiction gate: the fiction-order check and the phase:fiction checklist
 
