@@ -17,6 +17,6 @@ unblocks: [CEX-15, CEX-18]
 - **"Copy default into project"** `POST {format, path}` writes the built-in file to the author's chosen path (suggested default: the project root, e.g. `reference.docx`, so no folder is added) through the Project store file API.
 
 ## Acceptance criteria
-- [ ] A missing override returns the template error without calling Pandoc.
-- [ ] Copy default writes the built-in file; setting it as the override makes DOCX use its styles.
-- [ ] A settings write with a stale revision is refused; a valid one changes only the `export` key.
+- [x] A missing override returns the template error without calling Pandoc.
+- [x] Copy default writes the built-in file; setting it as the override makes DOCX use its styles.
+- [x] A settings write with a stale revision is refused; a valid one changes only the `export` key.

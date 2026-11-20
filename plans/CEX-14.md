@@ -1,6 +1,6 @@
 ---
 id: CEX-14
-status: planned
+status: done
 ---
 # CEX-14 plan — template overrides, copy default into the project, export settings endpoints
 
