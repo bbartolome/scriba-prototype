@@ -7064,3 +7064,12 @@ Part D (gates and commit):
 - **Differences from the plan:** none reported. The mutation checks, the full gates and the full e2e suite were not run for this report.
 - **Patch id:** 16d688c134b7a32e008b3f965a12ba8cb68c3069 (the same as the earlier part 1 approval, since no code changed).
 - **Status:** the reviewers start again for both parts (section 8 of `plans/SHL-17.md`, revision 3), on the same patch id. The earlier part 2 REWORK is superseded by plan revision 3, which requires the reload.
+
+## 2026-11-20 — SHL-17 — Sonnet review on plan revision 3, both parts APPROVED for patch id 16d688c134b7a32e008b3f965a12ba8cb68c3069
+
+- **Branch and patch id:** `unit/SHL-17` at a44fc25 (part 1 aaca233, part 2 a44fc25), based on main 3b859d4. Patch id `16d688c134b7a32e008b3f965a12ba8cb68c3069`, confirmed by both reviewers. The earlier part 2 REWORK (the reload in test 3) is superseded by plan revision 3, which requires the reload; the code is unchanged.
+- **Part 1** (steps 0 to 6, tests 1 and 2, section 3 files; the whole-unit file list also checked: 18 files, all in section 3): **APPROVED**.
+- **Part 2** (steps 7 to 13, test 3 as in revision 3 steps 10 and section 5, S1, the five Vitest tests): **APPROVED**. The test 3 sequence (goto, waitForController, reload, waitForController, A read and checked against the old main file, setRoot b, visibilitychange, banner, Reload, main-shl17b.js, build B log line) matches revision 3.
+- **Test output used (the implementer's run on a44fc25):** `npm run e2e -w @bbartolome/scriba-e2e -- specs/pwa.e2e.ts --trace off` exit 0, 4 passed; `npm test -w @bbartolome/scriba-web` exit 0, 582 tests; the two named Vitest files exit 0, 8 tests.
+- **Non-blocking notes (recorded, not rework):** the mutation checks M1 and M2 were not repeated on this round; check (h) of test 2 matches `/setup` by exact equality only.
+- **Next:** rebase onto main (cherry-pick method), the three gates on the last commit, the patch id check, then the checkboxes, the status done commit and the fast-forward of `main`.
