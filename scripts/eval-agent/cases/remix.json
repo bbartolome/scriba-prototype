@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Rewrite the cold open of this chapter as a mystery question, using my notes, so that the two versions can be compared in the review diff.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["remix"],
+    "citations": "present"
+  }
+}

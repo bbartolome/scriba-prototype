@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Why does the next step matter? A teacher picked the task before the session began [@notes-a]. Each attempt was checked, and the check shaped the one after it [@notes-a]."
+        ]
+      }
+    }
+  ]
+}

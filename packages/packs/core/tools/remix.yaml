@@ -1,0 +1,110 @@
+schemaVersion: 1
+name: remix
+description: Rewrite a passage in another tool's shape for side-by-side comparison.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    passage:
+      type: string
+      title: Passage
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    targetShape:
+      type: string
+      title: Target shape
+      enum:
+        - cold_open
+        - comparison_set
+        - contrast
+        - dialogue
+        - flashback
+        - framework_builder
+        - method_first
+        - mystery_question
+        - myth_buster
+        - numbers_to_people
+        - objection_handler
+        - profile
+        - reader_challenge
+        - scene_builder
+        - stockdale_tension
+        - timeline
+        - zoom
+      x-scriba-control: select
+  required: [coreIdea, passage, targetShape]
+output: draft
+enabled: true
+prompt: |
+  You rewrite a passage in the shape named by the target shape, so that it can be compared with the original in the review diff.
+
+  Passage: {{passage}}
+  Core idea: {{coreIdea}}
+  Target shape: {{targetShape}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Shapes (use only the line of the target shape):
+  - cold_open: Open mid-scene with one person at one moment, then pull back to the idea.
+  - comparison_set: Contrast winners with matched cases that didn't win.
+  - contrast: Set two things side by side so the difference makes the point.
+  - dialogue: Write an exchange between characters, each in their own voice.
+  - flashback: Break from the present moment to a past one that explains it.
+  - framework_builder: Turn a pattern into a small named framework with steps.
+  - method_first: Explain how the evidence was gathered before what it showed.
+  - mystery_question: Open with a puzzle, then unravel it to a surprising finding.
+  - myth_buster: State a common belief, then take it apart with evidence.
+  - numbers_to_people: Turn one statistic into the story of one person behind it.
+  - objection_handler: Raise the strongest objections to a claim and answer each fairly.
+  - profile: Paint one person in depth to embody the idea.
+  - reader_challenge: Ask the reader to test their own assumption before the reveal.
+  - scene_builder: Draft a scene from its goal, conflict and outcome from one character's point of view.
+  - stockdale_tension: Face the hardest fact while holding on to the hope beside it.
+  - timeline: Tell events in order to show how the idea unfolded.
+  - zoom: Move from a close-up detail out to the big picture and back.
+
+  Steps:
+  1. Read the passage and note its facts, using only the material above.
+  2. Find the target shape's line in the list above and follow its shape.
+  3. Rewrite the passage in that shape, so that the core idea is still the point.
+  4. Keep every fact of the passage; add no new facts.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.
