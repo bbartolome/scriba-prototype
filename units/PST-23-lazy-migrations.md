@@ -25,8 +25,8 @@ Open a project made by an older Scriba and upgrade automatically with a backup a
 - `settings.yaml` is out of scope (Platform's eager hook).
 
 ## Acceptance criteria
-- [ ] With a test migrator (v1→v2) registered, activating a v1 project rewrites `project.yaml` to v2, writes a backup and a log line, and creates no pending change.
-- [ ] A GET of a v1 file returns the upgraded view and leaves the file byte-identical.
-- [ ] A file with a too-new version is refused for read and write.
-- [ ] Comments in `project.yaml` survive a migration.
-- [ ] A test migrator registered for another file kind runs on that file's first write.
+- [x] With a test migrator (v1→v2) registered, activating a v1 project rewrites `project.yaml` to v2, writes a backup and a log line, and creates no pending change.
+- [x] A GET of a v1 file returns the upgraded view and leaves the file byte-identical.
+- [x] A file with a too-new version is refused for read and write.
+- [x] Comments in `project.yaml` survive a migration.
+- [x] A test migrator registered for another file kind runs on that file's first write.
