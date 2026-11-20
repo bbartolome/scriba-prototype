@@ -7340,3 +7340,14 @@ Part D (gates and commit):
 - **Checked by the reviewer:** scope is the one file the plan lists; the four criterion tests AC1 to AC4 exist as plan section 8 gives them; the kit is used unchanged; no apps/api/src change.
 - **Minor, not a blocker:** the implementer report does not record the node and npm versions for the step 3 gates. The gate run records them.
 - **Status:** the rebase onto main (692756f), the gates and the fast-forward follow in this cycle. The patch id must still be 34c15af0 after the rebase.
+
+## 2026-11-20 — SHL-19 — Sonnet review of two parts on patch id e9ae005d4de7723c831237a53d0707bbb79b74ad (branch at 7bc6fc1): REWORK (part 2); part 1 APPROVED
+
+- **Rebase:** unit/SHL-19 from 4162f13 onto main 4dc5d9e, by cherry-pick. A `git rebase main` in the worktree had failed with "local changes would be overwritten" on a clean status, and was aborted. Backup: backup/SHL-19-pre-rebase at 4162f13. Five picks, no conflict, all patch ids equal: eaf3110 to d0ce339, a43a732 to 330ed7f, 97fb85e to 858bc3c, d41384e to 72aed13, 4162f13 to 7bc6fc1. Patch id before and after: e9ae005d4de7723c831237a53d0707bbb79b74ad.
+- **Part 1 (criterion 1, accessibility pass, steps 1 to 9 and 12): APPROVED for patch id e9ae005d4de7723c831237a53d0707bbb79b74ad.** Scope: the seven files of plan section 2 plus `tool-call-card.ts` under D19. Not blockers, for the report: the D19 rule id of the `tool-call-card.ts` tabindex is not named; the step 17 baseline findings are not listed; step 12 records the fail of the mutation but not the restored pass; node and npm versions are not recorded.
+- **Part 2 (criteria 2 and 3, gates; steps 10, 11 and 13 to 17): REWORK.** REWORK list:
+  1. The gate results do not cover 7bc6fc1. The implementer's gates ran on the pre-rebase tree (based on 3611904), and main is now 4dc5d9e. On 7bc6fc1 rerun `npm run build`, `npm test`, `npm run lint` and `npm run e2e`, and record the passed count with `node -v` and `npm -v` beside each result (plan section 3). The root lint ends with `prettier --check .`.
+  2. Step 11 has no recorded result. On 7bc6fc1 run `npm run e2e -w @bbartolome/scriba-e2e -- specs/pwa.e2e.ts --grep "criterion 1|criterion 2"` (expect 2 passed) and `npm run e2e -w @bbartolome/scriba-e2e -- specs/shell-phone.e2e.ts` (expect 1 passed).
+  Note for the corrected report, not a code item: plan step 16 asks for one commit (`feat(SHL-19): accessibility pass and phone e2e check`). The branch has five commits, and the report must say so.
+- **Code approval:** does not hold. Part 2 replied REWORK, so no code approval for e9ae005d. The rework is evidence only; no code change is expected unless a gate fails. Reviewers start again for both parts after the new COMPLETE report.
+- **Status:** plans/SHL-19.md stays `status: planned`. The rework implementer starts after the GRR-15 step 13 run ends, because both use the e2e ports.
