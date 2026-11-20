@@ -6823,3 +6823,13 @@ Part D (gates and commit):
 - **Implementer's gates (from its report):** T1 `npm run lint:examples` exit 0 (2 samples); T2 recorded run exit 0; R2 and R3 exit 0; prettier exit 0; e2e 20 passed, 4 failed, identical to the main baseline (history-phone:17, journey:12, review-phone:47, search-phone:17; plan section 1a: fixed by PLT-23 and SHL-23).
 - **Differences from the plan (accepted by the reviewer):** Prettier reflowed the two graph JSON files and changed the italics in `ledger.md` to `_..._`; prose is the implementer's wording within G4 to G6.
 - **Next:** rebase onto main, then the three root checks on the rebased commit, the acceptance checkboxes, `status: done`, and the fast-forward of main (plan step 3).
+
+## 2026-11-20 — GNP-21 — plan revised (Opus reviser, READY), no unit change; status planned at e163977
+
+- **Reviser:** READY on `plans/GNP-21.md` at main 5d7e0e3; no unit change; no code change; `status: planned` at commit e163977.
+- **Verb list (planner finding 1):** option (a), add `coin`, `contrast` and `raise` to `VERBS` in `checks.ts`. Only `checkDescription` reads the list, so adding words only widens what passes. Option (b), rewording the descriptions, changes the unit's Specs text, which no reviser action covers. This choice is the plan's own, not a Navigator decision; `plans/GNP-01.md` line 131 meant the list to hold every first word the units use.
+- **`enable` option (finding 2):** owned by GNP-21 on `goldenCase` and `runGoldenCase` (`enable?: boolean`, contract in the plan's C2). GNP-22 reuses it and adds no enable step or second helper of its own. The planner of GNP-22 read the draft of GNP-21, so GNP-22's plan must be reconciled with the planned contract before its own reviser finishes.
+- **Eval run (finding 3):** criterion 3 is met by the case data and the data test under the Navigator's data-only reading (DECISIONS lines 5217 to 5222). The real-model run is recorded as not run, with no carrier: the runner cannot enable a tool. No criterion changes.
+- **Catalogue golden (finding 4):** unchanged; `executor.service.ts` lines 172 to 179 list only enabled tools.
+- **Criterion 2:** one test awaiting three golden bodies (the GNP-14 C5 rule).
+- **Assumption A10 (`tools-preview` viewport):** if the three extra `/tools` rows push the person picker off the 3200 px viewport, the implementer stops and reports PLAN DOES NOT WORK; it does not change the spec.
