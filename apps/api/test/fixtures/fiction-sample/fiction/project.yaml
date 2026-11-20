@@ -1,0 +1,5 @@
+# Sample project for the fiction genre pack; a copy is made when you start from this sample.
+schemaVersion: 1
+title: The Lamp Keepers
+genrePack: fiction
+styleProfile: book-style

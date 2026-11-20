@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "view": "story",
+  "name": "Story",
+  "nodes": [
+    {
+      "id": "arrival-1",
+      "kind": "scene",
+      "label": "Arrival: the relief keeper climbs up",
+      "path": "drafts/arrival.md",
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "id": "arrival-2",
+      "kind": "scene",
+      "label": "Arrival: the handover",
+      "path": "drafts/arrival.md",
+      "position": { "x": 260, "y": 0 }
+    },
+    {
+      "id": "storm",
+      "kind": "scene",
+      "label": "The storm",
+      "path": "drafts/the-storm.md",
+      "position": { "x": 520, "y": 0 }
+    },
+    {
+      "id": "storm-lamp",
+      "kind": "beat",
+      "label": "The lamp goes out",
+      "position": { "x": 520, "y": 160 }
+    },
+    {
+      "id": "ledger",
+      "kind": "beat",
+      "label": "The supply ledger",
+      "path": "drafts/ledger.md",
+      "position": { "x": 780, "y": 0 }
+    },
+    {
+      "id": "ada",
+      "kind": "entity",
+      "label": "Ada Quill",
+      "path": "entities/relief-keeper.md",
+      "position": { "x": 0, "y": 240 }
+    },
+    {
+      "id": "tomas",
+      "kind": "entity",
+      "label": "Tomas Vell",
+      "path": "entities/veteran-keeper.md",
+      "position": { "x": 260, "y": 240 }
+    },
+    {
+      "id": "island",
+      "kind": "entity",
+      "label": "Gannet Skerry",
+      "path": "entities/lighthouse-island.md",
+      "position": { "x": 520, "y": 240 }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "from": "arrival-1", "to": "arrival-2", "relation": "order" },
+    { "id": "e2", "from": "arrival-2", "to": "storm", "relation": "order" },
+    { "id": "e3", "from": "storm", "to": "ledger", "relation": "order" },
+    {
+      "id": "e4",
+      "from": "storm",
+      "to": "storm-lamp",
+      "relation": "containment"
+    },
+    {
+      "id": "e5",
+      "from": "storm-lamp",
+      "to": "ledger",
+      "relation": "causality"
+    },
+    { "id": "e6", "from": "arrival-1", "to": "ada", "relation": "pov" }
+  ]
+}
