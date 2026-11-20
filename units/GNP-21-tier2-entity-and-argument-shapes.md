@@ -19,6 +19,6 @@ All three ship with **`enabled: false`** (the author turns them on later).
 - **`objection_handler`** (nonfiction, `draft`): "Raise the strongest objections to a claim and answer each fairly." Common inputs plus `claimIds` [entity port list, kind `claim`, required].
 
 ## Acceptance criteria
-- [ ] All three pass the validation suite and ship disabled; the two draft tools carry the identical common inputs.
-- [ ] One golden test per tool.
-- [ ] Manual eval cases added.
+- [x] All three pass the validation suite and ship disabled; the two draft tools carry the identical common inputs.
+- [x] One golden test per tool.
+- [x] Manual eval cases added.
