@@ -7290,3 +7290,9 @@ Part D (gates and commit):
 - **Criteria:** lines 17 to 20 are byte-identical (md5 84bec16a32d7f067f98fac7267bdfd9d before and after, checked by the orchestrator).
 - **YAGNI:** not one of the four actions. It is the heading change that the Navigator decision directs.
 - **Downstream:** AGL-26 is unchanged (no blocking relation with this heading).
+
+## 2026-11-20 — CEX-15 — Criterion 2: the user's direct confirmation that CI run 44659727464 passed; the box is still not ticked
+
+- **Confirmation:** the user wrote in this session that the CI run passed. The run id is `44659727464`, the run named by the Navigator decision of this date (CEX-15, option A). This follows the relayed observation recorded above.
+- **Still missing for the tick:** the details that the Navigator decision requires: event `push`, branch `main`, headSha `3b859d4`, conclusion `success`; the CEX-10 to CEX-14 commits are ancestors of headSha; the install and `Test` steps pass with `SCRIBA_REQUIRE_EXPORT_TOOLS=1`; the export steps are not skipped. The orchestrator has no GitHub access here and has not observed the run.
+- **Action:** `units/CEX-15-export-gate-image-smoke.md` is not changed; criterion 2 stays unticked until these details are recorded from the run.
