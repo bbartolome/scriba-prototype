@@ -153,6 +153,41 @@ async function hitsAtCentre(page: Page, selector: string): Promise<boolean> {
   );
 }
 
+/** The element hit at a point, described as dropHits describes it (for the failure message only). */
+async function describeHit(
+  page: Page,
+  point: { x: number; y: number },
+): Promise<string> {
+  return page.evaluate(
+    ({ x, y }) => {
+      const hit = document.elementFromPoint(x, y);
+      if (hit === null) return 'null';
+      return `<${hit.tagName.toLowerCase()} class="${hit.getAttribute('class') ?? ''}" data-port="${hit.getAttribute('data-port') ?? ''}" cx="${hit.getAttribute('cx') ?? ''}" cy="${hit.getAttribute('cy') ?? ''}">`;
+    },
+    { x: point.x, y: point.y },
+  );
+}
+
+/**
+ * Asserts the hit check 2 of plan section 4.1 step j, before the mouse-down: the centre of the handle is hit by
+ * the handle's own circle. The message names the check, the point, the element hit, the target's box and the
+ * viewport size, so a stop report carries the measured numbers.
+ */
+async function expectHitBeforeDrag(
+  page: Page,
+  selector: string,
+): Promise<void> {
+  const centre = await centreOf(page, selector);
+  const hit = await hitsAtCentre(page, selector);
+  const element = await describeHit(page, centre);
+  const box = await page.locator(selector).boundingBox();
+  const viewport = page.viewportSize();
+  expect(
+    hit,
+    `check 2: ${selector} is not hit at point (${centre.x}, ${centre.y}); element hit ${element}; target box ${JSON.stringify(box)}; viewport ${JSON.stringify(viewport)}`,
+  ).toBe(true);
+}
+
 /** The centre of an element's box as it is now, without scrolling. */
 async function boxCentre(
   page: Page,
@@ -264,8 +299,8 @@ async function expectDropHit(
  * is seen. A failed expectation here is the stop rule of step j: PLAN DOES NOT WORK.
  */
 async function wire(page: Page, from: string, to: string): Promise<void> {
-  expect(await hitsAtCentre(page, from), `${from} is hit`).toBe(true);
-  expect(await hitsAtCentre(page, to), `${to} is hit`).toBe(true);
+  await expectHitBeforeDrag(page, from);
+  await expectHitBeforeDrag(page, to);
   const start = await centreOf(page, from);
   await page.mouse.move(start.x, start.y);
   await page.mouse.down();
