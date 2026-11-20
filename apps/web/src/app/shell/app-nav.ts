@@ -133,6 +133,14 @@ function navItems(routes: Routes, projectId: string | undefined): NavItem[] {
       flex: 1 1 0;
       flex-direction: column;
       font-size: 12px;
+      min-width: 0;
+    }
+
+    nav.bottom a span {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     nav.rail a {

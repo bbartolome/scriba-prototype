@@ -135,9 +135,10 @@ test('each of the ten bottom nav links stays visible, shrunk, with its label tru
     }));
     measures.push({ text, box, labelBox, style, clip });
 
-    expect(box!.x, `${text}: starts inside the viewport`).toBeGreaterThanOrEqual(
-      0,
-    );
+    expect(
+      box!.x,
+      `${text}: starts inside the viewport`,
+    ).toBeGreaterThanOrEqual(0);
     expect(
       box!.x + box!.width,
       `${text}: ends inside the viewport`,
