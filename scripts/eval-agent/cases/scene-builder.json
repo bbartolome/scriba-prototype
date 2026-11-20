@@ -1,0 +1,8 @@
+{
+  "sample": "fiction",
+  "intent": "Draft the scene for my lighthouse story where the relief keeper tells the veteran keeper that the supply boat is late again, from her point of view.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["scene_builder"]
+  }
+}
