@@ -1,6 +1,6 @@
 ---
 id: GNP-18
-status: planned
+status: done
 ---
 # GNP-18 plan — fiction sample project (examples/fiction) and its samples.yaml entry
 

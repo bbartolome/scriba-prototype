@@ -22,5 +22,5 @@ An original short piece about two lighthouse keepers, kept small (3–6 entities
 - Wholly original text; no `.scriba/`, `logs/`, `snapshots/` or `drafts/.versions/`.
 
 ## Acceptance criteria
-- [ ] The fiction sample validates in Platform's examples check (graph schema, `project.yaml`, entity types, recipe tool references and params).
-- [ ] Every story-node `path` exists; two scene nodes share `drafts/arrival.md`; there is one label-only beat and one file-backed beat.
+- [x] The fiction sample validates in Platform's examples check (graph schema, `project.yaml`, entity types, recipe tool references and params).
+- [x] Every story-node `path` exists; two scene nodes share `drafts/arrival.md`; there is one label-only beat and one file-backed beat.
