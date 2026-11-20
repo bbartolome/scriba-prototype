@@ -28,7 +28,7 @@ All nine are nonfiction, output `draft`, **`enabled: false`**, with the five com
 Each prompt follows the shared skeleton with its own shape steps.
 
 ## Acceptance criteria
-- [ ] All nine pass the validation suite with identical common inputs and ship disabled.
-- [ ] One golden test per tool.
-- [ ] Enabling one through the Tool registry (a copy-on-write user-pack copy, or the enable override) makes it callable via execute and present in the function list.
-- [ ] Manual eval cases added.
+- [x] All nine pass the validation suite with identical common inputs and ship disabled.
+- [x] One golden test per tool.
+- [x] Enabling one through the Tool registry (a copy-on-write user-pack copy, or the enable override) makes it callable via execute and present in the function list.
+- [x] Manual eval cases added.
