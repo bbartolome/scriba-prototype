@@ -21,6 +21,6 @@ Nothing leaves the machine unless the author switches research on (40).
 - Settings sheet controls in the chat panel (AGL-07).
 
 ## Acceptance criteria
-- [ ] With research off, the mock's received request contains no research tools.
+- [x] With research off, the mock's received request contains no research tools.
 - Moved to AGL-26 by revision on 2026-11-20 (old text: "With research on and no endpoint, only `fetch_page` is offered."; it names AGL-22's tool, and AGL-21 is not blocked by AGL-22).
-- [ ] With both, a search runs against a local SearXNG-shaped stub and returns titles, URLs and snippets.
+- [x] With both, a search runs against a local SearXNG-shaped stub and returns titles, URLs and snippets.

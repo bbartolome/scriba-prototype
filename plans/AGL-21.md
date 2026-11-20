@@ -1,6 +1,6 @@
 ---
 id: AGL-21
-status: planned
+status: done
 ---
 # AGL-21 plan — `web_search` against a SearXNG-compatible endpoint, behind the research switch
 
