@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Ask the reader to test the assumption that more hours always make an expert, before the reveal, using my notes.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["reader_challenge"],
+    "citations": "present"
+  }
+}

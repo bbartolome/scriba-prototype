@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Paint K. Anders Ericsson in depth, using my notes, so that he embodies the idea that practice is planned.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["profile"],
+    "citations": "present"
+  }
+}

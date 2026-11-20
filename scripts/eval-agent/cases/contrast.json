@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Set deliberate practice beside simply repeating an activity, using my notes, so the difference makes the point.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["contrast"],
+    "citations": "present"
+  }
+}

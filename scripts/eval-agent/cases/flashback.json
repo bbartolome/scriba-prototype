@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Break from a learner's present plateau to a past practice session that explains it, using my notes.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["flashback"],
+    "citations": "present"
+  }
+}

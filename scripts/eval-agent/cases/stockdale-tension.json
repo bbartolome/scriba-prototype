@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Face the hardest fact about the hours figure while holding on to the hope beside it, using my claims.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["stockdale_tension"],
+    "citations": "present"
+  }
+}

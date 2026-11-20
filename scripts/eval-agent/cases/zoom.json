@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Move from one close-up practice session in my notes out to the big picture of expertise, and back.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["zoom"],
+    "citations": "present"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Explain how the hours figure was gathered before what it showed, using my notes and my claims.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["method_first"],
+    "citations": "present"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Turn the planned-practice pattern in my notes into a small named framework with steps, using my claims.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["framework_builder"],
+    "citations": "present"
+  }
+}

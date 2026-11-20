@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Tell the events of the study in order, to show how the idea unfolded, using my notes.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["timeline"],
+    "citations": "present"
+  }
+}
