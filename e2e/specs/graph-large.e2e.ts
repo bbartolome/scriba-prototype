@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
@@ -125,6 +125,12 @@ async function backgroundPoint(
   if (found === null) throw new Error('no background point in the vflow');
   return found;
 }
+
+// The project of this file is a library folder of the run; it is removed when the file's tests are done.
+test.afterAll(async () => {
+  const library = process.env.SCRIBA_E2E_LIBRARY!;
+  await rm(join(library, PROJECT), { recursive: true, force: true });
+});
 
 test('a 150-node recipe opens and pans with no long task over 200 ms', async ({
   page,

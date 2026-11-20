@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
@@ -213,6 +213,18 @@ async function defaultToMock(page: Page): Promise<void> {
   });
   expect(defaulted.status()).toBe(200);
 }
+
+// The projects of this file are library folders of the run; they are removed when the file's tests are done.
+test.afterAll(async () => {
+  const library = process.env.SCRIBA_E2E_LIBRARY!;
+  for (const project of [
+    'theme-canvas-1',
+    'theme-canvas-2',
+    'theme-canvas-3',
+  ]) {
+    await rm(join(library, project), { recursive: true, force: true });
+  }
+});
 
 test('T5 recipe view: nodes, chips and the run dialog use the tokens in both themes', async ({
   page,

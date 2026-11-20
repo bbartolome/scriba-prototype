@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type CDPSession, type Page } from '@playwright/test';
 
@@ -274,6 +274,17 @@ async function saveAndStatus(page: Page, savePath: string): Promise<number> {
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   return (await saved).status();
 }
+
+// The projects of this file are library folders of the run; they are removed when the file's tests are done.
+test.afterAll(async () => {
+  const library = process.env.SCRIBA_E2E_LIBRARY!;
+  for (let n = 1; n <= 5; n++) {
+    await rm(join(library, `touch-canvas-${n}`), {
+      recursive: true,
+      force: true,
+    });
+  }
+});
 
 test('touch: a wire connects two handles', async ({ page }) => {
   const path = await openCanvas(page, 'touch-canvas-1', GRAPH, SEEDED, false);
