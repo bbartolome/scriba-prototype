@@ -7089,3 +7089,11 @@ Part D (gates and commit):
 - **Needed before the unit can go on:** a person with permission to edit that file must allow the one-line `intent` change (or make it). Then an implementer commits the case file and its test as part 2 and runs steps 14 to 17. Until then GNP-15 stays `status: planned`, has no review of part 2, and does not go to `main`.
 - **Other facts from the report, not gate results:** root `npm test` exit 0 at load 1.59 before and 2.54 after, but with the two untracked files in the tree, so it is not a valid step 14 run. The picker's e2e target is at y 4327.4 with the 6000 px viewport, above the plan's estimate of about 3920 (A9) and below the 5000 limit. For the Navigator to note.
 - **Branch kept:** `unit/GNP-15` at `bdc58c4`, worktree kept. Nothing was discarded.
+
+## 2026-11-20 — AGL-21 — Unit change (split): AGL-26 split from AGL-21 (commit a44b9cf)
+
+- **Change:** criterion 2 of AGL-21, word for word ("With research on and no endpoint, only `fetch_page` is offered."), moved to the new unit `units/AGL-26-research-no-endpoint.md` (`blocked_by: [AGL-21, AGL-22]`, `unblocks: []`, `phase:research`, M7). AGL-21 keeps a note at the old place. `unblocks` changed in AGL-21 and AGL-22 from `[AGL-23]` to `[AGL-23, AGL-26]`. `units/README.md` lists AGL-26 in the `phase:research` row.
+- **Cause (concrete):** the criterion names AGL-22's `fetch_page`, and AGL-22 is not done. AGL-21 is not blocked by AGL-22, so no correct plan for AGL-21 can pass the criterion before AGL-22 merges.
+- **YAGNI:** nothing inside AGL-21 needs the criterion; AGL-23 relies only on AGL-21's AC1 and AC3. The criterion is kept (moved, not removed).
+- **Other:** no criterion text and no module file changed. The AGL-21 plan revision (revision 2, status planned, commit 7d6799c) settles the two open points: a decision test D1 replaces the moved criterion in the plan, and search results are not marked untrusted (module line 83 concerns fetched pages).
+- **Note for the AGL-22 planner and reviser:** AGL-22 now `unblocks` AGL-26. Its plan must not block AGL-21.
