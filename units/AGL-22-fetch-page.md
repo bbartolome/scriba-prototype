@@ -6,7 +6,7 @@ phase: phase:research
 milestone: M7
 blocked_by: [AGL-02, AGL-08]
 parallel_with: [AGL-20, AGL-21, AGL-24]
-unblocks: [AGL-23]
+unblocks: [AGL-23, AGL-26]
 ---
 
 # AGL-22 — `fetch_page`

@@ -114,7 +114,7 @@ A phase **closes when its gate unit is merged** (the gate is the phase's last un
 | Agent loop | `phase:narrative-tools` | M2 | AGL-09 … AGL-11 | AGL-11 | |
 | Agent loop | `phase:pending-writes` | M3 | AGL-12 … AGL-15 | AGL-15 | |
 | Agent loop | `phase:grounding` | M3 | AGL-16 … AGL-20 | AGL-20 | |
-| Agent loop | `phase:research` | M7 | AGL-21 … AGL-23 | AGL-23 | |
+| Agent loop | `phase:research` | M7 | AGL-21 … AGL-23, AGL-26 | AGL-23 | AGL-23 (the gate) does not wait on AGL-26 (split from AGL-21 on 2026-11-20); AGL-26 lands after AGL-21 and AGL-22. |
 | Agent loop | `phase:compile-tools` | M7 | AGL-24 | AGL-24 | |
 | Graph runner | `phase:contract` | M4 (lands in wave 1) | GRR-01 | GRR-01 | |
 | Graph runner | `phase:engine` | M4 | GRR-02 … GRR-08 | GRR-08 | |

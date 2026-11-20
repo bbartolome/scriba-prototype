@@ -6,7 +6,7 @@ phase: phase:research
 milestone: M7
 blocked_by: [AGL-06, AGL-08]
 parallel_with: [AGL-20, AGL-22, AGL-24]
-unblocks: [AGL-23]
+unblocks: [AGL-23, AGL-26]
 ---
 
 # AGL-21 — `web_search`
@@ -22,5 +22,5 @@ Nothing leaves the machine unless the author switches research on (40).
 
 ## Acceptance criteria
 - [ ] With research off, the mock's received request contains no research tools.
-- [ ] With research on and no endpoint, only `fetch_page` is offered.
+- Moved to AGL-26 by revision on 2026-11-20 (old text: "With research on and no endpoint, only `fetch_page` is offered."; it names AGL-22's tool, and AGL-21 is not blocked by AGL-22).
 - [ ] With both, a search runs against a local SearXNG-shaped stub and returns titles, URLs and snippets.
