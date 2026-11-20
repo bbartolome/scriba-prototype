@@ -187,6 +187,7 @@ async function touchDrag(page: Page, from: Point, to: Point): Promise<void> {
   const cdp = await page.context().newCDPSession(page);
   await touchStart(cdp, [from]);
   await touchMoves(cdp, [from], [to]);
+  await twoFrames(page);
   await touchEnd(cdp);
   await cdp.detach();
 }
@@ -208,11 +209,21 @@ async function touchChipDrag(
   await touchMoves(cdp, [from], [nudged], 6);
   await expect(page.locator('.cdk-drag-preview')).toBeVisible();
   await twoFrames(page);
-  const target = await boxCentre(page, targetSelector);
+  // The target can be below the fold at 1024 by 768 (the canvas starts low, see revealVflow), so it is scrolled into
+  // view here, after the drag has started; the pointer stays on the chip until the first move to the target.
+  const target = await centreOf(page, targetSelector);
   await touchMoves(cdp, [nudged], [target]);
   await twoFrames(page);
   await touchEnd(cdp);
   await cdp.detach();
+}
+
+/**
+ * Scrolls the vflow into view. At 1024 by 768 the canvas starts below the fold, because the tool palette is long (it
+ * lists every tool of the packs); the vflow is shorter than the viewport, so it is then wholly visible.
+ */
+async function revealVflow(page: Page): Promise<void> {
+  await page.locator('vflow').scrollIntoViewIfNeeded();
 }
 
 /**
@@ -348,6 +359,7 @@ test('touch: a matching entity chip pins on an entity port', async ({
 
 test('touch: the background pans the canvas', async ({ page }) => {
   await openCanvas(page, 'touch-canvas-4', GRAPH, SEEDED, false);
+  await revealVflow(page);
 
   const node = page.locator('[data-node="chapter-notes"]');
   const before = await boxCentre(page, '[data-node="chapter-notes"]');
@@ -362,6 +374,7 @@ test('touch: the background pans the canvas', async ({ page }) => {
 
 test('touch: two fingers zoom the canvas', async ({ page }) => {
   await openCanvas(page, 'touch-canvas-5', GRAPH, SEEDED, false);
+  await revealVflow(page);
 
   const node = page.locator('[data-node="chapter-notes"]');
   const chapter = await boxCentre(page, '[data-node="chapter-notes"]');
@@ -385,6 +398,7 @@ test('touch: two fingers zoom the canvas', async ({ page }) => {
   const cdp = await page.context().newCDPSession(page);
   await touchStart(cdp, starts);
   await touchMoves(cdp, starts, ends);
+  await twoFrames(page);
   await touchEnd(cdp);
   await cdp.detach();
 
