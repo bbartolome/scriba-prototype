@@ -7268,3 +7268,10 @@ Part D (gates and commit):
 - **Gates on the rebased head (Node v26.13.0):** `npm run lint` exit 0; `npm test` exit 0; `npm run build` exit 0.
 - **Commit on the branch before the fast-forward:** `025ab14` ticks criteria 1 to 3 of `units/AGL-22-fetch-page.md` (the checkboxes at lines 24 to 26) and sets `plans/AGL-22.md` to `status: done`.
 - **Units now available:** AGL-23 and AGL-26 (their blockers are on main). The scout runs again.
+
+## 2026-11-20 — AGL-24 — Rebase onto main 834fb5c (after AGL-22 merged): failed check, conflict in two files; the rebase is aborted
+
+- **Check:** cherry-pick of `44eb64c` onto main 834fb5c. Two conflicts: `apps/api/src/modules/agent-loop/agent-tools.service.ts` (the constructor and the tool list, where AGL-22 added the optional `fetchPolicy` parameter and the fifth argument of `builtinTools`) and `apps/api/test/agent-loop-run.test.ts` (the sorted tool lists). The other files applied cleanly.
+- **Action:** the cherry-pick is aborted; `unit/AGL-24` stays at `44eb64c` (its branch is unchanged). The worktree is clean.
+- **Expected by the plan:** section 5 gives the merged constructor and list text for either merge order, and the sorted union for the test lists. The rebase must follow that text, not a guess. A resolution changes the patch id, so the review must run again.
+- **Next:** a new Haiku implementer does the rebase by the detach-and-cherry-pick method, resolves the two files as section 5 says, re-runs the gates on the rebased head, and reports the new patch id.
