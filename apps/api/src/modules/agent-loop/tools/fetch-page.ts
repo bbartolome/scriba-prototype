@@ -330,9 +330,7 @@ export function fetchPageDefinition(
       const start = parseWebAddress(input);
       const timer = AbortSignal.timeout(policy.timeoutMs);
       const signal =
-        ctx.signal === undefined
-          ? timer
-          : AbortSignal.any([timer, ctx.signal]);
+        ctx.signal === undefined ? timer : AbortSignal.any([timer, ctx.signal]);
       try {
         const page = await fetchPage(start, policy, signal);
         const output = {
@@ -353,7 +351,9 @@ export function fetchPageDefinition(
           );
         }
         if (ctx.signal?.aborted) {
-          throw new Error('The run was stopped before the page was read.');
+          throw new Error('The run was stopped before the page was read.', {
+            cause: error,
+          });
         }
         throw error;
       }

@@ -28,7 +28,8 @@ export function agentLoopFetchKitModule(
 }
 
 // The page the stub serves at /page. Its text, once the HTML is stripped, is FETCHED_SENTENCE.
-export const FETCHED_SENTENCE = 'Harbour traffic doubled in 1900 & so did the oats.';
+export const FETCHED_SENTENCE =
+  'Harbour traffic doubled in 1900 & so did the oats.';
 
 const PAGE_HTML = [
   '<!doctype html>',

@@ -22,7 +22,6 @@ import {
   agentLoopFetchKitModule,
   FETCHED_SENTENCE,
   startPageStub,
-  type PageStub,
 } from './agent-loop-fetch.kit';
 import {
   get,
@@ -209,9 +208,7 @@ it('AC1: Fetching loopback, private, tailnet or `host.docker.internal` addresses
     const h = await openHarness({
       scenario: 'agl22-ac1-literal',
       steps: [
-        ...rows.map(([label, url]) =>
-          fetchStep(`AC1 row ${label} fetch`, url),
-        ),
+        ...rows.map(([label, url]) => fetchStep(`AC1 row ${label} fetch`, url)),
         AFTER_TOOL,
       ],
     });
@@ -329,11 +326,7 @@ it('AC3: Fetched text never appears as grounding evidence until accepted into `s
           },
         ]),
         fetchStep('AC3 fetch', `http://127.0.0.1:${stub.port}/page`),
-        writeStep(
-          'AC3 write',
-          'sources/fetched.md',
-          `${FETCHED_SENTENCE}\n`,
-        ),
+        writeStep('AC3 write', 'sources/fetched.md', `${FETCHED_SENTENCE}\n`),
         AFTER_TOOL,
       ],
     });
@@ -490,7 +483,10 @@ it('D4: Research off offers no fetch_page; research on with no endpoint offers f
   const h = await openHarness({
     scenario: 'agl22-d4',
     steps: [
-      { match: { endpoint: 'chat' }, reply: { kind: 'stream', deltas: ['Done.'] } },
+      {
+        match: { endpoint: 'chat' },
+        reply: { kind: 'stream', deltas: ['Done.'] },
+      },
     ],
   });
   try {
@@ -510,7 +506,7 @@ it('D4: Research off offers no fetch_page; research on with no endpoint offers f
   }
 });
 
-it('D5: With the test allowance, every address except the stub\'s own 127.0.0.1 address and port is still refused, also after a redirect.', async () => {
+it("D5: With the test allowance, every address except the stub's own 127.0.0.1 address and port is still refused, also after a redirect.", async () => {
   const one = await startPageStub();
   const two = await startPageStub();
   try {

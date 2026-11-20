@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import Ajv, { type ValidateFunction } from 'ajv';
 import {
   AGENT_RESERVED_TOOL_NAMES,
@@ -16,6 +16,11 @@ import {
   ExecutorService,
 } from '../tool-registry/tool-registry.module';
 import { builtinTools } from './tools/builtin-tools';
+import {
+  DEFAULT_FETCH_POLICY,
+  FETCH_POLICY,
+  type FetchPolicy,
+} from './tools/fetch-page';
 import {
   narrativeDefinition,
   readProjectNarrativeSettings,
@@ -47,15 +52,22 @@ export class AgentToolsService {
     private readonly entities: EntitiesService,
     private readonly store: ProjectStoreService,
     private readonly projects: ProjectsService,
+    // The fetch limits and the test allowance (AGL-22, plan P17). The composed app binds none, so production uses the
+    // default policy, which has no allowance.
+    @Optional() @Inject(FETCH_POLICY) fetchPolicy?: FetchPolicy,
   ) {
     // No coercion and no defaults: a string "yes" for a boolean is refused, and nothing is filled in (S1, D14).
     const ajv = new Ajv({ allErrors: true, strict: true });
-    this.tools = builtinTools(files, search, store, projects).map(
-      (definition) => ({
-        definition,
-        validate: ajv.compile(definition.schema),
-      }),
-    );
+    this.tools = builtinTools(
+      files,
+      search,
+      store,
+      projects,
+      fetchPolicy ?? DEFAULT_FETCH_POLICY,
+    ).map((definition) => ({
+      definition,
+      validate: ajv.compile(definition.schema),
+    }));
     this.webSearchValidate = ajv.compile(WEB_SEARCH_SCHEMA);
   }
 
