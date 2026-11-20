@@ -6859,3 +6859,14 @@ Part D (gates and commit):
 - **Review parts:** one part (steps 1 to 14; criteria 1 and 2 in `nav-phone.e2e.ts`; criterion 3 by the three phone specs).
 - **Downstream check (orchestrator, by reading):** PLT-23 (`blocked_by: [SHL-23]`) waits for SHL-23 to be done. Its counts (step 1b "1 failed, 23 passed", step 5 "24 passed") change when the new spec lands. PLT-23 step 5 already records the list and count when the total differs. Not edited here.
 - **Status:** `plans/SHL-23.md` set to `status: planned`.
+
+## 2026-11-20 — GNP-22 — Reviser READY (revision 1); no unit change; plan status planned
+
+- **Unit changes:** none. The reviser changed only `plans/GNP-22.md`.
+- **enable contract:** the plan quotes GNP-21's C2 contract (the `enable` option on `goldenCase` and `runGoldenCase`) word for word. GNP-22 passes `enable: true` and adds no enable step and no second helper. The plan's step 3b checks GNP-21's four facts when GNP-21 is not yet on main.
+- **Open points, all settled by the reviser, none sent to the Navigator:** point 1 (contract may change) is closed. Point 2: either merge order works, and GNP-21 is not added to `blocked_by`. Point 6: `zoom.bigPicture` and `framework_builder.claimIds` are optional, because the unit's table does not mark them required. Point 8: one `it` awaits nine golden bodies (GNP-14 C5 rule).
+- **Viewport margin (plan assumption A7; GNP-21 calls it A10):** the reviser chose the option that changes no e2e file. If the person picker falls off screen, the implementer stops and reports PLAN DOES NOT WORK with the measured target and viewport height. Not a Navigator point: no criterion and no settled decision changes.
+- **Risk recorded for the orchestrator:** the margin is probably used up once GNP-15, GNP-21 and GNP-22 are all on main (estimate, not measured). If step 13 reports it, the next reviser gets the measured number.
+- **E2E gate:** the root `npm test` does not run the e2e suite (the e2e workspace's `test` script is `vitest run`). Step 13 runs the four `/tools` specs explicitly. A browser is available here (the 2026-11-20 GNP-18 run had 20 passed and 4 failed; the 4 are the main baseline, owned by PLT-23 and SHL-23).
+- **Review parts:** two (Part 1: steps 0 to 10, 12 to 14 with AC 1 to 3; Part 2: step 11 with AC 4).
+- **Status:** `plans/GNP-22.md` set to `status: planned`.
