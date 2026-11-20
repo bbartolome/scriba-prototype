@@ -1,12 +1,17 @@
 import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { expect, test, type Request, type TestInfo } from '@playwright/test';
+import { expect, test, type Request } from '@playwright/test';
 
-// A placeholder records itself as pending. Its owner replaces the call with the step's assertions.
-function pending(testInfo: TestInfo, name: string): void {
-  testInfo.annotations.push({ type: 'pending', description: name });
-  console.log(`pending: ${name}`);
+// Counts the word-like segments of a text, as the module's word count does for these files.
+function wordsOf(text: string): number {
+  let count = 0;
+  for (const segment of new Intl.Segmenter('en', {
+    granularity: 'word',
+  }).segment(text)) {
+    if (segment.isWordLike) count += 1;
+  }
+  return count;
 }
 
 test('journey: setup, project from sample, agent run, accept change, manuscript', async ({
@@ -410,5 +415,54 @@ test('journey: setup, project from sample, agent run, accept change, manuscript'
   });
 
   // Owner: Compile & export, M5 (CEX-20). No export step in the e2e.
-  await test.step('manuscript', () => pending(testInfo, 'manuscript'));
+  await test.step('manuscript', async () => {
+    const errors: Error[] = [];
+    page.on('pageerror', (error) => errors.push(error));
+    const project = join(process.env.SCRIBA_E2E_LIBRARY!, 'demo-book');
+    // The authored order, from the library copy: four entries, and not alphabetical.
+    const yaml = await readFile(join(project, 'project.yaml'), 'utf8');
+    const authored = [...yaml.matchAll(/^\s+- path: (\S+)$/gm)].map(
+      (match) => match[1]!,
+    );
+    expect(authored).toHaveLength(4);
+    expect(authored).not.toEqual([...authored].sort());
+    // The chapter before and after the accepted edit.
+    const versionDir = join(project, 'drafts', '.versions', 'born-to-it.md');
+    const [version] = await readdir(versionDir);
+    const before = await readFile(join(versionDir, version!), 'utf8');
+    const after = await readFile(
+      join(project, 'drafts', 'born-to-it.md'),
+      'utf8',
+    );
+    // The counter matches the module only when none of these constructs is present.
+    expect(before + after).not.toMatch(
+      /^---|<!--|\x60\x60\x60|~~~|\]\(|https?:\/\/|www\./m,
+    );
+
+    await page.goto('/projects/demo-book/manuscript');
+    await expect(
+      page.getByRole('heading', { name: 'Manuscript', exact: true }),
+    ).toBeVisible();
+    // The body rows are the authored list, in its order.
+    await expect
+      .poll(
+        () =>
+          page
+            .locator('ul[data-part="body"] > li')
+            .evaluateAll((rows) =>
+              rows.map((row) => row.getAttribute('data-path')),
+            ),
+        { timeout: 15_000 },
+      )
+      .toEqual(authored);
+    // The shown count is the count of the current file, and the edit changed it.
+    const expected = wordsOf(after);
+    expect(wordsOf(before)).not.toBe(expected);
+    await expect(
+      page
+        .locator('li[data-path="drafts/born-to-it.md"]')
+        .getByText(expected + ' words', { exact: true }),
+    ).toBeVisible({ timeout: 15_000 });
+    expect(errors).toEqual([]);
+  });
 });
