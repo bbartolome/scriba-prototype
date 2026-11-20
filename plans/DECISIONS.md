@@ -7054,3 +7054,13 @@ Part D (gates and commit):
   1. `journey.e2e.ts:12` "project from sample": deep-equality failure (expected 0 lines, received 14). This is the leftover library folder that PLT-23 fixes on main (898ef38, journey change at line 204). PLT-23 is not on `unit/GRR-15`.
   2. `tools-preview.e2e.ts:167` "TRG-05 C2: the picker offers person entities only and takes a dropped person chip": person select value expected `ada`, received empty (5000 ms). The branch has `height: 2100` at line 23; `main` has `height: 6000` (GNP-22 and PLT-23).
 - **Status:** both failures are fixed on main but not on the branch. The standing instruction is not met (zero failures). The REWORK list is not started and `unit/GRR-15` is not merged. The next step, a rebase of `unit/GRR-15` onto main and a rerun, changes the branch under test and needs the user's decision.
+
+## 2026-11-20 — SHL-17 — Implementer COMPLETE on plan revision 3 (Haiku, medium); no new commit; the reviewers start again for both parts
+
+- **Branch:** `unit/SHL-17` at a44fc25 (part 1 aaca233, part 2 a44fc25), based on main 3b859d4. No commit was made by this implementer. Worktree restored: the uncommitted rework edit of `e2e/specs/pwa.e2e.ts` was discarded with `git checkout`, and `git status --short` printed nothing.
+- **Criteria passed:** `npm run e2e -w @bbartolome/scriba-e2e -- specs/pwa.e2e.ts --trace off`, exit 0, 4 passed (29.1 s): criterion 1 (installable on loopback and on an HTTPS tailnet-style name, standalone display), criterion 2 (excluded paths never served from cache, streaming works after install), criterion 3 (an open installed app prompts a reload after a server update and runs the new bundle; the committed test already has the reload of plan revision 3), and S1 (offline: the cached shell loads and shows Server unreachable).
+- **Vitest:** `npm test -w @bbartolome/scriba-web` exit 0, 82 files, 582 tests passed. The two named files (`pwa-update.spec.ts`, `notices.spec.ts`), exit 0, 8 tests passed (counts only).
+- **Not tested (plan step 12, manual, not criteria):** the real tailnet name in desktop Chrome, and the iPad Add to Home Screen check.
+- **Differences from the plan:** none reported. The mutation checks, the full gates and the full e2e suite were not run for this report.
+- **Patch id:** 16d688c134b7a32e008b3f965a12ba8cb68c3069 (the same as the earlier part 1 approval, since no code changed).
+- **Status:** the reviewers start again for both parts (section 8 of `plans/SHL-17.md`, revision 3), on the same patch id. The earlier part 2 REWORK is superseded by plan revision 3, which requires the reload.
