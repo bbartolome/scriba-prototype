@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "view": "recipe",
+  "name": "Dialogue scene",
+  "nodes": [
+    {
+      "id": "scene",
+      "kind": "input",
+      "params": { "type": "text", "label": "Scene" },
+      "position": { "x": 0, "y": 0 }
+    },
+    {
+      "id": "keepers",
+      "kind": "input",
+      "params": {
+        "type": "entity",
+        "label": "Both keepers",
+        "entityKind": "character"
+      },
+      "position": { "x": 0, "y": 160 }
+    },
+    {
+      "id": "style",
+      "kind": "input",
+      "params": { "type": "style", "label": "House style" },
+      "position": { "x": 0, "y": 320 }
+    },
+    {
+      "id": "dialogue",
+      "kind": "tool",
+      "tool": "dialogue",
+      "params": {
+        "coreIdea": "Two keepers who barely speak must keep the lamp lit through a storm."
+      },
+      "position": { "x": 320, "y": 160 }
+    },
+    {
+      "id": "draft",
+      "kind": "output",
+      "params": { "label": "Scene draft" },
+      "position": { "x": 640, "y": 160 }
+    }
+  ],
+  "edges": [
+    { "id": "w1", "from": "scene.out", "to": "dialogue.sceneText" },
+    { "id": "w2", "from": "keepers.out", "to": "dialogue.characterIds" },
+    { "id": "w3", "from": "style.out", "to": "dialogue.styleProfile" },
+    { "id": "w4", "from": "dialogue.output", "to": "draft.in" }
+  ]
+}
