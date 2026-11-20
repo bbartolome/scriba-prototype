@@ -68,7 +68,13 @@ export class AgentToolsService {
     // No coercion and no defaults: a string "yes" for a boolean is refused, and nothing is filled in (S1, D14).
     const ajv = new Ajv({ allErrors: true, strict: true });
     this.tools = [
-      ...builtinTools(files, search, store, projects, fetchPolicy ?? DEFAULT_FETCH_POLICY),
+      ...builtinTools(
+        files,
+        search,
+        store,
+        projects,
+        fetchPolicy ?? DEFAULT_FETCH_POLICY,
+      ),
       ...compileDefinitions({ store, manuscript, preflight, exporter }),
     ].map((definition) => ({
       definition,
