@@ -1,0 +1,8 @@
+{
+  "sample": "nonfiction",
+  "intent": "Give the difference between deliberate practice and simply doing the activity again a memorable name, with a one-line definition, using my notes.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["named_concept"]
+  }
+}

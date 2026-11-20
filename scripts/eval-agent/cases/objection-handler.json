@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Raise the strongest objections to the ten-thousand-hour claim in chapter 3 and answer each one fairly, using my claims.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["objection_handler"],
+    "citations": "present"
+  }
+}

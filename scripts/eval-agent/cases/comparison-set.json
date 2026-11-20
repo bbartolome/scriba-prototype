@@ -1,0 +1,9 @@
+{
+  "sample": "nonfiction",
+  "intent": "Set the planned-practice habit of the person in my notes beside a matched case that did not practise that way, and show the difference.",
+  "expect": {
+    "reason": "completed",
+    "tools": ["comparison_set"],
+    "citations": "present"
+  }
+}
