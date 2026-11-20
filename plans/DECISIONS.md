@@ -7275,3 +7275,9 @@ Part D (gates and commit):
 - **Action:** the cherry-pick is aborted; `unit/AGL-24` stays at `44eb64c` (its branch is unchanged). The worktree is clean.
 - **Expected by the plan:** section 5 gives the merged constructor and list text for either merge order, and the sorted union for the test lists. The rebase must follow that text, not a guess. A resolution changes the patch id, so the review must run again.
 - **Next:** a new Haiku implementer does the rebase by the detach-and-cherry-pick method, resolves the two files as section 5 says, re-runs the gates on the rebased head, and reports the new patch id.
+
+## 2026-11-20 — CEX-15 — Criterion 2: the user's observation of CI run 44659727464 (relayed by the parent session); the box is not ticked by the orchestrator
+
+- **Observation:** the user checked CI run `44659727464` directly and reports that it passed. The parent session relayed the report. The run id is the one that the Navigator decision of this date (CEX-15, option A) names.
+- **Not in the report:** the tick conditions of that decision are not confirmed here. They are: event `push`, branch `main`, headSha `3b859d4`, conclusion `success`; the CEX-10 to CEX-14 commits are ancestors of headSha; the install and `Test` steps pass with `SCRIBA_REQUIRE_EXPORT_TOOLS=1`; the export steps are not skipped. The orchestrator has no GitHub access in this session and did not re-observe the run.
+- **Action:** `units/CEX-15-export-gate-image-smoke.md` is not changed, and criterion 2 stays unticked. The unit's status and merge are unchanged, as the Navigator decision of this date records. The box is ticked when these details are recorded here, from the run itself.
