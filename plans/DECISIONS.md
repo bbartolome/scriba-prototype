@@ -7281,3 +7281,12 @@ Part D (gates and commit):
 - **Observation:** the user checked CI run `44659727464` directly and reports that it passed. The parent session relayed the report. The run id is the one that the Navigator decision of this date (CEX-15, option A) names.
 - **Not in the report:** the tick conditions of that decision are not confirmed here. They are: event `push`, branch `main`, headSha `3b859d4`, conclusion `success`; the CEX-10 to CEX-14 commits are ancestors of headSha; the install and `Test` steps pass with `SCRIBA_REQUIRE_EXPORT_TOOLS=1`; the export steps are not skipped. The orchestrator has no GitHub access in this session and did not re-observe the run.
 - **Action:** `units/CEX-15-export-gate-image-smoke.md` is not changed, and criterion 2 stays unticked. The unit's status and merge are unchanged, as the Navigator decision of this date records. The box is ticked when these details are recorded here, from the run itself.
+
+## 2026-11-20 — AGL-23 — Unit change: heading of the acceptance criteria (condition 4 of the AGL-22 Navigator decision, the AGL-10 rule)
+
+- **Change:** `units/AGL-23-research-gate.md` line 16, the heading parenthetical. It applies condition 4 of the AGL-22 decision above ("AGL-23 uses the same kit"), under the AGL-10 rule (a kit is allowed only where the unit's own heading names it). The precedents are the AGL-16 heading (line 5412) and the AGL-22 heading (its condition 5).
+- **Old text:** `## Acceptance criteria (the phase checklist)`
+- **New text:** `## Acceptance criteria (the phase checklist; local test servers, never the internet; the successful fetches reach the page stub through a test-only allowance for its own address and port)`
+- **Criteria:** lines 17 to 20 are byte-identical (md5 84bec16a32d7f067f98fac7267bdfd9d before and after, checked by the orchestrator).
+- **YAGNI:** not one of the four actions. It is the heading change that the Navigator decision directs.
+- **Downstream:** AGL-26 is unchanged (no blocking relation with this heading).
