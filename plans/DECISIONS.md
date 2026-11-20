@@ -6907,3 +6907,12 @@ Part D (gates and commit):
 - **Minor, not a rework:** the report gives no separate output for step 2 (baseline red) or step 9 (the four phone regression specs). The full run of step 10 covers step 9.
 - **Known failure (not this unit):** `journey.e2e.ts:204` ("project from sample"), owned by PLT-23.
 - **Next:** rebase onto main, run the gates, check the patch id again, fast-forward.
+
+## 2026-11-20 — SHL-23 — On main at 4e7e8ce (fast-forward); gates on the last commit; branch and worktree removed
+
+- **Rebase:** `unit/SHL-23` was rebased onto main twice (494292f, then 03d1e94). The second rebase stopped in an interactive state, so it was aborted, and the two commits were replayed by cherry-pick onto main 03d1e94 (13adfd3 test, 023e9bc feat). The branch was then moved to them. The patch id is the same at every step: b5c343884bc3cc56ef8754f8e422edf1a802539d.
+- **Gates on the last code commit (023e9bc):** `npm run lint` exit 0 (prettier passes), `npm test` exit 0 (web and the unit suites, fail 0), `npm run build` exit 0.
+- **Docs commit on the branch:** 4e7e8ce `docs(SHL-23): criteria checked, plan status done`. The three acceptance criteria are checked in `units/SHL-23-phone-bottom-nav-fit.md`, and `plans/SHL-23.md` is `status: done`. Each criterion was checked off after the implementer's test output and the reviewer's check.
+- **Fast-forward:** main moved from 03d1e94 to 4e7e8ce.
+- **Cleanup:** the worktree `scriba-prototype-wt/SHL-23` was removed without `--force` (it was clean). The branch `unit/SHL-23` was deleted (merged).
+- **Still open for the next session:** `journey.e2e.ts:204` remains the known failure, owned by PLT-23. The e2e suite is not part of the root `npm test` gate.
