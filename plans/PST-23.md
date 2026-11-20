@@ -1,6 +1,6 @@
 ---
 id: PST-23
-status: draft
+status: planned
 ---
 # PST-23 plan — lazy, backed-up file migrations and the migrator registry
 
