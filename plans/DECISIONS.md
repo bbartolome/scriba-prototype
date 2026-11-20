@@ -7557,3 +7557,17 @@ Part A (criterion 2, theme tokens):
 - **Implementer's gates (claimed, not re-run by the reviewer):** `npm run lint:packs` exit 0; `cd apps/api && npx vitest run test/packs/remix.test.ts` 1 passed; `node --test scripts/eval-case-remix.test.mjs` pass 1; `node --test scripts/eval-cases.test.mjs` pass 2; root build, lint, `npx prettier --check .` and `npm test` exit 0 (600 passed, 14 skipped); `npm run e2e` 42 passed, 1 skipped.
 - **Not run (recorded, not failures):** the real-model run of the remix eval case (no local model server; open point 2 of the plan); the CI sentence of the Spec, unit line 19 (no push; GNP-01 disposition, option (a)).
 - **Criteria to tick at the merge:** criterion 1 (A1), criterion 2 (A2), criterion 3 (C3a golden, and C3b manual eval case added, data-only reading).
+
+## 2026-11-20 — GNP-23 — MERGED to main at 727002c (fast-forward of unit/GNP-23; plan status done)
+
+- **Path:** the first attempt to rebase unit/GNP-23 onto main stopped in an interactive rebase in the worktree. It was aborted, and unit/GNP-23 stayed at 5a36e0d. The commit was then cherry-picked onto main at 52e1940 as 42c730a. Patch id after the cherry-pick: 29239b1a78a643d11186e4de7519eb7066056459, the same as the approval.
+- **Gates on 42c730a (run by the orchestrator in the worktree):** `npm run lint` exit 0; `npm run build` exit 0; `npm test` exit 0.
+- **Criteria ticked:** criterion 1 (A1), criterion 2 (A2), criterion 3 (C3a golden, C3b manual eval case added). The real-model eval run and the Spec's CI sentence stay recorded as not run (see the approval entry above).
+- **Cleanup:** worktree scriba-prototype-wt/GNP-23 removed without force; branch unit/GNP-23 deleted (it was merged).
+
+## 2026-11-20 — GRR-17 — Implementer attempt 3: INCOMPLETE (not a PLAN DOES NOT WORK); status of the unit at the cycle end
+
+- **Report (Haiku implementer, attempt 3, worktree scriba-prototype-wt/GRR-17, branch unit/GRR-17 rebased onto main 6fd19c5, no own commits):** the spec was rewritten to plan revision 4 (helpers `boxCentre`, `twoFrames`, `validated`, `wire`; no `waitForTimeout`; prettier clean). It was not run against the plan's steps 4 onward. The baseline on the branch without the spec passed: `npm run build` exit 0; `npm run e2e` exit 0, 42 passed, 1 skipped.
+- **Where the spec is:** untracked and not committed. It was moved out of the worktree to /tmp/grr17-keep/graph-recipe.e2e.ts (a copy also at /tmp/grr17-keep/graph-recipe.moved.ts). It must be moved back to e2e/specs/graph-recipe.e2e.ts before plan section 3 step 4. /tmp may not survive, so a next session should check for it first and rewrite it from plan revision 4 if it is gone.
+- **Not run:** plan steps 4 to 9 (T1, S1, the lint and build, T2) and the commit (step 7). T3 and T4 are not run by design (option (a) for both, DECISIONS entry above).
+- **Next:** a new implementer continues from plan revision 4 in the same worktree. No reviser is needed unless the run shows a stop rule of the plan.
