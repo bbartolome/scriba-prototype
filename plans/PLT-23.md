@@ -1,7 +1,7 @@
 ---
 id: PLT-23
 title: Full-suite e2e failures: leftover library state from earlier specs
-status: planned
+status: done
 ---
 # PLT-23 plan — full-suite e2e failures (journey "project from sample", TRG-05 C2)
 

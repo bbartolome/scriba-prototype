@@ -33,8 +33,8 @@ Criterion 3 also needs SHL-23 on main (the Navigator decision of 2026-11-19; pla
 - Not: GRR-15's code, any change to what the two tests check, or other flakes not seen in the full run above.
 
 ## Acceptance criteria (test seam: Playwright, `npm run e2e -w @bbartolome/scriba-e2e -- --trace off`)
-- [ ] The cause of each failure is named in the plan (the earlier spec and the state it leaves), with the evidence.
-- [ ] In the full suite run, both tests pass: journey "project from sample" and tools-preview "TRG-05 C2".
-- [ ] The full run exits 0 with 0 failed, on a fresh checkout of the branch, and each of the two specs still passes when run alone.
-- [ ] No test is weakened, skipped or given a longer timeout just to pass: every `expect(...)` and every test title in the two specs is unchanged, no `test.skip`, `test.fixme` or `test.only` is added, no timeout is raised, and no retries are added in `playwright.config.ts`.
-- [ ] The root `npm test` exits 0.
+- [x] The cause of each failure is named in the plan (the earlier spec and the state it leaves), with the evidence.
+- [x] In the full suite run, both tests pass: journey "project from sample" and tools-preview "TRG-05 C2".
+- [x] The full run exits 0 with 0 failed, on a fresh checkout of the branch, and each of the two specs still passes when run alone.
+- [x] No test is weakened, skipped or given a longer timeout just to pass: every `expect(...)` and every test title in the two specs is unchanged, no `test.skip`, `test.fixme` or `test.only` is added, no timeout is raised, and no retries are added in `playwright.config.ts`.
+- [x] The root `npm test` exits 0.
