@@ -1,10 +1,10 @@
 ---
 id: AGL-26
-status: draft
+status: planned
 ---
 # AGL-26 plan — research on, no endpoint: only `fetch_page` is offered
 
-Unit `units/AGL-26-research-no-endpoint.md` (module Agent loop, phase:research, M7). Planned on `main` at 1baa7c7, clean tree. Revision 1, planner. Status draft until the orchestrator sets `planned`. The unit's one note (line 14) records the split from AGL-21 (commit a44b9cf, 2026-11-20). The criterion (line 22) is word for word the old criterion 2 of AGL-21, which AGL-21's unit keeps at line 25.
+Unit `units/AGL-26-research-no-endpoint.md` (module Agent loop, phase:research, M7). Planned on `main` at 1baa7c7, clean tree. Revision 1, planner. Revision 2, reviser, checked on `main` at 4d9cd06 (the commit that adds this plan). Corrections of revision 2: the three open points are settled (section 6); the test's imports and its type-check gate are stated (P4, step 5); mutation M1 names the exact lines to replace; section 8 lists each step and test. No unit change. The unit's one note (line 14) records the split from AGL-21 (commit a44b9cf, 2026-11-20). The criterion (line 22) is word for word the old criterion 2 of AGL-21, which AGL-21's unit keeps at line 25.
 
 ## 1. Decisions this plan follows
 
@@ -20,9 +20,9 @@ Small decisions the planner makes (simplest option; recorded here, not in `plans
 
 - **P1. No production change.** The behaviour is on `main`: AGL-21 (`74b107a`, status done), AGL-22 (`834fb5c`, `025ab14`), AGL-23 (`9f3f304`) and AGL-24 (`ea878e1`) are merged. The criterion is verified by one new test. Nothing under `apps/api/src` changes.
 - **P2. One new test file.** `apps/api/test/agent-loop-research-no-endpoint.test.ts`, with one `it`. Its name starts `AC1:`, the unit's own numbering (the unit has one criterion; the criterion was number 2 in AGL-21). The file name follows the unit slug.
-- **P3. Reading of "only".** The planner's default (open point 1): among the research family's names, only `fetch_page` is in the tool list, and the other families are not asserted. This is the reading AGL-23's P4 used.
-- **P4. Helpers copied, not exported.** `withStream` (`apps/api/test/agent-loop-fetch-page.test.ts` lines 111 to 121), `enableResearch` (lines 146 to 151) and `toolNamesOf` (lines 154 to 156; the same body as `agent-loop-research-gate.test.ts` lines 161 to 163). `RESEARCH_NAMES` as in `agent-loop-web-search.test.ts` line 39. The test uses no kit and no stub, because no fetch or search runs in it.
-- **P5. Duplicate coverage stays.** The same fact is already asserted by `apps/api/test/agent-loop-run.test.ts` (comment at line 385; the research-on list with `fetch_page` and no `web_search`, `fetch_page` at line 399) and by AGL-22's decision test D4 (`agent-loop-fetch-page.test.ts` lines 482 to 507). This plan changes neither (open point 3).
+- **P3. Reading of "only".** Settled by the reviser (open point 1, section 6): among the research family's names, only `fetch_page` is in the tool list, and the other families are not asserted. This is the reading AGL-23's P4 used.
+- **P4. Helpers copied, not exported.** `withStream` (`apps/api/test/agent-loop-fetch-page.test.ts` lines 111 to 121), `enableResearch` (lines 146 to 151) and `toolNamesOf` (lines 154 to 156; the same body as `agent-loop-research-gate.test.ts` lines 161 to 163). `RESEARCH_NAMES` as in `agent-loop-web-search.test.ts` line 39. The test uses no kit and no stub, because no fetch or search runs in it. Imports: `expect` and `it` from `vitest`; `AGENT_SETTINGS_ROUTE` from `@bbartolome/scriba-contracts/agent-loop`; `observe`, `openHarness`, `post`, `readUntilEnded`, `requestsOf`, `startRun`, `type ChatBody` and `type Harness` from `./agent-loop-transcript.kit`; `type Observer` from `./invariant-sweep` (the same import lines as `agent-loop-fetch-page.test.ts` lines 1 to 39, without the names this test does not use). No unused import: `npm test` type-checks `test/` (`apps/api/package.json` line 6, `tsc --noEmit -p tsconfig.json`, which includes `test`), and `eslint` reports unused names.
+- **P5. Duplicate coverage stays.** The same fact is already asserted by `apps/api/test/agent-loop-run.test.ts` (comment at line 385; the research-on list with `fetch_page` and no `web_search`, `fetch_page` at line 399) and by AGL-22's decision test D4 (`agent-loop-fetch-page.test.ts` lines 482 to 507). This plan changes neither (open point 3, settled by the reviser).
 - **P6. Commit message.** `test(AGL-26): research on without endpoint offers only fetch_page`.
 
 ## 2. Files to create or change
@@ -43,11 +43,11 @@ Run from `/Users/bbartolome/workspace/scriba-prototype`. Create branch `unit/AGL
 2. **Baseline.** From `apps/api`: `npx vitest run test/agent-loop-*.test.ts`. Expected: every file passes. Record the file and test counts.
 3. **Test file.** Create `apps/api/test/agent-loop-research-no-endpoint.test.ts` as section 4 describes, with the helpers of P4. Then `npx prettier --write apps/api/test/agent-loop-research-no-endpoint.test.ts`. Expected: the file is reported as written.
 4. **Run on the code of main.** From `apps/api`: `npx vitest run test/agent-loop-research-no-endpoint.test.ts`. Expected: the test passes, because no production code changes. If it fails, stop and report the test and its output to the orchestrator. Do not change production code or the unit.
-5. **Gates.** From the root: `npm run lint -w @bbartolome/scriba-api` and `npx prettier --check apps/api/test/agent-loop-research-no-endpoint.test.ts`, then `npm test -w @bbartolome/scriba-api`. Expected: each exits 0.
+5. **Gates.** From the root: `npm run lint -w @bbartolome/scriba-api` and `npx prettier --check apps/api/test/agent-loop-research-no-endpoint.test.ts`, then `npm test -w @bbartolome/scriba-api`. Expected: each exits 0. `npm test` first runs the build, whose `tsc --noEmit -p tsconfig.json` type-checks the new test file.
 6. **Agent-loop suite.** From `apps/api`: `npx vitest run test/agent-loop-*.test.ts`. Expected: the same files pass as in step 2, and the test count is the step 2 count plus 1.
 7. **Scope and commit.** `git status --short` lists only the test file. `git add apps/api/test/agent-loop-research-no-endpoint.test.ts`, then commit with the message of P6. Expected: one commit on `unit/AGL-26`. Record the hash.
 8. **Mutation checks.** On the committed tree, make each change below, run `npx vitest run test/agent-loop-research-no-endpoint.test.ts` from `apps/api`, record the failing assertion, and restore with `git checkout -- <path>`. Expected after each restore: `git status --short` is empty.
-   - M1 (`web_search` offered without an endpoint): in `agent-tools.service.ts`, lines 122 to 124, drop `&& options.searchEndpoint !== undefined`; on line 127 write `webSearchDefinition(options.searchEndpoint ?? '')`. Expected: the assertion fails with `['fetch_page', 'web_search']`.
+   - M1 (`web_search` offered without an endpoint): in `agent-tools.service.ts`, replace the four lines 122 to 125 (`if (`, `options.enabledFamilies.includes('research') &&`, `options.searchEndpoint !== undefined`, `) {`) with the one line `if (options.enabledFamilies.includes('research')) {`; on line 127 (the `definition:` line) write `definition: webSearchDefinition(options.searchEndpoint ?? ''),`. Expected: the assertion fails with `['fetch_page', 'web_search']`.
    - M2 (`fetch_page` not built in): in `tools/builtin-tools.ts`, delete line 420 (`fetchPageDefinition(fetchPolicy),`). Expected: the assertion fails with `[]`. The now unused import stays; vitest does not type-check.
    - M3 (a default endpoint): in `agent-runs.service.ts`, line 153, write `searchEndpoint: settings.research.searchEndpoint ?? 'http://127.0.0.1:9/search'`. Expected: the assertion fails with `['fetch_page', 'web_search']`.
 9. **Record.** Store the Node and npm versions and each command's output with its exit code. The criterion is marked passed only when its pass condition in section 4 holds.
@@ -60,7 +60,7 @@ Test file: `apps/api/test/agent-loop-research-no-endpoint.test.ts`, with the con
 
 | Criterion (unit line) | Test and seam | Command | Pass condition |
 |---|---|---|---|
-| "With research on and no endpoint, only `fetch_page` is offered." (line 22) | `AC1: With research on and no endpoint, only \`fetch_page\` is offered.` Composed app with no `modules` option, so no kit. Mock model with one scenario (name `agl26-ac1`, one step `{match: {endpoint: 'chat'}, reply: {kind: 'stream', deltas: ['Done.']}}`), opened with `openHarness`. Then `enableResearch(h)`: a `POST` to `AGENT_SETTINGS_ROUTE` with `{research: {enabled: true}}` and no `searchEndpoint`. Then `withStream`: `startRun` with intent `AGL-26 research on, no endpoint`, and `readUntilEnded`. Then `const [first] = await requestsOf(h)`. | from `apps/api`: `npx vitest run test/agent-loop-research-no-endpoint.test.ts -t "AC1"` | `toolNamesOf(first).filter((name) => RESEARCH_NAMES.includes(name))` equals `['fetch_page']`. The settings `POST` returns 200. The run ends (`readUntilEnded` returns). |
+| "With research on and no endpoint, only `fetch_page` is offered." (line 22) | `AC1: With research on and no endpoint, only \`fetch_page\` is offered.` Composed app with no `modules` option, so no kit. Mock model with one scenario (name `agl26-ac1`, one step `{match: {endpoint: 'chat'}, reply: {kind: 'stream', deltas: ['Done.']}}`), opened with `openHarness`. Then `enableResearch(h)`: a `POST` to `AGENT_SETTINGS_ROUTE` with `{research: {enabled: true}}` and no `searchEndpoint`. Then `withStream`: `startRun` with intent `AGL-26 research on, no endpoint`, and `readUntilEnded`. Then `const [first] = await requestsOf(h)` (the first chat request, `ChatBody`). | from `apps/api`: `npx vitest run test/agent-loop-research-no-endpoint.test.ts -t "AC1"` | `toolNamesOf(first).filter((name) => RESEARCH_NAMES.includes(name))` equals `['fetch_page']`. The settings `POST` returns 200. The run ends (`readUntilEnded` returns). |
 
 ## 5. Downstream and parallel agreement
 
@@ -74,9 +74,11 @@ Test file: `apps/api/test/agent-loop-research-no-endpoint.test.ts`, with the con
 
 ## 6. Open points
 
-1. **Reading of "only" (criterion text).** Options: (a) among the research names (`web_search`, `fetch_page`), only `fetch_page` is in the tool list, and the other families are not asserted (the plan's default, the reading AGL-23's P4 used); (b) the whole tool list equals the research-on list at `agent-loop-run.test.ts` lines 394 to 405, which includes the project, narrative, grounding and compile names, so the test repeats that test and breaks each time another family adds a name. The plan is written for (a). Not decided.
-2. **Phase close and the landing of AGL-26.** The gate AGL-23 is merged, so phase:research is closed and AGL-26 lands after it. `units/README.md` (the `phase:research` row) and `plans/AGL-23.md` section 5 already allow this. Options: (a) no change (the plan's default); (b) mark AGL-26 as ungated, as the `none (ungated)` rows of SHL-21 to SHL-23 are, which changes the README. Not decided.
-3. **Duplicate coverage.** The same fact is also asserted by `agent-loop-run.test.ts` (lines 385 to 405) and AGL-22's D4. Options: (a) keep all three (the plan's default); (b) remove the research-on assertion from the run test or from D4, which edits files of other units. Not decided. The plan changes neither.
+All three are settled by the reviser (revision 2). None goes to the Navigator.
+
+1. **Reading of "only" (criterion text).** Settled: option (a). Among the research names (`web_search`, `fetch_page`), only `fetch_page` is in the tool list; the other families are not asserted. Sources: the unit's decisions (lines 17 to 19) are all about the research tools, and the criterion came from AGL-21, whose criterion 1 is "no research tools" (`units/AGL-21-web-search.md` line 24); the module's assertion principle is the tool list "with research and disabled tools absent" (`modules/agent-loop.md` line 63); the code always offers the project, narrative, grounding and compile families (`agent-runs.service.ts` lines 77 to 79), and `agent-loop-run.test.ts` lines 394 to 405 show ten tools with research on, so "only" over the whole list cannot be meant. Option (b) would also repeat the run test and break whenever a family adds a name (the cause of AGL-23's P4).
+2. **Phase close and the landing of AGL-26.** Settled: option (a), no change. Source: `units/README.md` line 117 already says the gate AGL-23 "does not wait on AGL-26" and that AGL-26 "lands after AGL-21 and AGL-22"; the split entry in `plans/DECISIONS.md` (line 7095) placed AGL-26 in `phase:research`. Option (b) would change the unit's `phase` front matter, which none of the reviser's four actions allows, and is not needed for a correct plan.
+3. **Duplicate coverage.** Settled: option (a), keep all three. Sources: `prompt.md`, "When a plan does not work" ("Do not make an acceptance criterion or a test weaker ... Do not delete one"); D4 is AGL-22's test of its own decision (`units/AGL-22-fetch-page.md` line 18; `plans/AGL-22.md` line 117), and the run-test assertion belongs to a done unit; both files are outside this plan's file list. This is a test-structure decision, which the reviser makes.
 
 ## 7. Facts checked and facts assumed
 
@@ -119,4 +121,6 @@ Assumed, not checked:
 
 ## 8. Review parts
 
-One part. Steps 1 to 9 of section 3, the test AC1 of section 4, and mutations M1 to M3. Reviewed on the test file against section 4, on the copied helpers (P4), and on the three mutations: each must turn the assertion red, and each restore must leave the tree clean.
+One part.
+
+- **Part 1 (the whole plan).** Steps 1 to 9 of section 3, the test AC1 of section 4 (the unit's only criterion, line 22), and the mutations M1 to M3 of step 8. The reviewer checks: the diff changes only `apps/api/test/agent-loop-research-no-endpoint.test.ts`; the test matches section 4 (no kit, no stub, `enableResearch` with no `searchEndpoint`, the filter over `RESEARCH_NAMES`, the app closed in a `finally`); the helpers are copied per P4 with no unused import; AC1 passed on the code of `main`; the gates of step 5 exited 0; each mutation turned the assertion red with the expected list and each restore left `git status --short` empty.
