@@ -17,7 +17,7 @@ Merging this **closes Compile & export `phase:export`**.
 - An additive step in Platform's image smoke job: inside the built image, export the nonfiction sample to `md`, `docx`, `epub` and `pdf` on both amd64 and arm64.
 
 ## Acceptance criteria (the phase checklist)
-- [ ] Each format exports the fixture project through the HTTP API; the download GET returns the bytes with no side effects.
+- [x] Each format exports the fixture project through the HTTP API; the download GET returns the bytes with no side effects.
 - [ ] CEX-10…CEX-14 criteria pass on `main` with real Pandoc and Typst in CI.
-- [ ] The image smoke step exports all four formats on amd64 and arm64.
-- [ ] The Typst spike ADR is merged.
+- [x] The image smoke step exports all four formats on amd64 and arm64.
+- [x] The Typst spike ADR is merged.

@@ -1,6 +1,6 @@
 ---
 id: CEX-15
-status: planned
+status: done
 ---
 # CEX-15 plan — export gate: the image smoke step exports the nonfiction sample to four formats
 
