@@ -1,0 +1,23 @@
+{
+  "arguments": {
+    "coreIdea": "Expertise grows from planned practice, not from the hours alone.",
+    "entityIds": ["notes-b"],
+    "styleProfile": "style-a",
+    "hardFact": "Most of the hours in the study were estimates made from memory.",
+    "hope": "The planned sessions in the notes can still be counted."
+  },
+  "entities": [
+    {
+      "ref": "notes-b",
+      "type": "source",
+      "path": "sources/notes-b.md",
+      "content": "Notes B say that the practice hours in the study were estimates made from memory."
+    },
+    {
+      "ref": "style-a",
+      "type": "style-profile",
+      "path": "entities/style-a.md",
+      "content": "---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the evidence shows, and say where it stops."
+    }
+  ]
+}

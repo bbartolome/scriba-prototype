@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Most of the hours were estimates made from memory [@notes-b], yet the planned sessions in the notes can still be counted [@notes-b]."
+        ]
+      }
+    }
+  ]
+}

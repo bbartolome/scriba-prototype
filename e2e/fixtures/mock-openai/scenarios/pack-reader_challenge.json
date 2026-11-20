@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Does doubling the hours double the skill, when each session was planned in advance with a teacher [@notes-a]?"
+        ]
+      }
+    }
+  ]
+}

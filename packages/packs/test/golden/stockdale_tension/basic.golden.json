@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Write the answer as Markdown prose. Return only the text of the answer, with no preface and no closing remarks."
+    },
+    {
+      "role": "user",
+      "content": "You write a nonfiction passage that faces the hardest fact while holding on to the hope beside it.\n\nCore idea: Expertise grows from planned practice, not from the hours alone.\nLength: 800 words.\nHard fact: Most of the hours in the study were estimates made from memory.\nHope: The planned sessions in the notes can still be counted.\nMaterial:\nsource notes-b (sources/notes-b.md)\nNotes B say that the practice hours in the study were estimates made from memory.\nstyle-profile style-a (entities/style-a.md)\n---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the evidence shows, and say where it stops.\n\nSteps:\n1. State the hardest fact plainly, without softening it, using the material.\n2. State the hope beside it, and the ground the material gives for it.\n3. Hold both in the same passage: the hope must not hide the fact, and the fact must not cancel the hope.\n4. End on the core idea, in plain words.\n\nConstraints:\n- Use only the material above.\n- Cite each factual sentence with its entity or source ID in the form [@id].\n- Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.\n- Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.\n"
+    }
+  ]
+}

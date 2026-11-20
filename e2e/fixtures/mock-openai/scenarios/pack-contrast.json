@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Planned practice set the task in advance, with a teacher [@notes-a]. Practice alone followed a list chosen beforehand [@notes-a]."
+        ]
+      }
+    }
+  ]
+}

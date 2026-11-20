@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Year one began the study [@notes-a], and the practice hours that followed were estimates made from memory [@notes-b]."
+        ]
+      }
+    }
+  ]
+}

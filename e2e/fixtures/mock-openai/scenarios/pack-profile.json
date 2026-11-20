@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Person A set the practice tasks and kept the results in a notebook [@person-a]."
+        ]
+      }
+    }
+  ]
+}

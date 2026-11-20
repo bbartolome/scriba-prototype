@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "The pattern of planned practice, a teacher and feedback after each attempt rests on the planned sessions [@notes-a], although the hours figure is weak [@claim-a]."
+        ]
+      }
+    }
+  ]
+}

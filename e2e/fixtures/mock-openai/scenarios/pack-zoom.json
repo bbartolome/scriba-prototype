@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "One lamp was turned down a notch each night [@notes-a], as a whole service is kept running by small, repeated checks."
+        ]
+      }
+    }
+  ]
+}

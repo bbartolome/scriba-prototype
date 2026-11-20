@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "The student now plays the piece without errors, because years earlier the same student practised it alone [@notes-a]."
+        ]
+      }
+    }
+  ]
+}

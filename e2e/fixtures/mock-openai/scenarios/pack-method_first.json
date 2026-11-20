@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Each session was planned in advance and written in a notebook [@notes-b], so the hours figure was gathered from memory."
+        ]
+      }
+    }
+  ]
+}
