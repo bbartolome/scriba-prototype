@@ -7500,3 +7500,11 @@ Part A (criterion 2, theme tokens):
 
 - **Consequence:** no code change is asked. The patch id stays e5225361808196b85195c911df0f5ba54d762af8 when the evidence is added. Parts B, C, D and E stay approved on it. Part A is reviewed again after the new COMPLETE report.
 - **Status:** `plans/GRR-15.md` stays `status: planned`. Not merged.
+
+## 2026-11-20 — GRR-15 — Part A rework evidence (items 1 and 2 of the 2026-11-20 review), on 6f27cc5: DONE; no code change
+
+- **Item 1 (screenshots):** `graph-theme` run alone as the last e2e run: exit 0, 3 passed (T5, T6, T9). Log /tmp/orch-grr15-r2/partA-rework-graph-theme.log. Six PNGs in `e2e/test-results/` (git-ignored, not committed), 1280 by 800: recipe-light 101373 bytes, recipe-dark 108329, story-light 47168, story-dark 49656, run-light 109720, run-dark 116141. No e2e run after it. Node v26.13.0, npm 11.20.0; load 1.14 at the start.
+- **Item 2 (dark contrast):** the dark canvas (surface) is #121316 and the dark `.vnode` fill is #1f2022, from the compiled dark half of `light-dark()` and confirmed by pixel sampling of recipe-dark.png and story-dark.png. The library colours are the ngx-vflow defaults (plan section 8, point 7): edge #b1b1b7, selected edge #0f4c75, node border #1b262c, resizer #2e414c. The ngx-vflow default background is solid #fff, and the app does not override it: in dark mode the graph is drawn on a WHITE canvas (about 467k white pixels in story-dark.png).
+  - Contrast ratios (WCAG, relative luminance), against the dark canvas #121316 / the dark node #1f2022 / the white graph canvas #fff: edge #b1b1b7 8.71 / 7.64 / **2.13**; selected edge #0f4c75 2.04 / 1.79 / 9.09; node border #1b262c 1.20 / 1.06 / 15.44; resizer #2e414c 1.75 / 1.53 / 10.62.
+  - Clash, judged by the implementer: the grey edge #b1b1b7 is below 3:1 on the white canvas that dark mode shows. This is the clash that open point 7 expects to be recorded. Open point 7 settles that the library colours are not overridden, so no colour is changed and no Navigator decision is needed.
+- **Status:** `plans/GRR-15.md` stays `status: planned`. The Part A reviewer checks the new evidence next, on patch id e5225361808196b85195c911df0f5ba54d762af8.
