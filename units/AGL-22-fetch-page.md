@@ -20,7 +20,7 @@ A hostile page can't steer the agent into the local network, tailnet or host ser
 - Caps response size and total time; returns readable text (HTML stripped to text).
 - Fetched text is **marked untrusted data** in the tool result. To keep it, the agent writes it into `sources/` with `write_file` (a pending change); only then can it ground a claim.
 
-## Acceptance criteria (local test HTTP server, never the internet)
+## Acceptance criteria (local test HTTP server, never the internet; the successful fetches reach it through a test-only allowance for its own address and port)
 - [ ] Fetching loopback, private, tailnet or `host.docker.internal` addresses is refused, including after a redirect into a refused range.
 - [ ] Oversized and slow responses are cut off with a readable error.
 - [ ] Fetched text never appears as grounding evidence until accepted into `sources/`.
