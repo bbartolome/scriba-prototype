@@ -14,7 +14,7 @@ unblocks: []
 Merging this **closes Agent loop `phase:research`**.
 
 ## Acceptance criteria (the phase checklist; local test servers, never the internet; the successful fetches reach the page stub through a test-only allowance for its own address and port)
-- [ ] With the setting off, the model request contains no research tools.
-- [ ] With it on, a search and a fetch run against a local test server.
-- [ ] Fetching loopback, private, tailnet or `host.docker.internal` addresses is refused, including after a redirect.
-- [ ] Fetched text never appears as grounding evidence until it is accepted into `sources/`.
+- [x] With the setting off, the model request contains no research tools.
+- [x] With it on, a search and a fetch run against a local test server.
+- [x] Fetching loopback, private, tailnet or `host.docker.internal` addresses is refused, including after a redirect.
+- [x] Fetched text never appears as grounding evidence until it is accepted into `sources/`.

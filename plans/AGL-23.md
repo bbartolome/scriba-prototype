@@ -1,6 +1,6 @@
 ---
 id: AGL-23
-status: planned
+status: done
 ---
 # AGL-23 plan — research gate: the phase checklist on main
 
