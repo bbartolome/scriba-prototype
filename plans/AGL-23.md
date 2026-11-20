@@ -1,10 +1,10 @@
 ---
 id: AGL-23
-status: draft
+status: planned
 ---
 # AGL-23 plan — research gate: the phase checklist on main
 
-Unit `units/AGL-23-research-gate.md` (module Agent loop, phase:research, M7; the gate of `phase:research`). Planned on `main` at 3611904, with a clean working tree. Revision 1, planner. Status stays draft until the orchestrator sets `planned`, and that must wait for open point 1 (section 6). The unit has no Why, Decisions, Scope or Demo section, so its decisions come from the module, `units/README.md` and the plans of its three blockers (AGL-20, AGL-21 and AGL-22, all `done` on main).
+Unit `units/AGL-23-research-gate.md` (module Agent loop, phase:research, M7; the gate of `phase:research`). Planned on `main` at 3611904, with a clean working tree. Revision 1, planner. Revision 2, reviser, checked on `main` at e922ded (no code changed since 766479c): open point 1 settled and the unit heading (line 16) amended as section 6 records; condition 4 quoted as DECISIONS records it; the copied refusal constant traced to its source; AC3's two apps stated; AGL-24's file list completed; the DECISIONS fact of section 7 corrected; section 8 lists each step and test. Status stays draft until the orchestrator sets `planned`. The unit has no Why, Decisions, Scope or Demo section, so its decisions come from the module, `units/README.md` and the plans of its three blockers (AGL-20, AGL-21 and AGL-22, all `done` on main).
 
 ## 1. Decisions this plan follows
 
@@ -15,8 +15,8 @@ Unit `units/AGL-23-research-gate.md` (module Agent loop, phase:research, M7; the
 - **Criteria.** Four criteria, unit lines 17 to 20, all unticked. Each gets one test (section 4). Each test name carries the criterion's wording word for word, with the `ACn:` prefix that AGL-21 and AGL-22 use. Criterion 4 reads "until it is accepted into `sources/`" (unit line 20). AGL-22's line 26 reads "until accepted", so the wording of AGL-23 is the one used.
 - **No production change.** The behaviour the gate checks exists on main. The research family is added only when `settings.research.enabled` is true (`apps/api/src/modules/agent-loop/agent-runs.service.ts` lines 77 to 79, in `start`). `ToolRun` offers only the tools of enabled families (`tools/tool-run.ts` line 91). `web_search` is offered only when research is on and an endpoint is set (`agent-tools.service.ts` line 112). `fetch_page` is in the built-in list (`tools/builtin-tools.ts` line 420), with the refusals, caps and untrusted mark of `tools/fetch-page.ts` and `tools/fetch-address.ts`. Grounding reads `sources/` only (`grounding-engine.ts` line 112; `modules/agent-loop.md` line 56). The gate proves these and changes none of them.
 - **Testing.** External behaviour only. The composed app with the mock model is the primary seam. Research tests use a local HTTP server and a SearXNG-shaped stub, never the internet (`modules/agent-loop.md` lines 61, 62 and 64; `units/README.md` line 141).
-- **Test seam (Navigator, option A).** The test-only kit `apps/api/test/agent-loop-fetch.kit.ts` gives `FetchPolicy` an allowance for the stub's own `127.0.0.1` address and port. Tests boot `[...COMPOSED_MODULES, kit]` through `TestAppOptions.modules` (`apps/api/test/create-test-app.ts` line 13). Source: `plans/DECISIONS.md` lines 7205 to 7210. Conditions 1 to 4 bind this unit: (1) the kit is never in the composed app, and this plan adds no production file; (2) the allowance stays narrow (`isAllowedHop` in `tools/fetch-page.ts` lines 97 to 106); (3) the literal refusal rows run without the kit; (4) AGL-23 uses the same kit, allowance and stub. Condition 5 is the heading of AGL-22 only.
-- **Kit rule (AGL-10).** A test-only kit is allowed only where the unit's own heading names it: `plans/DECISIONS.md` lines 4283 to 4284 and 5419 (the AGL-16 entry repeats the rule). `units/README.md` line 57 says the heading names the seam when it differs from the module default. The heading of AGL-23 (unit line 16) names no seam. Condition 4 says that AGL-23 uses the kit, and does not decide the heading. So the heading is open point 1.
+- **Test seam (Navigator, option A).** The test-only kit `apps/api/test/agent-loop-fetch.kit.ts` gives `FetchPolicy` an allowance for the stub's own `127.0.0.1` address and port. Tests boot `[...COMPOSED_MODULES, kit]` through `TestAppOptions.modules` (`apps/api/test/create-test-app.ts` line 13). Source: `plans/DECISIONS.md` lines 7203 to 7210. Condition 4 reads "AGL-23 uses the same kit" (line 7206). The kit is the allowance and the stub together: `agentLoopFetchKitModule` and `startPageStub` are in the one kit file, whose header says "AGL-23 imports this file and does not copy it" (`agent-loop-fetch.kit.ts` line 12; `plans/AGL-22.md` P17, line 47). Conditions 1 to 3, written for AGL-22, are kept here too: (1) the kit is never in the composed app, and this plan adds no production file; (2) the allowance stays narrow (`isAllowedHop` in `tools/fetch-page.ts` lines 97 to 106); (3) the literal refusal rows run without the kit. Condition 5 is the heading of AGL-22 only; this unit's heading follows the same precedent (next bullet).
+- **Kit rule (AGL-10).** A test-only kit is allowed only where the unit's own heading names it: `plans/DECISIONS.md` lines 4283 to 4284 and 5419 (the AGL-16 entry repeats the rule). `units/README.md` line 57 says the heading names the seam when it differs from the module default. The heading of AGL-23 (unit line 16) named no seam, so it is amended to name the test-only allowance, as condition 5 did for AGL-22 under the AGL-16 precedent (DECISIONS line 5412). Section 6 gives the old and new text. With it, AC2 to AC4 may use the kit.
 
 ### Small decisions the planner makes
 
@@ -27,7 +27,7 @@ Simplest option in each case. Recorded here, not in `plans/DECISIONS.md`.
 - **P3. Default caps.** The kit is booted with `allow` only, so the default caps apply (1 MiB and 15 s, `fetch-page.ts` lines 30 to 34). The gate has no cap test; AGL-22's AC2 covers the caps.
 - **P4. Criterion 1 names only the two research names.** The test asserts that `web_search` and `fetch_page` are absent, not the exact tool list. `plans/AGL-24.md` (status `planned`, parallel with AGL-23) adds three `compile` names to a normal start (its D4, line 16; its line 140 says the same for this gate). An exact list would break when AGL-24 lands.
 - **P5. Criterion 2 is one run.** One agent run calls `web_search` on turn 0, `fetch_page` on turn 1, and answers on turn 2. The mock's `turnIndex` matcher (`e2e/fixtures/mock-openai/server.mjs` lines 117 and 118) picks each turn. `web_search` uses `globalThis.fetch` (`tools/web-search.ts` line 47) and no refusal, so the search needs no allowance.
-- **P6. Criterion 3 in two parts.** Part (a) runs in the composed app without the kit, with one run per refused address (AGL-22 does the same, because three refusals in one run withdraw the tool for that run). The rows are: `http://127.0.0.1:<page port>/page`, `http://localhost:<page port>/page`, `http://[::1]:<page port>/page`, `http://10.0.0.1/`, `http://192.168.1.1/`, `http://100.64.0.1/`, `http://[fd7a:115c:a1e0::1]/`, and `http://host.docker.internal:<page port>/page`. Part (b) runs in the kit app: a `localhost` row (the allowance admits no name) and the redirect row `http://127.0.0.1:<page port>/redirect-private`, which the stub sends to `[fd7a:115c:a1e0::1]/page`. The full thirteen-row matrix stays in AGL-22's AC1.
+- **P6. Criterion 3 in two parts.** Part (a) runs in the composed app without the kit, with one run per refused address (AGL-22 does the same, `agent-loop-fetch-page.test.ts` lines 217 to 221, because the third consecutive invalid call withdraws the tool for the run, `tools/tool-run.ts` line 28). The rows are: `http://127.0.0.1:<page port>/page`, `http://localhost:<page port>/page`, `http://[::1]:<page port>/page`, `http://10.0.0.1/`, `http://192.168.1.1/`, `http://100.64.0.1/`, `http://[fd7a:115c:a1e0::1]/`, and `http://host.docker.internal:<page port>/page`. Part (b) runs in the kit app: a `localhost` row (the allowance admits no name) and the redirect row `http://127.0.0.1:<page port>/redirect-private`, which the stub sends to `[fd7a:115c:a1e0::1]/page`. The full thirteen-row matrix stays in AGL-22's AC1.
 - **P7. Criterion 4 repeats AGL-22's AC3 flow.** Six steps, as in `agent-loop-fetch-page.test.ts` lines 294 to 398, with the distractor `sources/other.md` of that test. A gate proves the checklist on main, so the flow runs again rather than being cited.
 - **P8. Intents do not contain each other.** The mock matches `lastMessageContent` by substring (`server.mjs` lines 124 and 125). Each run's intent is distinct, and no intent is a substring of another.
 - **P9. No demo step.** The unit has no `## Demo` section. Other gates have none either: `units/AGL-15-pending-writes-gate.md`, `CEX-09`, `CEX-15`, `GNP-05`, `GRR-08`, `MPR-11`, `TRG-05` and `TRG-11` (checked by grep of `units/`). The plan adds no demo.
@@ -64,9 +64,9 @@ Run from `/Users/bbartolome/workspace/scriba-prototype`. Create branch `unit/AGL
 
 ## 4. Acceptance criteria and tests
 
-Test file: `apps/api/test/agent-loop-research-gate.test.ts`, with four `it` blocks named AC1 to AC4. Run one with `npx vitest run test/agent-loop-research-gate.test.ts -t "AC<n>"` from `apps/api`. Each test opens its own app with the mock model and its own temp library through `openHarness` (`agent-loop-transcript.kit.ts` line 87). Each test closes its app and its stubs. A stub starts before the app that needs its port.
+Test file: `apps/api/test/agent-loop-research-gate.test.ts`, with four `it` blocks named AC1 to AC4. Run one with `npx vitest run test/agent-loop-research-gate.test.ts -t "AC<n>"` from `apps/api`. Each test opens its own app with the mock model and its own temp library through `openHarness` (`agent-loop-transcript.kit.ts` line 87); AC3 opens two, one per part, in turn. Each test closes its apps and its stubs. A stub starts before the app that needs its port.
 
-Shared constants and helpers (copied per P2): `REFUSED_LOCAL` (`fetch-page.ts` line 61), `REFUSED_REDIRECT` (line 63), the step builders `fetchStep`, `writeStep`, `AFTER_TOOL`, `extractStep` and `judgeStep` (`agent-loop-fetch-page.test.ts` lines 64 to 103), `withStream`, `runIntent`, `enableResearch`, `toolNamesOf`, `lastTextOf`, `resultOf`, `checkDraft` and `judgeTextsOf` (lines 111 to 187), `allowed(port)` as a kit call with `allow` only (P3), and `startSearxngStub()` (`agent-loop-web-search.test.ts` lines 188 to 240). The text step of AC1 is `{match: {endpoint: 'chat'}, reply: {kind: 'stream', deltas: ['Done.']}}`, as `TEXT_STEPS` in that file (line 242).
+Shared constants and helpers (copied per P2): `REFUSED_LOCAL` and `REFUSED_REDIRECT` (`agent-loop-fetch-page.test.ts` lines 46 to 49; the texts are `REFUSED_FIRST` and `REFUSED_REDIRECT` of `fetch-page.ts` lines 60 to 63, which are not exported), the step builders `fetchStep`, `writeStep`, `AFTER_TOOL`, `extractStep` and `judgeStep` (`agent-loop-fetch-page.test.ts` lines 64 to 108), `withStream`, `runIntent`, `enableResearch`, `toolNamesOf`, `lastTextOf`, `resultOf`, `checkDraft` and `judgeTextsOf` (lines 111 to 187), `allowed(port)` as a kit call with `allow` only (P3), and `startSearxngStub()` (`agent-loop-web-search.test.ts` lines 188 to 240). The text step of AC1 is `{match: {endpoint: 'chat'}, reply: {kind: 'stream', deltas: ['Done.']}}`, as `TEXT_STEPS` in that file (line 242).
 
 | Criterion (unit line) | Test and seam | Command | Pass condition |
 |---|---|---|---|
@@ -85,19 +85,20 @@ Notes on the four tests:
 ## 5. Downstream and parallel agreement
 
 - **phase:research gate.** AGL-23 is the gate (`units/README.md` line 117), and no unit's `blocked_by` names it. AGL-26 (`units/AGL-26-research-no-endpoint.md`, `blocked_by` AGL-21 and AGL-22) may still be open when this gate closes, which the README allows. AGL-23 asserts no exact tool list (P4), so AGL-26's assertion of the list cannot conflict with it.
-- **AGL-24 (parallel).** The two units name each other in `parallel_with` (`units/AGL-23-research-gate.md` line 8; `units/AGL-24-compile-tools.md` line 8). AGL-24's plan (`status: planned`) edits `agent-runs.service.ts` lines 77 to 79, `agent-tools.service.ts`, the lists of `agent-loop-run.test.ts`, and `agent-loop.module.ts`, and adds `tools/compile-tools.ts` and `agent-loop-compile.test.ts` (`plans/AGL-24.md` section 2, lines 43 to 47). AGL-23 changes none of these files, so this plan cannot create a rebase conflict with AGL-24. The compile names in the request are covered by P4, and `plans/AGL-24.md` line 140 agrees.
+- **AGL-24 (parallel).** The two units name each other in `parallel_with` (`units/AGL-23-research-gate.md` line 8; `units/AGL-24-compile-tools.md` line 8). AGL-24's plan (`status: planned` on main; code on `unit/AGL-24`, approved, its rebase onto main pending, DECISIONS lines 7259 and 7272) edits `agent-runs.service.ts` lines 77 to 79, `agent-tools.service.ts`, `agent-loop.module.ts`, `agent-loop-tools.test.ts` and the lists of `agent-loop-run.test.ts`, and adds `tools/compile-tools.ts` and `agent-loop-compile.test.ts` (`plans/AGL-24.md` section 2, lines 43 to 49). AGL-23 changes none of these files, so this plan cannot create a rebase conflict with AGL-24. The compile names in the request are covered by P4, and `plans/AGL-24.md` line 140 agrees.
 - **AGL-21 and AGL-22 (done).** This plan reads their tests and their kit and changes none of them. It uses the kit's allowance and stub as they are, and AGL-22's tool name `fetch_page` and family `research` unchanged.
 - **AGL-20 (done).** AC4 uses the grounding route (`packages/contracts/src/agent-loop/routes.ts` line 10) and the extract and judge markers (`apps/api/src/modules/agent-loop/grounding-prompts.ts` lines 8 and 9). `plans/AGL-20.md` line 136 notes that criterion 4 depends on the retrieval scope `['sources']`, which AGL-20 leaves unchanged.
 - **Unit metadata.** The `unblocks` lines of AGL-20, AGL-21 and AGL-22 (line 9 of each) name AGL-23, and AGL-23's `blocked_by` names all three. No unit file needs a change for this plan.
 
 ## 6. Open points
 
-1. **The heading of the acceptance criteria (the AGL-10 rule). Not settled; the planner does not decide it.** The unit file is `units/AGL-23-research-gate.md`, heading on line 16. Proposed text, for the reviser to apply (the planner did not edit the unit):
+1. **The heading of the acceptance criteria (the AGL-10 rule). Settled by the reviser.** Sources: condition 4 of the AGL-22 Navigator decision (`plans/DECISIONS.md` line 7206: AGL-23 uses the same kit); the AGL-10 rule (lines 4283 to 4284; repeated at line 5419): a kit only where the unit's own heading names it; `units/README.md` line 57; the precedents of AGL-16 (line 5412) and AGL-22 (lines 7212 to 7219). Applied in `units/AGL-23-research-gate.md` line 16 (uncommitted, for the orchestrator to record):
    - Old: `## Acceptance criteria (the phase checklist)`
-   - New: `## Acceptance criteria (the phase checklist; local test servers, never the internet; the successful fetch reaches its stub through a test-only allowance for its own address and port)`
-   - Criteria on lines 17 to 20 do not change.
+   - New: `## Acceptance criteria (the phase checklist; local test servers, never the internet; the successful fetches reach the page stub through a test-only allowance for its own address and port)`
+   - Lines 17 to 20 are byte-identical (md5 of the four lines before and after: 84bec16a32d7f067f98fac7267bdfd9d). No criterion text and no module text changes.
+   - YAGNI: not one of the four actions; it is the heading change that condition 4 and the AGL-10 rule direct, as condition 5 did for AGL-22.
 
-   Why it is open: AC2 to AC4 need the kit (condition 4). The AGL-10 rule allows a kit only where the unit's heading names it (`plans/DECISIONS.md` lines 4283 to 4284 and 5419). `units/README.md` line 57 requires the heading to name a seam that differs from the module default. Condition 4 says that AGL-23 uses the kit; it says nothing about the heading, and condition 5 covers the heading of AGL-22 only (`plans/DECISIONS.md` lines 7212 to 7219). This plan does not read condition 4 as settling the heading. If the reviser does not change the heading, no seam is permitted for AC2 to AC4, and this plan stays draft.
+No point is open.
 
 ## 7. Facts checked and facts assumed
 
@@ -117,7 +118,7 @@ Plans:
 - `plans/AGL-22.md`: status line 3 (done); section 2 kit row (line 62); P17 (line 47); P18 (line 48); section 4 (lines 99 to 118); section 5 AGL-23 bullet (lines 122 to 126); section 6 open point 1 (lines 140 to 147).
 - `plans/AGL-21.md`: status line 3 (done); section 4 (the AC1 and AC3 tests, the stub).
 - `plans/AGL-20.md`: status line 3 (done); line 136 (the AGL-23 note).
-- `plans/AGL-24.md`: status line 3 (planned); D4 (line 16); line 140 (the parallel note); section 2 (lines 43 to 47).
+- `plans/AGL-24.md`: status line 3 (planned); D4 (line 16); line 140 (the parallel note); section 2 (lines 43 to 49).
 - `plans/PLT-02.md`: the section layout that this plan follows.
 
 `plans/DECISIONS.md`:
@@ -128,7 +129,7 @@ Plans:
 - Lines 7203 to 7210: the Navigator decision (option A, conditions 1 to 5 at line 7206).
 - Lines 7212 to 7219: the heading change of AGL-22.
 - Lines 7265 to 7268: AGL-22 on main at 025ab14; gates passed on 766479c.
-- No DECISIONS entry names AGL-23 (`grep`).
+- Entries that name AGL-23 (`grep`): lines 7095 and 7097 (AGL-26 split), 7140 (option A: AGL-23 must use the same kit), 7206 (condition 4), 7219 (AGL-23's heading named no kit), 7270 (AGL-23 available). None is a decision about AGL-23 other than condition 4.
 
 Code, with file and line:
 - `apps/api/src/modules/agent-loop/agent-runs.service.ts`: `start` 74 to 86, families 77 to 79; `launch` 128; settings read 130; `tools: this.tools.startRun({` 149 and `searchEndpoint` 153; `propose` 165.
@@ -170,4 +171,4 @@ Assumed, not checked:
 
 ## 8. Review parts
 
-One part. The new test file and its runs (steps 4 to 8) and the mutation checks M1 to M4 (step 9). Reviewed on the four tests against section 4, on the helper copies (P2), and on condition 1 (the kit is not in `apps/api/src`).
+One part, **Part 1: the research gate tests.** Steps 1 to 10 of section 3 (worktree, install and build, baseline, the test file, its run, the gates, the agent-loop suite, scope and commit, mutations M1 to M4, record) and the four tests AC1, AC2, AC3 (parts a and b) and AC4 of section 4. Reviewed on the four tests against section 4, on the helper copies (P2), on the kit used as it is (condition 4), and on condition 1 (the kit is not in `apps/api/src`).
