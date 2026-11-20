@@ -1,6 +1,6 @@
 ---
 id: AGL-22
-status: planned
+status: done
 ---
 # AGL-22 plan — `fetch_page` with private-network refusals, caps and untrusted marking
 
