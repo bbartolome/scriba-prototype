@@ -7046,3 +7046,11 @@ Part D (gates and commit):
 - **Plan:** step 14 of `plans/GNP-15.md` (revision 2, commit 708c16a; lines 358 to 361) already states this rule, so the plan text is unchanged. The reviser's entry of 2026-11-20 (lines 6964 to 6966) took the same option.
 - **Not excused:** the flaky `apps/api` test `test/tool-registry-save.test.ts` (ZodError: `tools` undefined) still needs a separate fix on `main`. It is not added to any tolerated list. The gate rule only lets GNP-15 pass past this one run.
 - **Open point 3 of GNP-15:** closed by this decision.
+
+## 2026-11-20 — GRR-15 — Step 13 rerun on unit/GRR-15 (ec6293d, not rebased onto main): NOT ZERO FAILURES (the standing instruction is not met; not merged)
+
+- **Run:** worktree `scriba-prototype-wt/GRR-15` on `unit/GRR-15` at ec6293d; Node v26.13.0, npm 11.20.0; `npm ci` exit 0. Load average at start 0.73. Logs in `/tmp/orch-grr15/`. A first attempt is not counted: step 3 ran before the contracts were built (TS2307 on `@bbartolome/scriba-contracts/platform`), and the e2e command was mis-flagged.
+- **Results:** step 2 `npm run build` exit 0; step 3 (graph-runner web specs) exit 0; step 4 (`graph-canvas graph-wires graph-chips`) exit 0; step 13 full `npm run e2e -w @bbartolome/scriba-e2e -- --trace off` exit 1: 30 passed, 1 skipped (T7, as expected without `SCRIBA_E2E_MEASURE`), 2 failed.
+  1. `journey.e2e.ts:12` "project from sample": deep-equality failure (expected 0 lines, received 14). This is the leftover library folder that PLT-23 fixes on main (898ef38, journey change at line 204). PLT-23 is not on `unit/GRR-15`.
+  2. `tools-preview.e2e.ts:167` "TRG-05 C2: the picker offers person entities only and takes a dropped person chip": person select value expected `ada`, received empty (5000 ms). The branch has `height: 2100` at line 23; `main` has `height: 6000` (GNP-22 and PLT-23).
+- **Status:** both failures are fixed on main but not on the branch. The standing instruction is not met (zero failures). The REWORK list is not started and `unit/GRR-15` is not merged. The next step, a rebase of `unit/GRR-15` onto main and a rerun, changes the branch under test and needs the user's decision.
