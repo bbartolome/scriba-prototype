@@ -7148,3 +7148,12 @@ Part D (gates and commit):
 - **Record check:** the record of run 44659727464 (lines 7130 to 7134) is accepted as the basis for completing the unit. It is not a tick. The orchestrator did not re-observe the run.
 - **Gates on the rebased head:** `npm run lint` exit 0; `npm run build` exit 0; `npm test` run on the rebased head (see the merge entry). The rebase changes only `plans/` and `units/`; the code tree of `unit/CEX-15` is the same as the tree tested at `1aca28f`.
 - **Carry-forward:** the CEX-10 rule applies to the tick of this box: reopen after the push (line 6607).
+
+## 2026-11-20 — CEX-15 — Merged to main (fast-forward ac8f9f6 to 3f02bfa); gates recorded
+
+- **Rebase (step 3.2):** `unit/CEX-15` was cherry-picked onto main `ac8f9f6` in a detached worktree, one commit at a time: `c6dd97c` to `60e747e`, `ff3d8b8` to `c9dbd11`, `1aca28f` to `628b2fd`. Each new commit has the same patch id as its original. The approval patch id after the rebase is `9d7282bc4143e289d6cdfa6c4d7c26316bd593f4`, the same as the approval. The old branch head is kept as `backup/CEX-15-pre-rebase`.
+- **Gates (step 3.3, on `1aca28f`, same code tree as `628b2fd`; the rebase changed only `plans/` and `units/`):** `npm run lint` exit 0; `npm run build` exit 0; `npm test` exit 0 (scripts 253 of 253; api 573 passed; web 85 files, 599 passed; packs 16; e2e 12 of 12).
+- **Criteria (unit lines 20 to 23):** C1 ticked (`apps/api/test/compile-export-export-gate.test.ts` passes in the api suite). C3 ticked on the stand-ins (T3a and T3b pass in the scripts suite; the CI leg and the native amd64 run are not tested, as recorded in the plan). C4 ticked (`docs/adr/0003-typst-pdf-spike.md` on main: `Status: accepted.` and `Keep Typst.`; `00f212d` is an ancestor of main). C2 not ticked: option A, see the Navigator entry above.
+- **Status:** `plans/CEX-15.md` is `status: done` on main (3f02bfa). The fast-forward moved the code, the checkboxes and the status together.
+- **Kept:** `backup/CEX-15-pre-rebase`. The worktree `scriba-prototype-wt/CEX-15` and branch `unit/CEX-15` were removed after the merge (not forced).
+- **Pending read-only check:** criterion 2 of CEX-15 (run 44659727464), to be ticked after a check on a qualifying CI run.
