@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import Ajv from 'ajv';
+import Ajv, { type ValidateFunction } from 'ajv';
 import {
   AGENT_RESERVED_TOOL_NAMES,
   type AgentToolFamily,
@@ -21,12 +21,15 @@ import {
   readProjectNarrativeSettings,
 } from './tools/narrative-tools';
 import { ToolRun } from './tools/tool-run';
+import { WEB_SEARCH_SCHEMA, webSearchDefinition } from './tools/web-search';
 import type { CompiledTool } from './tools/tool-types';
 
 export interface StartRunOptions {
   runId: string;
   projectId: string;
   enabledFamilies: AgentToolFamily[];
+  // The author's search endpoint, from the research settings of the run (AGL-21).
+  searchEndpoint?: string;
 }
 
 // The tool dispatcher of the agent loop. It compiles each built-in tool's argument schema once, and starts one
@@ -34,6 +37,7 @@ export interface StartRunOptions {
 @Injectable()
 export class AgentToolsService {
   private readonly tools: CompiledTool[];
+  private readonly webSearchValidate: ValidateFunction;
 
   constructor(
     private readonly files: FilesService,
@@ -52,47 +56,57 @@ export class AgentToolsService {
         validate: ajv.compile(definition.schema),
       }),
     );
+    this.webSearchValidate = ajv.compile(WEB_SEARCH_SCHEMA);
   }
 
   // The state of one agent run. The loop calls this once per run (S14).
   startRun(options: StartRunOptions): ToolRun {
-    if (!options.enabledFamilies.includes('narrative')) {
-      return new ToolRun({ ...options, tools: this.tools });
-    }
-    const settings = readProjectNarrativeSettings(
-      this.files,
-      options.projectId,
-    );
-    const reserved = new Set<string>(AGENT_RESERVED_TOOL_NAMES);
     const rejectedNames: string[] = [];
-    const narrative: CompiledTool[] = [];
-    const { functions } = this.catalog.functions(settings.genrePack);
-    for (const fn of functions) {
-      const name = fn.function.name;
-      if (reserved.has(name)) {
-        rejectedNames.push(name);
-        continue;
+    const extra: CompiledTool[] = [];
+    if (options.enabledFamilies.includes('narrative')) {
+      const settings = readProjectNarrativeSettings(
+        this.files,
+        options.projectId,
+      );
+      const reserved = new Set<string>(AGENT_RESERVED_TOOL_NAMES);
+      const { functions } = this.catalog.functions(settings.genrePack);
+      for (const fn of functions) {
+        const name = fn.function.name;
+        if (reserved.has(name)) {
+          rejectedNames.push(name);
+          continue;
+        }
+        const fields = this.catalog.entry(name).views.form.fields;
+        extra.push({
+          definition: narrativeDefinition(
+            {
+              executor: this.executor,
+              entities: this.entities,
+              files: this.files,
+              store: this.store,
+              projects: this.projects,
+            },
+            fn,
+            fields,
+            settings.styleProfile,
+            this.catalog.entry(name).spec.output,
+          ),
+        });
       }
-      const fields = this.catalog.entry(name).views.form.fields;
-      narrative.push({
-        definition: narrativeDefinition(
-          {
-            executor: this.executor,
-            entities: this.entities,
-            files: this.files,
-            store: this.store,
-            projects: this.projects,
-          },
-          fn,
-          fields,
-          settings.styleProfile,
-          this.catalog.entry(name).spec.output,
-        ),
+    }
+    // web_search is offered only when the research family is on and the author has set an endpoint (AGL-21).
+    if (
+      options.enabledFamilies.includes('research') &&
+      options.searchEndpoint !== undefined
+    ) {
+      extra.push({
+        definition: webSearchDefinition(options.searchEndpoint),
+        validate: this.webSearchValidate,
       });
     }
     return new ToolRun({
       ...options,
-      tools: [...this.tools, ...narrative],
+      tools: [...this.tools, ...extra],
       rejectedNames,
     });
   }

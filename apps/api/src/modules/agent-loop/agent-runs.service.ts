@@ -146,7 +146,12 @@ export class AgentRunsService {
         intent: options.intent,
         cap: settings.stepCap,
         enabledFamilies,
-        tools: this.tools.startRun({ runId, projectId, enabledFamilies }),
+        tools: this.tools.startRun({
+          runId,
+          projectId,
+          enabledFamilies,
+          searchEndpoint: settings.research.searchEndpoint,
+        }),
         transcript,
         checkPath: options.checkPath,
       },

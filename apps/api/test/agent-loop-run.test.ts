@@ -379,7 +379,7 @@ it('C6: the request has the system prompt, the project summary and the enabled t
         'write_file',
       ]);
 
-      // With research on, the offered tools are still the project family's: no research tool exists at M1.
+      // With research on and no search endpoint, web_search is not offered.
       const put = await post(h, AGENT_SETTINGS_ROUTE, {
         research: { enabled: true },
       });
