@@ -22,12 +22,12 @@ import { isTopLevelDraft, saveVersion } from './draft-versions';
 import {
   decodeText,
   FILE_MESSAGES,
+  FilesService,
   hashOf,
   isRootProjectYaml,
   notAFile,
   readFileAt,
   refuse,
-  writeText,
 } from './files.service';
 import {
   isPendingId,
@@ -86,6 +86,7 @@ export class PendingService {
     private readonly store: ProjectStoreService,
     private readonly projects: ProjectsService,
     private readonly events: EventsPublisher,
+    private readonly files: FilesService,
   ) {
     // A write of a project file rechecks the open changes of its paths (PST-16 D17).
     this.store.onFilesChanged((event) => this.recheckQuietly(event));
@@ -235,7 +236,7 @@ export class PendingService {
     content: string,
     now: Date,
   ): PendingChange {
-    this.writeProposal(target, content);
+    this.writeProposal(project, target, content, now);
     const resolved = this.resolveChange(project, change, 'accepted', now);
     this.events.publish({
       module: 'project-store',
@@ -411,7 +412,7 @@ export class PendingService {
       throw refuse(PROJECT_ERROR_CODES.FILE_TOO_LARGE, FILE_MESSAGES.TOO_LARGE);
     }
     if (isRootProjectYaml(target.relativePath)) {
-      const state = readYamlState(content);
+      const state = readYamlState(content, this.store.projectYamlVersion());
       if (state.status !== 'ok') {
         throw refuse(
           PROJECT_ERROR_CODES.VALIDATION_FAILED,
@@ -437,9 +438,15 @@ export class PendingService {
     }
   }
 
-  // The one write of an accept (PST-16 D19). PST-23 adds its migration before this call.
-  private writeProposal(target: ResolvedProjectPath, content: string): void {
-    writeText(target.realPath, content);
+  // The one write of an accept (PST-16 D19). The file API's rules apply to it: a too-new file is refused before any
+  // write, and an older one is backed up and logged as it is migrated (PST-23 C9).
+  private writeProposal(
+    project: DiscoveredProject,
+    target: ResolvedProjectPath,
+    content: string,
+    now: Date,
+  ): void {
+    this.files.writeAccepted(project, target, content, now);
   }
 
   // Proposes a full new text for one file of an ok project. Nothing at the target is changed. A change of the same

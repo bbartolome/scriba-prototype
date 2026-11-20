@@ -11,6 +11,7 @@ import {
   ModuleError,
   SettingsService,
 } from '../platform/platform.module';
+import { FilesService } from './files.service';
 import { ProjectStoreService } from './project-store.service';
 import { PROJECT_MESSAGES, ProjectsService } from './projects.service';
 
@@ -23,6 +24,7 @@ export class ActiveProjectService {
     private readonly projects: ProjectsService,
     private readonly settings: SettingsService,
     private readonly events: EventsPublisher,
+    private readonly files: FilesService,
   ) {}
 
   activate(projectId: string): ActiveProject {
@@ -66,7 +68,9 @@ export class ActiveProjectService {
       return { active: projectId };
     }
 
-    // (3) The project.yaml lazy migrations run here, before the hooks (D7). PST-23 adds the call. Nothing runs yet.
+    // (3) The project.yaml lazy migration runs here, before the hooks (D7). A step that throws refuses the activation
+    // with nothing written (PST-23 C10).
+    this.files.upgradeProjectYaml(project);
 
     // (4) Every hook is called with {from, to} before anything is written or published (D7, D8).
     const event: ProjectSwitchedData = { from: previous, to: projectId };

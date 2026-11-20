@@ -103,7 +103,7 @@ export function readProjectYamlFile(
       },
     ]);
   }
-  return readYamlState(text);
+  return readYamlState(text, store.projectYamlVersion());
 }
 
 // A real folder, or a top-level link whose target lies inside the library and is a folder (P2). A link that

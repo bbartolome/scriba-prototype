@@ -18,7 +18,11 @@ export type YamlState =
   | { status: 'invalid'; error: string; issues: YamlIssue[] };
 
 // Classifies the text of a project.yaml (P3, P4). Pure: the same text always gives the same state.
-export function readYamlState(text: string): YamlState {
+// The too-new threshold is currentVersion, the project.yaml version the registry reports (PST-23 C1).
+export function readYamlState(
+  text: string,
+  currentVersion: number = PROJECT_YAML_SCHEMA_VERSION,
+): YamlState {
   const doc = parseDocument(text);
   if (doc.errors.length > 0) {
     return invalidState([
@@ -31,7 +35,7 @@ export function readYamlState(text: string): YamlState {
     if (
       typeof version === 'number' &&
       Number.isInteger(version) &&
-      version > PROJECT_YAML_SCHEMA_VERSION
+      version > currentVersion
     ) {
       return { status: 'too-new' };
     }

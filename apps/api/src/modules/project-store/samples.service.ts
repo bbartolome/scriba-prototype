@@ -83,7 +83,7 @@ export class SamplesService {
     }
     const sampleRoot = this.sampleRoot(request.sampleId);
     const text = readSampleYaml(sampleRoot);
-    const state = readYamlState(text);
+    const state = readYamlState(text, this.store.projectYamlVersion());
     if (state.status === 'invalid') {
       throw new ModuleError(
         PROJECT_ERROR_CODES.INVALID,

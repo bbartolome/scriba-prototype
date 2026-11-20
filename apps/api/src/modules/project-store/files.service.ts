@@ -15,7 +15,7 @@ import {
 } from 'node:fs';
 import { dirname, join, sep } from 'node:path';
 import { Injectable } from '@nestjs/common';
-import { parseDocument } from 'yaml';
+import { parseDocument, type Document } from 'yaml';
 import {
   MODULE_SLUGS,
   PLATFORM_ERROR_CODES,
@@ -35,7 +35,9 @@ import {
   type FileWriteResult,
 } from '@bbartolome/scriba-contracts/project-store';
 import { EventsPublisher, ModuleError } from '../platform/platform.module';
+import { saveBackup } from './backups';
 import { writeFileAtomic } from './atomic-write';
+import { upgradeDocument, versionOf } from './migrations';
 import { fail, PATH_MESSAGES, type ResolvedProjectPath } from './path-safety';
 import type { DiscoveredProject } from './project-discovery';
 import { ProjectStoreService } from './project-store.service';
@@ -44,6 +46,9 @@ import { readYamlState } from './project-yaml';
 import { PROJECT_MESSAGES, ProjectsService } from './projects.service';
 
 const PROJECT_YAML = 'project.yaml';
+// The log of the lazy migrations (PST-23 C12), and the folder of their backups (PST-23 C11), both project-relative.
+const MIGRATION_LOG = 'logs/migrations.log';
+const MIGRATION_BACKUP_SEGMENTS = ['.scriba', 'project-store', 'backups'];
 
 // Every message of the file API. Fixed strings only; no input value is echoed.
 export const FILE_MESSAGES = {
@@ -61,6 +66,10 @@ export const FILE_MESSAGES = {
   LOG_PATH: 'A log line goes only to a file inside logs/.',
   LINE_BREAK: 'A log line must be one line, with no line break in it.',
   OWNER: 'The owner must be the slug of a module.',
+  TOO_NEW:
+    'That file has a newer schema version than this app supports. Update the app.',
+  UPGRADE_FAILED:
+    'The file could not be upgraded to the current schema version, so nothing was changed.',
 } as const;
 
 type ProjectErrorCode =
@@ -79,8 +88,35 @@ export function notAFile(): ModuleError {
   return refuse(PROJECT_ERROR_CODES.PATH_INVALID, FILE_MESSAGES.NOT_A_FILE);
 }
 
-function tooNew(): ModuleError {
-  return refuse(PROJECT_ERROR_CODES.SCHEMA_TOO_NEW, PROJECT_MESSAGES.TOO_NEW);
+// The too-new refusal of one file: the project.yaml message for project.yaml, the file message for other kinds.
+function tooNewFor(relativePath: string): ModuleError {
+  return refuse(
+    PROJECT_ERROR_CODES.SCHEMA_TOO_NEW,
+    relativePath === PROJECT_YAML
+      ? PROJECT_MESSAGES.TOO_NEW
+      : FILE_MESSAGES.TOO_NEW,
+  );
+}
+
+// A file that a migration upgraded (PST-23 C2): the text at the current version, and the versions it went from
+// and to.
+interface Upgrade {
+  text: string;
+  from: number;
+  to: number;
+}
+
+// The text of an upgraded document. A .json file is written as JSON, and any other file as YAML that keeps its
+// comments (PST-23 C4).
+function serializeDocument(
+  relativePath: string,
+  doc: Document,
+  original: string,
+): string {
+  if (relativePath.endsWith('.json')) {
+    return `${JSON.stringify(doc.toJS(), null, 2)}\n`;
+  }
+  return keepFraming(original, doc.toString({ lineWidth: 0 }));
 }
 
 // The hash of bytes, in the contract's form: sha256: and the lower-case hex digest (S5).
@@ -104,10 +140,6 @@ export function decodeText(bytes: Buffer): string | undefined {
 // Only project.yaml at the root has a registered maximum version (P13). PST-23 extends this one function.
 export function isRootProjectYaml(relativePath: string): boolean {
   return relativePath === PROJECT_YAML;
-}
-
-function isTooNewText(text: string): boolean {
-  return readYamlState(text).status === 'too-new';
 }
 
 // The number of places where needle occurs, overlapping ones included. Counting stops at two (P8).
@@ -258,7 +290,8 @@ export class FilesService {
     };
   }
 
-  // The text of a file with its hash and mtime (P6). It only reads.
+  // The text of a file with its hash and mtime (P6). It only reads. An older file is answered as its upgraded view,
+  // marked upgraded, and nothing is written (PST-23 C6).
   read(projectId: string, path: string): FileRead {
     const project = this.projectFor(projectId);
     const target = this.store.resolvePath(project.root, path);
@@ -267,10 +300,20 @@ export class FilesService {
     if (content === undefined) {
       throw refuse(PROJECT_ERROR_CODES.NOT_TEXT, FILE_MESSAGES.NOT_TEXT);
     }
-    if (isRootProjectYaml(target.relativePath) && isTooNewText(content)) {
-      throw tooNew();
+    if (this.isTooNew(target.relativePath, content)) {
+      throw tooNewFor(target.relativePath);
     }
-    return { path: target.relativePath, content, hash: hashOf(bytes), mtime };
+    const upgrade = this.upgradeText(target.relativePath, content);
+    if (upgrade === undefined) {
+      return { path: target.relativePath, content, hash: hashOf(bytes), mtime };
+    }
+    return {
+      path: target.relativePath,
+      content: upgrade.text,
+      hash: hashOf(bytes),
+      mtime,
+      upgraded: true,
+    };
   }
 
   // The save of a whole file (P7). A stale baseHash is refused; the rest are the checks of commit.
@@ -281,9 +324,11 @@ export class FilesService {
       throw notAFile();
     }
     const disk = target.exists ? readFileSync(target.realPath) : undefined;
-    if (disk !== undefined && isRootProjectYaml(target.relativePath)) {
+    if (disk !== undefined) {
       const text = decodeText(disk);
-      if (text !== undefined && isTooNewText(text)) throw tooNew();
+      if (text !== undefined && this.isTooNew(target.relativePath, text)) {
+        throw tooNewFor(target.relativePath);
+      }
     }
     if (
       request.baseHash !== undefined &&
@@ -310,13 +355,15 @@ export class FilesService {
       );
     }
     const { bytes } = readFileAt(target);
-    const text = decodeText(bytes);
-    if (text === undefined) {
+    const disk = decodeText(bytes);
+    if (disk === undefined) {
       throw refuse(PROJECT_ERROR_CODES.NOT_TEXT, FILE_MESSAGES.NOT_TEXT);
     }
-    if (isRootProjectYaml(target.relativePath) && isTooNewText(text)) {
-      throw tooNew();
+    if (this.isTooNew(target.relativePath, disk)) {
+      throw tooNewFor(target.relativePath);
     }
+    // The match is made in the upgraded view, which is the text a read returns (PST-23 C8).
+    const text = this.upgradeText(target.relativePath, disk)?.text ?? disk;
     const matches = countMatches(text, request.old);
     if (matches === 0) {
       throw refuse(PROJECT_ERROR_CODES.EDIT_NO_MATCH, FILE_MESSAGES.NO_MATCH);
@@ -419,7 +466,7 @@ export class FilesService {
     if (text === undefined) {
       throw refuse(PROJECT_ERROR_CODES.NOT_TEXT, FILE_MESSAGES.NOT_TEXT);
     }
-    if (isTooNewText(text)) throw tooNew();
+    if (this.isTooNew(PROJECT_YAML, text)) throw tooNewFor(PROJECT_YAML);
     const doc = parseDocument(text);
     if (doc.errors.length > 0) {
       const state = readYamlState(text);
@@ -534,6 +581,7 @@ export class FilesService {
     project: DiscoveredProject,
     target: ResolvedProjectPath,
     content: string | Buffer,
+    now: Date = new Date(),
   ): FileWriteResult {
     const bytes =
       typeof content === 'string' ? Buffer.from(content, 'utf8') : content;
@@ -545,8 +593,8 @@ export class FilesService {
       if (text === undefined) {
         throw refuse(PROJECT_ERROR_CODES.INVALID, PROJECT_MESSAGES.INVALID);
       }
-      const state = readYamlState(text);
-      if (state.status === 'too-new') throw tooNew();
+      const state = readYamlState(text, this.store.projectYamlVersion());
+      if (state.status === 'too-new') throw tooNewFor(PROJECT_YAML);
       if (state.status === 'invalid') {
         throw refuse(
           PROJECT_ERROR_CODES.INVALID,
@@ -555,11 +603,17 @@ export class FilesService {
         );
       }
     }
-    if (typeof content === 'string') {
-      writeText(target.realPath, content);
-    } else {
-      writeFileOrRefuse(target.realPath, content);
+    // A text is stored through storeText, which upgrades it and backs up an older disk file (PST-23 C7). A bytes
+    // payload is stored as it is (PST-24).
+    const stored =
+      typeof content === 'string'
+        ? this.storeText(project, target, content, now)
+        : undefined;
+    if (stored === undefined) {
+      writeFileOrRefuse(target.realPath, content as Buffer);
     }
+    const storedBytes =
+      stored === undefined ? (content as Buffer) : Buffer.from(stored, 'utf8');
     const mtime = statSync(target.realPath).mtime.toISOString();
     this.events.publish({
       module: 'project-store',
@@ -570,7 +624,131 @@ export class FilesService {
       projectId: project.id,
       paths: [target.relativePath],
     });
-    return { path: target.relativePath, hash: hashOf(bytes), mtime };
+    return {
+      path: target.relativePath,
+      hash: hashOf(storedBytes),
+      mtime,
+    };
+  }
+
+  // The write of an accepted change (PST-23 C9): the too-new refusal and the migration of storeText, with no active
+  // check and no event. The caller publishes the events (PST-16 D19).
+  writeAccepted(
+    project: DiscoveredProject,
+    target: ResolvedProjectPath,
+    content: string,
+    now: Date,
+  ): void {
+    this.storeText(project, target, content, now);
+  }
+
+  // The lazy migration of project.yaml at activation (PST-23 C10). The disk text is upgraded when it is older than
+  // the current version; a migration that throws writes nothing and refuses the activation. No event is published.
+  upgradeProjectYaml(project: DiscoveredProject): void {
+    const target = this.store.resolvePath(project.root, PROJECT_YAML);
+    const text = decodeText(readFileSync(target.realPath));
+    if (
+      text === undefined ||
+      this.upgradeText(PROJECT_YAML, text) === undefined
+    ) {
+      return;
+    }
+    this.storeText(project, target, text, new Date());
+    this.store.notifyFilesChanged({
+      projectId: project.id,
+      paths: [PROJECT_YAML],
+    });
+  }
+
+  // True when the text of a file is newer than the current version of its kind (PST-23 C5, PST-06 P13). A file with
+  // no registered kind, a text that does not parse, and a file with no integer version are never too new.
+  private isTooNew(relativePath: string, text: string): boolean {
+    const migrator = this.store.migratorFor(relativePath);
+    if (migrator === undefined) return false;
+    const doc = parseDocument(text);
+    if (doc.errors.length > 0) return false;
+    const version = versionOf(doc);
+    return version !== undefined && version > migrator.currentVersion;
+  }
+
+  // The upgraded text of a file that is older than the current version of its kind, or undefined when no migration
+  // applies (PST-23 C2, C3). A file with no integer version, and a version below 1, are not migrated. A step that
+  // throws refuses the file with the upgrade message, before anything is written.
+  private upgradeText(relativePath: string, text: string): Upgrade | undefined {
+    const migrator = this.store.migratorFor(relativePath);
+    if (migrator === undefined) return undefined;
+    const doc = parseDocument(text);
+    if (doc.errors.length > 0) return undefined;
+    const from = versionOf(doc);
+    if (from === undefined || from < 1 || from >= migrator.currentVersion) {
+      return undefined;
+    }
+    try {
+      upgradeDocument(migrator, doc, from);
+    } catch {
+      throw refuse(PROJECT_ERROR_CODES.INVALID, FILE_MESSAGES.UPGRADE_FAILED);
+    }
+    return {
+      text: serializeDocument(relativePath, doc, text),
+      from,
+      to: migrator.currentVersion,
+    };
+  }
+
+  // The stored form of a text (PST-23 C7). A text that is too new is refused, and an older one is upgraded first.
+  // When the disk file is older than the current version, its bytes are backed up, then the text is written, then a
+  // line is appended to logs/migrations.log. A disk file that is too new is refused before any write. Returns the
+  // text that is stored.
+  private storeText(
+    project: DiscoveredProject,
+    target: ResolvedProjectPath,
+    text: string,
+    now: Date,
+  ): string {
+    const relativePath = target.relativePath;
+    if (this.isTooNew(relativePath, text)) throw tooNewFor(relativePath);
+    const stored = this.upgradeText(relativePath, text)?.text ?? text;
+    if (Buffer.byteLength(stored, 'utf8') > FILE_SIZE_CAP_BYTES) {
+      throw refuse(PROJECT_ERROR_CODES.FILE_TOO_LARGE, FILE_MESSAGES.TOO_LARGE);
+    }
+
+    const disk =
+      target.exists && statSync(target.realPath).isFile()
+        ? readFileSync(target.realPath)
+        : undefined;
+    const diskText = disk === undefined ? undefined : decodeText(disk);
+    let diskUpgrade: Upgrade | undefined;
+    if (disk !== undefined && diskText !== undefined) {
+      if (this.isTooNew(relativePath, diskText)) {
+        throw tooNewFor(relativePath);
+      }
+      diskUpgrade = this.upgradeText(relativePath, diskText);
+    }
+
+    let backup: string | undefined;
+    if (disk !== undefined && diskUpgrade !== undefined) {
+      backup = saveBackup(
+        project,
+        relativePath,
+        disk,
+        now,
+        MIGRATION_BACKUP_SEGMENTS,
+      );
+    }
+    writeText(target.realPath, stored);
+    if (
+      disk !== undefined &&
+      diskUpgrade !== undefined &&
+      backup !== undefined
+    ) {
+      const backupPath = `${MIGRATION_BACKUP_SEGMENTS.join('/')}/${backup}/${relativePath}`;
+      this.appendLog(
+        project.id,
+        MIGRATION_LOG,
+        `${now.toISOString()} ${relativePath} migrated from schemaVersion ${diskUpgrade.from} to ${diskUpgrade.to}; backup ${backupPath}`,
+      );
+    }
+    return stored;
   }
 
   // Adds the entries of one real folder to out (P5). realDir is the folder's real path and relDir its

@@ -12,6 +12,13 @@ import {
   type ScribaEnv,
 } from '../platform/platform.module';
 import { resolveProjectPath, type ResolvedProjectPath } from './path-safety';
+import {
+  newMigrator,
+  PROJECT_YAML_KIND,
+  type MigrationStep,
+  type Migrator,
+} from './migrations';
+import { PROJECT_YAML_SCHEMA_VERSION } from './project-yaml';
 import type { FilesChangedData } from '@bbartolome/scriba-contracts/project-store';
 
 // A handler of project-switched. It runs before the switch is persisted, so it reads the new id from the event.
@@ -31,6 +38,15 @@ const ACTIVE_MESSAGES = {
 export class ProjectStoreService {
   private readonly switchHandlers: ProjectSwitchedHandler[] = [];
   private readonly filesChangedHandlers: FilesChangedHandler[] = [];
+  // The migrators of the file kinds. project.yaml is first, with no steps yet (PST-23 C1).
+  private readonly migrators: Migrator[] = [
+    newMigrator(
+      PROJECT_YAML_KIND,
+      'project.yaml',
+      {},
+      PROJECT_YAML_SCHEMA_VERSION,
+    ),
+  ];
 
   constructor(
     @Inject(SCRIBA_ENV) private readonly env: ScribaEnv,
@@ -53,6 +69,33 @@ export class ProjectStoreService {
       this.settings.read('projects'),
     );
     return section.success ? section.data.active : null;
+  }
+
+  // Registers the migrator of a file kind (PST-23 C1). Registering a kind again replaces its entry. The current
+  // version is the kind's too-new threshold (PST-06, P13).
+  registerMigrator(
+    kind: string,
+    pathPattern: string,
+    steps: Readonly<Record<number, MigrationStep>>,
+    currentVersion: number,
+  ): void {
+    const migrator = newMigrator(kind, pathPattern, steps, currentVersion);
+    const index = this.migrators.findIndex((entry) => entry.kind === kind);
+    if (index === -1) this.migrators.push(migrator);
+    else this.migrators[index] = migrator;
+  }
+
+  // The migrator of the first registered kind whose pattern matches a project-relative path, or undefined.
+  migratorFor(relativePath: string): Migrator | undefined {
+    return this.migrators.find((migrator) => migrator.regex.test(relativePath));
+  }
+
+  // The current version of project.yaml, the too-new threshold of the project.yaml readers.
+  projectYamlVersion(): number {
+    const migrator = this.migrators.find(
+      (entry) => entry.kind === PROJECT_YAML_KIND,
+    );
+    return migrator?.currentVersion ?? PROJECT_YAML_SCHEMA_VERSION;
   }
 
   // Adds a handler of project-switched. Handlers run in registration order, once per switch.
