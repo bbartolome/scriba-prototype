@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
@@ -106,6 +106,16 @@ async function saveAndStatus(page: Page): Promise<number> {
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   return (await saved).status();
 }
+
+// Removes the folders this file seeds from the shared library, which journey.e2e.ts checks.
+test.afterAll(async () => {
+  for (const project of ['canvas-move', 'canvas-connect']) {
+    await rm(join(process.env.SCRIBA_E2E_LIBRARY!, project), {
+      recursive: true,
+      force: true,
+    });
+  }
+});
 
 test('criterion 2: moving a node updates only its position in the saved file', async ({
   page,

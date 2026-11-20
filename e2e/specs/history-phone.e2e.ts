@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Locator } from '@playwright/test';
 
@@ -13,6 +13,16 @@ async function expectReachable(locator: Locator): Promise<void> {
   await locator.scrollIntoViewIfNeeded();
   await expect(locator).toBeInViewport({ ratio: 1 });
 }
+
+// Removes the folders this file seeds from the shared library, which journey.e2e.ts checks.
+test.afterAll(async () => {
+  for (const project of ['phone-history']) {
+    await rm(join(process.env.SCRIBA_E2E_LIBRARY!, project), {
+      recursive: true,
+      force: true,
+    });
+  }
+});
 
 test('the version history of a draft fits 390 by 844 and shows a read-only diff', async ({
   page,

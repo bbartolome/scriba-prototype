@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Page, type Response } from '@playwright/test';
@@ -110,6 +110,12 @@ async function expectMovedRow(
   );
   await expect(section.locator('[data-editor]')).toBeVisible();
 }
+
+test.afterAll(async () => {
+  for (const name of ['my_tool', 'cold_open_2', 'cold_open']) {
+    await rm(userToolFile(name), { force: true });
+  }
+});
 
 test('E1 New and Duplicate produce YAML that the real lint accepts, and Save writes it', async ({
   page,
