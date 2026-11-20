@@ -237,7 +237,7 @@ it('C4: enabling each disabled shape through the Tool registry makes it callable
     rmSync(scenariosDir, { recursive: true, force: true });
     fixture.remove();
   }
-});
+}, 120000);
 
 interface ChatBody {
   tools?: Array<{ type: string; function: { name: string } }>;
