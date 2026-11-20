@@ -7361,3 +7361,7 @@ Part D (gates and commit):
 - **Status:** the standing instruction (zero failures) is NOT MET. GRR-15 stays `status: planned`, not merged. The REWORK list is not started. The patch id after the run is 6b829738d21d346b7be31b3ad518e167e8db7dfe, unchanged; the worktree is clean. The next step is the user's decision.
 
 
+
+## 2026-11-20 — AGL-23 — on main at 6e6d33a (fast-forward from 5eb2acf)
+
+- **Merge:** unit/AGL-23 was placed on main by cherry-pick (test commit to dc7653a, status commit to 6e6d33a), patch id 34c15af0d0ba63ead6e9738f10aaedb5ec57bdb9 unchanged. Gates on 6e6d33a: lint exit 0 (Prettier and examples check); test exit 0 (253 contracts, 597 api with 14 skipped, 16 packs, 12 scripts); build exit 0 with warnings only (initial bundle 598.12 kB over the 500 kB budget; zod and scriba-contracts not ESM); the research-gate file 4 of 4. Node v26.13.0, npm 11.20.0. Criteria AC1 to AC4 ticked; plan status done. Branch and worktree removed; backup/AGL-23-pre-rebase and backup/AGL-23-pre-replace kept.
