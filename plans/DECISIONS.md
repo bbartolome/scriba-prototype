@@ -7227,3 +7227,11 @@ Part D (gates and commit):
 - **State:** nothing committed on `unit/AGL-24`. Uncommitted in the worktree: `agent-tools.service.ts`, `agent-runs.service.ts`, `agent-loop.module.ts`, `agent-loop-run.test.ts` (edited), and the new `tools/compile-tools.ts` and `agent-loop-compile.test.ts`. The worktree is kept; nothing is discarded.
 - **Decision needed (the planner's or reviser's, not the orchestrator's):** how to keep `agent-loop-tools.test.ts` green. Options named in the report: (a) the test adds a session cookie, which needs the file in the plan's table; (b) the compile services reach the agent loop without importing the SetupAuth module. The fix needs a change outside the plan's file table, so the reviser decides it under the YAGNI rules.
 - **Status:** `plans/AGL-24.md` goes back to `status: draft`. A new Opus reviser corrects the plan. When it is `planned` again, a new implementer continues from the commits of the branch and the uncommitted work of the worktree, as the plan's section 3 allows.
+
+## 2026-11-20 — AGL-22 — Sonnet review (2 parts): APPROVED for patch id 4c343e24d5b44d48e8042cb848c78b0a31920948
+
+- **Code:** `unit/AGL-22`, two commits on the base af12aa8: `f4551f6` (part 1) and `5341d5d` (part 2). The patch id is from `git diff main...unit/AGL-22 -- . ':!plans' ':!units' | git patch-id --stable`.
+- **Implementer (Haiku, medium), COMPLETE:** the 9 tests of `apps/api/test/agent-loop-fetch-page.test.ts` pass; the agent-loop suite is 20 files and 77 tests; the full api workspace test exits 0 (590 passed, 14 skipped); lint, prettier and tsc pass. Mutations M1 to M10 each failed the tests the plan names, and the tree was restored.
+- **Reviewers (Sonnet, medium):** part 1 (steps 1 to 8 and 10; AC1 literal rows, D1, D4) APPROVED; part 2 (steps 9 and 11 to 16; AC1 redirect row, AC2, AC3, D2, D3, D5) APPROVED. Both for the same patch id.
+- **Accepted deviations:** two commits, following the review parts of section 8; prettier and one lint fix; the three redirect error texts (open in the plan); the M10 variant is a test mutation that is wider than the plan's text, not shipped code, and still fails D5 row (b).
+- **Next:** rebase onto the current main by detaching and cherry-picking, check the patch id, run the gates on the rebased head, tick the checked criteria, then fast-forward `main`.
