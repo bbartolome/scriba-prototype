@@ -7587,3 +7587,19 @@ Part A (criterion 2, theme tokens):
 - **Unit changes:** none. No criterion or test was weakened or removed. GNP-19 is not in the pipeline (no plan, no branch). GRR-17 is the only draft or planned plan, so no other plan changes the same files.
 - **Review parts:** one part, Part A: steps 1 to 12; tests T1, S1, T2, T3 and T4 (T3 and T4 not run, per option (a)).
 - **Action (orchestrator, per prompt.md):** the plan is set to `status: planned`. A new implementer continues from unit/GRR-17 (no commits of its own) on revision 5. The untracked spec in the worktree is the attempt-4 file: it is edited in place, not replaced from /tmp.
+
+## 2026-11-20 — GRR-17 — Implementer COMPLETE (plan revision 5, commit eff2cf5); Sonnet review of Part A: REWORK
+
+- **Implementer:** COMPLETE on unit/GRR-17 at eff2cf5 (only e2e/specs/graph-recipe.e2e.ts, 571 insertions). Criterion 1 (test at graph-recipe.e2e.ts:316) and S1 (line 465) passed in two isolated runs each. Criterion 2 passed on a detached worktree of main 0f1b2a6 (npm test, npm run e2e 42 passed and 1 skipped, lint:examples). Criteria 3 and 4 not tested (option (a)). The full e2e with the spec gave 44 passed, 1 skipped. The implementer's differences, all judged acceptable by the reviewer except item 1 below: (1) test-side `waitForURL` before reading the review URL after the routerLink click (acceptable: every assertion kept, no fixed wait); (3) Revision 5 applied (`hitAt` removed, `dropHits` added, `expectDropHit` messages); (4) baseline run with the spec moved to /tmp/grr17-spec-hold/, then moved back (process only).
+- **Sonnet reviewer (Part A, the only part), patch id c7dda384d02ee91b1c85022dbf18cab34944fa81:** REWORK. The list below is recorded as the reviewer gave it; the items are not changed.
+
+REWORK list:
+
+1. Check 2 (the two hit checks before the mouse-down) does not carry the failure message the plan requires.
+   - Plan text: section 3 step 3 says to "give every hit check the failure message of the stop rule", and keep the two `hitsAtCentre` checks "as they are" for their logic. Section 4.1 step j, stop rule: "Each hit check's failure message names the check (2, b or c), the point, the description of the element hit, the target's box and the viewport size". Section 8, Revision 5: "each hit check's failure message carries the check name, the point, the element hit, the target's box and the viewport size".
+   - Code: the first lines of `wire` are `expect(await hitsAtCentre(page, from), \`${from} is hit\`)` and the same for `to`. They give no check name, no point, no element hit, no box and no viewport.
+   - Failure: if a source or target handle is covered before the drag, the report has no positions. That is the gap that made attempt 4's report useless.
+   - Correction: keep `hitsAtCentre` logic (it must still require the `[data-port]` circle itself). Make the message of both checks name check 2, the point, the element hit (a description like the one in `dropHits`), the target's box and `page.viewportSize()`. For example, add a small helper that returns the hit description and use it only to build the message.
+
+- **Reviewer's judgement on the other differences (for the record, not part of the list):** difference 2 (reading of the stop rule for the pre-drag checks) is not supported by the plan's text; checks b and c are correct. The reviewer's minor note (on a failed hit check the code does not release the mouse; Playwright closes the page) is not a defect and is not in the list.
+- **Action (orchestrator, per prompt.md):** a new Haiku implementer corrects item 1 on unit/GRR-17, commits with the unit id, and reports. After a new COMPLETE report, new Sonnet reviewers review Part A again, because the code changed.
