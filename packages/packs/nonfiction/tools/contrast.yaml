@@ -1,0 +1,73 @@
+schemaVersion: 1
+name: contrast
+description: Set two things side by side so the difference makes the point.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    subjectA:
+      type: string
+      title: Subject A
+      x-scriba-type: text
+      x-scriba-port: true
+    subjectB:
+      type: string
+      title: Subject B
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [coreIdea, subjectA, subjectB]
+output: draft
+enabled: false
+prompt: |
+  You write a nonfiction passage that sets two things side by side, so that the difference makes the point.
+
+  Core idea: {{coreIdea}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}Subject A: {{subjectA}}
+  Subject B: {{subjectB}}
+  Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. Name the two subjects in plain words, using the material.
+  2. Set subject A beside subject B, on the same points.
+  3. Show the one difference that matters most to the core idea, and where the material shows it.
+  4. End on what the difference shows about the core idea, in plain words.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

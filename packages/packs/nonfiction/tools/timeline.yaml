@@ -1,0 +1,67 @@
+schemaVersion: 1
+name: timeline
+description: Tell events in order to show how the idea unfolded.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    events:
+      type: string
+      title: Events
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [coreIdea, events]
+output: draft
+enabled: false
+prompt: |
+  You write a nonfiction passage that tells events in order, to show how the idea unfolded.
+
+  Core idea: {{coreIdea}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}Events: {{events}}
+  Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. List the events in the order they happened, using the events given above and the material.
+  2. Tell each event in one or two sentences, with its date where the material gives one.
+  3. Show how each event changed what came next.
+  4. End on what the sequence shows about the core idea.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

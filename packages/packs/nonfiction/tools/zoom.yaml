@@ -1,0 +1,73 @@
+schemaVersion: 1
+name: zoom
+description: Move from a close-up detail out to the big picture and back.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    detail:
+      type: string
+      title: Detail
+      x-scriba-type: text
+      x-scriba-port: true
+    bigPicture:
+      type: string
+      title: Big picture
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [coreIdea, detail]
+output: draft
+enabled: false
+prompt: |
+  You write a nonfiction passage that moves from a close-up detail out to the big picture, and back again.
+
+  Core idea: {{coreIdea}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}Detail: {{detail}}
+  {{#if bigPicture}}Big picture: {{bigPicture}}
+  {{/if}}Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. Open on the close-up detail, in the terms the material gives it.
+  2. Pull back to the big picture that the detail belongs to.
+  3. Return to the detail, now read in the light of the big picture.
+  4. End on what the detail and the big picture together show about the core idea.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

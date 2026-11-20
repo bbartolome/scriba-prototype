@@ -1,0 +1,78 @@
+schemaVersion: 1
+name: framework_builder
+description: Turn a pattern into a small named framework with steps.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    pattern:
+      type: string
+      title: Pattern
+      x-scriba-type: text
+      x-scriba-port: true
+    claimIds:
+      type: array
+      title: Claims
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [claim]
+  required: [coreIdea, pattern]
+output: draft
+enabled: false
+prompt: |
+  You write a nonfiction passage that turns a pattern into a small named framework with steps.
+
+  Core idea: {{coreIdea}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}Pattern: {{pattern}}
+  Material:
+  {{#each claimIds}}
+  {{entity this}}
+  {{/each}}
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. Describe the pattern in plain words, using the material.
+  2. Give the framework a short name of two or three words that is easy to repeat.
+  3. Set out its steps in order, each a short line that the material supports.
+  4. End on how a reader applies the framework, and where it stops working.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

@@ -1,0 +1,67 @@
+schemaVersion: 1
+name: reader_challenge
+description: Ask the reader to test their own assumption before the reveal.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    question:
+      type: string
+      title: Question
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [coreIdea, question]
+output: draft
+enabled: false
+prompt: |
+  You write a nonfiction passage that asks the reader to test their own assumption before the reveal.
+
+  Core idea: {{coreIdea}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}Question for the reader: {{question}}
+  Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. Put the question to the reader in plain words, as the assumption it tests.
+  2. Let the reader weigh that assumption against the facts the material gives.
+  3. Reveal what the material shows, and where the assumption holds or fails.
+  4. End on the core idea, in plain words.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

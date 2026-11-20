@@ -1,0 +1,67 @@
+schemaVersion: 1
+name: method_first
+description: Explain how the evidence was gathered before what it showed.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    method:
+      type: string
+      title: Method
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [coreIdea, method]
+output: draft
+enabled: false
+prompt: |
+  You write a nonfiction passage that explains how the evidence was gathered before what it showed.
+
+  Core idea: {{coreIdea}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}Method: {{method}}
+  Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. Say how the evidence was gathered, in the order the work was done, using the material.
+  2. Say what the method could capture, and what it could not.
+  3. Only then, set out what the evidence showed, from the material.
+  4. End on what the reader can trust, and what remains open.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

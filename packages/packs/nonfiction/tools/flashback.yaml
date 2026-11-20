@@ -1,0 +1,73 @@
+schemaVersion: 1
+name: flashback
+description: Break from the present moment to a past one that explains it.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    present:
+      type: string
+      title: Present
+      x-scriba-type: text
+      x-scriba-port: true
+    past:
+      type: string
+      title: Past
+      x-scriba-type: text
+      x-scriba-port: true
+  required: [coreIdea, present, past]
+output: draft
+enabled: false
+prompt: |
+  You write a nonfiction passage that breaks from the present moment to a past one that explains it.
+
+  Core idea: {{coreIdea}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}Present: {{present}}
+  Past: {{past}}
+  Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. Open in the present moment given above.
+  2. Break to the past moment given above, in the terms the material gives it.
+  3. Show how the past explains what the present shows.
+  4. Return to the present, and end on the core idea, in plain words.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.
