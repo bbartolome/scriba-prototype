@@ -1,6 +1,6 @@
 ---
 id: AGL-24
-status: planned
+status: draft
 ---
 # AGL-24 plan — compile tools (assemble_manuscript, run_preflight, export_manuscript)
 
