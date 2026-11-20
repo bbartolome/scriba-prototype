@@ -1,0 +1,72 @@
+schemaVersion: 1
+name: objection_handler
+description: Raise the strongest objections to a claim and answer each fairly.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    claimIds:
+      type: array
+      title: Claims
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+      x-scriba-entity-kinds: [claim]
+  required: [coreIdea, claimIds]
+output: draft
+enabled: false
+prompt: |
+  You write a nonfiction passage that raises the strongest objections to a claim and answers each one fairly.
+
+  Core idea: {{coreIdea}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}Material:
+  {{#each claimIds}}
+  {{entity this}}
+  {{/each}}
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. State the claim being tested, in the words of the material.
+  2. Raise the strongest objections to it, strongest first, using only the material.
+  3. Answer each objection fairly: first say what it gets right, then give the answer the material supports.
+  4. End on what remains open, in plain words, where the material stops.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

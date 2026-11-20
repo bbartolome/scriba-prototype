@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "The strongest objection is that the hours were estimates made from memory [@claim-a]. The notes record the planned sessions that the answer rests on [@notes-a]."
+        ]
+      }
+    }
+  ]
+}

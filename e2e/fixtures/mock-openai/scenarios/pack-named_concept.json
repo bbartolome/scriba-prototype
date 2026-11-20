@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "---\ntype: concept\nname: Planned Practice\ndefinition: Practice set in advance by a teacher improves more than repetition alone.\n---\n\nThe study planned each session in advance [@notes-a]."
+        ]
+      }
+    }
+  ]
+}

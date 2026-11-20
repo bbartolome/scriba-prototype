@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Write the answer as Markdown prose. Return only the text of the answer, with no preface and no closing remarks."
+    },
+    {
+      "role": "user",
+      "content": "You write a nonfiction passage that sets the winners beside matched cases that did not win, so the difference makes the point.\n\nCore idea: Expertise grows from planned practice, not from the hours alone.\nLength: 800 words.\nVariable: hours of planned practice\nVariable: teacher involvement\nMaterial:\nperson person-a (entities/person-a.md)\nPerson A set the practice tasks in the study and kept the results in a notebook.\nsource notes-a (sources/notes-a.md)\nNotes A say that each practice session in the study was planned in advance, with a teacher setting the task.\nperson person-b (entities/person-b.md)\nPerson B practised alone, from a list of tasks chosen before the study began.\nstyle-profile style-a (entities/style-a.md)\n---\ntype: style-profile\ntone: Plain and direct\ntargetLength: 800\nbannedPhrases: [game-changer]\n---\n\nSay what the evidence shows, and say where it stops.\n\nSteps:\n1. Name the winners and the question they answered, using the material.\n2. Set each matched case that did not win beside a winner, on the same variables.\n3. Show the difference that the variables explain, case by case.\n4. End on what the contrast shows about the core idea, in plain words.\n\nConstraints:\n- Use only the material above.\n- Cite each factual sentence with its entity or source ID in the form [@id].\n- Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.\n- Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.\n"
+    }
+  ]
+}

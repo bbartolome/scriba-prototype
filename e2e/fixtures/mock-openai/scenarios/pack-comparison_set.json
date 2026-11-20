@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {
+      "match": { "endpoint": "chat" },
+      "reply": {
+        "kind": "stream",
+        "deltas": [
+          "Person A practised from planned sessions [@person-a]. The matched case, person B, practised from a list chosen before the study began [@person-b]."
+        ]
+      }
+    }
+  ]
+}

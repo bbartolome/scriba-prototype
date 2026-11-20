@@ -12,6 +12,7 @@ import { expect } from 'vitest';
 import { errorBodySchema } from '@bbartolome/scriba-contracts/platform';
 import { PROVIDER_DEFAULTS } from '@bbartolome/scriba-contracts/providers';
 import {
+  TOOL_ENABLED_ROUTE,
   TOOL_EXECUTE_ROUTE,
   toolCallRequestSchema,
   toolCallResultSchema,
@@ -73,6 +74,8 @@ export interface GoldenRunOptions {
   expect: { kind: OutputKind; sourcesUsed: string[] };
   invalidWithout: string;
   userTool?: string;
+  // Turns the tool on in the case's temporary library first; the shipped spec keeps its value.
+  enable?: boolean;
   goldenDir?: string;
   update?: boolean;
 }
@@ -93,6 +96,8 @@ export interface GoldenCaseOptions {
   expect: { kind: OutputKind; sourcesUsed: string[] };
   invalidWithout: string;
   userTool?: string;
+  // Turns the tool on in the case's temporary library first; the shipped spec keeps its value.
+  enable?: boolean;
   check?: (result: GoldenRunResult) => void | Promise<void>;
 }
 
@@ -171,6 +176,15 @@ export async function runGoldenCase(
       env: { SCRIBA_PACKS_DIR: PACKS_ROOT },
     });
     const cookie = await sessionCookie(app, library);
+    if (options.enable === true) {
+      const switched = await post(
+        app,
+        cookie,
+        TOOL_ENABLED_ROUTE.replace(':name', options.tool),
+        { enabled: true },
+      );
+      expect(switched.status, switched.body).toBe(200);
+    }
     const path = TOOL_EXECUTE_ROUTE.replace(':name', options.tool);
 
     const reply = await post(app, cookie, path, fixture);
@@ -246,6 +260,7 @@ export function goldenCase(options: GoldenCaseOptions): () => Promise<void> {
       expect: options.expect,
       invalidWithout: options.invalidWithout,
       userTool: options.userTool,
+      enable: options.enable,
     });
     expect(result.golden).toBe(UPDATE_GOLDENS ? 'written' : 'match');
     expect(result.kind).toBe(options.expect.kind);

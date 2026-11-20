@@ -1,0 +1,40 @@
+schemaVersion: 1
+name: named_concept
+description: Coin a memorable label and one-line definition for a pattern.
+inputs:
+  type: object
+  properties:
+    pattern:
+      type: string
+      title: Pattern
+      x-scriba-type: text
+      x-scriba-port: true
+    examples:
+      type: array
+      title: Examples
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+  required: [pattern]
+output: entity
+enabled: false
+prompt: |
+  You coin a memorable label for one pattern and write it up as a concept entity.
+
+  Pattern: {{pattern}}
+  Material:
+  {{#each examples}}
+  {{entity this}}
+  {{/each}}
+
+  Steps:
+  1. Name the pattern in plain words, using the material.
+  2. Coin a short label for it, two or three words that are easy to repeat.
+  3. Write the definition as one line that says what the pattern is.
+  4. In the body, give the examples from the material, each with its entity ID, and say where the concept is used.
+
+  Return one concept file: front matter with type: concept, name (the label) and definition (the one line), then the body.
+
+  Constraints:
+  - Use only the material above.

@@ -1,0 +1,77 @@
+schemaVersion: 1
+name: comparison_set
+description: Contrast winners with matched cases that didn't win.
+inputs:
+  type: object
+  properties:
+    coreIdea:
+      type: string
+      title: Core idea
+      x-scriba-type: text
+      x-scriba-port: true
+      x-scriba-control: textarea
+    entityIds:
+      type: array
+      title: Entities
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    styleProfile:
+      type: string
+      title: Style
+      x-scriba-type: style
+      x-scriba-port: true
+    length:
+      type: integer
+      title: Length
+      default: 800
+      minimum: 200
+      maximum: 2000
+    tone:
+      type: string
+      title: Tone
+    cases:
+      type: array
+      title: Matched cases
+      items:
+        type: string
+      x-scriba-type: entity
+      x-scriba-port: true
+    variables:
+      type: array
+      title: Variables
+      items:
+        type: string
+  required: [coreIdea, cases]
+output: draft
+enabled: false
+prompt: |
+  You write a nonfiction passage that sets the winners beside matched cases that did not win, so the difference makes the point.
+
+  Core idea: {{coreIdea}}
+  Length: {{length}} words.
+  {{#if tone}}Tone: {{tone}}.
+  {{/if}}{{#each variables}}Variable: {{this}}
+  {{/each}}Material:
+  {{#each entityIds}}
+  {{entity this}}
+  {{/each}}
+  {{#each cases}}
+  {{entity this}}
+  {{/each}}
+  {{#if styleProfile}}
+  {{entity styleProfile}}
+  {{/if}}
+
+  Steps:
+  1. Name the winners and the question they answered, using the material.
+  2. Set each matched case that did not win beside a winner, on the same variables.
+  3. Show the difference that the variables explain, case by case.
+  4. End on what the contrast shows about the core idea, in plain words.
+
+  Constraints:
+  - Use only the material above.
+  - Cite each factual sentence with its entity or source ID in the form [@id].
+  - Where a needed fact is missing, write TK with a short note in brackets, for example TK (year of the study). Do not invent it.
+  - Follow the tone of the style profile, avoid its banned phrases, and keep to the length above.

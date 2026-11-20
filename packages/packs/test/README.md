@@ -8,6 +8,7 @@ A golden case checks what a tool sends to the model. It calls the tool through `
 
 - The helper is `apps/api/test/packs/golden.kit.ts`. A case is declared with `goldenCase(...)`, which returns the body of one `it(...)`, in a few lines.
 - `goldenCase` takes `tool`, `name`, `expect` (the output `kind` and the `sourcesUsed` the case declares), `invalidWithout` (the name of one required argument that the invalid call drops), an optional `userTool` (a test-only tool spec, see below) and an optional `check(result)` for the tool's own assertions on the result (for example a parse of the output content, or a check that the rendered prompt holds each entity ID).
+- `enable: true` (optional) turns the tool on in the case's temporary library, through `POST /api/tool-registry/tools/:name/enabled`, before the call. The shipped spec keeps its `enabled` value; use the option only for a tool that ships disabled.
 - Each case checks four things: the recorded request matches the golden; `output.kind` and `sourcesUsed` match `expect`; the call without `invalidWithout` returns HTTP 422 with `TOOL_ARGS_INVALID` and a message that names that argument, and makes no model call; and exactly one model request was recorded for the valid call.
 
 ### Files and where they live

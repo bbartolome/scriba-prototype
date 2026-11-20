@@ -64,6 +64,9 @@ export const VERBS: readonly string[] = [
   'tell',
   'break',
   'face',
+  'coin',
+  'contrast',
+  'raise',
 ];
 
 type ToolSpec = ReturnType<typeof toolSpecSchema.parse>;

@@ -1,0 +1,12 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Return one Markdown file: YAML front matter between two lines of ---, then the Markdown body. Return nothing outside the file."
+    },
+    {
+      "role": "user",
+      "content": "You coin a memorable label for one pattern and write it up as a concept entity.\n\nPattern: Practice planned in advance, with a teacher setting the task, improves more than repeating the same activity.\nMaterial:\nperson person-a (entities/person-a.md)\nPerson A set the practice tasks in the study and kept the results in a notebook.\nsource notes-a (sources/notes-a.md)\nNotes A say that each practice session in the study was planned in advance, with a teacher setting the task.\n\nSteps:\n1. Name the pattern in plain words, using the material.\n2. Coin a short label for it, two or three words that are easy to repeat.\n3. Write the definition as one line that says what the pattern is.\n4. In the body, give the examples from the material, each with its entity ID, and say where the concept is used.\n\nReturn one concept file: front matter with type: concept, name (the label) and definition (the one line), then the body.\n\nConstraints:\n- Use only the material above.\n"
+    }
+  ]
+}
