@@ -7296,3 +7296,11 @@ Part D (gates and commit):
 - **Confirmation:** the user wrote in this session that the CI run passed. The run id is `44659727464`, the run named by the Navigator decision of this date (CEX-15, option A). This follows the relayed observation recorded above.
 - **Still missing for the tick:** the details that the Navigator decision requires: event `push`, branch `main`, headSha `3b859d4`, conclusion `success`; the CEX-10 to CEX-14 commits are ancestors of headSha; the install and `Test` steps pass with `SCRIBA_REQUIRE_EXPORT_TOOLS=1`; the export steps are not skipped. The orchestrator has no GitHub access here and has not observed the run.
 - **Action:** `units/CEX-15-export-gate-image-smoke.md` is not changed; criterion 2 stays unticked until these details are recorded from the run.
+
+## 2026-11-20 — CEX-15 — Criterion 2: read-only check of CI run 44659727464 (summary page and workflow file); the box stays unticked until the Test step log is seen
+
+- **Run summary (read from https://github.com/bbartolome/scriba-prototype/actions/runs/44659727464, no sign-in needed for the summary):** workflow `ci` (`ci.yml`), event `push`, branch `main`, head commit `3b859d4` (full SHA `3b859d4405a14986093e69c8bc2a7a5dcc4c2abc`), status Success, 8m 32s. The run title is the subject of that commit: "docs(SHL-17): implementer COMPLETE, not reviewed (cycle limit)".
+- **Checked locally:** `3b859d4` is an ancestor of `main`. The CEX-10 to CEX-14 tip commits (`e9e34ce`, `f5afbd6`, `ab0e50f`, `00f212d`, `29abbaf`) are ancestors of `3b859d4`.
+- **Workflow at `3b859d4`:** the job has an `Install` step (`npm ci`), an install step for Pandoc 3.13 and Typst 0.15.1, and a `Test` step with `SCRIBA_REQUIRE_EXPORT_TOOLS: '1'` running `npm test`.
+- **Not visible:** the step results, and whether the export steps were skipped. The step logs need sign-in ("Sign in to view logs"), and the summary shows no skipped status. The job-level result is success.
+- **Status:** the Navigator's tick conditions are met except the step-level log check. The box stays unticked. It is ticked after the `Test` step log of this run is seen, showing that the export tests ran and were not skipped. The unit's status and merge are unchanged.
