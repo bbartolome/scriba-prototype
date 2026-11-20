@@ -86,9 +86,11 @@ type EditOptions = Omit<Edit, 'text'>;
  * The extensions of one side, the same in both layouts. Only the proposed side
  * takes `edit`, and only when `editable` is true: it then uses the dominant
  * line separator of its loaded text and emits the whole edited text. The base
- * side and the read-only proposed side are never editable.
+ * side and the read-only proposed side are never editable. Every side has an
+ * accessible name for its path (`Base text for <path>` or `Proposed text for
+ * <path>`), read-only sides included.
  */
-function sideExtensions(side: Side, edit?: Edit): Extension[] {
+function sideExtensions(side: Side, path: string, edit?: Edit): Extension[] {
   if (!edit) {
     return [
       diffTheme(),
@@ -96,6 +98,12 @@ function sideExtensions(side: Side, edit?: Edit): Extension[] {
       EditorState.lineSeparator.of('\n'),
       EditorState.readOnly.of(true),
       EditorView.editable.of(false),
+      // tabindex lets a keyboard user reach the scrolling text (axe: scrollable-region-focusable).
+      EditorView.contentAttributes.of({
+        'aria-label':
+          (side === 'base' ? 'Base text for ' : 'Proposed text for ') + path,
+        tabindex: '0',
+      }),
       EditorView.editorAttributes.of({ 'data-side': side }),
     ];
   }
@@ -182,6 +190,7 @@ function createUnified(
   parent: HTMLElement,
   base: string,
   proposed: string,
+  path: string,
   edit: EditOptions | undefined,
 ): EditorView {
   const side = edit && { ...edit, text: proposed };
@@ -191,7 +200,7 @@ function createUnified(
       // The editable proposed document is split by its own line separator.
       doc: side ? proposed : toText(proposed),
       extensions: [
-        sideExtensions('proposed', side),
+        sideExtensions('proposed', path, side),
         unifiedMergeView({
           original: toText(base),
           mergeControls: false,
@@ -206,15 +215,16 @@ function createSplit(
   parent: HTMLElement,
   base: string,
   proposed: string,
+  path: string,
   edit: EditOptions | undefined,
 ): MergeView {
   const side = edit && { ...edit, text: proposed };
   return new MergeView({
     parent,
-    a: { doc: toText(base), extensions: sideExtensions('base') },
+    a: { doc: toText(base), extensions: sideExtensions('base', path) },
     b: {
       doc: side ? proposed : toText(proposed),
-      extensions: sideExtensions('proposed', side),
+      extensions: sideExtensions('proposed', path, side),
     },
     diffConfig: side ? editDiffConfig(proposed) : undefined,
   });
@@ -326,8 +336,8 @@ export class DiffView {
         : undefined;
       const view =
         layout === 'unified'
-          ? createUnified(parent, base, proposed, edit)
-          : createSplit(parent, base, proposed, edit);
+          ? createUnified(parent, base, proposed, path, edit)
+          : createSplit(parent, base, proposed, path, edit);
       onCleanup(() => view.destroy());
     });
   }

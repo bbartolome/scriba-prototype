@@ -197,7 +197,7 @@ describe.each(LAYOUTS)('editable merge view, $name', (layout) => {
 
   // Criterion 2: without `editable`, the component is the SHL-12 read-only diff.
 
-  it('C4 without editable, both sides stay read-only, carry no label and emit nothing', async () => {
+  it('C4 without editable, both sides stay read-only, carry their labels and emit nothing', async () => {
     const { fixture, host, root } = await render(
       layout.size,
       'base\n',
@@ -210,10 +210,20 @@ describe.each(LAYOUTS)('editable merge view, $name', (layout) => {
       const content = side.querySelector('.cm-content');
       expect(content?.getAttribute('contenteditable')).toBe('false');
     }
+    if (layout.name === 'side by side') {
+      const base = root.querySelector(
+        '.cm-editor[data-side="base"] .cm-content',
+      );
+      expect(base?.getAttribute('aria-label')).toBe(
+        'Base text for notes/chapter.md',
+      );
+    }
     const proposed = root.querySelector(
       '.cm-editor[data-side="proposed"] .cm-content',
     );
-    expect(proposed?.hasAttribute('aria-label')).toBe(false);
+    expect(proposed?.getAttribute('aria-label')).toBe(
+      'Proposed text for notes/chapter.md',
+    );
     insertInProposed(root, 3, 'X');
     await update(fixture);
     expect(host.edited()).toBeNull();

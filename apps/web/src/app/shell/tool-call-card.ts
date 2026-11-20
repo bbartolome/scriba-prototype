@@ -188,7 +188,7 @@ function treeOf(value: unknown): readonly TreeRow[] {
             </section>
           }
           @if (call().output; as output) {
-            <section class="output" aria-label="Output">
+            <section class="output" aria-label="Output" tabindex="0">
               <h3>Output</h3>
               @if (output.kind === 'markdown') {
                 <app-markdown-preview [content]="output.text" />
