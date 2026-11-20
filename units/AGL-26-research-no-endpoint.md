@@ -19,4 +19,4 @@ Split from AGL-21 by revision on 2026-11-20: criterion 2 of AGL-21 moved here wo
 - Offered whenever research is on. Only `http(s)`. (AGL-22, about `fetch_page`.)
 
 ## Acceptance criteria
-- [ ] With research on and no endpoint, only `fetch_page` is offered.
+- [x] With research on and no endpoint, only `fetch_page` is offered.

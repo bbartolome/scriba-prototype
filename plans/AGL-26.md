@@ -1,6 +1,6 @@
 ---
 id: AGL-26
-status: planned
+status: done
 ---
 # AGL-26 plan — research on, no endpoint: only `fetch_page` is offered
 
