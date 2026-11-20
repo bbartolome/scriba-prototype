@@ -7255,3 +7255,9 @@ Part D (gates and commit):
   - M4 (graph-runner import in `compile-tools.ts`): `npm run lint` exits 1 with `1:8 error agent-loop and graph-runner never import each other, not even their module files  boundaries/dependencies` on `compile-tools.ts`. AC3 still passes under M4, as the plan's step 14 expects for a lint-only check.
 - **Step 12, gates on the committed tree (Node v26.13.0, npm 11.20.0):** `npm run lint` exit 0; `npm run build -w @bbartolome/scriba-api` exit 0; prettier check on the four plan paths exit 0; `npm test -w @bbartolome/scriba-api` exit 0 on the first run: 161 files passed and 1 skipped; 584 tests passed and 14 skipped.
 - **Status:** the rework is complete. The approval holds only for a new reviewer's APPROVED on the same patch id; a new Sonnet reviewer runs on part 1. The plan stays `planned`.
+
+## 2026-11-20 — AGL-24 — Sonnet re-review after the rework (1 part): APPROVED for patch id dff58905a1ca95d0130f2c2688f9594c1701bb19
+
+- **Code:** `unit/AGL-24` at `44eb64c`, unchanged by the rework. The patch id recomputed from `git diff main...unit/AGL-24 -- . ':!plans' ':!units' | git patch-id --stable` is the same.
+- **Reviewer (Sonnet, medium):** the rework entry of the same date records M1 to M4 with a failing test or lint error each, and a restore with an empty `git status --short`; step 12 records exit 0 on the first run. M2 differs from the plan's prediction (TypeError at line 181, not the summary assertion), and the record says so; AC2 still fails. The `diff --git` lines are the seven paths of the section 2 table. The test-file edits were checked in the first review and are covered by the same patch id.
+- **Next:** AGL-22 is on main first, then AGL-24 is rebased. If the rebase changes the patch id, a new review is needed.
