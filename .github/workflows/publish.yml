@@ -147,6 +147,9 @@ jobs:
           EXPECTED_ARCH: ${{ matrix.node_arch }}
         run: bash scripts/smoke-image.sh "$SMOKE_IMAGE"
 
+      - name: Export the nonfiction sample to four formats
+        run: bash scripts/export-smoke.sh "$SMOKE_IMAGE"
+
   merge:
     name: Merge the manifest list
     needs: [plan, smoke]
