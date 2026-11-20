@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, EMPTY, map, switchMap, tap } from 'rxjs';
 import { projectTarget, validTo } from './project-scope';
+import { ShellSkeleton } from './skeleton';
 import {
   ACTIVE_PROJECT_PATH,
   activeProjectCopy,
@@ -18,9 +19,17 @@ import { API_CLIENT } from './tokens';
  */
 @Component({
   selector: 'app-switch-project',
+  imports: [ShellSkeleton],
   template: `
-    <h2>Switch to {{ title() }}?</h2>
+    @if (loading()) {
+      <app-skeleton />
+    } @else {
+      <h2>Switch to {{ title() }}?</h2>
+    }
     <button type="button" (click)="switchTo()">Switch</button>
+    @if (active() === null) {
+      <p>No project is active.</p>
+    }
     @if (active(); as activeId) {
       <button type="button" (click)="goTo(activeId)">
         Go to the active project
@@ -40,6 +49,8 @@ export class SwitchProjectPage {
   protected readonly title = signal('');
   protected readonly active = signal<string | null | undefined>(undefined);
   protected readonly error = signal<string | undefined>(undefined);
+  /** True while the project list is loading, when the heading is a skeleton. */
+  protected readonly loading = signal(true);
 
   constructor() {
     // The router reuses this page when the URL changes within its route, so the title and the
@@ -51,15 +62,19 @@ export class SwitchProjectPage {
         tap((projectId) => {
           this.title.set(projectId);
           this.error.set(undefined);
+          this.loading.set(true);
         }),
         switchMap((projectId) =>
           this.api.get(PROJECTS_PATH, projectListCopy).pipe(
-            map(
-              (list) =>
+            map((list) => {
+              this.loading.set(false);
+              return (
                 list.projects.find((entry) => entry.id === projectId)?.title ??
-                projectId,
-            ),
+                projectId
+              );
+            }),
             catchError((error: unknown) => {
+              this.loading.set(false);
               this.error.set(messageOf(error));
               return EMPTY;
             }),

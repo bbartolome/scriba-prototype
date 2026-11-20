@@ -13,10 +13,14 @@ import {
   type SetupStatus,
 } from '@bbartolome/scriba-contracts/setup-auth';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type Observable, map, Subject } from 'rxjs';
 import { APP_ROUTES } from '../app.routes';
+import { type ApiPath, parseResponse, type ResponseSchema } from './api-client';
 import { ApiError, CLIENT_ERROR_CODES } from './api-error';
+import { API_CLIENT } from './tokens';
 import {
   createShellTestDoubles,
+  FakeApiClient,
   type ShellTestDoubles,
 } from './testing/test-doubles';
 
@@ -110,5 +114,50 @@ describe('landing', () => {
       expect(alert?.textContent).toContain('Could not reach the server.');
     }, LOAD_WAIT);
     expect(TestBed.inject(Router).url).toBe('/');
+  }, 10000);
+
+  it('L-skel shows a skeleton for the version until its read answers', async () => {
+    const held = new Subject<unknown>();
+    class HoldingVersion extends FakeApiClient {
+      override get<T>(
+        path: ApiPath,
+        schema: ResponseSchema<T>,
+        params?: Record<string, string>,
+      ): Observable<T> {
+        if (path !== VERSION_ROUTE) return super.get(path, schema, params);
+        this.requests.push({ method: 'GET', path });
+        return held.pipe(map((body) => parseResponse(path, schema, body)));
+      }
+    }
+    const api = new HoldingVersion();
+    api.fail(
+      'GET',
+      SETUP_STATUS_ROUTE,
+      new ApiError(
+        0,
+        CLIENT_ERROR_CODES.NETWORK,
+        'Could not reach the server.',
+      ),
+    );
+    // Provided after the shell doubles, so it replaces their API_CLIENT.
+    TestBed.configureTestingModule({
+      providers: [{ provide: API_CLIENT, useValue: api }],
+    });
+    const harness = await RouterTestingHarness.create('/');
+    // The landing subscribes to its reads after a contract chunk loads, so wait for the subscriber.
+    await vi.waitFor(() => expect(held.observed).toBe(true), LOAD_WAIT);
+    harness.detectChanges();
+
+    const route = harness.routeNativeElement as HTMLElement;
+    expect(route.querySelector('[role="status"]')?.textContent).toContain(
+      'Loading',
+    );
+    expect(route.textContent).not.toContain('Platform version: 1.2.3');
+
+    held.next(version);
+    await vi.waitFor(() => {
+      harness.detectChanges();
+      expect(route.textContent).toContain('Platform version: 1.2.3');
+    }, LOAD_WAIT);
   }, 10000);
 });

@@ -5,6 +5,7 @@ import { type Observable } from 'rxjs';
 import { loadSetupStatusContract } from './contract-chunks';
 import { ACTIVE_PROJECT_PATH, activeProjectCopy } from './project-store-copies';
 import { healthzCopy, VERSION_PATH, versionInfoCopy } from './platform-copies';
+import { ShellSkeleton } from './skeleton';
 import { HEALTHZ_PATH } from './sse-envelope';
 import { API_CLIENT } from './tokens';
 
@@ -15,9 +16,13 @@ import { API_CLIENT } from './tokens';
  */
 @Component({
   selector: 'app-landing',
+  imports: [ShellSkeleton],
+  // The label, the value and the skeleton stay on one line with no whitespace between them, so the
+  // loaded text reads "Platform version: 1.2.3"; prettier must not re-wrap them.
+  // prettier-ignore
   template: `
-    <p>Platform version: {{ version() ?? 'loading' }}</p>
-    <p>Health: {{ health() ?? 'loading' }}</p>
+    <p>Platform version: @if (version(); as value) {{{ value }}} @else {<app-skeleton />}</p>
+    <p>Health: @if (health(); as value) {{{ value }}} @else {<app-skeleton />}</p>
     @if (error(); as message) {
       <p role="alert">{{ message }}</p>
     }

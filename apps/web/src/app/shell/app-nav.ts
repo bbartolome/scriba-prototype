@@ -45,6 +45,14 @@ function navItem(route: Route, href: string): NavItem | undefined {
   };
 }
 
+/** True when any route, at any depth, has a `data.nav` entry. */
+function hasNavEntry(routes: Routes): boolean {
+  return routes.some((route) => {
+    const data = route.data as Partial<ShellRouteData> | undefined;
+    return data?.nav !== undefined || hasNavEntry(route.children ?? []);
+  });
+}
+
 /**
  * The items of the route table. App entries always count; the children of the
  * project entry count only when the URL has a project id.
@@ -172,6 +180,9 @@ function navItems(routes: Routes, projectId: string | undefined): NavItem[] {
           </a>
         }
       </div>
+      @if (!hasFeatures) {
+        <p class="empty">No features registered.</p>
+      }
       <ng-content select="[nav-project]" />
     </nav>
   `,
@@ -184,6 +195,9 @@ export class AppNav {
   private readonly navigated = toSignal(
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)),
   );
+
+  /** Read once: the route table does not change while the app runs. */
+  protected readonly hasFeatures = hasNavEntry(this.router.config);
 
   protected readonly form = computed(() => FORMS[this.devices.deviceClass()]);
 
