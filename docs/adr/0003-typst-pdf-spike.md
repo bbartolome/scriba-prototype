@@ -4,11 +4,10 @@ Status: accepted.
 
 ## Context
 
-Unit CEX-13 (`units/CEX-13-pdf-typst-spike.md`) asks for PDF export through Typst, with no TeX install, and for a
+Unit CEX-13 asks for PDF export through Typst, with no TeX install, and for a
 quality spike before the format is relied on. The spike renders the nonfiction sample and a typographic stress
 fixture (`apps/api/test/fixtures/typst-spike/`) through the built-in template
-(`apps/api/assets/compile-export/typst-template.typst`), and compares the result with the checklist below. The plan
-is `plans/CEX-13.md`. The engine is Typst 0.15.1, the version the image and CI pin.
+(`apps/api/assets/compile-export/typst-template.typst`), and compares the result with the checklist below. The engine is Typst 0.15.1, the version the image and CI pin.
 
 ## Checklist
 

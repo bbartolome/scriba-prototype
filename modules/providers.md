@@ -44,7 +44,7 @@ MPR-01 contract slice  ══> phase:contract
 - Primary seam: the module in Platform's `create-test-app` against a temp library and Platform's mock OpenAI server (PLT-12).
 - UI seam: routes and the panel with Angular's Vitest runner against the Shell's fake API client (SHL-07) built from `/providers` types.
 - Real-model check: the Agent loop's manual eval script, not CI.
-- Until AGL-25 exists, the MPR-08 T2 procedure (plans/MPR-08.md section 4.2) serves as the providers module's real-model check.
+- Until AGL-25 exists, the MPR-08 T2 procedure serves as the providers module's real-model check.
 
 ### Out of scope
 - Native adapters (Ollama `/api/chat` with `num_ctx`, Anthropic, Google) — deferred; `kind` leaves room.
