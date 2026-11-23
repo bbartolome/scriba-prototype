@@ -5,7 +5,7 @@ Every file in this folder is one **unit of work**: one PR with self-contained co
 ## Modules
 
 | Prefix | Module (as named in blockers) | Slug (contracts subpath, `/api/<slug>/…`, `features/<slug>/`) | Wave | Milestones |
-|---|---|---|---|---|---|
+|---|---|---|---|---|
 | `PLT` | [Platform](../modules/platform.md) | `platform` | 0 | M1–M2 (examples check through M6) |
 | `SHL` | [Frontend shell](../modules/shell.md) | `shell` (no API, no events, empty slice) | 1 | M1–M3, M7 |
 | `SAU` | [Setup & auth](../modules/setup-auth.md) | `setup-auth` | 1 | M1–M3 |
@@ -137,5 +137,5 @@ SHL-22 (explicit wait timeouts in the load-sensitive specs), which blocks nothin
 - **`settings.yaml`:** Platform owns the envelope and the startup migration hook (PLT-07); each module owns its section (`projects`, `providers`, `tools`, `agent`, `setupAuth`) and its migration steps.
 - **Contracts** change by expand–contract once published. Persisted formats carry their own `schemaVersion`.
 - **Agent and recipe changes to book content** always become pending changes (Project store); the author's own typing saves directly. The app's own records (e.g. `logs/`) are written directly.
-- **Decisions** are recorded as ADRs in `docs/adr/`.
+- **Decisions:** settled design in each module file (`modules/`) and each unit's **Decisions** section; lasting architecture decisions as ADRs in `docs/adr/`; the append-only log of Navigator decisions, review results and unit changes in `plans/DECISIONS.md`; and each unit's smaller choices (names, file layout, test structure) in its plan, `plans/<ID>.md`.
 - **Testing:** external behaviour only (HTTP responses, SSE events, files on disk, rendered UI, what the mock model received), never internal services or private helpers. Vitest everywhere (NestJS via `unplugin-swc`). API tests boot the composed app with Platform's `create-test-app` against a temp library (and Platform's mock OpenAI server when a model is involved); UI tests render lazy routes with Angular's Vitest runner against the Shell's fakes (SHL-07). Unit tests never read `examples/`. Real models are checked only by the Agent loop's manual eval script (AGL-25), never in CI.
