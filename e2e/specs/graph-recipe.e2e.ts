@@ -2,8 +2,8 @@ import { readdir, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
-// GRR-17 criterion 1 (T1) and the Scope's sample run (S1), the extension of unit units/GRR-17-canvas-gate.md
-// (Scope line 17; criterion 1 at line 21). Plan: plans/GRR-17.md, sections 4.1, 4.2 and 4.3.
+// GRR-17 criterion 1 (T1) and the Scope's sample run (S1), the extension of unit GRR-17
+// (Scope line 17; criterion 1 at line 21). Plan: GRR-17 plan, sections 4.1, 4.2 and 4.3.
 // Desktop viewport, mouse gestures, form fields and the input-values dialog. The setup (sign-in, provider,
 // app default, start from sample, activation) is HTTP and is not part of the criterion. Criteria 3 and 4 are
 // not tested here (DECISIONS 2026-11-20 GRR-17).

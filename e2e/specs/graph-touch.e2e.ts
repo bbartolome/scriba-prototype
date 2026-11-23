@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type CDPSession, type Page } from '@playwright/test';
 
-// GRR-15's touch checks (unit criterion 1, and the touch Decision of unit line 15). Plan: plans/GRR-15.md, section 5
+// GRR-15's touch checks (unit criterion 1, and the touch Decision of unit line 15). Plan: GRR-15 plan, section 5
 // (T1 to T4 and T8) and section 4, step 6. A tablet viewport (1024 by 768 is the CDK's tablet class) with touch
 // emulation. The gestures are CDP touch sequences (Input.dispatchTouchEvent), since page.touchscreen only taps.
 // Each test seeds its own library project and rewrites its file, so the order of the tests does not matter. The

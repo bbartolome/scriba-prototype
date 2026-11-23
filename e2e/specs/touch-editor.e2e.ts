@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
-// SHL-15's touch checks (unit lines 22 and 23). Plan: plans/SHL-15.md, section 4, tests C2 and X2.
+// SHL-15's touch checks (unit lines 22 and 23). Plan: SHL-15 plan, section 4, tests C2 and X2.
 // A tablet viewport (1024 by 768 is the CDK's tablet class) with touch emulation. Each test seeds its own
 // library project and rewrites its file, so the order of the tests does not matter.
 test.use({ viewport: { width: 1024, height: 768 }, hasTouch: true });

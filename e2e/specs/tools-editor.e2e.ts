@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Page, type Response } from '@playwright/test';
 
-// TRG-14's running-app checks (unit criteria 1 and 4). Plan: plans/TRG-14.md, section 5, tests E1 and E2.
+// TRG-14's running-app checks (unit criteria 1 and 4). Plan: TRG-14 plan, section 5, tests E1 and E2.
 // The composed app the harness starts. The cold-open fixture goes into the library's user pack, which the
 // tool registry serves, so the harness and the root package.json stay unchanged.
 

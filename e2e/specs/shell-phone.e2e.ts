@@ -5,7 +5,7 @@ import { expect, type Locator, type Page, test } from '@playwright/test';
 
 // SHL-19's criterion 2 (unit line 22): the e2e phone-viewport check passes. At 390 by 844 the bottom nav
 // shows Review, the review opens and Accept writes the proposed text, and the typed text is saved byte
-// for byte (the typing leg is OP-2). Plan: plans/SHL-19.md, section 4 (test P).
+// for byte (the typing leg is OP-2). Plan: SHL-19 plan, section 4 (test P).
 test.use({ viewport: { width: 390, height: 844 } });
 
 const PROJECT = 'shell-phone';

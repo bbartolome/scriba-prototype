@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { expect, test, type Locator } from '@playwright/test';
 
 // PST-14's criterion 3 (unit line 24): at 390 by 844, the search box of the files page is reachable,
-// its results open the file, and the page does not scroll sideways. Plan: plans/PST-14.md, section 4 (T3).
+// its results open the file, and the page does not scroll sideways. Plan: PST-14 plan, section 4 (T3).
 test.use({ viewport: { width: 390, height: 844 } });
 
 /** Visible, enabled, and fully inside the viewport after it is scrolled into view. */

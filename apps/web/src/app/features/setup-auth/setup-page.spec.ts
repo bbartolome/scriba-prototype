@@ -67,7 +67,7 @@ const complete = {
 const LOOPBACK_TEXT = 'Signed in from this computer (loopback).';
 const TAILNET_TEXT = 'Signed in over the tailnet as ada@example.com.';
 const IN_TEXT = "You're in.";
-// SAU-10 units/SAU-10-compose-version-status.md line 21: the re-run-the-installer one-liner.
+// SAU-10 unit line 21: the re-run-the-installer one-liner.
 const COMPOSE_ONE_LINER =
   'docker run --rm -e SETUP=true bbartolome/scriba | bash';
 const SIGN_IN_COMMANDS = [

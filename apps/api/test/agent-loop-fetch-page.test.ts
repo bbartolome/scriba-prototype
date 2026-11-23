@@ -38,8 +38,8 @@ import {
 import type { Observer } from './invariant-sweep';
 import type { ProjectsLibrary } from './project-store-projects.kit';
 
-// The AGL-22 criteria (unit units/AGL-22-fetch-page.md lines 24 to 26) and the decision tests D1 to D5 of
-// plans/AGL-22.md section 4. Each test opens its own composed app with the mock model, and its own temp library.
+// The AGL-22 criteria (unit AGL-22 lines 24 to 26) and the decision tests D1 to D5 of
+// AGL-22 plan section 4. Each test opens its own composed app with the mock model, and its own temp library.
 // The successful fetches reach the stub through the test-only allowance of agent-loop-fetch.kit.ts; the literal
 // refusal rows of AC1 run without it.
 

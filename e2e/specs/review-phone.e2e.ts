@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
 // PST-20's criterion 2 (unit line 24): at 390 by 844, the review queue lists the open changes, shows a
-// diff, and accepts and rejects a change, with no sideways scroll. Plan: plans/PST-20.md, section 4 (E1).
+// diff, and accepts and rejects a change, with no sideways scroll. Plan: PST-20 plan, section 4 (E1).
 test.use({ viewport: { width: 390, height: 844 } });
 
 /** Visible, enabled, and fully inside the viewport after it is scrolled into view. */

@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
-// GRR-15's large-graph measurement (unit criterion 3, unit lines 17 and 22). Plan: plans/GRR-15.md, section 5 (T7),
+// GRR-15's large-graph measurement (unit criterion 3, unit lines 17 and 22). Plan: GRR-15 plan, section 5 (T7),
 // section 4 steps 7 and 12. Desktop viewport, no touch. The test runs only when SCRIBA_E2E_MEASURE=1 is set: it is a
 // load-sensitive measurement, recorded once in the PR, and the CI suite does not repeat it. The helpers are copies,
 // not imports.

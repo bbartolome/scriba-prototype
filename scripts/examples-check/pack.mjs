@@ -67,7 +67,7 @@ function checkEntities(ctx, sample) {
   const issues = [];
 
   for (const record of records) {
-    if (record.error !== null) continue; // PLT-20 reports the file (plans/PLT-20.md D10).
+    if (record.error !== null) continue; // PLT-20 reports the file (PLT-20 plan D10).
     const stemId = stemOf(record.file);
     if (!hasStringId(record.frontMatter)) {
       if (!ctx.contracts.ENTITY_ID_PATTERN.test(stemId)) {

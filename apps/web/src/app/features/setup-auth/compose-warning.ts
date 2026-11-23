@@ -1,7 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import type { ComposeVersionStatus } from '@bbartolome/scriba-contracts/setup-auth';
 
-/** The update one-liner (units/SAU-10-compose-version-status.md line 21; scripts/entrypoint.sh line 20). */
+/** The update one-liner (SAU-10 unit line 21; scripts/entrypoint.sh line 20). */
 export const COMPOSE_UPDATE_COMMAND =
   'docker run --rm -e SETUP=true bbartolome/scriba | bash';
 

@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-// GRR-15's styling check (unit criterion 2). Plan: plans/GRR-15.md, section 5 (T5, T6 and T9). Desktop viewport.
+// GRR-15's styling check (unit criterion 2). Plan: GRR-15 plan, section 5 (T5, T6 and T9). Desktop viewport.
 // Each test seeds its own library project and its own graph file, so the order of the tests does not matter. The
 // expected colours are read from the theme itself: a probe element takes the token, and its computed value is
 // the expected value, so no literal colour is written here. The helpers are copies, not imports.

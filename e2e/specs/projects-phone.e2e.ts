@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { expect, test, type Locator } from '@playwright/test';
 
 // PST-09's criterion 2 (unit line 30): at 390 by 844, every action of the project picker is reachable and
-// the page does not scroll sideways. Plan: plans/PST-09.md, section 3 step 7 (test E2).
+// the page does not scroll sideways. Plan: PST-09 plan, section 3 step 7 (test E2).
 test.use({ viewport: { width: 390, height: 844 } });
 
 /** Visible, enabled, and fully inside the viewport after it is scrolled into view. */

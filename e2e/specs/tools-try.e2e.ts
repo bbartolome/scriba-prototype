@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Page } from '@playwright/test';
 
-// TRG-16's running-app check (unit line 22). Plan: plans/TRG-16.md, section 4, step 9 and test E1.
+// TRG-16's running-app check (unit line 22). Plan: TRG-16 plan, section 4, step 9 and test E1.
 // The composed app the harness starts, with the mock OpenAI server behind the app default. The cold-open
 // fixture goes into the library's user pack, as the TRG-05 spec does; this spec does not import that one.
 

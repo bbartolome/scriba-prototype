@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
-// GRR-12's gesture check (unit criterion 4). Plan: plans/GRR-12.md, section 6 (T4) and C-13. Desktop viewport, no
+// GRR-12's gesture check (unit criterion 4). Plan: GRR-12 plan, section 6 (T4) and C-13. Desktop viewport, no
 // touch. The test seeds its own library project and its own graph file. The helpers are copies of
 // graph-wires.e2e.ts and tools-preview.e2e.ts, not imports (as GRR-11 did). Gestures are real mouse drags: a
 // chip of the side list is dragged onto a port row of the tool node.

@@ -1,8 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-// SHL-20's one criterion (units/SHL-20-phone-toolbar.md line 32): at 390 by 844, with the connection
+// SHL-20's one criterion (SHL-20 unit line 32): at 390 by 844, with the connection
 // label showing, the page does not scroll sideways, and the heading, the label and the theme toggle
-// are each fully inside the viewport. Plan: plans/SHL-20.md, sections 4 and 5.
+// are each fully inside the viewport. Plan: SHL-20 plan, sections 4 and 5.
 const VIEWPORT = { width: 390, height: 844 };
 
 test.use({ viewport: VIEWPORT });
