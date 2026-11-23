@@ -9,9 +9,9 @@ Use Node 26 (`.nvmrc`) and the npm version in `packageManager`.
 ```sh
 npm ci          # install every workspace from the lock file
 npm run dev     # build contracts and the API, then watch and serve everything
-npm run build   # contracts, then API, web and packs
+npm run build   # contracts, then API, web, packs and e2e
 npm test        # every workspace, then the scripts/*.test.mjs checks
-npm run lint    # every workspace, then prettier --check .
+npm run lint    # every workspace, then the example and pack checks, then prettier --check .
 ```
 
 `npm run dev` serves the Angular dev server at `http://localhost:4200`. It proxies `/api`, `/healthz` and `/events` to the API. The dev API listens on `0.0.0.0:8080`, and it keeps its library in `.scriba-dev/` (git-ignored).
