@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { expect, test, type Locator } from '@playwright/test';
 
 // MPR-11's criterion 2 (unit line 22): at 390 by 844 the Providers nav item opens the page, the page fits, and the
-// app default switches there. Plan: plans/MPR-11.md, section 4 (test E1).
+// app default switches there. Plan: MPR-11 plan, section 4 (test E1).
 test.use({ viewport: { width: 390, height: 844 } });
 
 const origin = 'http://127.0.0.1:8080';

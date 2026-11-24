@@ -4,7 +4,7 @@ Status: draft. Records the TRG-05 spike gate: the vocabulary check, the outcome 
 
 ## Context
 
-Unit TRG-05 (`units/TRG-05-spike-gate.md`) is the spike gate of the Tool registry's `phase:form-renderer`. It renders one workhorse tool, the registry's cold-open fixture (`apps/api/test/fixtures/packs/core/tools/cold_open.yaml`), in two layouts on the `/tools` dev preview: the form layout and the node body, both `ToolForm` (`layout="form"` and `layout="node-body"`). The preview reads the tool once from `GET /api/tool-registry/tools/cold_open`, and its submit posts the form's arguments to `POST /api/tool-registry/tools/cold_open/validate` in `full` mode. The units it builds on are TRG-02 (the registry API and the emitted views), TRG-03 (the Shell and the `/tools` route) and TRG-04 (the entity picker and its drag and drop).
+Unit TRG-05 is the spike gate of the Tool registry's `phase:form-renderer`. It renders one workhorse tool, the registry's cold-open fixture (`apps/api/test/fixtures/packs/core/tools/cold_open.yaml`), in two layouts on the `/tools` dev preview: the form layout and the node body, both `ToolForm` (`layout="form"` and `layout="node-body"`). The preview reads the tool once from `GET /api/tool-registry/tools/cold_open`, and its submit posts the form's arguments to `POST /api/tool-registry/tools/cold_open/validate` in `full` mode. The units it builds on are TRG-02 (the registry API and the emitted views), TRG-03 (the Shell and the `/tools` route) and TRG-04 (the entity picker and its drag and drop).
 
 The fixture reaches the running app through the library's user pack (`<library>/.scriba/packs/user/tools/cold_open.yaml`), which the tool registry serves. So the e2e harness and the root `package.json` are unchanged.
 

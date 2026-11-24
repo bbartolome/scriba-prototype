@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
-// AGL-19 T2 (unit line 22). Plan: plans/AGL-19.md, section 4.3 and section 4.2 (the scripted turns).
+// AGL-19 T2 (unit line 22). Plan: AGL-19 plan, section 4.3 and section 4.2 (the scripted turns).
 // The grounding check of the nonfiction sample's chapter 4 draft, on a fresh copy made by "start from
 // sample", against the grounding-claims mock scenario. Named so that it sorts after every other spec
 // (plan section 1, D-ORDER): journey.e2e.ts must run first.

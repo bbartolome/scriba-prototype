@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
 // SHL-18's criterion 2 (unit line 21): the documented shortcuts navigate between nav entries and save
-// in the editor. Plan: plans/SHL-18.md, section 4, test T2. The config's desktop viewport applies.
+// in the editor. Plan: SHL-18 plan, section 4, test T2. The config's desktop viewport applies.
 // Each run seeds its own library project and rewrites its file, so the order of the tests does not matter.
 
 const PROJECT = 'polish-book';

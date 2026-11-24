@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
-// GRR-11's gesture checks (unit criterion 2, line 27). Plan: plans/GRR-11.md, section 4 (T2 and E2). Desktop
+// GRR-11's gesture checks (unit criterion 2, line 27). Plan: GRR-11 plan, section 4 (T2 and E2). Desktop
 // viewport, no touch. Each test seeds its own library project and its own graph file. The helpers are copies
 // of graph-canvas.e2e.ts, not imports (as TRG-14 does). Gestures are mouse drags with intermediate moves.
 test.use({ viewport: { width: 1280, height: 800 } });

@@ -2,10 +2,10 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
-// SHL-23's criteria 1 and 2 (units/SHL-23-phone-bottom-nav-fit.md lines 29 and 30): at 390 by 844,
+// SHL-23's criteria 1 and 2 (SHL-23 unit lines 29 and 30): at 390 by 844,
 // with the ten phone nav items shown, the page does not scroll sideways (N1), and each of the ten
 // bottom nav links stays visible, shrunk, with its label truncated, and none overlaps the title (N2).
-// Plan: plans/SHL-23.md, sections 4 and 6.
+// Plan: SHL-23 plan, sections 4 and 6.
 test.use({ viewport: { width: 390, height: 844 } });
 
 const PROJECT = 'nav-phone';

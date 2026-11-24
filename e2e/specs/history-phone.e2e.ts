@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { expect, test, type Locator } from '@playwright/test';
 
 // PST-21's criterion 2 (unit line 20): at 390 by 844, the version history of a draft works as a
-// read-only list and diff, and the page does not scroll sideways. Plan: plans/PST-21.md, section 4 (E1).
+// read-only list and diff, and the page does not scroll sideways. Plan: PST-21 plan, section 4 (E1).
 test.use({ viewport: { width: 390, height: 844 } });
 
 /** Visible, enabled, and fully inside the viewport after it is scrolled into view. */

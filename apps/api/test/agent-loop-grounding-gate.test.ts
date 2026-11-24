@@ -25,7 +25,7 @@ import {
 } from './agent-loop-transcript.kit';
 import type { ProjectsLibrary } from './project-store-projects.kit';
 
-// The AGL-20 gate tests, plan `plans/AGL-20.md` sections 4.1 (criterion 1) and 4.2 (criterion 3). They call the
+// The AGL-20 gate tests, AGL-20 plan sections 4.1 (criterion 1) and 4.2 (criterion 3). They call the
 // production route POST /api/agent-loop/grounding on the composed app, with the mock model scripted. The helpers are
 // copied from agent-loop-grounding-wiring.test.ts (plan D9); nothing is imported from another test file.
 

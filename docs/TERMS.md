@@ -1,0 +1,29 @@
+# Terms
+
+Scriba stores its settings in YAML files. YAML is a plain text format. The API (application programming interface) is the server part of Scriba. Each term below has one meaning in all Scriba documents and in the code.
+
+| Term             | Meaning                                                                                                                                                                                                    |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Library          | The folder that holds all projects and the `.scriba` folder. The default is `~/Books`.                                                                                                                     |
+| Project          | One book. A project is a folder in the library that has a `project.yaml` file.                                                                                                                             |
+| Source           | A file in the `sources/` folder. It holds notes or reference material.                                                                                                                                     |
+| Entity           | A file in the `entities/` folder. It describes one item of the book, such as a person or a place.                                                                                                          |
+| Draft            | A manuscript file in the `drafts/` folder.                                                                                                                                                                 |
+| Pending change   | A proposed change to a project file. The agent or a recipe creates it. You accept or reject it.                                                                                                            |
+| Snapshot         | A saved copy of the manuscript at one time.                                                                                                                                                                |
+| Tool             | A named action that the agent or a recipe can run. A tool spec, a YAML file, defines it.                                                                                                                   |
+| Genre pack       | A set of tools and entity types for one kind of book.                                                                                                                                                      |
+| Story graph      | A diagram that links scenes, beats and entities. A beat is one unit of the story, such as a turning point. A story graph does not run.                                                                     |
+| Recipe           | A runnable graph of input, tool and output steps.                                                                                                                                                          |
+| Provider         | A connection to a model service.                                                                                                                                                                           |
+| Model service    | A service that runs an AI language model.                                                                                                                                                                  |
+| Module           | One part of Scriba with one responsibility.                                                                                                                                                                |
+| Image tag        | The name of one image version, for example `latest`.                                                                                                                                                       |
+| Setup URL        | The web address (URL) that gives the setup cookie to a browser on the computer that runs Scriba. Before setup, it opens the first-run setup. After setup, it opens Scriba. Scriba prints it at each start. |
+| Setup token      | The secret in the setup URL. Scriba keeps it in `.scriba/setup-token`. A person who has the setup URL also has the setup token.                                                                            |
+| Setup cookie     | A cookie that lets a browser use Scriba. The browser keeps it after setup.                                                                                                                                 |
+| Tailnet          | The private network that Tailscale creates for your devices.                                                                                                                                               |
+| Tailnet identity | The login of a tailnet user. Tailscale gives it to the API.                                                                                                                                                |
+| Allowlist        | The list of tailnet logins that can use Scriba. It is off by default.                                                                                                                                      |
+| Origin check     | The API check of the Origin header. The header of each request that changes data must match the host.                                                                                                      |
+| Web feature      | A folder of screens for one module in the web app.                                                                                                                                                         |

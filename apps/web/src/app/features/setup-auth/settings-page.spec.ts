@@ -43,7 +43,7 @@ const version = {
   composeVersion: 3,
 } satisfies VersionInfo;
 
-// The one-liner of units/SAU-10-compose-version-status.md line 21, written out here, so that a typo
+// The one-liner of SAU-10 unit line 21, written out here, so that a typo
 // in COMPOSE_UPDATE_COMMAND fails this test.
 const COMPOSE_ONE_LINER =
   'docker run --rm -e SETUP=true bbartolome/scriba | bash';

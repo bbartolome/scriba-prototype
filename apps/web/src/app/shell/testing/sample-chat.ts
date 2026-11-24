@@ -9,7 +9,7 @@ import {
   type ToolCallView,
 } from '../index';
 
-// Illustrative. The shapes below follow the AGL-01 events (decisions D3 to D7 of plans/AGL-01.md
+// Illustrative. The shapes below follow the AGL-01 events (decisions D3 to D7 of AGL-01 plan
 // and events.ts in the agent-loop contract). They are hand-written, and `data` is read as unknown,
 // because the Shell never imports /agent-loop (modules/shell.md, Cross-cutting decisions: "It never consumes `/agent-loop`").
 

@@ -40,7 +40,7 @@ const OK_CROSS_FEATURE =
 const OK_CONTRACTS_AGENT_LOOP =
   'apps/api/src/modules/agent-loop/ok-contracts.ts';
 
-// The ten contracts subpaths (PLT-02, units/PLT-02-contracts-package-platform-slice.md line 19).
+// The ten contracts subpaths (PLT-02 unit line 19).
 const CONTRACT_SLUGS = [
   'platform',
   'setup-auth',

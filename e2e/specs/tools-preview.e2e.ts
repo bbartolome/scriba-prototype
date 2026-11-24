@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-// TRG-05's running-app checks (unit lines 21 and 22). Plan: plans/TRG-05.md, section 4, tests T1 and T2.
+// TRG-05's running-app checks (unit lines 21 and 22). Plan: TRG-05 plan, section 4, tests T1 and T2.
 // The composed app the harness starts. The cold-open fixture goes into the library's user pack, which the
 // tool registry serves (plan F-A), so the harness and the root package.json stay unchanged.
 

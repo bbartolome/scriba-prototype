@@ -1,4 +1,4 @@
-// semantic-release plugin for PLT-19 (plans/PLT-19.md, D4).
+// semantic-release plugin for PLT-19 (PLT-19 plan, D4).
 // In the plan job it records the version a dry run would release, for scripts/publish-plan.sh.
 // In the release job it refuses a release whose version differs from the version already
 // built into the image, before any tag exists.

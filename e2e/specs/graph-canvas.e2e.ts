@@ -2,7 +2,7 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 
-// GRR-10's gesture checks (unit lines 25 to 27, criteria 2 and 3). Plan: plans/GRR-10.md, section 4, tests 2 and 3.
+// GRR-10's gesture checks (unit lines 25 to 27, criteria 2 and 3). Plan: GRR-10 plan, section 4, tests 2 and 3.
 // Desktop viewport, no touch. Each test seeds its own library project and its own graph file, so the order of
 // the tests does not matter. The gestures are mouse drags, with intermediate moves so that d3-drag and the
 // library's connection see a drag.

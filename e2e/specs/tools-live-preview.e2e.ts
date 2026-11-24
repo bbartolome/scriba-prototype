@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test, type Page, type Request } from '@playwright/test';
 
-// TRG-15's running-app checks (unit lines 21 and 22). Plan: plans/TRG-15.md, section 4, step 8 and section 5.1.
+// TRG-15's running-app checks (unit lines 21 and 22). Plan: TRG-15 plan, section 4, step 8 and section 5.1.
 // The composed app the harness starts. The cold-open fixture goes into the library's user pack as `live_probe`, so
 // the Source tab of that user row is editable and the panel reads its /user views (TRG-15 D4).
 

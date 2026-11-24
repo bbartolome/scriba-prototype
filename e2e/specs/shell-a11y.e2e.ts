@@ -5,7 +5,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
 // SHL-19's criterion 1 (unit line 21): an automated accessibility check of the Shell (nav, landing,
-// notices, editor, diff, card) reports no serious violation in either theme. Plan: plans/SHL-19.md,
+// notices, editor, diff, card) reports no serious violation in either theme. Plan: SHL-19 plan,
 // section 4 (test A, steps A1 to A6), and the extra focus test F1 (U17, D16).
 
 const PROJECT = 'shell-a11y';

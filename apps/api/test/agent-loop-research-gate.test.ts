@@ -40,7 +40,7 @@ import {
 import type { Observer } from './invariant-sweep';
 import type { ProjectsLibrary } from './project-store-projects.kit';
 
-// The AGL-23 criteria (unit units/AGL-23-research-gate.md lines 17 to 20) and the plan of plans/AGL-23.md section 4.
+// The AGL-23 criteria (unit AGL-23 lines 17 to 20) and the AGL-23 plan, section 4.
 // Each test opens its own app with the mock model and its own temp library. The successful fetches reach the page
 // stub through the test-only allowance of agent-loop-fetch.kit.ts; the refusal rows of AC3 part (a) run without it.
 // The helpers are copied from agent-loop-fetch-page.test.ts and agent-loop-web-search.test.ts (plan P2); nothing is

@@ -1,87 +1,136 @@
 # Scriba
 
-This monorepo holds an Angular web app (`apps/web`), a NestJS API (`apps/api`), shared contracts (`packages/contracts`) and genre packs (`packages/packs`).
+Scriba is a tool for writing books. A book is a set of plain files in a folder on your computer. You write in the app. You can also ask an artificial intelligence (AI) agent for help.
+
+The agent does not change your files directly. It creates pending changes. You accept or reject each pending change. Your typing saves immediately.
+
+Scriba has one owner. It runs on your computer. You can use it from that computer, or from a phone over a private Tailscale network. In this README, that private network is called the tailnet.
+
+The terms in this README have the meanings given in [Terms](docs/TERMS.md).
+
+## What Scriba does
+
+- Creates and opens book projects. Each project is one book.
+- Shows and edits the files of a project.
+- Searches the sources and entities of a project by keyword.
+- Shows pending changes. You accept or reject each change.
+- Keeps the version history of each draft.
+- Runs a chat panel. The agent writes and edits text in the panel.
+- Checks drafts against their sources (the grounding check).
+- Shows a graph canvas. You build story graphs and run recipes on it.
+- Lists the tools. You can set a tool as active or inactive, change its settings and try it.
+- Shows the manuscript. It runs five preflight checks (checks that run before export), takes snapshots and exports the book.
+- Exports the manuscript to Markdown, Word (DOCX), EPUB (an e-book format) and PDF (Portable Document Format) files.
+- Makes the connections to model services. Each connection is a provider.
 
 ## Getting started
 
-Use Node 26 (`.nvmrc`) and the npm version in `packageManager`.
+Use Node.js 26, as set in `.nvmrc`. Use the npm version in the `packageManager` field of `package.json`.
 
 ```sh
 npm ci          # install every workspace from the lock file
 npm run dev     # build contracts and the API, then watch and serve everything
-npm run build   # contracts, then API, web and packs
+npm run build   # contracts, then API, web, packs and e2e
 npm test        # every workspace, then the scripts/*.test.mjs checks
-npm run lint    # every workspace, then prettier --check .
+npm run lint    # every workspace, then the example and pack checks, then prettier --check .
 ```
 
-`npm run dev` serves the Angular dev server at `http://localhost:4200`. It proxies `/api`, `/healthz` and `/events` to the API. The dev API listens on `0.0.0.0:8080`, and it keeps its library in `.scriba-dev/` (git-ignored).
+`npm run dev` starts the web app at `http://localhost:4200`. The development API (application programming interface) server listens on `0.0.0.0:8080`. The Angular development server forwards `/api`, `/healthz` and `/events` requests to it. The development API server keeps its library in `.scriba-dev/`, which Git ignores.
 
-`SCRIBA_DEV_AUTH=1` is a dev mode that `npm run dev` sets. It skips the setup cookie and the Origin check on the API, so a local run needs no setup URL step. The flag is local only: the boot refuses it when `NODE_ENV=production` (exit 1), and no image or compose file sets it. With the flag on, any device that can reach port 8080 can call the API without the setup cookie, and any web page open in the browser can send POST requests to the local API.
+`SCRIBA_DEV_AUTH=1` is a development mode, and `npm run dev` sets it. It skips the setup cookie check and the Origin check on the API. This flag is local only. When `NODE_ENV=production`, the API refuses to start with this flag, and it exits with code 1. No image or compose file sets it. With the flag on, any device that can reach port 8080 can call the API. A web page open in the browser can also send POST requests (requests that send data) to the local API.
+
+For the architecture, the module list and the design rules, read [Architecture](docs/ARCHITECTURE.md). To add a module, run the tests or deliver a change, read [Development](docs/DEVELOPMENT.md).
 
 ## Install, update and roll back
 
-The installer is one command. It writes a `.env` and a compose file into the folder you run it in, and it starts the stack.
+The installer runs with one command. It writes a `.env` file and a compose file in the folder where you run it. That folder is the install folder. The installer then starts the stack. The stack is the two containers, `scriba` and `tailscale`. You need Docker and Docker Compose 2.24 or later. Run the installer as your own user, not as root.
 
 ### Install
 
-Run this in an empty folder:
+First run `docker pull bbartolome/scriba`. Then run this command in an empty folder:
 
 ```sh
 docker run --rm -e SETUP=true bbartolome/scriba | bash
 ```
 
-The first run asks for the library folder and the web port. It then starts the stack and prints the web address.
+The first run asks for the library folder and the web port. Then it starts the stack and shows the setup URL (the web address of the first-run setup).
 
 ### Update
 
-Run the same one-liner in the install folder. The update asks nothing. Before it writes anything, it backs up `.env` to `.env.bak.<stamp>` and `compose.yaml` to `compose.yaml.bak.<stamp>`, where `<stamp>` is the UTC time of the run, such as `20261114T093000Z`.
+First run `docker pull bbartolome/scriba`. Then run the same command in the install folder. The update does not ask questions. Before it writes files, it makes two backups.
 
-The update then:
+- It copies `.env` to `.env.bak.<stamp>`.
+- It copies `compose.yaml` to `compose.yaml.bak.<stamp>`.
 
-- keeps the values in `.env`, except `SCRIBA_IMAGE_TAG`, which takes the release's tag, and `SCRIBA_COMPOSE_VERSION`, which takes the new version; new keys are added;
-- replaces `compose.yaml` with the release's file. Put local edits in `compose.override.yaml`, which the installer never writes;
-- pulls the image, then starts the stack and waits for `scriba` to be healthy.
+`<stamp>` is the Coordinated Universal Time (UTC) of the run, for example `20261114T093000Z`.
 
-A re-run is safe to repeat. A second run changes nothing except one more pair of backups. If the pull fails, the failure is printed, and the update goes on to `docker compose up -d`, which fails if the image is absent.
+Then the update does three things.
 
-For a quick update, run `docker compose pull && docker compose up -d` in the install folder. It moves the image only when `SCRIBA_IMAGE_TAG` names a tag that moves, such as `latest`, or after a re-run has written a new release tag. A pinned install updates by re-running the one-liner.
+- It keeps the values in `.env`. It takes the new release values for `SCRIBA_IMAGE_TAG` and `SCRIBA_COMPOSE_VERSION`. It adds new keys.
+- It replaces `compose.yaml` with the release file. Put your own changes in `compose.override.yaml`. The installer never writes that file.
+- It pulls the image. Then it starts the stack and waits until `scriba` is healthy.
+
+A second run changes nothing except one more pair of backups. If the pull fails, the failure is printed. The update then runs `docker compose up -d`. That command fails if the image is missing.
+
+For a quick update, run `docker compose pull && docker compose up -d` in the install folder. This command pulls the images of both containers. It gets new images only when `SCRIBA_IMAGE_TAG` names a tag such as `latest`, which changes over time. If `SCRIBA_IMAGE_TAG` names a fixed version, run the install command again to get the new release.
 
 ### Stop and start
 
-A stopped stack is started again with `docker compose restart` in the install folder. Docker restarts only the `tailscale` container, not `scriba`, so if the app stops answering after `tailscale` restarts on its own, run `docker compose restart` in the install folder.
+Start a stopped stack with `docker compose restart` in the install folder.
+
+Docker restarts the `tailscale` container when that container stops by itself. Docker does not restart `scriba` at the same time. If the app then stops answering, run `docker compose restart` in the install folder.
 
 ### Roll back
 
-A re-run cannot roll back, because it writes the one-liner's own tag. A rollback is done by hand, and a later re-run moves the tag forward again. `<stamp>` is the timestamp in a backup's name.
+Running the install command again does not roll back. The command sets the tag to the newest release. Roll back by hand. `<stamp>` is the timestamp in a backup file name.
 
-1. Set `SCRIBA_IMAGE_TAG` in `.env` to the older tag, or copy `.env.bak.<stamp>` back over `.env`.
-2. If the older release needs an older compose file, copy `compose.yaml.bak.<stamp>` back over `compose.yaml`.
+1. Set `SCRIBA_IMAGE_TAG` in `.env` to the older tag.
+   - Or copy `.env.bak.<stamp>` over `.env`.
+2. If the older release needs an older compose file, copy `compose.yaml.bak.<stamp>` over `compose.yaml`.
 3. Run `docker compose up -d` in the install folder.
-4. Check that `scriba` is healthy with `docker compose ps`.
+4. Run `docker compose ps`.
+   - Check that `scriba` shows `healthy`.
 
 ## Recovery
 
-If you cannot get into Scriba, use the computer that runs it. The setup link is printed there at each start.
+Use this section if you cannot open Scriba. Use the computer that runs Scriba. Scriba prints the setup URL there at each start.
 
-1. Re-open the setup URL: `cat ~/Books/.scriba/setup-url`, or find it in `docker compose logs scriba`.
-2. Replace a leaked token: delete `~/Books/.scriba/setup-token`, then run `docker compose restart` in the install folder. Scriba makes a new token and rewrites `~/Books/.scriba/setup-url`, and every existing cookie stops working.
-3. Last resort: stop the stack with `docker compose stop`, then delete the contents of `~/Books/.scriba/` (settings, secrets, search indexes, your own tool packs in `packs/user/`, and the setup token), and start the stack again with `docker compose restart`. Your projects are not touched.
-4. Allowlist locked out a tailnet device: use the Mac and the setup URL.
+1. Open the setup URL in a browser on the computer that runs Scriba.
+   - To find the URL, run `cat ~/Books/.scriba/setup-url`.
+   - Or find it in the output of `docker compose logs scriba`.
+2. If another person has the setup URL or the setup token, delete `~/Books/.scriba/setup-token`.
+   - Run `docker compose restart` in the install folder. Scriba makes a new token and writes a new `~/Books/.scriba/setup-url`. Every existing cookie stops working.
+3. If steps 1 and 2 do not help, reset the app data. Your projects are not touched.
+   - Run `docker compose stop` in the install folder.
+   - Delete the contents of `~/Books/.scriba/`.
+   - The contents are the settings, the secrets, the search index, the setup token and the setup URL.
+   - Your own tools in `packs/user/` are also deleted.
+   - Run `docker compose restart`.
+4. If the allowlist refuses a tailnet device, open the setup URL on the computer that runs Scriba.
 
-The paths assume the default library folder `~/Books`. For another folder, use the `.scriba` folder inside the `SCRIBA_LIBRARY` value in `.env`.
-
-## Adding a module
-
-Each module has a contract slice, an API module and, when it has a screen, a web feature. Follow these steps.
-
-1. **Contract slice.** Fill in the existing `packages/contracts/src/<slug>/index.ts`; its folder and its `./<slug>` key in the `exports` map of `packages/contracts/package.json` already exist for all ten subpaths. Module slugs are fixed in `MODULE_SLUGS` (`packages/contracts/src/platform/slugs.ts`). The package has no root barrel, so import only a subpath, such as `@bbartolome/scriba-contracts/<slug>`.
-2. **Compose the API module.** Add the Nest module under `apps/api/src/modules/<slug>/` and add one line to `COMPOSED_MODULES` in `apps/api/src/app.module.ts`.
-3. **Routes.** Serve HTTP routes under `/api/<slug>/`. Define each route path as a constant in the contract slice, as the platform does with `ECHO_ROUTE`.
-4. **Events.** Publish through `EventsPublisher`, which the platform entry file (`apps/api/src/modules/platform/platform.module.ts`) exports. The envelope's `module` is your slug.
-5. **Errors.** Throw `ModuleError(code, status, message, details?)`, also exported from the platform entry file. Each code is SCREAMING_SNAKE_CASE with your module prefix, such as `PLATFORM_NOT_FOUND`. Declare the codes in your contract slice.
-6. **Settings.** Register your section with `SettingsService.register(def)` before boot. The section key must be one of `SETTINGS_SECTION_KEYS` in `packages/contracts/src/platform/settings.ts`, so a new section adds a key there.
-7. **Tests.** Boot the app with `createTestApp` from `apps/api/test/create-test-app.ts`. It serves the composed app on `127.0.0.1` with an ephemeral port and a temporary library. Pass `modules` to replace `COMPOSED_MODULES` in a test.
+The paths assume the default library folder `~/Books`. For another folder, use the `.scriba` folder in the folder that `SCRIBA_LIBRARY` in `.env` names.
 
 ## Security notes
 
-The app controls tailscaled through the shared socket. This is accepted for a single owner.
+The app controls tailscaled through the shared socket. This is accepted for a single owner. Tailscaled is the Tailscale daemon. It runs in the `tailscale` container. The shared socket is the connection that the app uses to control it.
+
+- The API accepts a request only when its `Host` header names an admitted host. These are `127.0.0.1`, `localhost`, the development origins and the Tailscale name when Tailscale runs. A development origin is a web address of the development web app.
+- The allowlist is the list of tailnet logins that can use Scriba. It is off by default.
+- Each request that changes data must send an `Origin` header. The header must match the host.
+- The setup cookie is `HttpOnly`, so a script in a web page cannot read it. It has `SameSite=Strict`, so the browser sends it only for requests from this site.
+- Model keys are stored in `secrets.yaml` with mode 0600. Only the owner of the file can read or write it.
+
+## Documentation
+
+- [Terms](docs/TERMS.md) gives the meaning of each term in the Scriba documents and code.
+- [Architecture](docs/ARCHITECTURE.md) describes the parts, modules, libraries, folders and design rules of Scriba.
+- [Development](docs/DEVELOPMENT.md) tells you how to add a module, run the tests and deliver a change.
+- [Releasing Scriba](docs/RELEASING.md) describes the release process.
+- [Architecture decision records](docs/adr/) record the main design decisions.
+- [Module design notes](modules/) contains the design notes for the ten modules.
+- [Runbook](deploy/RUNBOOK.md) lists the manual checks that run before a release, on the tailnet and the host network.
+- [Golden tests](packages/packs/test/README.md) describes the golden tests for the genre packs.
+- [Manual model evaluation](scripts/eval-agent/README.md) describes the manual model evaluation.
+- [Decision log](plans/DECISIONS.md) is the log of decisions made while building Scriba.
+
+This README follows the ASD-STE100 writing rules as closely as practical. ASD-STE100 is Simplified Technical English, from the AeroSpace and Defence Industries Association of Europe. Keep new text in the same style.
